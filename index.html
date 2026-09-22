@@ -395,10 +395,11 @@
     box-shadow:0 1px 4px rgba(0,0,0,.5);
   }
   .boatPip:active .boatDot{transform:scale(.88);}
+  .boatPip--group .boatDot{width:13px;height:13px;border-width:2px;}
   .boatName{
     font-size:10.5px;font-weight:600;color:var(--offwhite);
-    background:rgba(4,12,17,.6);padding:2px 7px;border-radius:999px;
-    white-space:nowrap;pointer-events:none;
+    background:rgba(4,12,17,.6);padding:3px 8px;border-radius:10px;
+    white-space:normal;max-width:150px;line-height:1.4;pointer-events:none;
   }
   .boatPip.boatPip--noName .boatName{display:none;}
 
@@ -504,6 +505,11 @@
   }
   #boatInfoModal.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1);}
   #boatInfoModal .modalDesc{margin-bottom:0;}
+  .boatInfoNamesList{display:flex;flex-direction:column;gap:6px;margin:2px 0 14px;}
+  .boatInfoNameRow{
+    background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);
+    border-radius:9px;padding:9px 12px;font-size:13.5px;font-weight:600;color:var(--offwhite);
+  }
 
   #settingsNameDisplay{
     width:100%;background:rgba(232,163,61,.1);border:1px solid rgba(232,163,61,.35);
@@ -521,6 +527,7 @@
 </style>
 </head>
 <body>
+
 
 <div id="app">
   <div id="stage">
@@ -720,6 +727,7 @@
   <div id="boatInfoBackdrop"></div>
   <div id="boatInfoModal">
     <div class="modalTitle" id="boatInfoName">—</div>
+    <div class="boatInfoNamesList" id="boatInfoNamesList"></div>
     <div class="modalDesc" id="boatInfoMeta">—</div>
     <div class="sheetRow">
       <button id="boatInfoClose" class="btnPrimary" type="button">Stäng</button>
@@ -1114,8 +1122,45 @@
   } catch(e){}
   var boatsLayer = document.getElementById('boatsLayer');
   var boatPositions = {}; // uid -> {lat, lon, name, uid, updatedAt}
+  var boatClustersById = {}; // last-rendered clusters, keyed for click lookups (see renderBoats)
   var posCol = null; // Firestore 'positions' collection ref (see initSharedWaypoints)
   var BOAT_STALE_MS = 3 * 60 * 1000; // a boat that hasn't updated in this long is hidden
+  var BOAT_CLUSTER_METERS = 30; // positions this close are treated as "the same boat"
+
+  // People sitting in the same boat show up as one pip instead of a pile of
+  // overlapping dots. Simple greedy clustering: each not-yet-placed person
+  // founds a cluster and pulls in anyone else still within the margin --
+  // fine for a handful of boats at a small lake, no need for anything fancier.
+  function clusterBoatPositions(list){
+    var used = {};
+    var clusters = [];
+    list.forEach(function(b, i){
+      if (used[b.uid]) return;
+      used[b.uid] = true;
+      var members = [b];
+      list.forEach(function(other, j){
+        if (i === j || used[other.uid]) return;
+        var distM = haversineKm(b.lat, b.lon, other.lat, other.lon) * 1000;
+        if (distM <= BOAT_CLUSTER_METERS){
+          used[other.uid] = true;
+          members.push(other);
+        }
+      });
+      var latSum = 0, lonSum = 0, maxUpdated = 0;
+      members.forEach(function(m){
+        latSum += m.lat; lonSum += m.lon;
+        if (m.updatedAt > maxUpdated) maxUpdated = m.updatedAt;
+      });
+      clusters.push({
+        id: members.map(function(m){ return m.uid; }).sort().join('+'),
+        lat: latSum / members.length,
+        lon: lonSum / members.length,
+        names: members.map(function(m){ return m.name || 'Okänd'; }),
+        updatedAt: maxUpdated
+      });
+    });
+    return clusters;
+  }
 
   // Fill these in from your Firebase project's config (Project settings ->
   // General -> "Your apps" -> SDK setup and configuration). Safe to leave
@@ -1213,40 +1258,44 @@
   /* ---------------- other users' live positions ("Båtar") ---------------- */
   function renderBoats(){
     var seen = {};
+    boatClustersById = {};
     if (showBoats){
       var now = Date.now();
-      Object.keys(boatPositions).forEach(function(uid){
-        var b = boatPositions[uid];
-        if (now - b.updatedAt > BOAT_STALE_MS) return; // hasn't checked in for a while -- treat as gone
-        seen[uid] = true;
-        var p = latLonToImgPx(b.lat, b.lon);
+      var fresh = Object.keys(boatPositions).map(function(uid){ return boatPositions[uid]; })
+        .filter(function(b){ return now - b.updatedAt <= BOAT_STALE_MS; }); // hasn't checked in for a while -- treat as gone
+      var clusters = clusterBoatPositions(fresh);
+      clusters.forEach(function(c){
+        boatClustersById[c.id] = c;
+        seen[c.id] = true;
+        var p = latLonToImgPx(c.lat, c.lon);
         var sx = originX + p.x * scale, sy = originY + p.y * scale;
-        var el = boatsLayer.querySelector('[data-uid="' + uid + '"]');
+        var el = boatsLayer.querySelector('[data-cluster="' + c.id + '"]');
         if (!el){
           el = document.createElement('div');
-          el.setAttribute('data-uid', uid);
+          el.setAttribute('data-cluster', c.id);
           el.className = 'boatPip';
           el.innerHTML = '<span class="boatDot"></span><span class="boatName"></span>';
           el.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
           el.addEventListener('click', function(e){
             e.stopPropagation();
-            // look up the CURRENT position by uid at click time, same reasoning
+            // look up the CURRENT cluster by id at click time, same reasoning
             // as waypoint pins: the object backing this element gets replaced
             // on every snapshot update, so a stale closure would show old data
-            var currentUid = el.getAttribute('data-uid');
-            var current = boatPositions[currentUid];
+            var currentId = el.getAttribute('data-cluster');
+            var current = boatClustersById[currentId];
             if (current) showBoatInfo(current);
           });
           boatsLayer.appendChild(el);
         }
         el.classList.toggle('boatPip--noName', !showBoatNames);
-        el.querySelector('.boatName').textContent = b.name || 'Okänd';
+        el.classList.toggle('boatPip--group', c.names.length > 1);
+        el.querySelector('.boatName').textContent = c.names.join(', ');
         el.style.left = sx + 'px';
         el.style.top = sy + 'px';
       });
     }
     Array.from(boatsLayer.children).forEach(function(el){
-      if (!seen[el.getAttribute('data-uid')]) el.remove();
+      if (!seen[el.getAttribute('data-cluster')]) el.remove();
     });
   }
 
@@ -1279,11 +1328,26 @@
   var boatInfoBackdrop = document.getElementById('boatInfoBackdrop');
   var boatInfoModal = document.getElementById('boatInfoModal');
   var boatInfoNameEl = document.getElementById('boatInfoName');
+  var boatInfoNamesListEl = document.getElementById('boatInfoNamesList');
   var boatInfoMetaEl = document.getElementById('boatInfoMeta');
   var boatInfoCloseBtn = document.getElementById('boatInfoClose');
-  function showBoatInfo(b){
-    boatInfoNameEl.textContent = b.name || 'Okänd';
-    boatInfoMetaEl.textContent = 'Uppdaterad ' + timeAgo(b.updatedAt);
+  function showBoatInfo(cluster){
+    var names = cluster.names || [cluster.name || 'Okänd'];
+    boatInfoNamesListEl.innerHTML = '';
+    if (names.length === 1){
+      boatInfoNameEl.textContent = names[0];
+      boatInfoNamesListEl.style.display = 'none';
+    } else {
+      boatInfoNameEl.textContent = 'Samma båt';
+      names.forEach(function(n){
+        var row = document.createElement('div');
+        row.className = 'boatInfoNameRow';
+        row.textContent = n;
+        boatInfoNamesListEl.appendChild(row);
+      });
+      boatInfoNamesListEl.style.display = 'flex';
+    }
+    boatInfoMetaEl.textContent = 'Uppdaterad ' + timeAgo(cluster.updatedAt);
     boatInfoBackdrop.classList.add('show');
     boatInfoModal.classList.add('show');
   }
@@ -1814,6 +1878,9 @@
   }
 
   function onFix(lat, lon, accM){
+    // whatever position is actually shown as "you" -- real GPS, or the demo
+    // position while Demo Mode is on -- is also what the others see for you
+    maybeBroadcastPosition(lat, lon);
     var p = latLonToImgPx(lat, lon);
     var margin = 150; // web px, ~a few hundred metres of shoreline buffer
     var onMap = p.x >= -margin && p.x <= IMG_W + margin && p.y >= -margin && p.y <= IMG_H + margin;
@@ -1877,10 +1944,6 @@
     navigator.geolocation.watchPosition(
       function(pos){
         lastRealFix = { lat: pos.coords.latitude, lon: pos.coords.longitude, acc: pos.coords.accuracy };
-        // always share the real fix with the others, even while Demo Mode
-        // is on locally -- demo mode is just a local testing aid, it
-        // shouldn't hide your real boat or broadcast a fake one
-        maybeBroadcastPosition(lastRealFix.lat, lastRealFix.lon);
         if (!demoMode) onFix(lastRealFix.lat, lastRealFix.lon, lastRealFix.acc);
       },
       function(err){
