@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Regnaren GPS</title>
 <!-- Firebase (only used if FIREBASE_CONFIG below is filled in -- otherwise
      these simply fail silently and the page falls back to on-device
@@ -777,6 +780,21 @@
     render();
   }
   window.addEventListener('resize', refreshLayout);
+  if (window.visualViewport){
+    // more reliable than window resize/orientationchange in some
+    // WKWebView contexts (see the standalone home-screen note below)
+    window.visualViewport.addEventListener('resize', refreshLayout);
+  }
+
+  // True only for an iOS "Add to Home Screen" launch (no Safari chrome).
+  var isStandaloneApp = !!window.navigator.standalone;
+
+  function layoutLooksBroken(){
+    var vw = window.visualViewport ? window.visualViewport.width : window.innerWidth;
+    var vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    var r = stage.getBoundingClientRect();
+    return Math.abs(r.width - vw) > 2 || Math.abs(r.height - vh) > 2;
+  }
 
   // Rotating the phone can, on some mobile browsers, leave a touch/pointer
   // sequence "stuck" mid-gesture (the OS interrupts it for the rotation, so
@@ -785,24 +803,43 @@
   // up the same way: nothing responds to taps and the layout looks frozen
   // in the old orientation. Recover from both whenever the orientation
   // actually changes:
-  window.addEventListener('orientationchange', function(){
-    // 1) drop any pointer/gesture tracking that never got a matching
-    //    pointerup (a touch interrupted by the physical rotation)
-    pointers.clear();
-    panStart = null; pinch = null; lastTap = null;
-    cancelLongPress();
-    stage.classList.remove('dragging');
-    // 2) force a reflow of the fixed-position root -- works around a stale
-    //    paint of position:fixed content after rotation on some browsers
-    appEl.style.display = 'none';
-    void appEl.offsetHeight;
-    appEl.style.display = '';
-    // 3) recompute the map layout now, and again shortly after -- some
-    //    browsers report transitional viewport dimensions on the first pass
-    refreshLayout();
-    setTimeout(refreshLayout, 150);
-    setTimeout(refreshLayout, 400);
-  });
+  function handleOrientationEvent(){
+    function settle(){
+      // 1) drop any pointer/gesture tracking that never got a matching
+      //    pointerup (a touch interrupted by the physical rotation)
+      pointers.clear();
+      panStart = null; pinch = null; lastTap = null;
+      cancelLongPress();
+      stage.classList.remove('dragging');
+      // 2) force a reflow of the fixed-position root -- works around a
+      //    stale paint of position:fixed content after rotation
+      appEl.style.display = 'none';
+      void appEl.offsetHeight;
+      appEl.style.display = '';
+      // 3) recompute the map layout
+      refreshLayout();
+    }
+    settle();
+    setTimeout(settle, 150);
+    setTimeout(settle, 400);
+    if (isStandaloneApp){
+      // iOS home-screen web apps have a long-standing WebKit bug where the
+      // page's own layout never actually recovers from an orientation
+      // change no matter how much we recompute it ourselves -- the only
+      // fully reliable fix left at that point is a reload. Only do that if
+      // things are still visibly wrong after the soft fixes above had time
+      // to run, so this never fires on a browser where they already worked.
+      setTimeout(function(){
+        if (layoutLooksBroken()) window.location.reload();
+      }, 700);
+    }
+  }
+  window.addEventListener('orientationchange', handleOrientationEvent);
+  if (window.screen && window.screen.orientation){
+    // the modern replacement for the (deprecated, and on some WKWebView
+    // builds unreliable) window.orientationchange event above
+    window.screen.orientation.addEventListener('change', handleOrientationEvent);
+  }
 
   /* ---- pointer interaction: pan, pinch-zoom, wheel, double-tap ---- */
   var pointers = new Map();
@@ -1519,7 +1556,7 @@
 
   function centerOnWaypoint(wp){
     var p = latLonToImgPx(wp.lat, wp.lon);
-    var targetScale = Math.max(scale, fitScale * 3.2);
+    var targetScale = Math.max(scale, fitScale * 4.5);
     var tx = stageW/2 - p.x * targetScale;
     var ty = stageH/2 - p.y * targetScale;
     animateTo(targetScale, tx, ty, 500);
