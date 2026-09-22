@@ -396,6 +396,7 @@
   }
   .boatPip:active .boatDot{transform:translate(-50%,-50%) scale(.88);}
   .boatPip--group .boatDot{width:13px;height:13px;border-width:2px;}
+  .boatPip--stale .boatDot{background:var(--text-muted);}
   .boatName{
     position:absolute;left:9px;top:0;
     transform:translateY(-50%);
@@ -1128,7 +1129,8 @@
   var boatPositions = {}; // uid -> {lat, lon, name, uid, updatedAt}
   var boatClustersById = {}; // last-rendered clusters, keyed for click lookups (see renderBoats)
   var posCol = null; // Firestore 'positions' collection ref (see initSharedWaypoints)
-  var BOAT_STALE_MS = 3 * 60 * 1000; // a boat that hasn't updated in this long is hidden
+  var BOAT_GRAY_MS = 15 * 60 * 1000; // a boat that hasn't updated in this long turns grey -- still shown at its last known spot, just marked as not live anymore
+  var BOAT_REMOVE_MS = 60 * 60 * 1000; // a boat that hasn't updated in THIS long is finally removed entirely
   var BOAT_CLUSTER_METERS = 30; // positions this close are treated as "the same boat"
 
   // People sitting in the same boat show up as one pip instead of a pile of
@@ -1266,7 +1268,7 @@
     if (showBoats){
       var now = Date.now();
       var fresh = Object.keys(boatPositions).map(function(uid){ return boatPositions[uid]; })
-        .filter(function(b){ return now - b.updatedAt <= BOAT_STALE_MS; }) // hasn't checked in for a while -- treat as gone
+        .filter(function(b){ return now - b.updatedAt <= BOAT_REMOVE_MS; }) // hasn't checked in for a very long time -- treat as gone for good
         .filter(function(b){
           // people sitting right next to you are in YOUR boat -- you already
           // see yourself as the big amber dot, so don't also show them as a
@@ -1302,6 +1304,7 @@
         }
         el.classList.toggle('boatPip--noName', !showBoatNames);
         el.classList.toggle('boatPip--group', c.names.length > 1);
+        el.classList.toggle('boatPip--stale', (now - c.updatedAt) > BOAT_GRAY_MS);
         var nameEl = el.querySelector('.boatName');
         nameEl.innerHTML = '';
         c.names.forEach(function(n){
