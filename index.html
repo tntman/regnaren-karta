@@ -789,13 +789,6 @@
   // True only for an iOS "Add to Home Screen" launch (no Safari chrome).
   var isStandaloneApp = !!window.navigator.standalone;
 
-  function layoutLooksBroken(){
-    var vw = window.visualViewport ? window.visualViewport.width : window.innerWidth;
-    var vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-    var r = stage.getBoundingClientRect();
-    return Math.abs(r.width - vw) > 2 || Math.abs(r.height - vh) > 2;
-  }
-
   // Rotating the phone can, on some mobile browsers, leave a touch/pointer
   // sequence "stuck" mid-gesture (the OS interrupts it for the rotation, so
   // pointerup/pointercancel never fires), and can leave position:fixed
@@ -824,14 +817,22 @@
     setTimeout(settle, 400);
     if (isStandaloneApp){
       // iOS home-screen web apps have a long-standing WebKit bug where the
-      // page's own layout never actually recovers from an orientation
-      // change no matter how much we recompute it ourselves -- the only
-      // fully reliable fix left at that point is a reload. Only do that if
-      // things are still visibly wrong after the soft fixes above had time
-      // to run, so this never fires on a browser where they already worked.
-      setTimeout(function(){
-        if (layoutLooksBroken()) window.location.reload();
-      }, 700);
+      // screen keeps showing a stale, already-painted frame from before the
+      // rotation -- the DOM layout itself is already correct (so a JS-side
+      // "is it broken?" check like comparing getBoundingClientRect() can
+      // never detect this: the layout numbers are fine, only what's
+      // painted on screen is stale), which is why recomputing the layout
+      // above never actually fixes what's on screen. A real reload is the
+      // only fix that reliably repaints. Guard against reload loops (two
+      // orientation events can fire for one physical rotation) with a
+      // short cooldown stamped in sessionStorage.
+      var now = Date.now();
+      var last = 0;
+      try { last = Number(sessionStorage.getItem('regnaren_last_rot_reload') || 0); } catch(e){}
+      if (now - last > 3000){
+        try { sessionStorage.setItem('regnaren_last_rot_reload', String(now)); } catch(e){}
+        setTimeout(function(){ window.location.reload(); }, 350);
+      }
     }
   }
   window.addEventListener('orientationchange', handleOrientationEvent);
