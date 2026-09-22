@@ -197,6 +197,12 @@
   }
   .toggle input:checked ~ .toggleTrack{background:var(--amber);}
   .toggle input:checked ~ .toggleTrack .toggleThumb{transform:translateX(14px);}
+  .visSeparator{height:1px;background:rgba(255,255,255,.14);margin:2px 1px;}
+  .visSwatch--boat{display:flex;align-items:center;justify-content:center;}
+  .boatSwatchDot{width:8px;height:8px;border-radius:50%;background:#fff;border:1.5px solid #000;}
+  .visSwatch--name{font-size:9.5px;font-weight:700;}
+  #visRowNames.disabled{opacity:.45;}
+  #visRowNames.disabled .toggle{pointer-events:none;}
 
   #menuBtn{
     position:absolute;left:14px;
@@ -375,6 +381,27 @@
   .wpPin--other .pinHead svg{color:var(--offwhite);}
   .wpPin--other .pinHead .fishEye{fill:var(--teal);}
 
+  #boatsLayer{position:absolute;inset:0;z-index:16;pointer-events:none;}
+  .boatPip{
+    position:absolute;left:0;top:0;
+    transform:translate(-50%,-50%);
+    display:flex;align-items:center;gap:5px;
+    pointer-events:auto;cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .boatDot{
+    width:11px;height:11px;border-radius:50%;flex:0 0 auto;
+    background:#fff;border:1.5px solid #000;
+    box-shadow:0 1px 4px rgba(0,0,0,.5);
+  }
+  .boatPip:active .boatDot{transform:scale(.88);}
+  .boatName{
+    font-size:10.5px;font-weight:600;color:var(--offwhite);
+    background:rgba(4,12,17,.6);padding:2px 7px;border-radius:999px;
+    white-space:nowrap;pointer-events:none;
+  }
+  .boatPip.boatPip--noName .boatName{display:none;}
+
   #longPressRing{
     position:absolute;left:0;top:0;width:54px;height:54px;
     border-radius:50%;border:3px solid var(--amber);
@@ -461,6 +488,23 @@
   #nameInput::placeholder{color:var(--text-muted);}
   .modalError{color:var(--danger);font-size:12px;margin:-8px 0 4px;}
 
+  #boatInfoBackdrop{
+    position:fixed;inset:0;background:rgba(4,12,17,.6);z-index:40;
+    opacity:0;pointer-events:none;transition:opacity .22s ease;
+  }
+  #boatInfoBackdrop.show{opacity:1;pointer-events:auto;}
+  #boatInfoModal{
+    position:fixed;left:50%;top:50%;z-index:41;
+    transform:translate(-50%,-50%) scale(.94);
+    opacity:0;pointer-events:none;transition:opacity .22s ease, transform .22s ease;
+    width:min(86vw,320px);
+    background:var(--navy);border:1px solid rgba(255,255,255,.14);
+    border-radius:16px;padding:20px 20px calc(env(safe-area-inset-bottom,0px) + 18px);
+    box-shadow:0 12px 32px rgba(0,0,0,.5);
+  }
+  #boatInfoModal.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1);}
+  #boatInfoModal .modalDesc{margin-bottom:0;}
+
   #settingsNameDisplay{
     width:100%;background:rgba(232,163,61,.1);border:1px solid rgba(232,163,61,.35);
     border-radius:10px;padding:10px 12px;color:var(--amber);font-size:14px;font-weight:600;
@@ -484,6 +528,7 @@
   </div>
 
   <div id="waypoints"></div>
+  <div id="boatsLayer"></div>
   <div id="longPressRing"></div>
   <div id="bottomFade"></div>
 
@@ -629,6 +674,23 @@
         <span class="toggleTrack"><span class="toggleThumb"></span></span>
       </span>
     </label>
+    <div class="visSeparator"></div>
+    <label class="visRow">
+      <span class="visSwatch visSwatch--boat"><span class="boatSwatchDot"></span></span>
+      <span class="visLabel">Båtar</span>
+      <span class="toggle">
+        <input type="checkbox" id="toggleBoats" checked>
+        <span class="toggleTrack"><span class="toggleThumb"></span></span>
+      </span>
+    </label>
+    <label class="visRow" id="visRowNames">
+      <span class="visSwatch visSwatch--name">Aa</span>
+      <span class="visLabel">Namn</span>
+      <span class="toggle">
+        <input type="checkbox" id="toggleNames" checked>
+        <span class="toggleTrack"><span class="toggleThumb"></span></span>
+      </span>
+    </label>
   </div>
 
   <div id="sheetBackdrop"></div>
@@ -652,6 +714,15 @@
     <div id="nameError" class="modalError" hidden>Skriv ditt namn för att fortsätta.</div>
     <div class="sheetRow">
       <button id="nameSave" class="btnPrimary">Fortsätt</button>
+    </div>
+  </div>
+
+  <div id="boatInfoBackdrop"></div>
+  <div id="boatInfoModal">
+    <div class="modalTitle" id="boatInfoName">—</div>
+    <div class="modalDesc" id="boatInfoMeta">—</div>
+    <div class="sheetRow">
+      <button id="boatInfoClose" class="btnPrimary" type="button">Stäng</button>
     </div>
   </div>
 </div>
@@ -757,6 +828,7 @@
     updateMarker();
     updateScaleBar();
     renderWaypoints();
+    renderBoats();
   }
 
   function zoomAtPoint(px, py, newScale){
@@ -1033,6 +1105,18 @@
     if (vo !== null) showOthers = vo === '1';
   } catch(e){}
 
+  var showBoats = true, showBoatNames = true;
+  try {
+    var sb = localStorage.getItem('regnaren_vis_boats_v1');
+    var sn = localStorage.getItem('regnaren_vis_boatnames_v1');
+    if (sb !== null) showBoats = sb === '1';
+    if (sn !== null) showBoatNames = sn === '1';
+  } catch(e){}
+  var boatsLayer = document.getElementById('boatsLayer');
+  var boatPositions = {}; // uid -> {lat, lon, name, uid, updatedAt}
+  var posCol = null; // Firestore 'positions' collection ref (see initSharedWaypoints)
+  var BOAT_STALE_MS = 3 * 60 * 1000; // a boat that hasn't updated in this long is hidden
+
   // Fill these in from your Firebase project's config (Project settings ->
   // General -> "Your apps" -> SDK setup and configuration). Safe to leave
   // public in this file: Firebase apps are secured by the Firestore rules
@@ -1125,6 +1209,118 @@
     try { localStorage.setItem('regnaren_vis_others_v1', showOthers ? '1' : '0'); } catch(e){}
     renderWaypoints();
   });
+
+  /* ---------------- other users' live positions ("Båtar") ---------------- */
+  function renderBoats(){
+    var seen = {};
+    if (showBoats){
+      var now = Date.now();
+      Object.keys(boatPositions).forEach(function(uid){
+        var b = boatPositions[uid];
+        if (now - b.updatedAt > BOAT_STALE_MS) return; // hasn't checked in for a while -- treat as gone
+        seen[uid] = true;
+        var p = latLonToImgPx(b.lat, b.lon);
+        var sx = originX + p.x * scale, sy = originY + p.y * scale;
+        var el = boatsLayer.querySelector('[data-uid="' + uid + '"]');
+        if (!el){
+          el = document.createElement('div');
+          el.setAttribute('data-uid', uid);
+          el.className = 'boatPip';
+          el.innerHTML = '<span class="boatDot"></span><span class="boatName"></span>';
+          el.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
+          el.addEventListener('click', function(e){
+            e.stopPropagation();
+            // look up the CURRENT position by uid at click time, same reasoning
+            // as waypoint pins: the object backing this element gets replaced
+            // on every snapshot update, so a stale closure would show old data
+            var currentUid = el.getAttribute('data-uid');
+            var current = boatPositions[currentUid];
+            if (current) showBoatInfo(current);
+          });
+          boatsLayer.appendChild(el);
+        }
+        el.classList.toggle('boatPip--noName', !showBoatNames);
+        el.querySelector('.boatName').textContent = b.name || 'Okänd';
+        el.style.left = sx + 'px';
+        el.style.top = sy + 'px';
+      });
+    }
+    Array.from(boatsLayer.children).forEach(function(el){
+      if (!seen[el.getAttribute('data-uid')]) el.remove();
+    });
+  }
+
+  var toggleBoatsEl = document.getElementById('toggleBoats');
+  var toggleNamesEl = document.getElementById('toggleNames');
+  var visRowNamesEl = document.getElementById('visRowNames');
+  toggleBoatsEl.checked = showBoats;
+  toggleNamesEl.checked = showBoatNames;
+  function updateNamesRowEnabled(){
+    visRowNamesEl.classList.toggle('disabled', !showBoats);
+    toggleNamesEl.disabled = !showBoats;
+  }
+  updateNamesRowEnabled();
+  toggleBoatsEl.addEventListener('change', function(){
+    showBoats = toggleBoatsEl.checked;
+    try { localStorage.setItem('regnaren_vis_boats_v1', showBoats ? '1' : '0'); } catch(e){}
+    updateNamesRowEnabled();
+    renderBoats();
+  });
+  toggleNamesEl.addEventListener('change', function(){
+    showBoatNames = toggleNamesEl.checked;
+    try { localStorage.setItem('regnaren_vis_boatnames_v1', showBoatNames ? '1' : '0'); } catch(e){}
+    renderBoats();
+  });
+
+  // hide boats whose last check-in has gone stale even without a fresh
+  // snapshot event (Firestore only pushes updates on actual data changes)
+  setInterval(renderBoats, 30000);
+
+  var boatInfoBackdrop = document.getElementById('boatInfoBackdrop');
+  var boatInfoModal = document.getElementById('boatInfoModal');
+  var boatInfoNameEl = document.getElementById('boatInfoName');
+  var boatInfoMetaEl = document.getElementById('boatInfoMeta');
+  var boatInfoCloseBtn = document.getElementById('boatInfoClose');
+  function showBoatInfo(b){
+    boatInfoNameEl.textContent = b.name || 'Okänd';
+    boatInfoMetaEl.textContent = 'Uppdaterad ' + timeAgo(b.updatedAt);
+    boatInfoBackdrop.classList.add('show');
+    boatInfoModal.classList.add('show');
+  }
+  function hideBoatInfo(){
+    boatInfoBackdrop.classList.remove('show');
+    boatInfoModal.classList.remove('show');
+  }
+  boatInfoCloseBtn.addEventListener('click', hideBoatInfo);
+  boatInfoBackdrop.addEventListener('click', hideBoatInfo);
+
+  function applyPositionsSnapshot(snap){
+    var now = Date.now();
+    var fresh = {};
+    snap.forEach(function(doc){
+      var d = doc.data();
+      var docLake = d.lake || LAKE_ID;
+      if (docLake !== LAKE_ID) return;
+      if (d.uid === myUid) return; // that's you -- your own big GPS dot already shows it
+      var updatedMs = (d.updatedAt && d.updatedAt.toMillis) ? d.updatedAt.toMillis() : now;
+      fresh[doc.id] = { lat: d.lat, lon: d.lon, name: d.name || '', uid: d.uid, updatedAt: updatedMs };
+    });
+    boatPositions = fresh;
+    renderBoats();
+  }
+
+  var lastPosWriteAt = 0;
+  var POS_WRITE_INTERVAL_MS = 8000; // how often we push our own position to the others
+  function maybeBroadcastPosition(lat, lon){
+    if (!USE_FIREBASE || !posCol || !myUid) return;
+    var now = Date.now();
+    if (now - lastPosWriteAt < POS_WRITE_INTERVAL_MS) return;
+    lastPosWriteAt = now;
+    posCol.doc(myUid).set({
+      lat: lat, lon: lon, name: userName || '', uid: myUid, lake: LAKE_ID,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true }).catch(function(e){ console.warn('kunde inte dela position', e); });
+  }
 
   function startLongPress(sx, sy){
     cancelLongPress();
@@ -1245,6 +1441,7 @@
       var fsdb = firebase.firestore();
       try { fsdb.enablePersistence({ synchronizeTabs:true }).catch(function(){}); } catch(e){}
       fsCol = fsdb.collection('waypoints');
+      posCol = fsdb.collection('positions');
       var started = false;
       auth.onAuthStateChanged(function(user){
         if (!user || started) return;
@@ -1261,6 +1458,7 @@
         // Force one direct, uncached fetch right away so those show up
         // immediately instead of waiting on the listener to catch up.
         fsCol.get({ source: 'server' }).then(applySnapshotDocs).catch(function(){});
+        posCol.onSnapshot(applyPositionsSnapshot, function(err){ console.warn('positions sync error', err); });
         cb(true);
       });
       auth.signInAnonymously().catch(function(err){ console.warn('anonym inloggning misslyckades', err); cb(false); });
@@ -1679,6 +1877,10 @@
     navigator.geolocation.watchPosition(
       function(pos){
         lastRealFix = { lat: pos.coords.latitude, lon: pos.coords.longitude, acc: pos.coords.accuracy };
+        // always share the real fix with the others, even while Demo Mode
+        // is on locally -- demo mode is just a local testing aid, it
+        // shouldn't hide your real boat or broadcast a fake one
+        maybeBroadcastPosition(lastRealFix.lat, lastRealFix.lon);
         if (!demoMode) onFix(lastRealFix.lat, lastRealFix.lon, lastRealFix.acc);
       },
       function(err){
