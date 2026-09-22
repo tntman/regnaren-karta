@@ -22,6 +22,7 @@
     --offwhite:#F4F7F8;
     --text-muted:#B7C4C9;
     --danger:#D64545;
+    --ink:#14181C;
     display-name:regnaren-gps;
   }
   *{box-sizing:border-box;}
@@ -147,6 +148,54 @@
   #locateBtn svg{width:26px;height:26px;}
   #locateBtn.tracking{background:var(--offwhite);}
 
+  #refreshBtn{
+    position:absolute;right:84px;
+    bottom:calc(env(safe-area-inset-bottom,0px) + 25px);
+    z-index:22;
+    width:44px;height:44px;border-radius:50%;
+    background:var(--navy-glass);backdrop-filter:blur(6px);
+    color:var(--offwhite);border:1px solid rgba(255,255,255,.16);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 4px 14px rgba(0,0,0,.35);
+    -webkit-tap-highlight-color:transparent;
+  }
+  #refreshBtn:active{transform:scale(.92);}
+  #refreshBtn svg{width:19px;height:19px;}
+  #refreshBtn.spinning svg{animation:spin .7s linear;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  #visPanel{
+    position:absolute;right:14px;
+    top:calc(env(safe-area-inset-top,0px) + 14px);
+    z-index:21;
+    display:flex;flex-direction:column;gap:8px;
+    background:var(--navy-glass);backdrop-filter:blur(6px);
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:12px;padding:8px 10px;
+    box-shadow:0 4px 14px rgba(0,0,0,.35);
+  }
+  .visRow{display:flex;align-items:center;gap:8px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+  .visSwatch{
+    width:20px;height:20px;border-radius:50%;flex:0 0 auto;
+    display:flex;align-items:center;justify-content:center;
+    background:var(--offwhite);color:var(--ink);border:1.5px solid var(--ink);
+  }
+  .visSwatch svg{width:12px;height:12px;display:block;}
+  .visSwatch .fishEye{fill:var(--offwhite);}
+  .visSwatch--other{background:var(--teal);color:var(--offwhite);border-color:rgba(244,247,248,.55);}
+  .visSwatch--other .fishEye{fill:var(--teal);}
+  .visLabel{font-size:12px;color:var(--offwhite);flex:1 1 auto;white-space:nowrap;}
+  .toggle{position:relative;display:inline-block;width:34px;height:20px;flex:0 0 auto;}
+  .toggle input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer;z-index:1;}
+  .toggleTrack{position:absolute;inset:0;border-radius:999px;background:rgba(255,255,255,.18);transition:background .2s ease;}
+  .toggleThumb{
+    position:absolute;left:2px;top:2px;width:16px;height:16px;border-radius:50%;
+    background:var(--offwhite);box-shadow:0 1px 3px rgba(0,0,0,.4);
+    transition:transform .2s ease;
+  }
+  .toggle input:checked ~ .toggleTrack{background:var(--amber);}
+  .toggle input:checked ~ .toggleTrack .toggleThumb{transform:translateX(14px);}
+
   #farAway{
     position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 88px);
     transform:translateX(-50%);
@@ -163,21 +212,35 @@
     .kicker{font-size:19px;}
     #legend{width:148px;padding:8px 10px 7px;}
     #locateBtn{width:50px;height:50px;}
+    #refreshBtn{width:40px;height:40px;right:80px;}
+    #visPanel{padding:7px 9px;gap:6px;}
+    .visLabel{font-size:11px;}
   }
 
   #waypoints{position:absolute;inset:0;z-index:16;pointer-events:none;}
   .wpPin{
-    position:absolute;left:0;top:0;transform:translate(-50%,-50%);
-    width:30px;height:30px;border-radius:50%;
-    background:var(--offwhite);border:2px solid var(--navy);
-    display:flex;align-items:center;justify-content:center;
-    box-shadow:0 2px 8px rgba(0,0,0,.45);
-    pointer-events:auto;cursor:pointer;color:var(--navy);
+    position:absolute;left:0;top:0;
+    width:30px;height:30px;
+    transform:translate(-50%,-50%) rotate(-45deg);
+    border-radius:50% 50% 50% 0;
+    background:var(--offwhite);
+    border:2px solid var(--ink);
+    box-shadow:0 3px 10px rgba(0,0,0,.4);
+    pointer-events:auto;cursor:pointer;
     -webkit-tap-highlight-color:transparent;
   }
-  .wpPin:active{transform:translate(-50%,-50%) scale(.88);}
-  .wpPin svg{width:17px;height:17px;display:block;}
-  .wpPin--other{background:var(--teal);border-color:var(--offwhite);color:var(--offwhite);}
+  .wpPin:active{transform:translate(-50%,-50%) rotate(-45deg) scale(.9);}
+  .wpPin .pinHead{
+    position:absolute;left:50%;top:46%;
+    width:23px;height:23px;
+    transform:translate(-50%,-50%) rotate(45deg);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .wpPin .pinHead svg{width:20px;height:20px;display:block;color:var(--ink);}
+  .wpPin .pinHead .fishEye{fill:var(--offwhite);}
+  .wpPin--other{background:var(--teal);border-color:rgba(244,247,248,.55);}
+  .wpPin--other .pinHead svg{color:var(--offwhite);}
+  .wpPin--other .pinHead .fishEye{fill:var(--teal);}
 
   #longPressRing{
     position:absolute;left:0;top:0;width:54px;height:54px;
@@ -280,6 +343,32 @@
       <circle cx="12" cy="12" r="8"></circle>
     </svg>
   </button>
+
+  <button id="refreshBtn" aria-label="Uppdatera fiskeplatser" title="Uppdatera fiskeplatser">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 12a9 9 0 1 1-3-6.7"></path>
+      <polyline points="21 3 21 9 15 9"></polyline>
+    </svg>
+  </button>
+
+  <div id="visPanel">
+    <label class="visRow">
+      <span class="visSwatch"><svg viewBox="0 0 384 384" fill="currentColor"><path d="M 200.40625 82.164062 L 191.828125 82.164062 L 178.441406 84.570312 L 167.804688 88.34375 L 157.164062 94.175781 L 151.328125 98.640625 L 143.429688 106.539062 L 139.65625 111.335938 L 135.195312 118.207031 L 130.734375 127.46875 L 130.050781 130.558594 L 142.402344 129.53125 L 157.507812 129.53125 L 173.976562 130.90625 L 188.390625 133.648438 L 188.738281 119.234375 L 190.800781 107.566406 L 194.574219 95.550781 Z M 200.40625 82.164062 "/><path d="M 96.75 142.574219 L 101.210938 149.78125 L 107.390625 162.824219 L 111.855469 178.265625 L 113.917969 192.691406 L 113.917969 209.503906 L 111.511719 225.292969 L 109.792969 231.816406 L 106.019531 242.453125 L 101.210938 252.066406 L 96.75 258.585938 L 117 263.046875 L 139.65625 265.453125 L 167.113281 265.109375 L 177.757812 264.082031 L 194.226562 261.328125 L 216.539062 255.496094 L 238.507812 247.261719 L 261.503906 235.933594 L 293.085938 217.402344 L 313.671875 233.191406 L 334.957031 247.605469 L 349.371094 256.183594 L 359.324219 261.328125 L 361.386719 262.019531 L 363.441406 261.675781 L 363.441406 260.300781 L 339.421875 203.324219 L 339.074219 201.609375 L 348.683594 183.421875 L 356.578125 166.941406 L 367.558594 140.859375 L 367.558594 139.140625 L 363.789062 139.828125 L 358.980469 142.230469 L 338.046875 154.925781 L 313.335938 172.09375 L 295.140625 186.164062 L 263.21875 167.289062 L 239.199219 155.273438 L 218.601562 147.039062 L 203.152344 142.230469 L 191.828125 139.484375 L 178.441406 137.085938 L 166.769531 135.710938 L 145.492188 135.023438 L 132.796875 135.710938 L 121.125 137.085938 L 108.082031 139.484375 Z M 96.75 142.574219 "/><path d="M 87.832031 145.320312 L 77.871094 149.4375 L 65.863281 155.273438 L 53.851562 162.140625 L 45.609375 167.632812 L 33.253906 177.238281 L 22.613281 187.539062 L 16.441406 195.089844 L 15.75 198.179688 L 17.8125 202.980469 L 20.558594 207.441406 L 28.449219 217.738281 L 37.027344 226.664062 L 45.609375 233.871094 L 54.878906 240.398438 L 64.828125 246.234375 L 82.335938 254.121094 L 88.171875 256.183594 L 90.234375 256.183594 L 93.667969 252.75 L 97.09375 246.914062 L 101.558594 236.960938 L 104.300781 228.382812 L 107.390625 211.90625 L 107.738281 194.746094 L 105.328125 177.929688 L 103.621094 171.40625 L 99.839844 161.109375 L 95.378906 152.183594 L 91.605469 146.347656 L 89.886719 145.320312 Z M 87.832031 145.320312 "/><path d="M 186.683594 301.492188 L 180.15625 287.414062 L 173.640625 269.574219 L 161.96875 270.601562 L 135.539062 270.253906 L 137.59375 274.371094 L 143.429688 281.925781 L 150.984375 289.132812 L 158.878906 294.628906 L 166.769531 298.402344 L 175.011719 300.800781 L 182.21875 301.835938 Z M 186.683594 301.492188 "/></svg></span>
+      <span class="visLabel">Mina</span>
+      <span class="toggle">
+        <input type="checkbox" id="toggleMine" checked>
+        <span class="toggleTrack"><span class="toggleThumb"></span></span>
+      </span>
+    </label>
+    <label class="visRow">
+      <span class="visSwatch visSwatch--other"><svg viewBox="0 0 384 384" fill="currentColor"><path d="M 200.40625 82.164062 L 191.828125 82.164062 L 178.441406 84.570312 L 167.804688 88.34375 L 157.164062 94.175781 L 151.328125 98.640625 L 143.429688 106.539062 L 139.65625 111.335938 L 135.195312 118.207031 L 130.734375 127.46875 L 130.050781 130.558594 L 142.402344 129.53125 L 157.507812 129.53125 L 173.976562 130.90625 L 188.390625 133.648438 L 188.738281 119.234375 L 190.800781 107.566406 L 194.574219 95.550781 Z M 200.40625 82.164062 "/><path d="M 96.75 142.574219 L 101.210938 149.78125 L 107.390625 162.824219 L 111.855469 178.265625 L 113.917969 192.691406 L 113.917969 209.503906 L 111.511719 225.292969 L 109.792969 231.816406 L 106.019531 242.453125 L 101.210938 252.066406 L 96.75 258.585938 L 117 263.046875 L 139.65625 265.453125 L 167.113281 265.109375 L 177.757812 264.082031 L 194.226562 261.328125 L 216.539062 255.496094 L 238.507812 247.261719 L 261.503906 235.933594 L 293.085938 217.402344 L 313.671875 233.191406 L 334.957031 247.605469 L 349.371094 256.183594 L 359.324219 261.328125 L 361.386719 262.019531 L 363.441406 261.675781 L 363.441406 260.300781 L 339.421875 203.324219 L 339.074219 201.609375 L 348.683594 183.421875 L 356.578125 166.941406 L 367.558594 140.859375 L 367.558594 139.140625 L 363.789062 139.828125 L 358.980469 142.230469 L 338.046875 154.925781 L 313.335938 172.09375 L 295.140625 186.164062 L 263.21875 167.289062 L 239.199219 155.273438 L 218.601562 147.039062 L 203.152344 142.230469 L 191.828125 139.484375 L 178.441406 137.085938 L 166.769531 135.710938 L 145.492188 135.023438 L 132.796875 135.710938 L 121.125 137.085938 L 108.082031 139.484375 Z M 96.75 142.574219 "/><path d="M 87.832031 145.320312 L 77.871094 149.4375 L 65.863281 155.273438 L 53.851562 162.140625 L 45.609375 167.632812 L 33.253906 177.238281 L 22.613281 187.539062 L 16.441406 195.089844 L 15.75 198.179688 L 17.8125 202.980469 L 20.558594 207.441406 L 28.449219 217.738281 L 37.027344 226.664062 L 45.609375 233.871094 L 54.878906 240.398438 L 64.828125 246.234375 L 82.335938 254.121094 L 88.171875 256.183594 L 90.234375 256.183594 L 93.667969 252.75 L 97.09375 246.914062 L 101.558594 236.960938 L 104.300781 228.382812 L 107.390625 211.90625 L 107.738281 194.746094 L 105.328125 177.929688 L 103.621094 171.40625 L 99.839844 161.109375 L 95.378906 152.183594 L 91.605469 146.347656 L 89.886719 145.320312 Z M 87.832031 145.320312 "/><path d="M 186.683594 301.492188 L 180.15625 287.414062 L 173.640625 269.574219 L 161.96875 270.601562 L 135.539062 270.253906 L 137.59375 274.371094 L 143.429688 281.925781 L 150.984375 289.132812 L 158.878906 294.628906 L 166.769531 298.402344 L 175.011719 300.800781 L 182.21875 301.835938 Z M 186.683594 301.492188 "/></svg></span>
+      <span class="visLabel">Andras</span>
+      <span class="toggle">
+        <input type="checkbox" id="toggleOthers" checked>
+        <span class="toggleTrack"><span class="toggleThumb"></span></span>
+      </span>
+    </label>
+  </div>
 
   <div id="sheetBackdrop"></div>
   <div id="wpSheet">
@@ -544,10 +633,21 @@
 
   var waypoints = [];
   var editingId = null;
+  var editingIsNew = false;
   var longPressTimer = null;
   var USE_FIREBASE = false;
   var myUid = null;
   var fsCol = null;
+  var PIN_SIZE = 30;
+  var PIN_TIP_OFFSET = PIN_SIZE * Math.SQRT1_2; // distance from box-center to the rotated pin's tip
+
+  var showMine = true, showOthers = true;
+  try {
+    var vm = localStorage.getItem('regnaren_vis_mine_v1');
+    var vo = localStorage.getItem('regnaren_vis_others_v1');
+    if (vm !== null) showMine = vm === '1';
+    if (vo !== null) showOthers = vo === '1';
+  } catch(e){}
 
   // Fill these in from your Firebase project's config (Project settings ->
   // General -> "Your apps" -> SDK setup and configuration). Safe to leave
@@ -562,7 +662,7 @@
     appId: "1:565375427934:web:d958caf9f2ac3d3e965bcf"
   };
 
-  var FISH_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 12c2.2-4.6 6.6-7.5 11-7.5 2.1 0 3.7.9 5 2.1L21.5 4v16l-2.5-2.6c-1.3 1.2-2.9 2.1-5 2.1-4.4 0-8.8-2.9-11-7.5z"/><circle cx="8.3" cy="10.3" r="1.15" fill="#F4F7F8"/></svg>';
+  var FISH_SVG = '<svg viewBox="0 0 384 384" fill="currentColor"><path d="M 200.40625 82.164062 L 191.828125 82.164062 L 178.441406 84.570312 L 167.804688 88.34375 L 157.164062 94.175781 L 151.328125 98.640625 L 143.429688 106.539062 L 139.65625 111.335938 L 135.195312 118.207031 L 130.734375 127.46875 L 130.050781 130.558594 L 142.402344 129.53125 L 157.507812 129.53125 L 173.976562 130.90625 L 188.390625 133.648438 L 188.738281 119.234375 L 190.800781 107.566406 L 194.574219 95.550781 Z M 200.40625 82.164062 "/><path d="M 96.75 142.574219 L 101.210938 149.78125 L 107.390625 162.824219 L 111.855469 178.265625 L 113.917969 192.691406 L 113.917969 209.503906 L 111.511719 225.292969 L 109.792969 231.816406 L 106.019531 242.453125 L 101.210938 252.066406 L 96.75 258.585938 L 117 263.046875 L 139.65625 265.453125 L 167.113281 265.109375 L 177.757812 264.082031 L 194.226562 261.328125 L 216.539062 255.496094 L 238.507812 247.261719 L 261.503906 235.933594 L 293.085938 217.402344 L 313.671875 233.191406 L 334.957031 247.605469 L 349.371094 256.183594 L 359.324219 261.328125 L 361.386719 262.019531 L 363.441406 261.675781 L 363.441406 260.300781 L 339.421875 203.324219 L 339.074219 201.609375 L 348.683594 183.421875 L 356.578125 166.941406 L 367.558594 140.859375 L 367.558594 139.140625 L 363.789062 139.828125 L 358.980469 142.230469 L 338.046875 154.925781 L 313.335938 172.09375 L 295.140625 186.164062 L 263.21875 167.289062 L 239.199219 155.273438 L 218.601562 147.039062 L 203.152344 142.230469 L 191.828125 139.484375 L 178.441406 137.085938 L 166.769531 135.710938 L 145.492188 135.023438 L 132.796875 135.710938 L 121.125 137.085938 L 108.082031 139.484375 Z M 96.75 142.574219 "/><path d="M 87.832031 145.320312 L 77.871094 149.4375 L 65.863281 155.273438 L 53.851562 162.140625 L 45.609375 167.632812 L 33.253906 177.238281 L 22.613281 187.539062 L 16.441406 195.089844 L 15.75 198.179688 L 17.8125 202.980469 L 20.558594 207.441406 L 28.449219 217.738281 L 37.027344 226.664062 L 45.609375 233.871094 L 54.878906 240.398438 L 64.828125 246.234375 L 82.335938 254.121094 L 88.171875 256.183594 L 90.234375 256.183594 L 93.667969 252.75 L 97.09375 246.914062 L 101.558594 236.960938 L 104.300781 228.382812 L 107.390625 211.90625 L 107.738281 194.746094 L 105.328125 177.929688 L 103.621094 171.40625 L 99.839844 161.109375 L 95.378906 152.183594 L 91.605469 146.347656 L 89.886719 145.320312 Z M 87.832031 145.320312 "/><path d="M 186.683594 301.492188 L 180.15625 287.414062 L 173.640625 269.574219 L 161.96875 270.601562 L 135.539062 270.253906 L 137.59375 274.371094 L 143.429688 281.925781 L 150.984375 289.132812 L 158.878906 294.628906 L 166.769531 298.402344 L 175.011719 300.800781 L 182.21875 301.835938 Z M 186.683594 301.492188 "/></svg>';
 
   function loadLocalWaypoints(){
     try {
@@ -585,6 +685,9 @@
   function renderWaypoints(){
     var seen = {};
     waypoints.forEach(function(wp){
+      var mine = isMine(wp);
+      if (mine && !showMine) return;
+      if (!mine && !showOthers) return;
       seen[wp.id] = true;
       var p = latLonToImgPx(wp.lat, wp.lon);
       var sx = originX + p.x * scale, sy = originY + p.y * scale;
@@ -592,19 +695,43 @@
       if (!el){
         el = document.createElement('div');
         el.setAttribute('data-id', wp.id);
-        el.innerHTML = FISH_SVG;
+        el.innerHTML = '<div class="pinHead">' + FISH_SVG + '</div>';
         el.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
-        el.addEventListener('click', function(e){ e.stopPropagation(); openSheetForWp(wp, false); });
+        el.addEventListener('click', function(e){
+          e.stopPropagation();
+          // look up the CURRENT waypoint by id at click time rather than closing over
+          // the object from render time -- that object gets replaced on every re-render
+          // (a Firestore sync, a refresh, a reload), so a stale closure would keep
+          // reopening the sheet with whatever name/data the pin had when first drawn.
+          var currentId = el.getAttribute('data-id');
+          var current = waypoints.filter(function(w){ return w.id === currentId; })[0];
+          if (current) openSheetForWp(current, false);
+        });
         waypointsLayer.appendChild(el);
       }
-      el.className = 'wpPin' + (isMine(wp) ? '' : ' wpPin--other');
+      el.className = 'wpPin' + (mine ? '' : ' wpPin--other');
       el.style.left = sx + 'px';
-      el.style.top = sy + 'px';
+      el.style.top = (sy - PIN_TIP_OFFSET) + 'px';
     });
     Array.from(waypointsLayer.children).forEach(function(el){
       if (!seen[el.getAttribute('data-id')]) el.remove();
     });
   }
+
+  var toggleMineEl = document.getElementById('toggleMine');
+  var toggleOthersEl = document.getElementById('toggleOthers');
+  toggleMineEl.checked = showMine;
+  toggleOthersEl.checked = showOthers;
+  toggleMineEl.addEventListener('change', function(){
+    showMine = toggleMineEl.checked;
+    try { localStorage.setItem('regnaren_vis_mine_v1', showMine ? '1' : '0'); } catch(e){}
+    renderWaypoints();
+  });
+  toggleOthersEl.addEventListener('change', function(){
+    showOthers = toggleOthersEl.checked;
+    try { localStorage.setItem('regnaren_vis_others_v1', showOthers ? '1' : '0'); } catch(e){}
+    renderWaypoints();
+  });
 
   function startLongPress(sx, sy){
     cancelLongPress();
@@ -647,6 +774,7 @@
 
   function openSheetForWp(wp, isNew){
     editingId = wp.id;
+    editingIsNew = !!isNew;
     var mine = isMine(wp);
     wpNameInput.value = wp.name;
     wpNameInput.disabled = !mine;
@@ -662,6 +790,15 @@
     wpSheet.classList.remove('show');
     wpNameInput.blur();
     editingId = null;
+    editingIsNew = false;
+  }
+  function deleteWaypointById(id){
+    if (USE_FIREBASE) fsCol.doc(id).delete().catch(function(e){ console.warn(e); });
+    else {
+      waypoints = waypoints.filter(function(w){ return w.id !== id; });
+      saveLocalWaypoints();
+      renderWaypoints();
+    }
   }
   wpSaveBtn.addEventListener('click', function(){
     if (!editingId) { closeSheet(); return; }
@@ -675,18 +812,19 @@
     }
     closeSheet();
   });
-  wpCancelBtn.addEventListener('click', closeSheet);
+  function cancelSheet(){
+    // if the sheet was opened for a waypoint that was just created (long-press),
+    // cancelling should undo that creation, not leave an unnamed pin behind.
+    if (editingIsNew && editingId) deleteWaypointById(editingId);
+    closeSheet();
+  }
+  wpCancelBtn.addEventListener('click', cancelSheet);
   wpDeleteBtn.addEventListener('click', function(){
     if (!editingId) return;
-    if (USE_FIREBASE) fsCol.doc(editingId).delete().catch(function(e){ console.warn(e); });
-    else {
-      waypoints = waypoints.filter(function(w){ return w.id !== editingId; });
-      saveLocalWaypoints();
-      renderWaypoints();
-    }
+    deleteWaypointById(editingId);
     closeSheet();
   });
-  sheetBackdrop.addEventListener('click', closeSheet);
+  sheetBackdrop.addEventListener('click', cancelSheet);
 
   function maybeShowHint(){
     var seen = false;
@@ -697,6 +835,18 @@
     setTimeout(function(){ hintEl.hidden = true; }, 6000);
   }
   function hideHint(){ hintEl.hidden = true; }
+
+  function applySnapshotDocs(snap){
+    waypoints = [];
+    snap.forEach(function(doc){
+      var d = doc.data();
+      waypoints.push({
+        id: doc.id, lat:d.lat, lon:d.lon, name:d.name, uid:d.uid,
+        createdAt: (d.createdAt && d.createdAt.toMillis) ? d.createdAt.toMillis() : Date.now()
+      });
+    });
+    renderWaypoints();
+  }
 
   function initSharedWaypoints(cb){
     if (!FIREBASE_CONFIG.apiKey || FIREBASE_CONFIG.apiKey.indexOf('DIN_') === 0 || typeof firebase === 'undefined'){
@@ -714,22 +864,26 @@
         started = true;
         myUid = user.uid;
         USE_FIREBASE = true;
-        fsCol.onSnapshot(function(snap){
-          waypoints = [];
-          snap.forEach(function(doc){
-            var d = doc.data();
-            waypoints.push({
-              id: doc.id, lat:d.lat, lon:d.lon, name:d.name, uid:d.uid,
-              createdAt: (d.createdAt && d.createdAt.toMillis) ? d.createdAt.toMillis() : Date.now()
-            });
-          });
-          renderWaypoints();
-        }, function(err){ console.warn('waypoints sync error', err); });
+        fsCol.onSnapshot(applySnapshotDocs, function(err){ console.warn('waypoints sync error', err); });
         cb(true);
       });
       auth.signInAnonymously().catch(function(err){ console.warn('anonym inloggning misslyckades', err); cb(false); });
     } catch(e){ console.warn('firebase init misslyckades', e); cb(false); }
   }
+
+  var refreshBtn = document.getElementById('refreshBtn');
+  refreshBtn.addEventListener('click', function(){
+    refreshBtn.classList.remove('spinning');
+    void refreshBtn.offsetWidth; // restart animation if clicked again quickly
+    refreshBtn.classList.add('spinning');
+    setTimeout(function(){ refreshBtn.classList.remove('spinning'); }, 700);
+    if (USE_FIREBASE && fsCol){
+      fsCol.get().then(applySnapshotDocs).catch(function(err){ console.warn('manuell uppdatering misslyckades', err); });
+    } else {
+      loadLocalWaypoints();
+      renderWaypoints();
+    }
+  });
 
   /* ---------------- GPS ---------------- */
   var marker = document.getElementById('marker');
