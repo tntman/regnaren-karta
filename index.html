@@ -688,6 +688,7 @@
   }
 
   /* ---------- pan / zoom viewer -------------------------------------- */
+  var appEl = document.getElementById('app');
   var stage = document.getElementById('stage');
   var world = document.getElementById('world');
   var img = document.getElementById('mapImg');
@@ -766,7 +767,7 @@
     render();
   }
 
-  window.addEventListener('resize', function(){
+  function refreshLayout(){
     var cx = (stageW/2 - originX) / scale, cy = (stageH/2 - originY) / scale;
     computeBounds();
     scale = Math.max(minScale, Math.min(maxScale, scale));
@@ -774,6 +775,33 @@
     originY = stageH/2 - cy*scale;
     clampOrigin();
     render();
+  }
+  window.addEventListener('resize', refreshLayout);
+
+  // Rotating the phone can, on some mobile browsers, leave a touch/pointer
+  // sequence "stuck" mid-gesture (the OS interrupts it for the rotation, so
+  // pointerup/pointercancel never fires), and can leave position:fixed
+  // content visually mispainted until something forces a reflow. Both show
+  // up the same way: nothing responds to taps and the layout looks frozen
+  // in the old orientation. Recover from both whenever the orientation
+  // actually changes:
+  window.addEventListener('orientationchange', function(){
+    // 1) drop any pointer/gesture tracking that never got a matching
+    //    pointerup (a touch interrupted by the physical rotation)
+    pointers.clear();
+    panStart = null; pinch = null; lastTap = null;
+    cancelLongPress();
+    stage.classList.remove('dragging');
+    // 2) force a reflow of the fixed-position root -- works around a stale
+    //    paint of position:fixed content after rotation on some browsers
+    appEl.style.display = 'none';
+    void appEl.offsetHeight;
+    appEl.style.display = '';
+    // 3) recompute the map layout now, and again shortly after -- some
+    //    browsers report transitional viewport dimensions on the first pass
+    refreshLayout();
+    setTimeout(refreshLayout, 150);
+    setTimeout(refreshLayout, 400);
   });
 
   /* ---- pointer interaction: pan, pinch-zoom, wheel, double-tap ---- */
