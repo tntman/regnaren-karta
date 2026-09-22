@@ -761,8 +761,35 @@
     requestAnimationFrame(step);
   }
 
+  // Where you were looking (image-space center + zoom) right before a
+  // standalone-mode reload (see handleOrientationEvent below) -- restored
+  // in initView() so rotating doesn't dump you back to the default view.
+  var VIEW_STATE_KEY = 'regnaren_rotation_view_v1';
+  function restoreViewStateIfAny(){
+    var raw = null;
+    try { raw = sessionStorage.getItem(VIEW_STATE_KEY); } catch(e){}
+    if (!raw) return false;
+    try { sessionStorage.removeItem(VIEW_STATE_KEY); } catch(e){}
+    var v;
+    try { v = JSON.parse(raw); } catch(e){ return false; }
+    if (!v || typeof v.scale !== 'number') return false;
+    if (Date.now() - (v.t || 0) > 15000) return false; // stale -- not from the reload we just did
+    scale = Math.max(minScale, Math.min(maxScale, v.scale));
+    originX = stageW/2 - v.cx * scale;
+    originY = stageH/2 - v.cy * scale;
+    clampOrigin();
+    return true;
+  }
+
   function initView(){
     computeBounds();
+    if (restoreViewStateIfAny()){
+      // a restored view already reflects exactly where the user was looking
+      // -- don't let the first GPS fix override it with an auto-recenter
+      hasCenteredOnce = true;
+      render();
+      return;
+    }
     scale = fitScale;
     originX = (stageW - IMG_W * scale) / 2;
     originY = (stageH - IMG_H * scale) / 2;
@@ -797,6 +824,13 @@
   // in the old orientation. Recover from both whenever the orientation
   // actually changes:
   function handleOrientationEvent(){
+    // capture where you're looking (in image-space coordinates, so it's
+    // independent of the viewport size) before anything below touches
+    // scale/originX/originY, in case a standalone-mode reload needs it
+    var preCx = (stageW/2 - originX) / scale;
+    var preCy = (stageH/2 - originY) / scale;
+    var preScale = scale;
+
     function settle(){
       // 1) drop any pointer/gesture tracking that never got a matching
       //    pointerup (a touch interrupted by the physical rotation)
@@ -830,7 +864,12 @@
       var last = 0;
       try { last = Number(sessionStorage.getItem('regnaren_last_rot_reload') || 0); } catch(e){}
       if (now - last > 3000){
-        try { sessionStorage.setItem('regnaren_last_rot_reload', String(now)); } catch(e){}
+        try {
+          sessionStorage.setItem('regnaren_last_rot_reload', String(now));
+          // so initView() can put you back where you were looking instead
+          // of snapping to the default view after the reload
+          sessionStorage.setItem(VIEW_STATE_KEY, JSON.stringify({ cx: preCx, cy: preCy, scale: preScale, t: now }));
+        } catch(e){}
         setTimeout(function(){ window.location.reload(); }, 350);
       }
     }
@@ -1188,6 +1227,13 @@
         // Firestore's auth requirement so writes/reads are allowed.
         USE_FIREBASE = true;
         fsCol.onSnapshot(applySnapshotDocs, function(err){ console.warn('waypoints sync error', err); });
+        // The live listener above can serve a stale/empty first snapshot
+        // from local persistence cache -- most noticeably on a brand new
+        // device, which has nothing cached yet, right after logging in
+        // with a name that already has waypoints saved under it elsewhere.
+        // Force one direct, uncached fetch right away so those show up
+        // immediately instead of waiting on the listener to catch up.
+        fsCol.get({ source: 'server' }).then(applySnapshotDocs).catch(function(){});
         cb(true);
       });
       auth.signInAnonymously().catch(function(err){ console.warn('anonym inloggning misslyckades', err); cb(false); });
