@@ -57,6 +57,12 @@
     background:linear-gradient(to bottom, rgba(6,20,28,.85) 0%, rgba(6,20,28,.4) 65%, rgba(6,20,28,0) 100%);
     pointer-events:none;
   }
+  #bottomFade{
+    position:absolute;left:0;right:0;bottom:0;z-index:19;
+    height:calc(env(safe-area-inset-bottom,0px) + 130px);
+    background:linear-gradient(to top, rgba(6,20,28,.85) 0%, rgba(6,20,28,.4) 45%, rgba(6,20,28,0) 100%);
+    pointer-events:none;
+  }
   .kicker{
     font-family:Cambria,Georgia,"Times New Roman",serif;
     font-weight:700;font-size:22px;letter-spacing:.02em;color:var(--offwhite);
@@ -466,6 +472,7 @@
 
   <div id="waypoints"></div>
   <div id="longPressRing"></div>
+  <div id="bottomFade"></div>
 
   <button id="menuBtn" aria-label="Meny" title="Meny">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -719,10 +726,14 @@
 
   function clampOrigin(){
     var iw = IMG_W * scale, ih = IMG_H * scale;
+    // a bit of give past the true edge of the map, so panning doesn't feel
+    // like hitting a wall the moment you're not fully zoomed in
+    var marginX = Math.min(140, stageW * 0.35);
+    var marginY = Math.min(140, stageH * 0.35);
     if (iw <= stageW) originX = (stageW - iw) / 2;
-    else originX = Math.min(0, Math.max(stageW - iw, originX));
+    else originX = Math.min(marginX, Math.max(stageW - iw - marginX, originX));
     if (ih <= stageH) originY = (stageH - ih) / 2;
-    else originY = Math.min(0, Math.max(stageH - ih, originY));
+    else originY = Math.min(marginY, Math.max(stageH - ih - marginY, originY));
   }
 
   function render(){
