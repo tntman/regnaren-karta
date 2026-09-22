@@ -383,24 +383,28 @@
 
   #boatsLayer{position:absolute;inset:0;z-index:16;pointer-events:none;}
   .boatPip{
-    position:absolute;left:0;top:0;
-    transform:translate(-50%,-50%);
-    display:flex;align-items:center;gap:5px;
+    position:absolute;left:0;top:0;width:0;height:0;
     pointer-events:auto;cursor:pointer;
     -webkit-tap-highlight-color:transparent;
   }
   .boatDot{
-    width:11px;height:11px;border-radius:50%;flex:0 0 auto;
+    position:absolute;left:0;top:0;
+    width:11px;height:11px;border-radius:50%;
     background:#fff;border:1.5px solid #000;
     box-shadow:0 1px 4px rgba(0,0,0,.5);
+    transform:translate(-50%,-50%);
   }
-  .boatPip:active .boatDot{transform:scale(.88);}
+  .boatPip:active .boatDot{transform:translate(-50%,-50%) scale(.88);}
   .boatPip--group .boatDot{width:13px;height:13px;border-width:2px;}
   .boatName{
+    position:absolute;left:9px;top:0;
+    transform:translateY(-50%);
+    display:flex;flex-direction:column;gap:1px;
     font-size:10.5px;font-weight:600;color:var(--offwhite);
     background:rgba(4,12,17,.6);padding:3px 8px;border-radius:10px;
     white-space:normal;max-width:150px;line-height:1.4;pointer-events:none;
   }
+  .boatName>span{white-space:nowrap;}
   .boatPip.boatPip--noName .boatName{display:none;}
 
   #longPressRing{
@@ -1262,7 +1266,16 @@
     if (showBoats){
       var now = Date.now();
       var fresh = Object.keys(boatPositions).map(function(uid){ return boatPositions[uid]; })
-        .filter(function(b){ return now - b.updatedAt <= BOAT_STALE_MS; }); // hasn't checked in for a while -- treat as gone
+        .filter(function(b){ return now - b.updatedAt <= BOAT_STALE_MS; }) // hasn't checked in for a while -- treat as gone
+        .filter(function(b){
+          // people sitting right next to you are in YOUR boat -- you already
+          // see yourself as the big amber dot, so don't also show them as a
+          // separate pip with your own boat's names on it. Only show pips
+          // for boats far enough away to plausibly be someone else's.
+          if (!lastOwnLatLon) return true;
+          var distM = haversineKm(lastOwnLatLon.lat, lastOwnLatLon.lon, b.lat, b.lon) * 1000;
+          return distM > BOAT_CLUSTER_METERS;
+        });
       var clusters = clusterBoatPositions(fresh);
       clusters.forEach(function(c){
         boatClustersById[c.id] = c;
@@ -1289,7 +1302,13 @@
         }
         el.classList.toggle('boatPip--noName', !showBoatNames);
         el.classList.toggle('boatPip--group', c.names.length > 1);
-        el.querySelector('.boatName').textContent = c.names.join(', ');
+        var nameEl = el.querySelector('.boatName');
+        nameEl.innerHTML = '';
+        c.names.forEach(function(n){
+          var row = document.createElement('span');
+          row.textContent = n;
+          nameEl.appendChild(row);
+        });
         el.style.left = sx + 'px';
         el.style.top = sy + 'px';
       });
@@ -1385,6 +1404,20 @@
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true }).catch(function(e){ console.warn('kunde inte dela position', e); });
   }
+
+  // A GPS fix only arrives from watchPosition when the device's location
+  // provider decides there's a new one -- on a lot of phones that gets a lot
+  // less frequent (or stops entirely) once you've been sitting still for a
+  // while, which is exactly what happens at anchor while fishing. Without
+  // this, staying still for 3+ minutes would let your own broadcast go
+  // stale and your pip would quietly vanish for everyone else even though
+  // the app is open the whole time. So: re-send whatever position we last
+  // had on a steady heartbeat, independent of whether a fresh fix arrived.
+  // maybeBroadcastPosition's own throttle means this is a no-op whenever a
+  // real fix already wrote recently -- it only fills in the gaps.
+  setInterval(function(){
+    if (lastOwnLatLon) maybeBroadcastPosition(lastOwnLatLon.lat, lastOwnLatLon.lon);
+  }, POS_WRITE_INTERVAL_MS);
 
   function startLongPress(sx, sy){
     cancelLongPress();
@@ -1536,10 +1569,16 @@
     refreshBtn.classList.add('spinning');
     setTimeout(function(){ refreshBtn.classList.remove('spinning'); }, 700);
     if (USE_FIREBASE && fsCol){
-      fsCol.get().then(applySnapshotDocs).catch(function(err){ console.warn('manuell uppdatering misslyckades', err); });
+      // { source: 'server' } skips the local cache -- a manual refresh should
+      // actually go and ask the server, not just hand back whatever was
+      // already sitting on the device.
+      fsCol.get({ source: 'server' }).then(applySnapshotDocs).catch(function(err){ console.warn('manuell uppdatering misslyckades', err); });
     } else {
       loadLocalWaypoints();
       renderWaypoints();
+    }
+    if (USE_FIREBASE && posCol){
+      posCol.get({ source: 'server' }).then(applyPositionsSnapshot).catch(function(err){ console.warn('manuell uppdatering av positioner misslyckades', err); });
     }
   });
 
@@ -1842,6 +1881,7 @@
   var addHereBtn = document.getElementById('addHereBtn');
 
   var lastFix = null; // {px, py, accM, onMap}
+  var lastOwnLatLon = null; // {lat, lon} -- whatever position is currently shown as "you" (real or demo)
   var hasCenteredOnce = false;
 
   function setStatus(kind, text, pulsing){
@@ -1881,6 +1921,7 @@
     // whatever position is actually shown as "you" -- real GPS, or the demo
     // position while Demo Mode is on -- is also what the others see for you
     maybeBroadcastPosition(lat, lon);
+    lastOwnLatLon = { lat: lat, lon: lon };
     var p = latLonToImgPx(lat, lon);
     var margin = 150; // web px, ~a few hundred metres of shoreline buffer
     var onMap = p.x >= -margin && p.x <= IMG_W + margin && p.y >= -margin && p.y <= IMG_H + margin;
