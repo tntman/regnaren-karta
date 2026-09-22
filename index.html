@@ -124,6 +124,7 @@
   #locateBtn:active{transform:scale(.93);}
   #locateBtn svg{width:26px;height:26px;}
   #locateBtn.tracking{background:var(--offwhite);}
+  #locateBtn:disabled{opacity:.4;}
 
   #refreshBtn{
     position:absolute;right:76px;
@@ -259,7 +260,7 @@
     -webkit-user-select:none;user-select:none;
   }
   #settingsView.show{display:flex;}
-  #settingsBody{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px;}
+  #settingsBody{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px;display:flex;flex-direction:column;gap:10px;}
   .settingsRow{
     display:flex;align-items:center;gap:12px;
     background:var(--navy-glass);border:1px solid rgba(255,255,255,.1);
@@ -397,6 +398,37 @@
   .btnGhost{background:transparent;color:var(--text-muted);}
   .btnGhost.danger{color:var(--danger);}
   .btnPrimary{background:var(--amber);color:var(--navy);}
+
+  #nameBackdrop{
+    position:fixed;inset:0;background:rgba(4,12,17,.6);z-index:40;
+    opacity:0;pointer-events:none;transition:opacity .25s ease;
+  }
+  #nameBackdrop.show{opacity:1;pointer-events:auto;}
+  #nameModal{
+    position:fixed;left:50%;top:50%;z-index:41;
+    transform:translate(-50%,-50%) scale(.94);
+    opacity:0;pointer-events:none;transition:opacity .22s ease, transform .22s ease;
+    width:min(86vw,340px);
+    background:var(--navy);border:1px solid rgba(255,255,255,.14);
+    border-radius:16px;padding:20px 20px calc(env(safe-area-inset-bottom,0px) + 18px);
+    box-shadow:0 12px 32px rgba(0,0,0,.5);
+  }
+  #nameModal.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1);}
+  .modalTitle{font-family:Cambria,Georgia,"Times New Roman",serif;font-weight:700;font-size:18px;color:var(--offwhite);margin-bottom:6px;}
+  .modalDesc{font-size:12.5px;color:var(--text-muted);line-height:1.4;margin-bottom:14px;}
+  #nameInput{
+    width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);
+    border-radius:10px;padding:11px 12px;color:var(--offwhite);font-size:16px;
+    font-family:inherit;margin-bottom:14px;box-sizing:border-box;
+  }
+  #nameInput::placeholder{color:var(--text-muted);}
+
+  #settingsNameInput{
+    width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);
+    border-radius:10px;padding:10px 12px;color:var(--offwhite);font-size:14px;
+    font-family:inherit;margin-top:10px;box-sizing:border-box;
+  }
+  #settingsNameInput::placeholder{color:var(--text-muted);}
 </style>
 </head>
 <body>
@@ -451,6 +483,13 @@
       </div>
     </div>
     <div id="settingsBody">
+      <div class="settingsRow" style="flex-direction:column;align-items:stretch;">
+        <div class="settingsRowText">
+          <div class="settingsRowTitle">Ditt namn</div>
+          <div class="settingsRowDesc">Visas för dina lagkompisar när du sparar en fiskeplats. Sparas bara på den här telefonen.</div>
+        </div>
+        <input type="text" id="settingsNameInput" placeholder="Ditt namn" maxlength="24" autocomplete="off">
+      </div>
       <label class="settingsRow" for="demoModeToggle">
         <div class="settingsRowText">
           <div class="settingsRowTitle">Demo Mode</div>
@@ -487,7 +526,7 @@
     <span id="scaleLabel">100 m</span>
   </div>
 
-  <button id="locateBtn" aria-label="Centrera på min position" title="Centrera på min position">
+  <button id="locateBtn" aria-label="Centrera på min position" title="Centrera på min position" disabled>
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <circle cx="12" cy="12" r="3"></circle>
       <path d="M12 2v3M12 19v3M2 12h3M19 12h3"></path>
@@ -537,6 +576,17 @@
       <button id="wpDelete" class="btnGhost danger">Ta bort</button>
       <button id="wpCancel" class="btnGhost">Avbryt</button>
       <button id="wpSave" class="btnPrimary">Spara</button>
+    </div>
+  </div>
+
+  <div id="nameBackdrop"></div>
+  <div id="nameModal">
+    <div class="modalTitle">Vad heter du?</div>
+    <div class="modalDesc">Namnet visas för dina lagkompisar när du sparar en fiskeplats. Sparas bara på den här telefonen — du kan ändra det senare under Inställningar.</div>
+    <input id="nameInput" type="text" maxlength="24" placeholder="Ditt namn" autocomplete="off">
+    <div class="sheetRow">
+      <button id="nameSkip" class="btnGhost">Hoppa över</button>
+      <button id="nameSave" class="btnPrimary">Spara</button>
     </div>
   </div>
 </div>
@@ -913,14 +963,14 @@
     var name = 'Fiskeplats ' + (waypoints.length + 1);
     if (USE_FIREBASE){
       fsCol.add({
-        lat: ll.lat, lon: ll.lon, name: name, uid: myUid,
+        lat: ll.lat, lon: ll.lon, name: name, uid: myUid, by: userName || '',
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       }).then(function(ref){
-        openSheetForWp({ id:ref.id, lat:ll.lat, lon:ll.lon, name:name, uid:myUid, createdAt:Date.now() }, true);
+        openSheetForWp({ id:ref.id, lat:ll.lat, lon:ll.lon, name:name, uid:myUid, by:userName || '', createdAt:Date.now() }, true);
       }).catch(function(err){ console.warn('kunde inte spara fiskeplats', err); });
     } else {
       var id = 'wp' + Date.now() + Math.random().toString(36).slice(2, 7);
-      var wp = { id:id, lat: ll.lat, lon: ll.lon, name: name, uid:'local', createdAt: Date.now() };
+      var wp = { id:id, lat: ll.lat, lon: ll.lon, name: name, uid:'local', by:userName || '', createdAt: Date.now() };
       waypoints.push(wp);
       saveLocalWaypoints();
       renderWaypoints();
@@ -936,7 +986,7 @@
     wpNameInput.disabled = !mine;
     wpDeleteBtn.hidden = !mine;
     wpSaveBtn.hidden = !mine;
-    wpMetaEl.textContent = mine ? '' : ('Sparad av en lagkompis · ' + timeAgo(wp.createdAt));
+    wpMetaEl.textContent = mine ? '' : ('Sparad av ' + (wp.by || 'en lagkompis') + ' · ' + timeAgo(wp.createdAt));
     sheetBackdrop.classList.add('show');
     wpSheet.classList.add('show');
     if (mine) setTimeout(function(){ wpNameInput.focus(); if (isNew) wpNameInput.select(); }, 260);
@@ -987,7 +1037,7 @@
     snap.forEach(function(doc){
       var d = doc.data();
       waypoints.push({
-        id: doc.id, lat:d.lat, lon:d.lon, name:d.name, uid:d.uid,
+        id: doc.id, lat:d.lat, lon:d.lon, name:d.name, uid:d.uid, by:d.by || '',
         createdAt: (d.createdAt && d.createdAt.toMillis) ? d.createdAt.toMillis() : Date.now()
       });
     });
@@ -1072,7 +1122,8 @@
     }
     var html = sorted.map(function(wp){
       var mine = isMine(wp);
-      var who = mine ? 'Du' : 'Lagkompis';
+      var whoRaw = mine ? 'Du' : (wp.by || 'Lagkompis');
+      var who = whoRaw.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
       var name = (wp.name || 'Fiskeplats').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
       return '' +
         '<div class="logItem" data-id="' + wp.id + '">' +
@@ -1151,6 +1202,70 @@
     setDemoMode(demoModeToggle.checked);
   });
 
+  /* ---------------- Ditt namn ---------------- */
+  var USER_NAME_KEY = 'regnaren_user_name_v1';
+  var NAME_PROMPTED_KEY = 'regnaren_name_prompted_v1';
+  var userName = '';
+  try { userName = localStorage.getItem(USER_NAME_KEY) || ''; } catch(e){}
+
+  var nameBackdrop = document.getElementById('nameBackdrop');
+  var nameModal = document.getElementById('nameModal');
+  var nameInput = document.getElementById('nameInput');
+  var nameSaveBtn = document.getElementById('nameSave');
+  var nameSkipBtn = document.getElementById('nameSkip');
+  var settingsNameInput = document.getElementById('settingsNameInput');
+  settingsNameInput.value = userName;
+
+  function saveUserName(v){
+    userName = (v || '').trim().slice(0, 24);
+    try {
+      if (userName) localStorage.setItem(USER_NAME_KEY, userName);
+      else localStorage.removeItem(USER_NAME_KEY);
+    } catch(e){}
+  }
+
+  function showNameModal(){
+    nameInput.value = '';
+    nameBackdrop.classList.add('show');
+    nameModal.classList.add('show');
+    setTimeout(function(){ nameInput.focus(); }, 260);
+  }
+  function hideNameModal(){
+    nameBackdrop.classList.remove('show');
+    nameModal.classList.remove('show');
+  }
+  function maybePromptForName(){
+    var prompted = false;
+    try { prompted = localStorage.getItem(NAME_PROMPTED_KEY) === '1'; } catch(e){}
+    if (userName || prompted) return;
+    showNameModal();
+  }
+  function markNamePrompted(){
+    try { localStorage.setItem(NAME_PROMPTED_KEY, '1'); } catch(e){}
+  }
+
+  nameSaveBtn.addEventListener('click', function(){
+    saveUserName(nameInput.value);
+    settingsNameInput.value = userName;
+    markNamePrompted();
+    hideNameModal();
+  });
+  nameSkipBtn.addEventListener('click', function(){
+    markNamePrompted();
+    hideNameModal();
+  });
+  nameInput.addEventListener('keydown', function(e){
+    if (e.key === 'Enter') nameSaveBtn.click();
+  });
+
+  settingsNameInput.addEventListener('blur', function(){
+    saveUserName(settingsNameInput.value);
+    settingsNameInput.value = userName;
+  });
+  settingsNameInput.addEventListener('keydown', function(e){
+    if (e.key === 'Enter') settingsNameInput.blur();
+  });
+
   /* ---------------- GPS ---------------- */
   var marker = document.getElementById('marker');
   var accRing = document.getElementById('accRing');
@@ -1211,6 +1326,7 @@
       farAway.innerHTML = 'Du är just nu <b>' + km.toFixed(1) + ' km</b> från Regnaren.<br>Kartan uppdateras automatiskt när du är på plats.';
       farAway.style.display = 'block';
       addHereBtn.disabled = true;
+      locateBtn.disabled = true;
     }
 
     if (!hasCenteredOnce && onMap){
@@ -1232,7 +1348,7 @@
 
   function centerOnWaypoint(wp){
     var p = latLonToImgPx(wp.lat, wp.lon);
-    var targetScale = Math.max(scale, fitScale * 2.2);
+    var targetScale = Math.max(scale, fitScale * 3.2);
     var tx = stageW/2 - p.x * targetScale;
     var ty = stageH/2 - p.y * targetScale;
     animateTo(targetScale, tx, ty, 500);
@@ -1281,6 +1397,7 @@
     initSharedWaypoints(function(ok){
       if (!ok){ loadLocalWaypoints(); renderWaypoints(); }
     });
+    maybePromptForName();
   }
   if (img.complete) boot(); else img.addEventListener('load', boot);
 })();
