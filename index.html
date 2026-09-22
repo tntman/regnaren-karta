@@ -725,15 +725,12 @@
   }
 
   function clampOrigin(){
-    var iw = IMG_W * scale, ih = IMG_H * scale;
-    // a bit of give past the true edge of the map, so panning doesn't feel
-    // like hitting a wall the moment you're not fully zoomed in
-    var marginX = Math.min(140, stageW * 0.35);
-    var marginY = Math.min(140, stageH * 0.35);
-    if (iw <= stageW) originX = (stageW - iw) / 2;
-    else originX = Math.min(marginX, Math.max(stageW - iw - marginX, originX));
-    if (ih <= stageH) originY = (stageH - ih) / 2;
-    else originY = Math.min(marginY, Math.max(stageH - ih - marginY, originY));
+    // Panning is intentionally unbounded -- you can pan as far past the
+    // edge of the map as you like, exactly like you could on a bigger map.
+    // Only the zoom level itself is clamped (minScale/maxScale, enforced in
+    // zoomAtPoint and the wheel/pinch handlers below), so this is a no-op
+    // kept only so every call site below (zoom, GPS re-centering, view
+    // restore after a rotation reload, ...) doesn't need to change.
   }
 
   function render(){
@@ -1589,7 +1586,7 @@
       addHereBtn.disabled = false;
     } else {
       var km = haversineKm(lat, lon, LAKE_CENTER_LAT, LAKE_CENTER_LON);
-      farAway.innerHTML = 'Du är just nu <b>' + km.toFixed(1) + ' km</b> från Regnaren.<br>Kartan uppdateras automatiskt när du är på plats.';
+      farAway.innerHTML = 'Du är just nu <b>' + km.toFixed(1) + ' km</b> från Regnaren.<br>GPS-funktioner fungerar när du är på plats.';
       farAway.style.display = 'block';
       addHereBtn.disabled = true;
       locateBtn.disabled = true;
