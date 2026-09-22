@@ -50,8 +50,8 @@
 
   header{
     position:absolute;top:0;left:0;right:0;z-index:20;
-    padding:calc(env(safe-area-inset-top,0px) + 14px) 18px 34px;
-    background:linear-gradient(to bottom, rgba(6,20,28,.88) 0%, rgba(6,20,28,.55) 55%, rgba(6,20,28,0) 100%);
+    padding:calc(env(safe-area-inset-top,0px) + 24px) 18px 24px 64px;
+    background:linear-gradient(to bottom, rgba(6,20,28,.85) 0%, rgba(6,20,28,.4) 65%, rgba(6,20,28,0) 100%);
     pointer-events:none;
   }
   .kicker{
@@ -61,30 +61,6 @@
   }
   .sub{font-size:12.5px;color:var(--text-muted);margin-top:2px;letter-spacing:.01em;}
 
-  #status{
-    position:absolute;left:50%;transform:translateX(-50%);
-    top:calc(env(safe-area-inset-top,0px) + 64px);
-    z-index:21;
-    display:flex;align-items:center;gap:7px;
-    background:var(--navy-glass);
-    backdrop-filter:blur(6px);
-    border:1px solid rgba(255,255,255,.12);
-    border-radius:999px;
-    padding:7px 14px 7px 10px;
-    font-size:12.5px;
-    color:var(--offwhite);
-    box-shadow:0 4px 14px rgba(0,0,0,.35);
-    max-width:min(88vw,420px);
-    white-space:nowrap;
-    overflow:hidden;text-overflow:ellipsis;
-  }
-  #statusDot{width:8px;height:8px;border-radius:50%;flex:0 0 auto;background:var(--text-muted);}
-  #statusDot.ok{background:#4CAF6D;box-shadow:0 0 0 3px rgba(76,175,109,.25);}
-  #statusDot.warn{background:var(--amber);box-shadow:0 0 0 3px rgba(232,163,61,.25);}
-  #statusDot.err{background:var(--danger);box-shadow:0 0 0 3px rgba(214,69,69,.25);}
-  #statusDot.pulse{animation:pulse 1.4s ease-in-out infinite;}
-  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
-
   #marker{position:absolute;left:0;top:0;z-index:15;pointer-events:none;display:none;}
   #accRing{
     position:absolute;left:0;top:0;border-radius:50%;
@@ -93,13 +69,14 @@
     transform:translate(-50%,-50%);
   }
   #dotGlow{
-    position:absolute;left:0;top:0;width:34px;height:34px;
+    position:absolute;left:0;top:0;width:20px;height:20px;
     transform:translate(-50%,-50%);border-radius:50%;
-    background:rgba(232,163,61,.35);
-    animation:dotpulse 2.2s ease-out infinite;
+    background:transparent;
+    border:1.5px solid rgba(232,163,61,.85);
+    animation:dotpulse 1.5s cubic-bezier(.15,.6,.4,1) infinite;
   }
   @media (prefers-reduced-motion:reduce){#dotGlow{animation:none;}}
-  @keyframes dotpulse{0%{transform:translate(-50%,-50%) scale(.4);opacity:.7;}100%{transform:translate(-50%,-50%) scale(1);opacity:0;}}
+  @keyframes dotpulse{0%{transform:translate(-50%,-50%) scale(.3);opacity:.8;}70%{opacity:.15;}100%{transform:translate(-50%,-50%) scale(3.1);opacity:0;}}
   #dot{
     position:absolute;left:0;top:0;width:16px;height:16px;
     transform:translate(-50%,-50%);border-radius:50%;
@@ -113,7 +90,7 @@
     z-index:20;
     background:var(--navy-glass);backdrop-filter:blur(6px);
     border:1px solid rgba(255,255,255,.12);
-    border-radius:12px;padding:9px 12px 8px;
+    border-radius:12px;padding:8px 12px 7px;
     box-shadow:0 4px 14px rgba(0,0,0,.35);
     width:168px;
   }
@@ -149,7 +126,7 @@
   #locateBtn.tracking{background:var(--offwhite);}
 
   #refreshBtn{
-    position:absolute;right:84px;
+    position:absolute;right:76px;
     bottom:calc(env(safe-area-inset-bottom,0px) + 25px);
     z-index:22;
     width:44px;height:44px;border-radius:50%;
@@ -163,6 +140,21 @@
   #refreshBtn svg{width:19px;height:19px;}
   #refreshBtn.spinning svg{animation:spin .7s linear;}
   @keyframes spin{to{transform:rotate(360deg);}}
+
+  #addHereBtn{
+    position:absolute;right:21px;
+    bottom:calc(env(safe-area-inset-bottom,0px) + 86px);
+    z-index:22;
+    width:44px;height:44px;border-radius:50%;
+    background:var(--navy-glass);backdrop-filter:blur(6px);
+    color:var(--offwhite);border:1px solid rgba(255,255,255,.16);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 4px 14px rgba(0,0,0,.35);
+    -webkit-tap-highlight-color:transparent;
+  }
+  #addHereBtn:active{transform:scale(.92);}
+  #addHereBtn svg{width:20px;height:20px;}
+  #addHereBtn:disabled{opacity:.4;}
 
   #visPanel{
     position:absolute;right:14px;
@@ -196,6 +188,117 @@
   .toggle input:checked ~ .toggleTrack{background:var(--amber);}
   .toggle input:checked ~ .toggleTrack .toggleThumb{transform:translateX(14px);}
 
+  #menuBtn{
+    position:absolute;left:14px;
+    top:calc(env(safe-area-inset-top,0px) + 14px);
+    z-index:23;
+    width:40px;height:40px;border-radius:50%;
+    background:var(--navy-glass);backdrop-filter:blur(6px);
+    color:var(--offwhite);border:1px solid rgba(255,255,255,.16);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 4px 14px rgba(0,0,0,.35);
+    -webkit-tap-highlight-color:transparent;
+  }
+  #menuBtn:active{transform:scale(.92);}
+  #menuBtn svg{width:19px;height:19px;}
+
+  #menuPanel{
+    position:absolute;left:14px;
+    top:calc(env(safe-area-inset-top,0px) + 60px);
+    z-index:23;
+    background:var(--navy-glass);backdrop-filter:blur(6px);
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:12px;padding:6px;
+    box-shadow:0 8px 22px rgba(0,0,0,.4);
+    min-width:140px;
+    display:none;
+    flex-direction:column;gap:2px;
+  }
+  #menuPanel.show{display:flex;}
+  .menuItem{
+    border:none;background:transparent;color:var(--offwhite);
+    font-family:inherit;font-size:13.5px;text-align:left;
+    padding:9px 12px;border-radius:8px;cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+    display:flex;align-items:center;gap:9px;
+  }
+  .menuItem svg{width:16px;height:16px;flex:0 0 auto;color:var(--text-muted);}
+  .menuItem:active{background:rgba(255,255,255,.08);}
+  .menuItem--active{color:var(--amber);}
+  .menuItem--active svg{color:var(--amber);}
+
+  #logView{
+    position:absolute;inset:0;z-index:32;
+    background:var(--navy);
+    display:none;flex-direction:column;
+    -webkit-user-select:none;user-select:none;
+  }
+  #logView.show{display:flex;}
+  #logHeader,#settingsHeader{
+    display:flex;align-items:center;gap:10px;
+    padding:calc(env(safe-area-inset-top,0px) + 14px) 18px 14px;
+    border-bottom:1px solid rgba(255,255,255,.1);
+    flex:0 0 auto;
+  }
+  #logHeader .kicker,#settingsHeader .kicker{font-size:19px;}
+  #logBackBtn,#settingsBackBtn{
+    width:36px;height:36px;border-radius:50%;flex:0 0 auto;
+    background:rgba(255,255,255,.08);border:none;color:var(--offwhite);
+    display:flex;align-items:center;justify-content:center;
+    -webkit-tap-highlight-color:transparent;
+  }
+  #logBackBtn svg,#settingsBackBtn svg{width:18px;height:18px;}
+  #logHeaderText{flex:1 1 auto;}
+  #logHeaderText .sub{margin-top:1px;}
+  #logList{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px 14px calc(env(safe-area-inset-bottom,0px) + 20px);}
+
+  #settingsView{
+    position:absolute;inset:0;z-index:32;
+    background:var(--navy);
+    display:none;flex-direction:column;
+    -webkit-user-select:none;user-select:none;
+  }
+  #settingsView.show{display:flex;}
+  #settingsBody{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px;}
+  .settingsRow{
+    display:flex;align-items:center;gap:12px;
+    background:var(--navy-glass);border:1px solid rgba(255,255,255,.1);
+    border-radius:12px;padding:12px 14px;
+  }
+  .settingsRowText{flex:1 1 auto;}
+  .settingsRowTitle{font-size:14px;color:var(--offwhite);}
+  .settingsRowDesc{font-size:12px;color:var(--text-muted);margin-top:3px;line-height:1.4;}
+
+  #demoBanner{
+    position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 16px);
+    transform:translateX(-50%);
+    z-index:25;pointer-events:none;
+    background:var(--amber);color:var(--navy);
+    font-weight:700;font-size:12px;letter-spacing:.06em;
+    padding:7px 16px;border-radius:999px;
+    box-shadow:0 4px 14px rgba(0,0,0,.4);
+    display:none;
+  }
+  #demoBanner.show{display:block;}
+  #logEmpty{
+    color:var(--text-muted);font-size:13px;text-align:center;
+    padding:40px 20px;
+  }
+  .logItem{
+    display:flex;align-items:center;gap:12px;
+    padding:12px 10px;border-radius:12px;
+    background:rgba(255,255,255,.04);
+    margin-bottom:8px;cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .logItem:active{background:rgba(255,255,255,.09);}
+  .logItem .visSwatch{width:34px;height:34px;flex:0 0 auto;}
+  .logItem .visSwatch svg{width:19px;height:19px;}
+  .logInfo{flex:1 1 auto;min-width:0;}
+  .logTitle{font-size:14.5px;color:var(--offwhite);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .logMeta{font-size:12px;color:var(--text-muted);margin-top:2px;}
+  .logChevron{flex:0 0 auto;color:var(--text-muted);width:16px;height:16px;}
+
   #farAway{
     position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 88px);
     transform:translateX(-50%);
@@ -212,9 +315,19 @@
     .kicker{font-size:19px;}
     #legend{width:148px;padding:8px 10px 7px;}
     #locateBtn{width:50px;height:50px;}
-    #refreshBtn{width:40px;height:40px;right:80px;}
+    #refreshBtn{width:40px;height:40px;right:72px;}
+    #addHereBtn{width:40px;height:40px;bottom:calc(env(safe-area-inset-bottom,0px) + 82px);}
     #visPanel{padding:7px 9px;gap:6px;}
     .visLabel{font-size:11px;}
+  }
+
+  @media (orientation:landscape) and (max-height:520px){
+    #legend{bottom:calc(env(safe-area-inset-bottom,0px) + 8px);padding:6px 10px 6px;}
+    #scalebar{bottom:calc(env(safe-area-inset-bottom,0px) + 58px);}
+    #locateBtn{bottom:calc(env(safe-area-inset-bottom,0px) + 8px);width:46px;height:46px;}
+    #refreshBtn{bottom:calc(env(safe-area-inset-bottom,0px) + 13px);width:38px;height:38px;right:68px;}
+    #addHereBtn{bottom:calc(env(safe-area-inset-bottom,0px) + 58px);width:38px;height:38px;}
+    #farAway{bottom:calc(env(safe-area-inset-bottom,0px) + 58px);}
   }
 
   #waypoints{position:absolute;inset:0;z-index:16;pointer-events:none;}
@@ -250,17 +363,6 @@
     transition:transform .55s linear, opacity .1s linear;
   }
   #longPressRing.active{transform:translate(-50%,-50%) scale(1);opacity:1;}
-
-  #hint{
-    position:absolute;left:50%;
-    bottom:calc(env(safe-area-inset-bottom,0px) + 88px);
-    transform:translateX(-50%);
-    z-index:21;max-width:min(88vw,340px);text-align:center;
-    background:var(--navy-glass);backdrop-filter:blur(6px);
-    border:1px solid rgba(255,255,255,.12);border-radius:12px;
-    padding:9px 16px;font-size:12px;color:var(--offwhite);
-    box-shadow:0 4px 14px rgba(0,0,0,.35);
-  }
 
   #sheetBackdrop{
     position:fixed;inset:0;background:rgba(4,12,17,.5);z-index:29;
@@ -305,19 +407,69 @@
 
   <div id="waypoints"></div>
   <div id="longPressRing"></div>
-  <div id="hint" hidden>Håll ner fingret på kartan för att spara en fiskeplats</div>
+
+  <button id="menuBtn" aria-label="Meny" title="Meny">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 6h16M4 12h16M4 18h16"></path>
+    </svg>
+  </button>
+  <div id="menuPanel">
+    <button class="menuItem menuItem--active" data-view="map" id="menuItemMap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3 3 6v15l6-3 6 3 6-3V3l-6 3-6-3z"></path><path d="M9 3v15M15 6v15"></path></svg>
+      Karta
+    </button>
+    <button class="menuItem" data-view="log" id="menuItemLog">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"></path></svg>
+      Logg
+    </button>
+    <button class="menuItem" data-view="settings" id="menuItemSettings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+      Inställningar
+    </button>
+  </div>
+
+  <div id="logView">
+    <div id="logHeader">
+      <button id="logBackBtn" aria-label="Tillbaka till kartan" title="Tillbaka till kartan">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+      </button>
+      <div id="logHeaderText">
+        <div class="kicker">LOGG</div>
+        <div class="sub">Alla sparade fiskeplatser</div>
+      </div>
+    </div>
+    <div id="logList"></div>
+  </div>
+
+  <div id="settingsView">
+    <div id="settingsHeader">
+      <button id="settingsBackBtn" aria-label="Tillbaka till kartan" title="Tillbaka till kartan">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+      </button>
+      <div id="logHeaderText">
+        <div class="kicker">INSTÄLLNINGAR</div>
+      </div>
+    </div>
+    <div id="settingsBody">
+      <label class="settingsRow" for="demoModeToggle">
+        <div class="settingsRowText">
+          <div class="settingsRowTitle">Demo Mode</div>
+          <div class="settingsRowDesc">Visar GPS-positionen som om du vore vid sjön, för att kunna testa appen utan att vara på plats.</div>
+        </div>
+        <span class="toggle">
+          <input type="checkbox" id="demoModeToggle">
+          <span class="toggleTrack"><span class="toggleThumb"></span></span>
+        </span>
+      </label>
+    </div>
+  </div>
 
   <header>
     <div class="kicker">REGNAREN</div>
-    <div class="sub">Live-karta · djup &amp; din GPS-position</div>
   </header>
 
-  <div id="status" aria-live="polite">
-    <span id="statusDot" class="pulse"></span>
-    <span id="statusText">Söker GPS-position…</span>
-  </div>
-
   <div id="farAway"></div>
+  <div id="demoBanner">DEMO MODE</div>
 
   <div id="marker">
     <div id="accRing"></div>
@@ -326,7 +478,6 @@
   </div>
 
   <div id="legend">
-    <div class="ttl">Djup</div>
     <div class="bar"></div>
     <div class="ticks"><span>0 m</span><span>5 m</span><span>10 m+</span></div>
   </div>
@@ -348,6 +499,12 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M21 12a9 9 0 1 1-3-6.7"></path>
       <polyline points="21 3 21 9 15 9"></polyline>
+    </svg>
+  </button>
+
+  <button id="addHereBtn" aria-label="Lägg till fiskeplats på min position" title="Lägg till fiskeplats på min position" disabled>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 5v14M5 12h14"></path>
     </svg>
   </button>
 
@@ -383,6 +540,7 @@
     </div>
   </div>
 </div>
+
 <script>
 (function(){
   "use strict";
@@ -619,10 +777,8 @@
      - Local fallback (localStorage): if Firebase isn't configured, pins
        are saved only on this device, exactly as before. --------------- */
   var WP_KEY = 'regnaren_waypoints_v1';
-  var HINT_KEY = 'regnaren_hint_seen_v1';
   var waypointsLayer = document.getElementById('waypoints');
   var longPressRing = document.getElementById('longPressRing');
-  var hintEl = document.getElementById('hint');
   var sheetBackdrop = document.getElementById('sheetBackdrop');
   var wpSheet = document.getElementById('wpSheet');
   var wpNameInput = document.getElementById('wpName');
@@ -716,6 +872,7 @@
     Array.from(waypointsLayer.children).forEach(function(el){
       if (!seen[el.getAttribute('data-id')]) el.remove();
     });
+    if (typeof logView !== 'undefined' && logView.classList.contains('show')) renderLogList();
   }
 
   var toggleMineEl = document.getElementById('toggleMine');
@@ -754,7 +911,6 @@
     var imgX = (sx - originX) / scale, imgY = (sy - originY) / scale;
     var ll = imgPxToLatLon(imgX, imgY);
     var name = 'Fiskeplats ' + (waypoints.length + 1);
-    hideHint();
     if (USE_FIREBASE){
       fsCol.add({
         lat: ll.lat, lon: ll.lon, name: name, uid: myUid,
@@ -826,16 +982,6 @@
   });
   sheetBackdrop.addEventListener('click', cancelSheet);
 
-  function maybeShowHint(){
-    var seen = false;
-    try { seen = localStorage.getItem(HINT_KEY) === '1'; } catch(e){}
-    if (seen) return;
-    hintEl.hidden = false;
-    try { localStorage.setItem(HINT_KEY, '1'); } catch(e){}
-    setTimeout(function(){ hintEl.hidden = true; }, 6000);
-  }
-  function hideHint(){ hintEl.hidden = true; }
-
   function applySnapshotDocs(snap){
     waypoints = [];
     snap.forEach(function(doc){
@@ -885,22 +1031,141 @@
     }
   });
 
+  /* ---------------- menu (Karta / Logg / Inställningar) ---------------- */
+  var menuBtn = document.getElementById('menuBtn');
+  var menuPanel = document.getElementById('menuPanel');
+  var menuItemMap = document.getElementById('menuItemMap');
+  var menuItemLog = document.getElementById('menuItemLog');
+  var menuItemSettings = document.getElementById('menuItemSettings');
+  var logView = document.getElementById('logView');
+  var logList = document.getElementById('logList');
+  var logBackBtn = document.getElementById('logBackBtn');
+  var settingsView = document.getElementById('settingsView');
+  var settingsBackBtn = document.getElementById('settingsBackBtn');
+  var demoModeToggle = document.getElementById('demoModeToggle');
+
+  function toggleMenu(open){
+    menuPanel.classList.toggle('show', open);
+  }
+  menuBtn.addEventListener('click', function(e){
+    e.stopPropagation();
+    toggleMenu(!menuPanel.classList.contains('show'));
+  });
+  document.addEventListener('click', function(e){
+    if (menuPanel.classList.contains('show') && !menuPanel.contains(e.target) && e.target !== menuBtn){
+      toggleMenu(false);
+    }
+  });
+
+  function fmtLogDate(ms){
+    var d = new Date(ms);
+    var dd = d.toLocaleDateString('sv-SE', { day:'numeric', month:'short' });
+    var tt = d.toLocaleTimeString('sv-SE', { hour:'2-digit', minute:'2-digit' });
+    return dd + ' · ' + tt;
+  }
+
+  function renderLogList(){
+    var sorted = waypoints.slice().sort(function(a,b){ return (b.createdAt||0) - (a.createdAt||0); });
+    if (!sorted.length){
+      logList.innerHTML = '<div id="logEmpty">Inga fiskeplatser sparade än.<br>Håll ner fingret på kartan för att lägga till en.</div>';
+      return;
+    }
+    var html = sorted.map(function(wp){
+      var mine = isMine(wp);
+      var who = mine ? 'Du' : 'Lagkompis';
+      var name = (wp.name || 'Fiskeplats').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      return '' +
+        '<div class="logItem" data-id="' + wp.id + '">' +
+          '<span class="visSwatch' + (mine ? '' : ' visSwatch--other') + '">' + FISH_SVG + '</span>' +
+          '<div class="logInfo">' +
+            '<div class="logTitle">' + name + '</div>' +
+            '<div class="logMeta">' + who + ' · ' + fmtLogDate(wp.createdAt) + ' · ' + timeAgo(wp.createdAt) + '</div>' +
+          '</div>' +
+          '<svg class="logChevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"></path></svg>' +
+        '</div>';
+    }).join('');
+    logList.innerHTML = html;
+  }
+
+  logList.addEventListener('click', function(e){
+    var row = e.target.closest ? e.target.closest('.logItem') : null;
+    if (!row) return;
+    var id = row.getAttribute('data-id');
+    var wp = waypoints.filter(function(w){ return w.id === id; })[0];
+    if (!wp) return;
+    showMapView();
+    centerOnWaypoint(wp);
+  });
+
+  function showLogView(){
+    renderLogList();
+    logView.classList.add('show');
+    settingsView.classList.remove('show');
+    menuItemMap.classList.remove('menuItem--active');
+    menuItemSettings.classList.remove('menuItem--active');
+    menuItemLog.classList.add('menuItem--active');
+    toggleMenu(false);
+  }
+  function showSettingsView(){
+    settingsView.classList.add('show');
+    logView.classList.remove('show');
+    menuItemMap.classList.remove('menuItem--active');
+    menuItemLog.classList.remove('menuItem--active');
+    menuItemSettings.classList.add('menuItem--active');
+    toggleMenu(false);
+  }
+  function showMapView(){
+    logView.classList.remove('show');
+    settingsView.classList.remove('show');
+    menuItemLog.classList.remove('menuItem--active');
+    menuItemSettings.classList.remove('menuItem--active');
+    menuItemMap.classList.add('menuItem--active');
+    toggleMenu(false);
+  }
+  menuItemMap.addEventListener('click', showMapView);
+  menuItemLog.addEventListener('click', showLogView);
+  menuItemSettings.addEventListener('click', showSettingsView);
+  logBackBtn.addEventListener('click', showMapView);
+  settingsBackBtn.addEventListener('click', showMapView);
+
+  /* ---------------- Demo Mode ---------------- */
+  var DEMO_KEY = 'regnaren_demo_mode_v1';
+  var demoMode = false;
+  var lastRealFix = null; // {lat, lon, acc} from the actual device GPS
+  var demoBannerEl = document.getElementById('demoBanner');
+  try { demoMode = localStorage.getItem(DEMO_KEY) === '1'; } catch(e){}
+  demoModeToggle.checked = demoMode;
+  demoBannerEl.classList.toggle('show', demoMode);
+
+  function setDemoMode(on){
+    demoMode = on;
+    try { localStorage.setItem(DEMO_KEY, on ? '1' : '0'); } catch(e){}
+    demoBannerEl.classList.toggle('show', on);
+    if (on){
+      onFix(LAKE_CENTER_LAT, LAKE_CENTER_LON, 8);
+    } else if (lastRealFix){
+      onFix(lastRealFix.lat, lastRealFix.lon, lastRealFix.acc);
+    }
+  }
+  demoModeToggle.addEventListener('change', function(){
+    setDemoMode(demoModeToggle.checked);
+  });
+
   /* ---------------- GPS ---------------- */
   var marker = document.getElementById('marker');
   var accRing = document.getElementById('accRing');
   var dot = document.getElementById('dot');
   var dotGlow = document.getElementById('dotGlow');
-  var statusDot = document.getElementById('statusDot');
-  var statusText = document.getElementById('statusText');
   var farAway = document.getElementById('farAway');
   var locateBtn = document.getElementById('locateBtn');
+  var addHereBtn = document.getElementById('addHereBtn');
 
   var lastFix = null; // {px, py, accM, onMap}
   var hasCenteredOnce = false;
 
   function setStatus(kind, text, pulsing){
-    statusDot.className = kind + (pulsing ? ' pulse' : '');
-    statusText.textContent = text;
+    // top status pill removed per user request; kept as a no-op so
+    // existing call sites (geolocation errors etc.) don't need to change.
   }
 
   function updateMarker(){
@@ -939,13 +1204,13 @@
 
     if (onMap){
       farAway.style.display = 'none';
-      setStatus('ok', 'Din position · ±' + Math.round(lastFix.accM) + ' m', false);
       locateBtn.disabled = false;
+      addHereBtn.disabled = false;
     } else {
       var km = haversineKm(lat, lon, LAKE_CENTER_LAT, LAKE_CENTER_LON);
       farAway.innerHTML = 'Du är just nu <b>' + km.toFixed(1) + ' km</b> från Regnaren.<br>Kartan uppdateras automatiskt när du är på plats.';
       farAway.style.display = 'block';
-      setStatus('warn', km.toFixed(1) + ' km från sjön', false);
+      addHereBtn.disabled = true;
     }
 
     if (!hasCenteredOnce && onMap){
@@ -965,9 +1230,24 @@
     else animateTo(targetScale, tx, ty, 500);
   }
 
+  function centerOnWaypoint(wp){
+    var p = latLonToImgPx(wp.lat, wp.lon);
+    var targetScale = Math.max(scale, fitScale * 2.2);
+    var tx = stageW/2 - p.x * targetScale;
+    var ty = stageH/2 - p.y * targetScale;
+    animateTo(targetScale, tx, ty, 500);
+  }
+
   locateBtn.addEventListener('click', function(){
     if (lastFix && lastFix.onMap){ centerOnFix(false); }
-    else { statusText.textContent = statusText.textContent; farAway.style.display = lastFix ? 'block' : farAway.style.display; }
+    else { farAway.style.display = lastFix ? 'block' : farAway.style.display; }
+  });
+
+  addHereBtn.addEventListener('click', function(){
+    if (!lastFix || !lastFix.onMap) return;
+    var sx = originX + lastFix.px * scale;
+    var sy = originY + lastFix.py * scale;
+    placeWaypointAtScreen(sx, sy);
   });
 
   function startGeolocation(){
@@ -977,7 +1257,10 @@
       return;
     }
     navigator.geolocation.watchPosition(
-      function(pos){ onFix(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy); },
+      function(pos){
+        lastRealFix = { lat: pos.coords.latitude, lon: pos.coords.longitude, acc: pos.coords.accuracy };
+        if (!demoMode) onFix(lastRealFix.lat, lastRealFix.lon, lastRealFix.acc);
+      },
       function(err){
         var msg = 'Kunde inte hämta position';
         if (err.code === 1) msg = 'Platsåtkomst nekad — tillåt GPS för att se din position';
@@ -993,7 +1276,7 @@
   function boot(){
     setImgNativeSize();
     initView();
-    maybeShowHint();
+    if (demoMode){ onFix(LAKE_CENTER_LAT, LAKE_CENTER_LON, 8); }
     startGeolocation();
     initSharedWaypoints(function(ok){
       if (!ok){ loadLocalWaypoints(); renderWaypoints(); }
@@ -1002,5 +1285,6 @@
   if (img.complete) boot(); else img.addEventListener('load', boot);
 })();
 </script>
+
 </body>
 </html>
