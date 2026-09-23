@@ -34,6 +34,7 @@
     display-name:regnaren-gps;
   }
   *{box-sizing:border-box;}
+  [hidden]{display:none !important;}
   html,body{height:100%;}
   body{
     background:var(--navy);
@@ -618,6 +619,75 @@
     white-space:nowrap;-webkit-tap-highlight-color:transparent;cursor:pointer;
   }
   .segmented button.active{background:var(--amber);color:var(--navy);}
+  /* ---- admin ---- */
+  .btnAdmin{
+    border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.07);color:var(--offwhite);
+    border-radius:10px;padding:10px 14px;font-size:14px;font-weight:600;font-family:inherit;
+    -webkit-tap-highlight-color:transparent;cursor:pointer;
+  }
+  .btnAdmin:active{transform:scale(.97);}
+  .btnAdmin.danger{border-color:rgba(214,69,69,.45);background:rgba(214,69,69,.1);color:var(--danger);}
+  .btnAdmin.small{padding:6px 10px;font-size:12px;border-radius:8px;flex:0 0 auto;}
+  .btnRowWrap{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+  .btnRowWrap .btnAdmin{flex:1 1 140px;}
+  #adminView{
+    position:absolute;inset:0;z-index:33;background:var(--navy);
+    display:none;flex-direction:column;-webkit-user-select:none;user-select:none;
+  }
+  #adminView.show{display:flex;}
+  #adminHeader{
+    display:flex;align-items:center;gap:10px;
+    padding:calc(env(safe-area-inset-top,0px) + 14px) 18px 14px;
+    border-bottom:1px solid rgba(255,255,255,.1);flex:0 0 auto;
+  }
+  #adminHeader .kicker{font-size:19px;}
+  #adminBackBtn{
+    width:36px;height:36px;border-radius:50%;flex:0 0 auto;
+    background:rgba(255,255,255,.08);border:none;color:var(--offwhite);
+    display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;
+  }
+  #adminBackBtn svg{width:18px;height:18px;}
+  #adminBody{
+    flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;
+    padding:14px 14px calc(env(safe-area-inset-bottom,0px) + 24px);
+    display:flex;flex-direction:column;gap:10px;
+  }
+  .adminCard{background:var(--navy-glass);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:12px 14px;}
+  .statGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;}
+  .statTile{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:10px 9px;min-width:0;}
+  .statValue{font-size:22px;font-weight:700;color:var(--offwhite);font-variant-numeric:tabular-nums;line-height:1.1;}
+  .statLabel{font-size:11px;color:var(--text-muted);margin-top:3px;line-height:1.25;}
+  .adminUserRow{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid rgba(255,255,255,.07);}
+  .adminUserRow:first-child{border-top:none;}
+  .adminUserInfo{flex:1 1 auto;min-width:0;}
+  .adminUserName{font-size:14px;font-weight:600;color:var(--offwhite);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .adminUserMeta{font-size:11.5px;color:var(--text-muted);margin-top:2px;}
+  .statusDot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:1px;background:rgba(255,255,255,.25);}
+  .statusDot.live{background:#4cc38a;}
+  .statusDot.stale{background:var(--text-muted);}
+  .adminNote{font-size:11.5px;color:var(--text-muted);margin-top:8px;line-height:1.4;}
+  .adminNote a{color:var(--amber);}
+  .usageLine{font-size:13.5px;color:var(--offwhite);margin-top:8px;font-variant-numeric:tabular-nums;}
+  #adminRow .btnAdmin{flex:0 0 auto;}
+  #pinBackdrop{
+    position:fixed;inset:0;background:rgba(4,12,17,.6);z-index:40;
+    opacity:0;pointer-events:none;transition:opacity .22s ease;
+  }
+  #pinBackdrop.show{opacity:1;pointer-events:auto;}
+  #pinModal{
+    position:fixed;left:50%;top:50%;z-index:41;
+    transform:translate(-50%,-50%) scale(.94);
+    opacity:0;pointer-events:none;transition:opacity .22s ease, transform .22s ease;
+    width:min(86vw,320px);
+    background:var(--navy);border:1px solid rgba(255,255,255,.14);
+    border-radius:16px;padding:20px;box-shadow:0 12px 32px rgba(0,0,0,.5);
+  }
+  #pinModal.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1);}
+  #pinInput{
+    width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);
+    border-radius:10px;padding:11px 12px;color:var(--offwhite);font-size:18px;letter-spacing:.3em;
+    font-family:inherit;margin-bottom:14px;box-sizing:border-box;text-align:center;
+  }
   .sheetDistance{color:var(--amber);font-weight:600;}
 </style>
 </head>
@@ -701,6 +771,13 @@
           <button type="button" data-size="1" role="radio">Stor</button>
         </div>
       </div>
+      <div class="settingsRow" id="adminRow" hidden>
+        <div class="settingsRowText">
+          <div class="settingsRowTitle">Admin</div>
+          <div class="settingsRowDesc">Statistik, användare, städning och export för hela appen.</div>
+        </div>
+        <button id="adminOpenBtn" class="btnAdmin" type="button">Öppna</button>
+      </div>
       <label class="settingsRow" for="demoModeToggle">
         <div class="settingsRowText">
           <div class="settingsRowTitle">Demo Mode</div>
@@ -723,6 +800,77 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"></path><polyline points="21 3 21 9 15 9"></polyline></svg>
         </button>
       </div>
+    </div>
+  </div>
+
+  <div id="adminView">
+    <div id="adminHeader">
+      <button id="adminBackBtn" aria-label="Tillbaka till inställningar" title="Tillbaka">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+      </button>
+      <div style="flex:1 1 auto;">
+        <div class="kicker">ADMIN</div>
+        <div class="sub">Översikt över hela appen</div>
+      </div>
+    </div>
+    <div id="adminBody">
+      <div class="adminCard">
+        <div class="settingsRowTitle">Översikt</div>
+        <div class="statGrid" id="adminStats"></div>
+        <div class="adminNote">Räknas från data appen redan har hämtat, så det kostar inga extra reads.</div>
+      </div>
+      <div class="adminCard">
+        <div class="settingsRowTitle">Användare</div>
+        <div id="adminUsers" style="margin-top:6px;"></div>
+      </div>
+      <div class="adminCard">
+        <div class="settingsRowTitle">Firebase-användning</div>
+        <div id="adminUsage"></div>
+        <div class="adminNote">Gäller bara den här enheten, sedan kvoten nollställdes kl 09:00. Gratiskvoten per dygn: 50 000 reads, 20 000 writes, 20 000 deletes. Totalen för alla ser du i <a href="https://console.firebase.google.com/project/regnaren-b8b6a/firestore" target="_blank" rel="noopener">Firebase-konsolen</a> (fliken Usage).</div>
+      </div>
+      <div class="adminCard">
+        <div class="settingsRowTitle">Fiskeplatser</div>
+        <label class="adminToggleRow" for="adminEditAllToggle" style="display:flex;align-items:center;gap:12px;margin-top:10px;">
+          <div style="flex:1 1 auto;">
+            <div style="font-size:13.5px;color:var(--offwhite);">Redigera allas fiskeplatser</div>
+            <div class="adminNote" style="margin-top:2px;">När den är på kan du byta namn på och ta bort vem som helsts fiskeplatser på kartan.</div>
+          </div>
+          <span class="toggle">
+            <input type="checkbox" id="adminEditAllToggle">
+            <span class="toggleTrack"><span class="toggleThumb"></span></span>
+          </span>
+        </label>
+        <div class="btnRowWrap">
+          <button id="adminExportGpx" class="btnAdmin" type="button">Exportera GPX</button>
+          <button id="adminExportCsv" class="btnAdmin" type="button">Exportera CSV</button>
+        </div>
+        <div class="adminNote">GPX går att läsa in i sjökortsplottrar (Garmin, Lowrance m.fl.), CSV öppnas i Excel. Bra som backup.</div>
+      </div>
+      <div class="adminCard">
+        <div class="settingsRowTitle">Båtar på kartan</div>
+        <div class="btnRowWrap">
+          <button id="adminHideStale" class="btnAdmin" type="button">Dölj grå båtar</button>
+          <button id="adminHideAll" class="btnAdmin danger" type="button">Dölj alla båtar nu</button>
+        </div>
+        <div class="adminNote">Tar bort båtar från kartan för alla, t.ex. spökbåtar eller efter en tävlingsdag. Den som har appen öppen dyker upp igen inom en minut.</div>
+      </div>
+      <div class="adminCard">
+        <div class="btnRowWrap" style="margin-top:0;">
+          <button id="adminLock" class="btnAdmin" type="button">Lås admin på den här enheten</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="pinBackdrop"></div>
+  <div id="pinModal">
+    <div class="modalTitle">Admin</div>
+    <div class="modalDesc">Ange admin-koden.</div>
+    <input id="pinInput" type="password" inputmode="numeric" maxlength="12" autocomplete="off" placeholder="••••••">
+    <div id="pinError" class="modalError" hidden>Fel kod, försök igen.</div>
+    <div class="sheetRow">
+      <button id="pinCancel" class="btnGhost" type="button">Avbryt</button>
+      <button id="pinOk" class="btnPrimary" type="button">Lås upp</button>
     </div>
   </div>
 
@@ -1554,19 +1702,24 @@
   boatInfoCloseBtn.addEventListener('click', hideBoatInfo);
   boatInfoBackdrop.addEventListener('click', hideBoatInfo);
 
+  var allPositions = []; // every position doc for this lake, you included (admin page)
   function applyPositionsSnapshot(snap){
     var now = Date.now();
     var fresh = {};
+    var raw = [];
     snap.forEach(function(doc){
       var d = doc.data();
       var docLake = d.lake || LAKE_ID;
       if (docLake !== LAKE_ID) return;
-      if (d.uid === myUid) return; // that's you -- your own big GPS dot already shows it
       var updatedMs = (d.updatedAt && d.updatedAt.toMillis) ? d.updatedAt.toMillis() : now;
+      raw.push({ docId: doc.id, uid: d.uid || doc.id, name: d.name || '', lat: d.lat, lon: d.lon, updatedAt: updatedMs });
+      if (d.uid === myUid) return; // that's you -- your own big GPS dot already shows it
       fresh[doc.id] = { lat: d.lat, lon: d.lon, name: d.name || '', uid: d.uid, updatedAt: updatedMs };
     });
     boatPositions = fresh;
+    allPositions = raw;
     renderBoats();
+    refreshAdminIfOpen();
   }
 
   // Only share a position that's actually at the lake -- never broadcast
@@ -1596,6 +1749,7 @@
     if (movedM < POS_MOVE_THRESHOLD_M && since < POS_IDLE_INTERVAL_MS) return;
     lastPosWriteAt = now;
     lastWrittenLatLon = { lat: lat, lon: lon };
+    addUsage('w', 1);
     posCol.doc(myUid).set({
       lat: lat, lon: lon, name: userName || '', uid: myUid, lake: LAKE_ID,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -1609,6 +1763,7 @@
   function expireOwnPosition(){
     if (!USE_FIREBASE || !posCol || !myUid) return;
     if (!firebase.firestore.Timestamp) return;
+    addUsage('w', 1);
     posCol.doc(myUid).set({ updatedAt: firebase.firestore.Timestamp.fromMillis(0) }, { merge: true })
       .catch(function(){ /* no doc yet for this name -- nothing to expire */ });
   }
@@ -1664,6 +1819,7 @@
       // again and create duplicates.) The write itself is queued and synced
       // whenever there's coverage.
       var ref = fsCol.doc();
+      addUsage('w', 1);
       ref.set({
         lat: ll.lat, lon: ll.lon, name: name, uid: myUid, by: userName || '', lake: LAKE_ID,
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -1700,15 +1856,17 @@
     editingId = wp.id;
     editingIsNew = !!isNew;
     var mine = isMine(wp);
+    var canEdit = mine || adminCanEditAll();
     wpNameInput.value = wp.name;
-    wpNameInput.disabled = !mine;
-    wpDeleteBtn.hidden = !mine;
-    wpSaveBtn.hidden = !mine;
+    wpNameInput.disabled = !canEdit;
+    wpDeleteBtn.hidden = !canEdit;
+    wpSaveBtn.hidden = !canEdit;
     editingWpInfo = { lat: wp.lat, lon: wp.lon, mine: mine, by: wp.by, createdAt: wp.createdAt };
     refreshSheetMeta();
     sheetBackdrop.classList.add('show');
     wpSheet.classList.add('show');
     if (mine) setTimeout(function(){ wpNameInput.focus(); if (isNew) wpNameInput.select(); }, 260);
+    // (an admin editing someone else's spot doesn't get the keyboard popping up)
   }
   function closeSheet(){
     sheetBackdrop.classList.remove('show');
@@ -1719,7 +1877,7 @@
     editingWpInfo = null;
   }
   function deleteWaypointById(id){
-    if (USE_FIREBASE) fsCol.doc(id).delete().catch(function(e){ console.warn(e); });
+    if (USE_FIREBASE){ addUsage('d', 1); fsCol.doc(id).delete().catch(function(e){ console.warn(e); }); }
     else {
       waypoints = waypoints.filter(function(w){ return w.id !== id; });
       saveLocalWaypoints();
@@ -1730,7 +1888,7 @@
     if (!editingId) { closeSheet(); return; }
     var v = wpNameInput.value.trim();
     if (v){
-      if (USE_FIREBASE) fsCol.doc(editingId).update({ name:v }).catch(function(e){ console.warn(e); });
+      if (USE_FIREBASE){ addUsage('w', 1); fsCol.doc(editingId).update({ name:v }).catch(function(e){ console.warn(e); }); }
       else {
         var wp = waypoints.filter(function(w){ return w.id === editingId; })[0];
         if (wp){ wp.name = v; saveLocalWaypoints(); renderWaypoints(); }
@@ -1767,6 +1925,7 @@
       });
     });
     renderWaypoints();
+    refreshAdminIfOpen();
   }
 
   /* ---- offline indicator ----
@@ -1801,6 +1960,51 @@
   window.addEventListener('online', updateNetBadge);
   window.addEventListener('offline', updateNetBadge);
 
+  // Has this phone already got a full copy of the spots from the server?
+  var WP_SYNCED_KEY = 'lake_' + LAKE_ID + '_wp_synced_v1';
+  function waypointsSyncedBefore(){
+    try { return localStorage.getItem(WP_SYNCED_KEY) === '1'; } catch(e){ return false; }
+  }
+  function markWaypointsSynced(){
+    try { localStorage.setItem(WP_SYNCED_KEY, '1'); } catch(e){}
+  }
+
+  /* ---- Firestore usage from THIS device (shown on the admin page) ----
+     An estimate of what this phone has used of the daily free quota. The
+     quota day follows US Pacific time (resets 09:00 Swedish time), so the
+     counters do too. Listener: the first answer from the server counts the
+     whole result, later answers only the documents that changed. */
+  var USAGE_KEY = 'ffmap_usage_v1';
+  function quotaDay(){
+    try { return new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Los_Angeles' }); }
+    catch(e){ return new Date().toDateString(); }
+  }
+  function loadUsage(){
+    var u = null;
+    try { u = JSON.parse(localStorage.getItem(USAGE_KEY) || 'null'); } catch(e){}
+    if (!u || u.day !== quotaDay()) u = { day: quotaDay(), r: 0, w: 0, d: 0 };
+    return u;
+  }
+  function addUsage(kind, n){
+    if (!n) return;
+    var u = loadUsage();
+    u[kind] += n;
+    try { localStorage.setItem(USAGE_KEY, JSON.stringify(u)); } catch(e){}
+  }
+  function countListenerReads(snap, alreadyBilled){
+    if (!alreadyBilled){
+      addUsage('r', Math.max(1, snap.size || 0));
+      return true;
+    }
+    if (typeof snap.docChanges === 'function'){
+      var n = 0;
+      try { n = snap.docChanges().length; } catch(e){}
+      addUsage('r', n);
+    }
+    return true;
+  }
+  function countGetReads(snap){ addUsage('r', Math.max(1, (snap && snap.size) || 0)); }
+
   function initSharedWaypoints(cb){
     if (!FIREBASE_CONFIG.apiKey || FIREBASE_CONFIG.apiKey.indexOf('DIN_') === 0 || typeof firebase === 'undefined'){
       cb(false); return;
@@ -1822,19 +2026,41 @@
         USE_FIREBASE = true;
         // includeMetadataChanges: also get told when the connection to the
         // server drops/returns (metadata.fromCache), for the offline badge
+        var gotServerWaypoints = false;
+        var wpListenerBilled = false;
+        var hadLocalCopy = waypointsSyncedBefore(); // checked before the listener can set it
         fsCol.onSnapshot({ includeMetadataChanges: true }, function(snap){
-          syncFromCache = !!(snap.metadata && snap.metadata.fromCache);
+          var fromCache = !!(snap.metadata && snap.metadata.fromCache);
+          syncFromCache = fromCache;
           updateNetBadge();
+          if (!fromCache){
+            gotServerWaypoints = true;
+            markWaypointsSynced();
+            wpListenerBilled = countListenerReads(snap, wpListenerBilled);
+          }
           applySnapshotDocs(snap);
         }, function(err){ console.warn('waypoints sync error', err); });
-        // The live listener above can serve a stale/empty first snapshot
-        // from local persistence cache -- most noticeably on a brand new
-        // device, which has nothing cached yet, right after logging in
-        // with a name that already has waypoints saved under it elsewhere.
-        // Force one direct, uncached fetch right away so those show up
-        // immediately instead of waiting on the listener to catch up.
-        fsCol.get({ source: 'server' }).then(applySnapshotDocs).catch(function(){});
-        posCol.onSnapshot(applyPositionsSnapshot, function(err){ console.warn('positions sync error', err); });
+        // Safety net for "a new phone doesn't show my old spots": the live
+        // listener above can hand back an empty first answer from the local
+        // cache on a phone that has nothing saved yet. Only then (or if the
+        // listener hasn't heard from the server within a few seconds) fetch
+        // the spots directly from the server as well -- on every other start
+        // the listener's own server answer is enough, and fetching twice
+        // would just double the reads on every app start.
+        var forceFetchWaypoints = function(){
+          fsCol.get({ source: 'server' }).then(function(snap){
+            countGetReads(snap);
+            markWaypointsSynced();
+            applySnapshotDocs(snap);
+          }).catch(function(){});
+        };
+        if (!hadLocalCopy) forceFetchWaypoints();
+        else setTimeout(function(){ if (!gotServerWaypoints) forceFetchWaypoints(); }, 6000);
+        var posListenerBilled = false;
+        posCol.onSnapshot(function(snap){
+          if (!(snap.metadata && snap.metadata.fromCache)) posListenerBilled = countListenerReads(snap, posListenerBilled);
+          applyPositionsSnapshot(snap);
+        }, function(err){ console.warn('positions sync error', err); });
         cb(true);
       });
       auth.signInAnonymously().catch(function(err){ console.warn('anonym inloggning misslyckades', err); cb(false); });
@@ -1851,13 +2077,13 @@
       // { source: 'server' } skips the local cache -- a manual refresh should
       // actually go and ask the server, not just hand back whatever was
       // already sitting on the device.
-      fsCol.get({ source: 'server' }).then(applySnapshotDocs).catch(function(err){ console.warn('manuell uppdatering misslyckades', err); });
+      fsCol.get({ source: 'server' }).then(function(snap){ countGetReads(snap); applySnapshotDocs(snap); }).catch(function(err){ console.warn('manuell uppdatering misslyckades', err); });
     } else {
       loadLocalWaypoints();
       renderWaypoints();
     }
     if (USE_FIREBASE && posCol){
-      posCol.get({ source: 'server' }).then(applyPositionsSnapshot).catch(function(err){ console.warn('manuell uppdatering av positioner misslyckades', err); });
+      posCol.get({ source: 'server' }).then(function(snap){ countGetReads(snap); applyPositionsSnapshot(snap); }).catch(function(err){ console.warn('manuell uppdatering av positioner misslyckades', err); });
     }
   });
 
@@ -1976,6 +2202,7 @@
     toggleMenu(false);
   }
   function showMapView(){
+    closeAdminView();
     logView.classList.remove('show');
     settingsView.classList.remove('show');
     menuItemLog.classList.remove('menuItem--active');
@@ -2161,6 +2388,7 @@
   var headerUserEl = document.getElementById('headerUser');
   var HEADER_USER_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"></path></svg>';
   function showUserName(){
+    updateAdminVisibility();
     settingsNameDisplay.textContent = userName;
     if (userName){
       headerUserEl.innerHTML = HEADER_USER_ICON;
@@ -2273,6 +2501,308 @@
     showUserName();
     showMapView();
     showNameModal();
+  });
+
+  /* ---------------- Admin (bara för Filip, låst med PIN-kod) ----------------
+     Note: this is a convenience lock, not real security -- identity in this
+     app is just the chosen name, and the Firestore rules (not this page)
+     are what actually decide who may read/write what. Only a SHA-256 hash
+     of the code is stored here, never the code itself. */
+  var ADMIN_NAME_SLUG = 'filip';
+  var ADMIN_PIN_HASH = 'e9d3315a243ca88a3fbffabe7dfee909a223c7d851a20dd940dbc17e75663b54';
+  var ADMIN_UNLOCK_KEY = 'ffmap_admin_unlock_v1';
+  var ADMIN_EDITALL_KEY = 'ffmap_admin_editall_v1';
+
+  // isAdminName() also runs while the page is still starting (from
+  // showUserName), before the constants above are set -- so it compares
+  // with a literal; the other two only run on user actions.
+  function isAdminName(){ return nameSlug(userName) === 'filip'; }
+  function isAdminUnlocked(){
+    if (!isAdminName()) return false;
+    try { return localStorage.getItem(ADMIN_UNLOCK_KEY) === ADMIN_PIN_HASH; } catch(e){ return false; }
+  }
+  function adminCanEditAll(){
+    if (!isAdminUnlocked()) return false;
+    try { return localStorage.getItem(ADMIN_EDITALL_KEY) === '1'; } catch(e){ return false; }
+  }
+  // (looks its elements up by id every time: it's first called while the
+  // page is still starting, before the rest of this section has run)
+  function updateAdminVisibility(){
+    var row = document.getElementById('adminRow');
+    if (row) row.hidden = !isAdminName();
+    if (!isAdminName()) closeAdminView();
+  }
+  function closeAdminView(){
+    var v = document.getElementById('adminView');
+    if (v) v.classList.remove('show');
+    if (adminTimer){ clearInterval(adminTimer); adminTimer = null; }
+  }
+  function refreshAdminIfOpen(){
+    var v = document.getElementById('adminView');
+    if (v && v.classList.contains('show')) renderAdmin();
+  }
+
+  var adminView = document.getElementById('adminView');
+  var adminStatsEl = document.getElementById('adminStats');
+  var adminUsersEl = document.getElementById('adminUsers');
+  var adminUsageEl = document.getElementById('adminUsage');
+  var adminEditAllToggle = document.getElementById('adminEditAllToggle');
+  var pinBackdrop = document.getElementById('pinBackdrop');
+  var pinModal = document.getElementById('pinModal');
+  var pinInput = document.getElementById('pinInput');
+  var pinError = document.getElementById('pinError');
+  var adminTimer = null;
+
+  function sha256Hex(text){
+    if (!(window.crypto && crypto.subtle && window.TextEncoder)) return Promise.reject(new Error('no crypto'));
+    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)).then(function(buf){
+      return Array.from(new Uint8Array(buf)).map(function(b){ return ('0' + b.toString(16)).slice(-2); }).join('');
+    });
+  }
+  function showPinModal(){
+    pinInput.value = '';
+    pinError.hidden = true;
+    pinBackdrop.classList.add('show');
+    pinModal.classList.add('show');
+    setTimeout(function(){ pinInput.focus(); }, 200);
+  }
+  function hidePinModal(){
+    pinBackdrop.classList.remove('show');
+    pinModal.classList.remove('show');
+    pinInput.blur();
+  }
+  function tryPin(){
+    var code = pinInput.value.trim();
+    if (!code){ pinInput.focus(); return; }
+    sha256Hex('ffmap-admin:' + code).then(function(h){
+      if (h === ADMIN_PIN_HASH){
+        try { localStorage.setItem(ADMIN_UNLOCK_KEY, h); } catch(e){}
+        hidePinModal();
+        openAdminView();
+      } else {
+        pinError.textContent = 'Fel kod, försök igen.';
+        pinError.hidden = false;
+        pinInput.value = '';
+        pinInput.focus();
+      }
+    }).catch(function(){
+      pinError.textContent = 'Kan inte kontrollera koden i den här webbläsaren.';
+      pinError.hidden = false;
+    });
+  }
+  document.getElementById('pinOk').addEventListener('click', tryPin);
+  document.getElementById('pinCancel').addEventListener('click', hidePinModal);
+  pinBackdrop.addEventListener('click', hidePinModal);
+  pinInput.addEventListener('keydown', function(e){ if (e.key === 'Enter') tryPin(); });
+  pinInput.addEventListener('input', function(){ pinError.hidden = true; });
+
+  document.getElementById('adminOpenBtn').addEventListener('click', function(){
+    if (isAdminUnlocked()) openAdminView(); else showPinModal();
+  });
+  document.getElementById('adminBackBtn').addEventListener('click', closeAdminView);
+  document.getElementById('adminLock').addEventListener('click', function(){
+    try { localStorage.removeItem(ADMIN_UNLOCK_KEY); } catch(e){}
+    closeAdminView();
+  });
+
+  function openAdminView(){
+    if (!isAdminUnlocked()) return;
+    adminEditAllToggle.checked = adminCanEditAll();
+    renderAdmin();
+    adminView.classList.add('show');
+    adminBodyScrollTop();
+    if (adminTimer) clearInterval(adminTimer);
+    adminTimer = setInterval(renderAdmin, 20000); // keeps "senast sedd" fresh while open
+  }
+  function adminBodyScrollTop(){ var b = document.getElementById('adminBody'); if (b) b.scrollTop = 0; }
+
+  adminEditAllToggle.addEventListener('change', function(){
+    try { localStorage.setItem(ADMIN_EDITALL_KEY, adminEditAllToggle.checked ? '1' : '0'); } catch(e){}
+  });
+
+  function statTile(value, label){
+    var t = document.createElement('div'); t.className = 'statTile';
+    var v = document.createElement('div'); v.className = 'statValue'; v.textContent = String(value);
+    var l = document.createElement('div'); l.className = 'statLabel'; l.textContent = label;
+    t.appendChild(v); t.appendChild(l);
+    return t;
+  }
+
+  function collectUsers(){
+    var users = {};
+    function get(uid, name){
+      if (!uid || uid === 'local') return null;
+      var u = users[uid];
+      if (!u) u = users[uid] = { uid: uid, name: '', spots: 0, lastSpot: 0, pos: null };
+      if (name && !u.name) u.name = name;
+      return u;
+    }
+    waypoints.forEach(function(w){
+      var u = get(w.uid, w.by);
+      if (!u) return;
+      u.spots++;
+      u.lastSpot = Math.max(u.lastSpot, w.createdAt || 0);
+    });
+    allPositions.forEach(function(p){
+      var u = get(p.uid, p.name);
+      if (!u) return;
+      if (p.name) u.name = p.name; // the position doc has the freshest spelling
+      u.pos = p;
+    });
+    return Object.keys(users).map(function(k){
+      var u = users[k];
+      if (!u.name) u.name = u.uid;
+      var posSeen = (u.pos && u.pos.updatedAt > 0) ? u.pos.updatedAt : 0;
+      u.lastSeen = Math.max(posSeen, u.lastSpot);
+      return u;
+    });
+  }
+
+  function renderAdmin(){
+    var now = Date.now();
+    var midnight = new Date(); midnight.setHours(0, 0, 0, 0);
+    var users = collectUsers();
+    var liveBoats = allPositions.filter(function(p){ return p.updatedAt > 0 && now - p.updatedAt <= BOAT_GRAY_MS; }).length;
+
+    adminStatsEl.innerHTML = '';
+    adminStatsEl.appendChild(statTile(waypoints.length, 'Fiskeplatser totalt'));
+    adminStatsEl.appendChild(statTile(waypoints.filter(function(w){ return w.createdAt >= midnight.getTime(); }).length, 'Nya idag'));
+    adminStatsEl.appendChild(statTile(waypoints.filter(function(w){ return now - w.createdAt <= 7 * 864e5; }).length, 'Nya senaste 7 d'));
+    adminStatsEl.appendChild(statTile(users.length, 'Användare'));
+    adminStatsEl.appendChild(statTile(liveBoats, 'Aktiva på kartan nu'));
+    adminStatsEl.appendChild(statTile(allPositions.length, 'Positioner i databasen'));
+
+    // users: active first, then most recently seen
+    users.sort(function(a, b){ return (b.lastSeen || 0) - (a.lastSeen || 0); });
+    adminUsersEl.innerHTML = '';
+    if (!users.length){
+      var empty = document.createElement('div'); empty.className = 'adminNote'; empty.textContent = 'Inga användare ännu.';
+      adminUsersEl.appendChild(empty);
+    }
+    users.forEach(function(u){
+      var age = (u.pos && u.pos.updatedAt > 0) ? now - u.pos.updatedAt : Infinity;
+      var status = age <= BOAT_GRAY_MS ? 'live' : (age <= BOAT_REMOVE_MS ? 'stale' : 'none');
+      var row = document.createElement('div'); row.className = 'adminUserRow';
+      var info = document.createElement('div'); info.className = 'adminUserInfo';
+      var nm = document.createElement('div'); nm.className = 'adminUserName';
+      var dot = document.createElement('span'); dot.className = 'statusDot ' + status;
+      nm.appendChild(dot);
+      nm.appendChild(document.createTextNode(u.name + (u.uid === myUid ? ' (du)' : '')));
+      var meta = document.createElement('div'); meta.className = 'adminUserMeta';
+      var statusText = status === 'live' ? 'På kartan nu' : (status === 'stale' ? 'Grå på kartan' : 'Inte på kartan');
+      meta.textContent = statusText + ' · ' + u.spots + (u.spots === 1 ? ' fiskeplats' : ' fiskeplatser') +
+        (u.lastSeen ? ' · senast sedd ' + timeAgo(u.lastSeen) : '');
+      info.appendChild(nm); info.appendChild(meta);
+      row.appendChild(info);
+      if (status !== 'none' && u.uid !== myUid && u.pos){
+        var btn = document.createElement('button');
+        btn.type = 'button'; btn.className = 'btnAdmin small'; btn.textContent = 'Dölj båt';
+        btn.addEventListener('click', function(){
+          if (confirm('Dölja ' + u.name + ' från kartan för alla?')) hidePositions([u.pos.docId]);
+        });
+        row.appendChild(btn);
+      }
+      adminUsersEl.appendChild(row);
+    });
+
+    var usage = loadUsage();
+    adminUsageEl.innerHTML = '';
+    [['Reads', usage.r, 50000], ['Writes', usage.w, 20000], ['Deletes', usage.d, 20000]].forEach(function(x){
+      var line = document.createElement('div'); line.className = 'usageLine';
+      var pct = x[1] / x[2] * 100;
+      line.textContent = x[0] + ': ' + x[1].toLocaleString('sv-SE') + '  (' + (pct < 0.1 && x[1] > 0 ? '<0,1' : pct.toFixed(1).replace('.', ',')) + ' % av kvoten)';
+      adminUsageEl.appendChild(line);
+    });
+  }
+
+  // Hide boats for everyone by marking their positions as ancient (the same
+  // trick as logging out -- works with the current Firestore rules).
+  function hidePositions(docIds){
+    if (!USE_FIREBASE || !posCol || !firebase.firestore.Timestamp || !docIds.length) return;
+    docIds.forEach(function(id){
+      addUsage('w', 1);
+      posCol.doc(id).set({ updatedAt: firebase.firestore.Timestamp.fromMillis(0) }, { merge: true })
+        .catch(function(e){ console.warn('kunde inte dölja båt', e); });
+    });
+  }
+  document.getElementById('adminHideStale').addEventListener('click', function(){
+    var now = Date.now();
+    var ids = allPositions.filter(function(p){
+      var age = now - p.updatedAt;
+      return p.updatedAt > 0 && age > BOAT_GRAY_MS && age <= BOAT_REMOVE_MS && p.uid !== myUid;
+    }).map(function(p){ return p.docId; });
+    if (!ids.length){ alert('Det finns inga grå båtar just nu.'); return; }
+    if (confirm('Dölja ' + ids.length + (ids.length === 1 ? ' grå båt' : ' grå båtar') + ' för alla?')) hidePositions(ids);
+  });
+  document.getElementById('adminHideAll').addEventListener('click', function(){
+    var now = Date.now();
+    var ids = allPositions.filter(function(p){
+      return p.updatedAt > 0 && now - p.updatedAt <= BOAT_REMOVE_MS && p.uid !== myUid;
+    }).map(function(p){ return p.docId; });
+    if (!ids.length){ alert('Det finns inga båtar på kartan just nu.'); return; }
+    if (confirm('Dölja alla ' + ids.length + ' båtar på kartan för alla? (Den som har appen öppen dyker upp igen inom en minut.)')) hidePositions(ids);
+  });
+
+  /* ---- export (GPX for chartplotters, CSV for Excel) ---- */
+  function xmlEsc(v){ return String(v == null ? '' : v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function exportStamp(){ return new Date().toLocaleDateString('sv-SE'); }
+  function sortedWaypoints(){ return waypoints.slice().sort(function(a, b){ return (a.createdAt || 0) - (b.createdAt || 0); }); }
+  function wpOwnerName(w){
+    if (w.by) return w.by;
+    var u = collectUsers().filter(function(x){ return x.uid === w.uid; })[0];
+    return u ? u.name : (w.uid || '');
+  }
+  function buildGpx(){
+    var out = ['<?xml version="1.0" encoding="UTF-8"?>',
+      '<gpx version="1.1" creator="FF Map" xmlns="http://www.topografix.com/GPX/1/1">',
+      '  <metadata><name>FF Map – ' + xmlEsc(LAKE_ID) + ' – fiskeplatser</name><time>' + new Date().toISOString() + '</time></metadata>'];
+    sortedWaypoints().forEach(function(w){
+      out.push('  <wpt lat="' + Number(w.lat).toFixed(7) + '" lon="' + Number(w.lon).toFixed(7) + '">');
+      if (w.createdAt) out.push('    <time>' + new Date(w.createdAt).toISOString() + '</time>');
+      out.push('    <name>' + xmlEsc(w.name || 'Fiskeplats') + '</name>');
+      out.push('    <desc>' + xmlEsc('Sparad av ' + wpOwnerName(w)) + '</desc>');
+      out.push('    <sym>Fishing Hot Spot Facility</sym>');
+      out.push('  </wpt>');
+    });
+    out.push('</gpx>');
+    return out.join('\n') + '\n';
+  }
+  function csvCell(v){
+    v = String(v == null ? '' : v);
+    return /[";\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+  }
+  function buildCsv(){
+    // semicolons + decimal commas = opens straight into Swedish Excel
+    var rows = [['Namn', 'Latitud', 'Longitud', 'Sparad av', 'Skapad']];
+    sortedWaypoints().forEach(function(w){
+      rows.push([w.name || 'Fiskeplats',
+        Number(w.lat).toFixed(6).replace('.', ','), Number(w.lon).toFixed(6).replace('.', ','),
+        wpOwnerName(w), w.createdAt ? new Date(w.createdAt).toLocaleString('sv-SE').slice(0, 16) : '']);
+    });
+    return '﻿' + rows.map(function(r){ return r.map(csvCell).join(';'); }).join('\r\n') + '\r\n';
+  }
+  function exportFile(fileName, mime, text){
+    var blob = new Blob([text], { type: mime });
+    var file = null;
+    try { file = new File([blob], fileName, { type: mime }); } catch(e){}
+    // phones: the share sheet ("Spara i Filer", AirDrop, mail ...) is the
+    // most reliable way to hand over a file; elsewhere a normal download
+    if (file && navigator.canShare && navigator.share && navigator.canShare({ files: [file] })){
+      navigator.share({ files: [file], title: fileName }).catch(function(){});
+      return;
+    }
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+  }
+  document.getElementById('adminExportGpx').addEventListener('click', function(){
+    exportFile('ffmap-' + LAKE_ID + '-fiskeplatser-' + exportStamp() + '.gpx', 'application/gpx+xml', buildGpx());
+  });
+  document.getElementById('adminExportCsv').addEventListener('click', function(){
+    exportFile('ffmap-' + LAKE_ID + '-fiskeplatser-' + exportStamp() + '.csv', 'text/csv', buildCsv());
   });
 
   /* ---------------- GPS ---------------- */
