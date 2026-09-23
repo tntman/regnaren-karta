@@ -504,6 +504,23 @@
   }
   #nameInput::placeholder{color:var(--text-muted);}
   .modalError{color:var(--danger);font-size:12px;margin:-8px 0 4px;}
+  #nameModal{max-height:calc(100vh - 32px);overflow-y:auto;}
+  .nameList{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:6px;
+    max-height:min(46vh,340px);overflow-y:auto;-webkit-overflow-scrolling:touch;
+    margin:0 0 14px;padding:2px;
+  }
+  .nameChip{
+    min-width:0;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);
+    color:var(--offwhite);border-radius:9px;padding:10px 4px;
+    font-family:inherit;font-size:13.5px;font-weight:600;text-align:center;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    -webkit-tap-highlight-color:transparent;cursor:pointer;
+  }
+  .nameChip:active{transform:scale(.96);}
+  .nameChip.selected{background:var(--amber);border-color:var(--amber);color:var(--navy);}
+  .nameChip--other{grid-column:1 / -1;border-style:dashed;color:var(--text-muted);}
+  .nameChip--other.selected{border-style:solid;}
 
   #boatInfoBackdrop{
     position:fixed;inset:0;background:rgba(4,12,17,.6);z-index:40;
@@ -554,8 +571,6 @@
   #netBadge .netText b{font-weight:700;}
 
   .sheetDistance{color:var(--amber);font-weight:600;}
-  .settingsRow.disabled{opacity:.5;}
-  .settingsRow.disabled .toggle{pointer-events:none;}
 </style>
 </head>
 <body>
@@ -619,21 +634,11 @@
       <div class="settingsRow" style="flex-direction:column;align-items:stretch;">
         <div class="settingsRowText">
           <div class="settingsRowTitle">Ditt namn</div>
-          <div class="settingsRowDesc">Namnet är kopplat till dig och dina fiskeplatser — var du än loggar in med samma namn ser du dem som är dina. Välj ett unikt namn så ingen annan råkar använda samma.</div>
+          <div class="settingsRowDesc">Namnet är kopplat till dig och dina fiskeplatser — var du än loggar in med samma namn ser du dem som är dina.</div>
         </div>
         <div id="settingsNameDisplay"></div>
         <button id="logoutBtn" class="btnLogout" type="button">Logga ut (Byt namn)</button>
       </div>
-      <label class="settingsRow" for="wakeLockToggle" id="wakeLockRow">
-        <div class="settingsRowText">
-          <div class="settingsRowTitle">Håll skärmen tänd</div>
-          <div class="settingsRowDesc" id="wakeLockDesc">Skärmen släcks inte medan appen är öppen, så din position fortsätter att delas med de andra. Drar mer batteri.</div>
-        </div>
-        <span class="toggle">
-          <input type="checkbox" id="wakeLockToggle">
-          <span class="toggleTrack"><span class="toggleThumb"></span></span>
-        </span>
-      </label>
       <label class="settingsRow" for="demoModeToggle">
         <div class="settingsRowText">
           <div class="settingsRowTitle">Demo Mode</div>
@@ -758,10 +763,13 @@
 
   <div id="nameBackdrop"></div>
   <div id="nameModal">
-    <div class="modalTitle">Vad heter du?</div>
-    <div class="modalDesc">Namnet är kopplat till dig och dina fiskeplatser — var du än loggar in med samma namn ser du dem som är dina. Välj ett unikt namn så ingen annan råkar använda samma. Du kan ändra det senare under Inställningar.</div>
-    <input id="nameInput" type="text" maxlength="24" placeholder="Ditt namn" autocomplete="off">
-    <div id="nameError" class="modalError" hidden>Skriv ditt namn för att fortsätta.</div>
+    <div class="modalTitle">Vem är du?</div>
+    <div class="modalDesc">Välj ditt namn. Det kopplas till dig och dina fiskeplatser — loggar du in med samma namn på en annan enhet ser du dem som dina.</div>
+    <div id="nameList" class="nameList" aria-label="Välj ditt namn"></div>
+    <div id="otherNameWrap" hidden>
+      <input id="nameInput" type="text" maxlength="24" placeholder="Skriv ditt namn" autocomplete="off">
+    </div>
+    <div id="nameError" class="modalError" hidden>Välj ditt namn i listan för att fortsätta.</div>
     <div class="sheetRow">
       <button id="nameSave" class="btnPrimary">Fortsätt</button>
     </div>
@@ -2006,81 +2014,101 @@
     rerollDemoPosition();
   });
 
-  /* ---------------- Håll skärmen tänd (Screen Wake Lock) ----------------
-     A locked phone pauses the page, which also stops sharing your position,
-     so this keeps the screen on while the app is open. The browser drops
-     the lock whenever the page is hidden (app switch, lock button), so it's
-     re-requested on return, and on the next tap if a browser insists the
-     request comes from a user gesture. */
-  var WAKE_KEY = 'regnaren_keep_awake_v1';
-  var wakeLockToggle = document.getElementById('wakeLockToggle');
-  var wakeLockRow = document.getElementById('wakeLockRow');
-  var wakeLockDesc = document.getElementById('wakeLockDesc');
-  var wakeLockSupported = 'wakeLock' in navigator && typeof navigator.wakeLock.request === 'function';
-  var keepAwake = false;
-  try { keepAwake = localStorage.getItem(WAKE_KEY) === '1'; } catch(e){}
-  var wakeLock = null, wakeLockPending = false;
-  function requestWakeLock(){
-    if (!keepAwake || !wakeLockSupported || wakeLock || wakeLockPending) return;
-    if (document.visibilityState !== 'visible') return;
-    wakeLockPending = true;
-    navigator.wakeLock.request('screen').then(function(lock){
-      wakeLockPending = false;
-      wakeLock = lock;
-      lock.addEventListener('release', function(){ wakeLock = null; });
-    }).catch(function(){ wakeLockPending = false; /* retried on the next tap / return to the app */ });
-  }
-  function releaseWakeLock(){
-    if (wakeLock){ wakeLock.release().catch(function(){}); wakeLock = null; }
-  }
-  if (!wakeLockSupported){
-    wakeLockToggle.disabled = true;
-    wakeLockRow.classList.add('disabled');
-    wakeLockDesc.textContent = 'Stöds inte i den här webbläsaren. Uppdatera telefonen/webbläsaren för att kunna använda det.';
-    keepAwake = false;
-  }
-  wakeLockToggle.checked = keepAwake;
-  wakeLockToggle.addEventListener('change', function(){
-    keepAwake = wakeLockToggle.checked;
-    try { localStorage.setItem(WAKE_KEY, keepAwake ? '1' : '0'); } catch(e){}
-    if (keepAwake) requestWakeLock(); else releaseWakeLock();
-  });
-  document.addEventListener('visibilitychange', function(){
-    if (document.visibilityState === 'visible') requestWakeLock();
-  });
-  document.addEventListener('pointerdown', requestWakeLock, true); // no-op when already held
-  requestWakeLock();
+  /* ---------------- Ditt namn (= din identitet, funkar över alla enheter) ----------------
+     You pick your name from the club's member list (or "Annat namn" as a
+     fallback). The name is still what identifies you and your spots, exactly
+     as before: same name = same person, on any device. */
+  var NAME_ROSTER = [
+    'Henrik', 'Filip', 'Stisse', 'Matilda', 'Patrik', 'Sunbaum', 'Jörgen', 'Gurki', 'Calle', 'Peter',
+    'Gurra', 'Camilla', 'Rode', 'Hedda', 'Holo', 'Pontus', 'Stephanie', 'Magnus', 'Alexis', 'Maya',
+    'Rebeca', 'Jonas', 'Bella', 'Joel', 'Calum', 'Melsom', 'Jonathan', 'Laurent', 'Erika', 'Ludvig',
+    'Andreas', 'Kristian', 'Gianni', 'Bystedt', 'Steven', 'Sebastian', 'Björn', 'Melle', 'Emnet'
+  ].sort(function(a, b){ return a.localeCompare(b, 'sv'); });
 
-  /* ---------------- Ditt namn (= din identitet, funkar över alla enheter) ---------------- */
   var USER_NAME_KEY = 'regnaren_user_name_v1';
   var userName = '';
   try { userName = localStorage.getItem(USER_NAME_KEY) || ''; } catch(e){}
 
   var nameBackdrop = document.getElementById('nameBackdrop');
   var nameModal = document.getElementById('nameModal');
+  var nameListEl = document.getElementById('nameList');
+  var otherNameWrap = document.getElementById('otherNameWrap');
   var nameInput = document.getElementById('nameInput');
   var nameSaveBtn = document.getElementById('nameSave');
   var nameErrorEl = document.getElementById('nameError');
   var settingsNameDisplay = document.getElementById('settingsNameDisplay');
-  settingsNameDisplay.textContent = userName;
 
   // Same name -> same id, on any device/browser. Trim + lowercase + collapse
   // whitespace so "Filip", " filip " and "FILIP" all resolve to one identity.
   function nameSlug(v){
     return (v || '').trim().toLowerCase().replace(/\s+/g, ' ');
   }
+  // If a name matches someone on the member list (in any capitalisation),
+  // use the list's spelling -- same identity, just displayed consistently.
+  function canonicalName(v){
+    var s = nameSlug(v);
+    for (var i = 0; i < NAME_ROSTER.length; i++){
+      if (nameSlug(NAME_ROSTER[i]) === s) return NAME_ROSTER[i];
+    }
+    return (v || '').trim();
+  }
+  userName = canonicalName(userName);
+  settingsNameDisplay.textContent = userName;
 
   function saveUserName(v){
-    userName = (v || '').trim().slice(0, 24);
+    userName = canonicalName(v).slice(0, 24);
     try { localStorage.setItem(USER_NAME_KEY, userName); } catch(e){}
   }
 
+  var selectedRosterName = null;
+  var otherNameMode = false;
+  function renderNameList(){
+    nameListEl.innerHTML = '';
+    NAME_ROSTER.forEach(function(n){
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'nameChip';
+      b.setAttribute('data-name', n);
+      b.textContent = n;
+      nameListEl.appendChild(b);
+    });
+    var other = document.createElement('button');
+    other.type = 'button';
+    other.className = 'nameChip nameChip--other';
+    other.setAttribute('data-other', '1');
+    other.textContent = 'Annat namn…';
+    nameListEl.appendChild(other);
+  }
+  renderNameList();
+
+  nameListEl.addEventListener('click', function(e){
+    var chip = e.target.closest ? e.target.closest('.nameChip') : null;
+    if (!chip) return;
+    Array.from(nameListEl.children).forEach(function(c){ c.classList.toggle('selected', c === chip); });
+    nameErrorEl.hidden = true;
+    if (chip.getAttribute('data-other')){
+      otherNameMode = true;
+      selectedRosterName = null;
+      otherNameWrap.hidden = false;
+      setTimeout(function(){ nameInput.focus(); }, 50);
+    } else {
+      otherNameMode = false;
+      selectedRosterName = chip.getAttribute('data-name');
+      otherNameWrap.hidden = true;
+      nameInput.blur();
+    }
+  });
+
   function showNameModal(){
+    selectedRosterName = null;
+    otherNameMode = false;
+    Array.from(nameListEl.children).forEach(function(c){ c.classList.remove('selected'); });
+    nameListEl.scrollTop = 0;
+    otherNameWrap.hidden = true;
     nameInput.value = '';
     nameErrorEl.hidden = true;
     nameBackdrop.classList.add('show');
     nameModal.classList.add('show');
-    setTimeout(function(){ nameInput.focus(); }, 260);
   }
   function hideNameModal(){
     nameBackdrop.classList.remove('show');
@@ -2088,10 +2116,11 @@
   }
 
   nameSaveBtn.addEventListener('click', function(){
-    var v = nameInput.value.trim();
+    var v = otherNameMode ? nameInput.value.trim() : (selectedRosterName || '');
     if (!v){
+      nameErrorEl.textContent = otherNameMode ? 'Skriv ditt namn för att fortsätta.' : 'Välj ditt namn i listan för att fortsätta.';
       nameErrorEl.hidden = false;
-      nameInput.focus();
+      if (otherNameMode) nameInput.focus();
       return;
     }
     saveUserName(v);
