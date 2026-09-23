@@ -1081,6 +1081,16 @@
           <button id="adminHideAll" class="btnAdmin danger" type="button">Dölj alla båtar nu</button>
         </div>
         <div class="adminNote">Tar bort båtar från kartan för alla, t.ex. spökbåtar eller efter en tävlingsdag. Den som har appen öppen dyker upp igen inom en minut.</div>
+        <div style="font-size:13.5px;color:var(--offwhite);margin-top:16px;">Dela position var</div>
+        <div class="segmented" id="adminPosIntervalSeg" role="radiogroup" aria-label="Hur ofta båtarnas position delas" style="margin-top:8px;">
+          <button type="button" role="radio" data-s="10">10 s</button>
+          <button type="button" role="radio" data-s="20">20 s</button>
+          <button type="button" role="radio" data-s="30">30 s</button>
+          <button type="button" role="radio" data-s="60">60 s</button>
+        </div>
+        <div class="adminNote" id="adminPosIntervalEst"></div>
+        <div class="adminNote" id="adminPosIntervalStatus" style="color:var(--amber);" hidden></div>
+        <div class="adminNote">Hur ofta en båt som rör sig skickar sin position. Gäller alla telefoner. Kortare tid = båtarna rör sig jämnare på kartan men kostar fler reads. Står man still skickas den en gång i minuten oavsett.</div>
       </div>
       <div class="adminCard">
         <div class="btnRowWrap" style="margin-top:0;">
@@ -1389,13 +1399,18 @@
 
   var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  // Bumped by every new animation and by touching the map, so an older
+  // animation stops instead of fighting your finger (or a newer animation).
+  var animToken = 0;
   function animateTo(targetScale, targetOriginX, targetOriginY, duration){
+    var myToken = ++animToken;
     if (reduceMotion){ scale = targetScale; originX = targetOriginX; originY = targetOriginY; clampOrigin(); render(); return; }
     var startScale = scale, startX = originX, startY = originY;
     var t0 = performance.now();
     duration = duration || 420;
     function ease(t){ return 1 - Math.pow(1 - t, 3); }
     function step(now){
+      if (myToken !== animToken) return; // cancelled
       var t = Math.min(1, (now - t0) / duration);
       var e = ease(t);
       scale = startScale + (targetScale - startScale) * e;
@@ -1412,6 +1427,17 @@
   // standalone-mode reload (see handleOrientationEvent below) -- restored
   // in initView() so rotating doesn't dump you back to the default view.
   var VIEW_STATE_KEY = 'regnaren_rotation_view_v1';
+  // Everything else that was going on right before a rotation reload (which
+  // page was open, an open spot sheet with what you'd typed, speed history,
+  // when your position was last shared ...) -- written by saveRotationState()
+  // just before the reload, read once here, used by the parts below.
+  var ROT_STATE_KEY = 'ffmap_rotation_state_v1';
+  var rotState = (function(){
+    var raw = null;
+    try { raw = sessionStorage.getItem(ROT_STATE_KEY); sessionStorage.removeItem(ROT_STATE_KEY); } catch(e){}
+    if (!raw) return null;
+    try { var v = JSON.parse(raw); return (v && Date.now() - (v.t || 0) < 15000) ? v : null; } catch(e){ return null; }
+  })();
   function restoreViewStateIfAny(){
     var raw = null;
     try { raw = sessionStorage.getItem(VIEW_STATE_KEY); } catch(e){}
@@ -1470,7 +1496,13 @@
   // up the same way: nothing responds to taps and the layout looks frozen
   // in the old orientation. Recover from both whenever the orientation
   // actually changes:
+  var lastOrientationEventAt = 0;
   function handleOrientationEvent(){
+    // both 'orientationchange' and screen.orientation 'change' fire for one
+    // rotation -- handle it once
+    var tNow = Date.now();
+    if (tNow - lastOrientationEventAt < 1000) return;
+    lastOrientationEventAt = tNow;
     // capture where you're looking (in image-space coordinates, so it's
     // independent of the viewport size) before anything below touches
     // scale/originX/originY, in case a standalone-mode reload needs it
@@ -1517,6 +1549,7 @@
           // of snapping to the default view after the reload
           sessionStorage.setItem(VIEW_STATE_KEY, JSON.stringify({ cx: preCx, cy: preCy, scale: preScale, t: now }));
         } catch(e){}
+        saveRotationState(); // open page/sheet, typed text, speed history ... (see below)
         setTimeout(function(){ window.location.reload(); }, 350);
       }
     }
@@ -1537,16 +1570,20 @@
   function dist(a,b){ return Math.hypot(a.x-b.x, a.y-b.y); }
   function midpoint(a,b){ return {x:(a.x+b.x)/2, y:(a.y+b.y)/2}; }
 
+  var gestureWasMulti = false; // this touch sequence has had 2 fingers down (a pinch)
   stage.addEventListener('pointerdown', function(e){
     pointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
     stage.classList.add('dragging');
+    animToken++; // touching the map stops a running pan/zoom animation
     if (pointers.size === 1){
+      gestureWasMulti = false;
       var p = pointers.values().next().value;
       panStart = {x:p.x, y:p.y, originX:originX, originY:originY, moved:0, t0:performance.now()};
       pinch = null;
       if (!measureMode) startLongPress(p.x, p.y); // (in measuring mode a tap adds a point instead)
     } else if (pointers.size === 2){
       cancelLongPress();
+      gestureWasMulti = true;
       var pts = Array.from(pointers.values());
       pinch = { prevDist: dist(pts[0], pts[1]) };
       panStart = null;
@@ -1580,7 +1617,7 @@
   function endPointer(e){
     if (!pointers.has(e.pointerId)) return;
     cancelLongPress();
-    var wasSingle = pointers.size === 1;
+    var wasSingle = pointers.size === 1 && !gestureWasMulti; // the last finger of a pinch isn't a tap
     var p = pointers.get(e.pointerId);
     pointers.delete(e.pointerId);
 
@@ -1771,17 +1808,22 @@
     return (m / 1000).toFixed(1).replace('.', ',') + ' km';
   }
 
+  var pinEls = {}; // waypoint id -> its element (no DOM lookups per pin on every frame)
   function renderWaypoints(){
     var seen = {};
+    if (pendingSheetRestore) tryRestoreSheet();
     waypoints.forEach(function(wp){
       var mine = isMine(wp);
-      if (mine && !showMine) return;
-      if (!mine && !showOthers) return;
-      if (hiddenTypes[wpType(wp)] && wp.id !== editingId) return; // (the spot you're editing always shows)
+      var editing = wp.id === editingId; // the spot you're editing always shows, whatever the filters say
+      if (!editing){
+        if (mine && !showMine) return;
+        if (!mine && !showOthers) return;
+        if (hiddenTypes[wpType(wp)]) return;
+      }
       seen[wp.id] = true;
       var p = latLonToImgPx(wp.lat, wp.lon);
       var sx = originX + p.x * scale, sy = originY + p.y * scale;
-      var el = waypointsLayer.querySelector('[data-id="' + wp.id + '"]');
+      var el = pinEls[wp.id];
       if (!el){
         el = document.createElement('div');
         el.setAttribute('data-id', wp.id);
@@ -1799,18 +1841,20 @@
           openSheetForWp(current, false);
         });
         waypointsLayer.appendChild(el);
+        pinEls[wp.id] = el;
       }
       var type = wpType(wp);
       if (el.getAttribute('data-type') !== type){ // (re)draw the icon only when the type changes
         el.setAttribute('data-type', type);
         el.innerHTML = '<div class="pinHead">' + wpIconSvg(type) + '</div>';
       }
-      el.className = 'wpPin wpPin--' + type + (mine ? '' : ' wpPin--other');
+      var cls = 'wpPin wpPin--' + type + (mine ? '' : ' wpPin--other');
+      if (el.className !== cls) el.className = cls;
       el.style.left = sx + 'px';
       el.style.top = (sy - PIN_TIP_OFFSET * wpScale) + 'px';
     });
-    Array.from(waypointsLayer.children).forEach(function(el){
-      if (!seen[el.getAttribute('data-id')]) el.remove();
+    Object.keys(pinEls).forEach(function(id){
+      if (!seen[id]){ pinEls[id].remove(); delete pinEls[id]; }
     });
     if (typeof logView !== 'undefined' && logView.classList.contains('show')) renderLogList();
   }
@@ -1938,6 +1982,7 @@
       var now = Date.now();
       var fresh = Object.keys(boatPositions).map(function(uid){ return boatPositions[uid]; })
         .filter(function(b){ return now - b.updatedAt <= BOAT_REMOVE_MS; }) // hasn't checked in for a very long time -- treat as gone for good
+        .filter(function(b){ return b.uid !== myUid; }) // that's you (the snapshot may predate a new login)
         .filter(function(b){
           // people sitting right next to you are in YOUR boat -- you already
           // see yourself as the big amber dot, so don't also show them as a
@@ -2090,29 +2135,52 @@
   }
 
   // How often your position is written, balanced against Firestore's daily
-  // free quota: every 8s at most while you're moving, but only once a
+  // free quota (every write is a read for every other phone that's open):
+  // every 20 s at most while you're moving (admin setting), but only once a
   // minute while you sit still (boats only turn grey after 15 minutes, so
   // that's plenty to keep your pip alive).
   var lastPosWriteAt = 0;
   var lastWrittenLatLon = null;
-  var POS_MOVING_INTERVAL_MS = 8000;
+  // How often while moving is set on the admin page (10/20/30/60 s, default
+  // 20 s) and shared with every phone through Firestore (config/<lake>); the
+  // last known value is remembered on the phone for offline starts.
+  var POS_INTERVAL_CHOICES = [10, 20, 30, 60];
+  var POS_INTERVAL_DEFAULT_S = 20;
+  var POS_INTERVAL_KEY = 'ffmap_pos_interval_s_v1';
+  var posIntervalS = POS_INTERVAL_DEFAULT_S;
+  try {
+    var savedPi = parseInt(localStorage.getItem(POS_INTERVAL_KEY), 10);
+    if (POS_INTERVAL_CHOICES.indexOf(savedPi) !== -1) posIntervalS = savedPi;
+  } catch(e){}
   var POS_IDLE_INTERVAL_MS = 60000;
   var POS_MOVE_THRESHOLD_M = 12; // less than this counts as "still" (normal GPS jitter at anchor)
+  if (rotState && rotState.pos){ lastPosWriteAt = rotState.pos.at || 0; lastWrittenLatLon = rotState.pos.ll || null; } // no extra write per rotation
+  // Firestore doc ids can't contain "/" (and can't be "." / ".." / "__x__"),
+  // but "Annat namn" lets people type anything -- so make the position doc
+  // id safe. Ordinary names give exactly the same id as before.
+  function posDocId(uid){
+    var id = String(uid).replace(/\//g, '_');
+    if (id === '.' || id === '..' || /^__.*__$/.test(id)) id = 'u_' + id;
+    return id;
+  }
   function maybeBroadcastPosition(lat, lon){
     if (!USE_FIREBASE || !posCol || !myUid) return;
     if (!isNearLake(lat, lon)) return;
     var now = Date.now();
     var since = now - lastPosWriteAt;
-    if (since < POS_MOVING_INTERVAL_MS) return;
+    var movingMs = posIntervalS * 1000;
+    if (since < movingMs) return;
     var movedM = lastWrittenLatLon ? haversineKm(lastWrittenLatLon.lat, lastWrittenLatLon.lon, lat, lon) * 1000 : Infinity;
-    if (movedM < POS_MOVE_THRESHOLD_M && since < POS_IDLE_INTERVAL_MS) return;
+    if (movedM < POS_MOVE_THRESHOLD_M && since < Math.max(POS_IDLE_INTERVAL_MS, movingMs)) return;
     lastPosWriteAt = now;
     lastWrittenLatLon = { lat: lat, lon: lon };
     addUsage('w', 1);
-    posCol.doc(myUid).set({
-      lat: lat, lon: lon, name: userName || '', uid: myUid, lake: LAKE_ID,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    }, { merge: true }).catch(function(e){ console.warn('kunde inte dela position', e); });
+    try {
+      posCol.doc(posDocId(myUid)).set({
+        lat: lat, lon: lon, name: userName || '', uid: myUid, lake: LAKE_ID,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true }).catch(function(e){ console.warn('kunde inte dela position', e); });
+    } catch(e){ console.warn('kunde inte dela position', e); }
   }
 
   // Mark your shared position as long gone (e.g. on logout), so it disappears
@@ -2123,8 +2191,12 @@
     if (!USE_FIREBASE || !posCol || !myUid) return;
     if (!firebase.firestore.Timestamp) return;
     addUsage('w', 1);
-    posCol.doc(myUid).set({ updatedAt: firebase.firestore.Timestamp.fromMillis(0) }, { merge: true })
-      .catch(function(){ /* no doc yet for this name -- nothing to expire */ });
+    try {
+      // update() rather than set(merge): never creates an empty stub doc for
+      // a name that never shared a position
+      posCol.doc(posDocId(myUid)).update({ updatedAt: firebase.firestore.Timestamp.fromMillis(0) })
+        .catch(function(){ /* no doc for this name -- nothing to expire */ });
+    } catch(e){}
   }
 
   // A GPS fix only arrives from watchPosition when the device's location
@@ -2135,7 +2207,7 @@
   // maybeBroadcastPosition decides it's due (moved, or a minute has passed).
   setInterval(function(){
     if (lastOwnLatLon) maybeBroadcastPosition(lastOwnLatLon.lat, lastOwnLatLon.lon);
-  }, POS_MOVING_INTERVAL_MS);
+  }, 2000); // (a steady, cheap tick; maybeBroadcastPosition itself decides when a write is due)
 
   function startLongPress(sx, sy){
     cancelLongPress();
@@ -2252,7 +2324,7 @@
     wpSaveBtn.hidden = !canEdit;
     Array.from(wpTypeSeg.children).forEach(function(b){ b.disabled = !canEdit; });
     showEditingType();
-    if (hiddenTypes[editingType]) renderWaypoints(); // draw it even though its type is filtered out
+    if (!pinEls[wp.id]) renderWaypoints(); // draw it even if a filter (Mina / Andras / type) hides it
     editingWpInfo = { lat: wp.lat, lon: wp.lon, mine: mine, by: wp.by, createdAt: wp.createdAt };
     refreshSheetMeta();
     sheetBackdrop.classList.add('show');
@@ -2267,6 +2339,7 @@
     editingId = null;
     editingIsNew = false;
     editingWpInfo = null;
+    renderWaypoints(); // a spot that only showed because it was being edited is hidden again
   }
   function deleteWaypointById(id){
     if (USE_FIREBASE){ addUsage('d', 1); fsCol.doc(id).delete().catch(function(e){ console.warn(e); }); }
@@ -2281,6 +2354,8 @@
     var v = wpNameInput.value.trim();
     var upd = { type: editingType };
     if (hiddenTypes[editingType]) setTypeHidden(editingType, false); // don't let the spot you just saved vanish
+    var cur = waypoints.filter(function(w){ return w.id === editingId; })[0];
+    if (cur && wpType(cur) === editingType && (!v || v === cur.name)){ closeSheet(); return; } // nothing changed
     if (v) upd.name = v;           // an emptied name keeps the old one
     if (USE_FIREBASE){ addUsage('w', 1); fsCol.doc(editingId).update(upd).catch(function(e){ console.warn(e); }); }
     else {
@@ -2454,6 +2529,7 @@
   }
   var USAGE_REPORT_MS = 5 * 60 * 1000;
   var lastUsageReportAt = 0, lastUsageReportKey = '';
+  if (rotState && rotState.usage){ lastUsageReportAt = rotState.usage.at || 0; lastUsageReportKey = rotState.usage.key || ''; }
   var usageReportDenied = false;
   function reportUsage(force){
     if (!USE_FIREBASE || !usageCol || !myUid) return;
@@ -2533,11 +2609,79 @@
           if (!(snap.metadata && snap.metadata.fromCache)) posListenerBilled = countListenerReads(snap, posListenerBilled);
           applyPositionsSnapshot(snap);
         }, function(err){ console.warn('positions sync error', err); });
+        // shared settings for everyone (just the position interval for now):
+        // one small doc, 1 read at start + 1 whenever the admin changes it
+        try {
+          cfgDoc = fsdb.collection('config').doc(LAKE_ID);
+          cfgDoc.onSnapshot(function(snap){
+            if (!(snap.metadata && snap.metadata.fromCache)) addUsage('r', 1);
+            sharedCfgError = null;
+            applySharedConfig(snap.exists ? snap.data() : null);
+          }, function(err){
+            sharedCfgError = (err && err.code) || 'error';
+            console.warn('config sync error', err);
+            renderPosIntervalAdmin();
+          });
+        } catch(e){ console.warn('config init', e); }
         cb(true);
       });
       auth.signInAnonymously().catch(function(err){ console.warn('anonym inloggning misslyckades', err); cb(false); });
     } catch(e){ console.warn('firebase init misslyckades', e); cb(false); }
   }
+
+  /* ---- shared settings (config/<lake>) ---- */
+  var cfgDoc = null, sharedCfgError = null, posIntervalSaveMsg = '';
+  function applySharedConfig(d){
+    var v = d ? parseInt(d.posIntervalS, 10) : NaN;
+    if (POS_INTERVAL_CHOICES.indexOf(v) !== -1 && v !== posIntervalS){
+      posIntervalS = v;
+      try { localStorage.setItem(POS_INTERVAL_KEY, String(v)); } catch(e){}
+    }
+    renderPosIntervalAdmin();
+  }
+  function setSharedPosInterval(v){
+    if (POS_INTERVAL_CHOICES.indexOf(v) === -1) return;
+    posIntervalS = v; // this phone right away
+    try { localStorage.setItem(POS_INTERVAL_KEY, String(v)); } catch(e){}
+    if (!USE_FIREBASE || !cfgDoc){
+      posIntervalSaveMsg = 'Ingen anslutning till databasen – gäller bara den här telefonen just nu.';
+      renderPosIntervalAdmin(); return;
+    }
+    posIntervalSaveMsg = 'Sparar…';
+    renderPosIntervalAdmin();
+    addUsage('w', 1);
+    cfgDoc.set({ posIntervalS: v, updatedBy: userName || '', updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true })
+      .then(function(){ posIntervalSaveMsg = 'Sparat – gäller alla telefoner.'; renderPosIntervalAdmin(); })
+      .catch(function(err){
+        posIntervalSaveMsg = (err && err.code === 'permission-denied')
+          ? 'Kunde inte spara: Firestore-reglerna saknar "config". Gäller bara den här telefonen tills regeln är tillagd.'
+          : 'Kunde inte spara (' + ((err && err.code) || 'fel') + ').';
+        renderPosIntervalAdmin();
+      });
+  }
+  function renderPosIntervalAdmin(){
+    var seg = document.getElementById('adminPosIntervalSeg');
+    if (!seg) return;
+    Array.from(seg.children).forEach(function(b){
+      var on = parseInt(b.getAttribute('data-s'), 10) === posIntervalS;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-checked', on ? 'true' : 'false');
+    });
+    // every write is read once by every other phone that's open
+    var boats = 8, perHour = boats * (3600 / posIntervalS) * (boats - 1);
+    document.getElementById('adminPosIntervalEst').textContent =
+      'Med ' + boats + ' båtar som kör samtidigt: ca ' + (Math.round(perHour / 1000) * 1000).toLocaleString('sv-SE') + ' reads i timmen.';
+    var st = document.getElementById('adminPosIntervalStatus');
+    var msg = posIntervalSaveMsg;
+    if (!msg && sharedCfgError === 'permission-denied') msg = 'Firestore-reglerna saknar "config" – inställningen kan inte delas med de andra än.';
+    st.textContent = msg;
+    st.hidden = !msg;
+  }
+  document.getElementById('adminPosIntervalSeg').addEventListener('click', function(e){
+    var b = e.target.closest ? e.target.closest('button[data-s]') : null;
+    if (b) setSharedPosInterval(parseInt(b.getAttribute('data-s'), 10));
+  });
+  renderPosIntervalAdmin();
 
   var refreshBtn = document.getElementById('refreshBtn');
   refreshBtn.addEventListener('click', function(){
@@ -2644,6 +2788,9 @@
         '</div>';
     }).join('');
     logList.innerHTML = html;
+    if (pendingLogScroll != null && logList.scrollHeight - logList.clientHeight >= pendingLogScroll){
+      logList.scrollTop = pendingLogScroll; pendingLogScroll = null;
+    }
   }
 
   logList.addEventListener('click', function(e){
@@ -2769,6 +2916,7 @@
   // Typing your own lat/lon works exactly like the reroll button: it moves
   // the demo position and, if Demo Mode is on, updates the GPS fix live.
   function commitManualDemoCoords(){
+    demoInputDirty = false;
     var lat = parseFloat(demoLatInput.value.replace(',', '.'));
     var lon = parseFloat(demoLonInput.value.replace(',', '.'));
     var okLat = isFinite(lat) && lat >= -90 && lat <= 90;
@@ -2784,8 +2932,9 @@
   demoLonInput.addEventListener('blur', commitManualDemoCoords);
   demoLatInput.addEventListener('keydown', function(e){ if (e.key === 'Enter') demoLatInput.blur(); });
   demoLonInput.addEventListener('keydown', function(e){ if (e.key === 'Enter') demoLonInput.blur(); });
-  demoLatInput.addEventListener('input', function(){ demoLatInput.classList.remove('invalid'); });
-  demoLonInput.addEventListener('input', function(){ demoLonInput.classList.remove('invalid'); });
+  var demoInputDirty = false; // typed but not committed yet (see saveRotationState)
+  demoLatInput.addEventListener('input', function(){ demoLatInput.classList.remove('invalid'); demoInputDirty = true; });
+  demoLonInput.addEventListener('input', function(){ demoLonInput.classList.remove('invalid'); demoInputDirty = true; });
 
   function setDemoMode(on){
     demoMode = on;
@@ -2812,13 +2961,20 @@
       setDemoMovePref(true);
       startDemoMotion();
       if (moveToggle) moveToggle.checked = !!demoSim;
-    } else if (lastRealFix){
-      onFix(lastRealFix.lat, lastRealFix.lon, lastRealFix.acc);
     } else {
-      // No real GPS fix yet -- don't leave you (and the position shared with
-      // the others) parked on the demo spot. Clear it until real GPS answers.
-      clearOwnFix();
-      showGpsProblem();
+      // The others may still see you at the demo spot: replace it with your
+      // real position right away if you're at the lake, otherwise remove it.
+      var sharedDemo = !!lastWrittenLatLon;
+      lastPosWriteAt = 0; lastWrittenLatLon = null;
+      if (sharedDemo && !(lastRealFix && isNearLake(lastRealFix.lat, lastRealFix.lon))) expireOwnPosition();
+      if (lastRealFix){
+        onFix(lastRealFix.lat, lastRealFix.lon, lastRealFix.acc);
+      } else {
+        // No real GPS fix yet -- don't leave you parked on the demo spot.
+        // Clear it until real GPS answers.
+        clearOwnFix();
+        showGpsProblem();
+      }
     }
   }
   demoModeToggle.addEventListener('change', function(){
@@ -3100,6 +3256,7 @@
     if (!isAdminUnlocked()) return;
     adminEditAllToggle.checked = adminCanEditAll();
     usageReports = null; usageFetchError = null;
+    posIntervalSaveMsg = ''; renderPosIntervalAdmin();
     renderAdmin();
     fetchUsageTotals();
     adminView.classList.add('show');
@@ -3382,6 +3539,7 @@
   var speedFixes = [];   // recent fixes {t, lat, lon, acc} (last ~20 s)
   var speedSamples = []; // recent speeds {t, v} in m/s (last ~10 s)
   function resetSpeedTracking(){ speedFixes = []; speedSamples = []; }
+  if (rotState && rotState.speed){ speedFixes = rotState.speed.f || []; speedSamples = rotState.speed.s || []; } // knot meter keeps going through a rotation
 
   // Called for every position (real GPS or demo). Prefers the speed the GPS
   // chip itself reports (accurate even at trolling speed); otherwise works
@@ -3698,6 +3856,7 @@
      meter, average speed, measuring tool and position sharing all get
      exercised. */
   var demoSim = null;
+  var rotDemoSimUsed = false;
   var demoMoveToggle = document.getElementById('demoMoveToggle');
   // remembered so it survives a reload -- the home-screen app reloads the
   // page on every rotation (see handleOrientationEvent), which used to
@@ -3713,6 +3872,13 @@
     if (demoSim || !demoMode || demoLat == null) return;
     demoSim = { heading: Math.random() * 360, turn: 0, t0: Date.now(), phase: Math.random() * 100,
                 cLat: demoLat, cLon: demoLon, lastSave: Date.now() };
+    if (rotState && rotState.demoSim && !rotDemoSimUsed){
+      // after a rotation reload: same course, same circling centre as before
+      rotDemoSimUsed = true;
+      ['heading', 'turn', 'phase', 't0', 'cLat', 'cLon'].forEach(function(k){
+        if (typeof rotState.demoSim[k] === 'number') demoSim[k] = rotState.demoSim[k];
+      });
+    }
     demoSim.timer = setInterval(demoSimTick, 1000);
   }
   function stopDemoMotion(){
@@ -3936,8 +4102,122 @@
       localOnlyMode = !ok;
       updateNetBadge();
       if (!ok){ loadLocalWaypoints(); renderWaypoints(); }
+      else uploadLocalOnlySpots();
     });
   }
+  // Spots saved only on this phone because the shared database wasn't
+  // available (no coverage when the app started, or a long-press in the very
+  // first second) -- upload them now that it is, instead of leaving them
+  // hidden on the phone for ever. (Only recent ones.)
+  function uploadLocalOnlySpots(){
+    if (!USE_FIREBASE || !fsCol || !myUid) return;
+    var list;
+    try { list = JSON.parse(localStorage.getItem(WP_KEY) || '[]'); } catch(e){ return; }
+    if (!Array.isArray(list) || !list.length) return;
+    var now = Date.now(), keep = [], n = 0;
+    list.forEach(function(w){
+      var pending = w && w.uid === 'local' && (!w.lake || w.lake === LAKE_ID) &&
+        now - (w.createdAt || 0) < 7 * 24 * 3600 * 1000 && isFinite(w.lat) && isFinite(w.lon) && w.id;
+      if (!pending){ keep.push(w); return; }
+      n++;
+      addUsage('w', 1);
+      try {
+        fsCol.doc(String(w.id)).set({
+          lat: w.lat, lon: w.lon, name: w.name || WP_TYPES[wpType(w)].label, type: wpType(w),
+          uid: myUid, by: userName || '', lake: LAKE_ID,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        }).catch(function(err){ console.warn('kunde inte ladda upp fiskeplats', err); });
+      } catch(e){ keep.push(w); }
+    });
+    if (n){ try { localStorage.setItem(WP_KEY, JSON.stringify(keep)); } catch(e){} }
+  }
+
+  /* ---- rotation: keep everything as it was ----
+     The home-screen app reloads the whole page when the phone is rotated
+     (see handleOrientationEvent). Settings, filters, Demo Mode, the
+     measurement etc. are stored as you change them; this saves the rest --
+     what was on screen and what was half-done -- right before the reload,
+     and puts it back afterwards. */
+  var pendingSheetRestore = null, pendingLogScroll = null;
+  function saveRotationState(){
+    // a half-typed number field: its blur/commit never fires on a reload
+    try {
+      if (document.activeElement === cruiseInput) commitCruise();
+      if (demoInputDirty) commitManualDemoCoords();
+    } catch(e){}
+    var st = { t: Date.now() };
+    try {
+      st.view = adminView.classList.contains('show') ? 'admin'
+              : settingsView.classList.contains('show') ? 'settings'
+              : logView.classList.contains('show') ? 'log' : 'map';
+      st.scroll = {
+        log: logList.scrollTop,
+        settings: document.getElementById('settingsBody').scrollTop,
+        admin: document.getElementById('adminBody').scrollTop
+      };
+      st.menu = menuPanel.classList.contains('show');
+      if (editingId && wpSheet.classList.contains('show')){
+        st.sheet = { id: editingId, isNew: editingIsNew, name: wpNameInput.value, type: editingType };
+      }
+      if (nameModal.classList.contains('show')){
+        st.nameModal = { sel: selectedRosterName, other: otherNameMode, text: nameInput.value, scroll: nameListEl.scrollTop };
+      }
+      st.speed = { f: speedFixes, s: speedSamples };
+      st.pos = { at: lastPosWriteAt, ll: lastWrittenLatLon };
+      st.usage = { at: lastUsageReportAt, key: lastUsageReportKey };
+      if (demoSim) st.demoSim = { heading: demoSim.heading, turn: demoSim.turn, phase: demoSim.phase, t0: demoSim.t0, cLat: demoSim.cLat, cLon: demoSim.cLon };
+    } catch(e){}
+    try { sessionStorage.setItem(ROT_STATE_KEY, JSON.stringify(st)); } catch(e){}
+  }
+  function restoreRotationUi(){
+    if (!rotState) return;
+    var r = rotState;
+    try {
+      if (r.nameModal && nameModal.classList.contains('show')){
+        var chip = r.nameModal.other ? nameListEl.querySelector('[data-other]')
+                 : (r.nameModal.sel ? nameListEl.querySelector('.nameChip[data-name="' + String(r.nameModal.sel).replace(/"/g, '') + '"]') : null);
+        if (chip) chip.click();
+        if (r.nameModal.other) nameInput.value = r.nameModal.text || '';
+        nameListEl.scrollTop = r.nameModal.scroll || 0;
+        return; // nothing else is open before you've picked a name
+      }
+      var sc = r.scroll || {};
+      if (r.view === 'log'){
+        showLogView();
+        pendingLogScroll = sc.log || null;
+        if (pendingLogScroll) renderLogList();
+      } else if (r.view === 'settings' || r.view === 'admin'){
+        showSettingsView();
+        document.getElementById('settingsBody').scrollTop = sc.settings || 0;
+        if (r.view === 'admin' && isAdminUnlocked()){
+          openAdminView();
+          document.getElementById('adminBody').scrollTop = sc.admin || 0;
+        }
+      }
+      if (r.menu) toggleMenu(true);
+      if (r.sheet && r.sheet.id){
+        pendingSheetRestore = { s: r.sheet, until: Date.now() + 10000 };
+        tryRestoreSheet();
+      }
+    } catch(e){ console.warn('kunde inte återställa efter rotation', e); }
+  }
+  // the spot has to be back in the list (from the phone's cache or the
+  // server) before its sheet can reopen -- checked on every render
+  function tryRestoreSheet(){
+    var pr = pendingSheetRestore;
+    if (!pr) return;
+    if (Date.now() > pr.until){ pendingSheetRestore = null; return; }
+    var wp = waypoints.filter(function(w){ return w.id === pr.s.id; })[0];
+    if (!wp) return;
+    pendingSheetRestore = null;
+    setTimeout(function(){
+      if (wpSheet.classList.contains('show')) return; // something else was opened meanwhile
+      openSheetForWp(wp, !!pr.s.isNew);
+      if (typeof pr.s.name === 'string') wpNameInput.value = pr.s.name;
+      if (pr.s.type && WP_TYPES[pr.s.type] && !wpNameInput.disabled){ editingType = pr.s.type; showEditingType(); }
+    }, 0);
+  }
+
   function boot(){
     setImgNativeSize();
     initView();
@@ -3947,6 +4227,7 @@
     } else {
       showNameModal();
     }
+    restoreRotationUi();
   }
   if (img.complete) boot(); else img.addEventListener('load', boot);
 })();
