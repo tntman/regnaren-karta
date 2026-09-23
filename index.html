@@ -220,7 +220,6 @@
   .mpBtn:active{transform:scale(.95);}
   .mpClose{width:34px;height:34px;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;}
   .mpClose svg{width:15px;height:15px;}
-  body.measuring #demoBanner{bottom:calc(env(safe-area-inset-bottom,0px) + 214px);}
 
   #addHereBtn{
     position:absolute;right:18px;
@@ -254,10 +253,13 @@
   #addHereBtn .addBadge svg{width:11px;height:11px;display:block;}
   #addHereBtn:disabled{opacity:.4;}
 
+  /* top-right column: the visibility toggles, and the Demo Mode sign right under them */
+  #topRight{
+    position:absolute;right:14px;top:calc(env(safe-area-inset-top,0px) + 14px);z-index:21;
+    display:flex;flex-direction:column;align-items:stretch;gap:8px;pointer-events:none;
+  }
   #visPanel{
-    position:absolute;right:14px;
-    top:calc(env(safe-area-inset-top,0px) + 14px);
-    z-index:21;
+    pointer-events:auto;
     display:flex;flex-direction:column;gap:8px;
     background:var(--navy-glass);backdrop-filter:blur(6px);
     border:1px solid rgba(255,255,255,.12);
@@ -378,21 +380,18 @@
   .settingsRowDesc{font-size:12px;color:var(--text-muted);margin-top:3px;line-height:1.4;}
 
   #demoBanner{
-    /* sits above the bottom controls (legend, refresh, "far away" pill)
-       instead of on top of them */
-    position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 150px);
-    transform:translateX(-50%);
-    z-index:25;pointer-events:none;
+    /* small sign under the toggle panel (top right), same width as the panel */
+    pointer-events:none;
     color:var(--navy);text-align:center;
-    padding:12px 28px;border-radius:16px;
-    box-shadow:0 6px 20px rgba(0,0,0,.45);
+    padding:6px 8px 7px;border-radius:12px;
+    box-shadow:0 4px 14px rgba(0,0,0,.4);
     display:none;
     animation:demoBannerBlink 3s ease-in-out infinite;
   }
   #demoBanner.show{display:block;}
-  .demoBannerTitle{font-weight:700;font-size:15px;letter-spacing:.06em;}
-  .demoBannerSub{font-weight:600;font-size:11.5px;letter-spacing:.03em;margin-top:3px;opacity:.85;}
-  .demoBannerTimer{font-weight:600;font-size:10.5px;margin-top:4px;opacity:.75;white-space:nowrap;}
+  .demoBannerTitle{font-weight:700;font-size:12.5px;letter-spacing:.06em;}
+  .demoBannerSub{font-weight:600;font-size:10.5px;letter-spacing:.02em;margin-top:2px;opacity:.85;line-height:1.25;}
+  .demoBannerTimer{font-weight:600;font-size:10px;margin-top:3px;opacity:.75;white-space:nowrap;}
   .demoBannerTimer:empty{display:none;}
   @keyframes demoBannerBlink{
     0%, 100% { background:var(--amber); }
@@ -447,11 +446,9 @@
     #refreshBtn{bottom:calc(env(safe-area-inset-bottom,0px) + 13px);width:38px;height:38px;right:68px;}
     #addHereBtn{bottom:calc(env(safe-area-inset-bottom,0px) + 62px);}
     #farAway{bottom:calc(env(safe-area-inset-bottom,0px) + 58px);}
-    #demoBanner{bottom:calc(env(safe-area-inset-bottom,0px) + 110px);padding:8px 22px;}
     #measureBtn{bottom:calc(env(safe-area-inset-bottom,0px) + 62px);width:38px;height:38px;right:68px;}
     #speedPill{left:190px;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);}
     #measurePanel{bottom:calc(env(safe-area-inset-bottom,0px) + 114px);}
-    body.measuring #demoBanner{bottom:calc(env(safe-area-inset-bottom,0px) + 176px);}
   }
 
   #waypoints{position:absolute;inset:0;z-index:14;pointer-events:none;} /* fishing spots: lowest of the map markers */
@@ -1010,11 +1007,6 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"></path></svg>
     </button>
   </div>
-  <div id="demoBanner">
-    <div class="demoBannerTitle">DEMO MODE</div>
-    <div class="demoBannerSub">Använd ej på vattnet!</div>
-    <div class="demoBannerTimer" id="demoBannerTimer"></div>
-  </div>
 
   <div id="marker">
     <div id="accRing"></div>
@@ -1058,6 +1050,7 @@
     <span class="addBadge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg></span>
   </button>
 
+  <div id="topRight">
   <div id="visPanel">
     <label class="visRow">
       <span class="visSwatch"><svg viewBox="0 0 384 384" fill="currentColor"><path d="M 200.40625 82.164062 L 191.828125 82.164062 L 178.441406 84.570312 L 167.804688 88.34375 L 157.164062 94.175781 L 151.328125 98.640625 L 143.429688 106.539062 L 139.65625 111.335938 L 135.195312 118.207031 L 130.734375 127.46875 L 130.050781 130.558594 L 142.402344 129.53125 L 157.507812 129.53125 L 173.976562 130.90625 L 188.390625 133.648438 L 188.738281 119.234375 L 190.800781 107.566406 L 194.574219 95.550781 Z M 200.40625 82.164062 "/><path d="M 96.75 142.574219 L 101.210938 149.78125 L 107.390625 162.824219 L 111.855469 178.265625 L 113.917969 192.691406 L 113.917969 209.503906 L 111.511719 225.292969 L 109.792969 231.816406 L 106.019531 242.453125 L 101.210938 252.066406 L 96.75 258.585938 L 117 263.046875 L 139.65625 265.453125 L 167.113281 265.109375 L 177.757812 264.082031 L 194.226562 261.328125 L 216.539062 255.496094 L 238.507812 247.261719 L 261.503906 235.933594 L 293.085938 217.402344 L 313.671875 233.191406 L 334.957031 247.605469 L 349.371094 256.183594 L 359.324219 261.328125 L 361.386719 262.019531 L 363.441406 261.675781 L 363.441406 260.300781 L 339.421875 203.324219 L 339.074219 201.609375 L 348.683594 183.421875 L 356.578125 166.941406 L 367.558594 140.859375 L 367.558594 139.140625 L 363.789062 139.828125 L 358.980469 142.230469 L 338.046875 154.925781 L 313.335938 172.09375 L 295.140625 186.164062 L 263.21875 167.289062 L 239.199219 155.273438 L 218.601562 147.039062 L 203.152344 142.230469 L 191.828125 139.484375 L 178.441406 137.085938 L 166.769531 135.710938 L 145.492188 135.023438 L 132.796875 135.710938 L 121.125 137.085938 L 108.082031 139.484375 Z M 96.75 142.574219 "/><path d="M 87.832031 145.320312 L 77.871094 149.4375 L 65.863281 155.273438 L 53.851562 162.140625 L 45.609375 167.632812 L 33.253906 177.238281 L 22.613281 187.539062 L 16.441406 195.089844 L 15.75 198.179688 L 17.8125 202.980469 L 20.558594 207.441406 L 28.449219 217.738281 L 37.027344 226.664062 L 45.609375 233.871094 L 54.878906 240.398438 L 64.828125 246.234375 L 82.335938 254.121094 L 88.171875 256.183594 L 90.234375 256.183594 L 93.667969 252.75 L 97.09375 246.914062 L 101.558594 236.960938 L 104.300781 228.382812 L 107.390625 211.90625 L 107.738281 194.746094 L 105.328125 177.929688 L 103.621094 171.40625 L 99.839844 161.109375 L 95.378906 152.183594 L 91.605469 146.347656 L 89.886719 145.320312 Z M 87.832031 145.320312 "/><path d="M 186.683594 301.492188 L 180.15625 287.414062 L 173.640625 269.574219 L 161.96875 270.601562 L 135.539062 270.253906 L 137.59375 274.371094 L 143.429688 281.925781 L 150.984375 289.132812 L 158.878906 294.628906 L 166.769531 298.402344 L 175.011719 300.800781 L 182.21875 301.835938 Z M 186.683594 301.492188 "/></svg></span>
@@ -1092,6 +1085,12 @@
         <span class="toggleTrack"><span class="toggleThumb"></span></span>
       </span>
     </label>
+  </div>
+  <div id="demoBanner">
+    <div class="demoBannerTitle">DEMO MODE</div>
+    <div class="demoBannerSub">Använd ej<br>på vattnet!</div>
+    <div class="demoBannerTimer" id="demoBannerTimer"></div>
+  </div>
   </div>
 
   <div id="sheetBackdrop"></div>
@@ -2485,7 +2484,7 @@
       demoModeToggle.checked = false;
       return;
     }
-    demoBannerTimerEl.textContent = 'Stängs av automatiskt om ' + Math.ceil(left / 60000) + ' min';
+    demoBannerTimerEl.textContent = 'Stängs av om ' + Math.ceil(left / 60000) + ' min';
   }
   // checked often enough to be on time, and right away when you come back
   // to the app (timers are paused while the phone is locked)
@@ -2548,7 +2547,7 @@
     if (moveRow) moveRow.style.display = on ? 'flex' : 'none';
     var moveToggle = document.getElementById('demoMoveToggle');
     if (moveToggle) moveToggle.checked = false;
-    if (on) demoAvg = { b: [] };    // a fresh demo average every time
+    if (on){ demoAvg = { b: [] }; saveDemoAvg(); } // a fresh demo average every time
     demoSince = on ? Date.now() : 0;
     try {
       localStorage.setItem(DEMO_KEY, on ? '1' : '0');
@@ -2561,6 +2560,10 @@
     if (on){
       setDemoCoords(randomDemoPoint()); // fresh random spot every time Demo Mode is switched on
       onFix(demoLat, demoLon, 8);
+      // simulated motion starts right away (switch it off under Settings if you want to stand still)
+      setDemoMovePref(true);
+      startDemoMotion();
+      if (moveToggle) moveToggle.checked = !!demoSim;
     } else if (lastRealFix){
       onFix(lastRealFix.lat, lastRealFix.lon, lastRealFix.acc);
     } else {
@@ -3192,7 +3195,12 @@
   try { localStorage.removeItem('ffmap_avg_speed_v1'); } catch(e){}
   var realAvg = { b: [] };
   try { var ra = JSON.parse(localStorage.getItem(AVG_KEY) || 'null'); if (ra && ra.b) realAvg = ra; } catch(e){}
+  var DEMO_AVG_KEY = 'ffmap_demo_avg_v1';
   var demoAvg = { b: [] };
+  if (demoMode){
+    try { var da = JSON.parse(sessionStorage.getItem(DEMO_AVG_KEY) || 'null'); if (da && da.b) demoAvg = da; } catch(e){}
+  }
+  function saveDemoAvg(){ try { sessionStorage.setItem(DEMO_AVG_KEY, JSON.stringify(demoAvg)); } catch(e){} }
   var avgSaveTimer = null;
   function saveAvgNow(){
     if (avgSaveTimer){ clearTimeout(avgSaveTimer); avgSaveTimer = null; }
@@ -3200,6 +3208,7 @@
   }
   function saveAvgSoon(){ if (!avgSaveTimer) avgSaveTimer = setTimeout(saveAvgNow, 10000); }
   document.addEventListener('visibilitychange', function(){ if (document.visibilityState === 'hidden') saveAvgNow(); });
+  window.addEventListener('pagehide', saveAvgNow); // e.g. the reload on rotation
   function activeAvg(){ return demoMode ? demoAvg : realAvg; }
   function addUnderway(dist, dt){
     var a = activeAvg();
@@ -3212,7 +3221,7 @@
       tot += a.b[i].dt;
       if (tot > AVG_WINDOW_S + 20){ a.b.splice(0, i); break; }
     }
-    if (a === realAvg) saveAvgSoon();
+    if (a === realAvg) saveAvgSoon(); else saveDemoAvg();
   }
   function avgSpeedInfo(){
     var a = activeAvg();
@@ -3413,7 +3422,14 @@
      exercised. */
   var demoSim = null;
   var demoMoveToggle = document.getElementById('demoMoveToggle');
+  // remembered so it survives a reload -- the home-screen app reloads the
+  // page on every rotation (see handleOrientationEvent), which used to
+  // switch the motion off
+  var DEMO_MOVE_KEY = 'regnaren_demo_move_v1';
+  function demoMovePref(){ try { return localStorage.getItem(DEMO_MOVE_KEY) !== '0'; } catch(e){ return true; } }
+  function setDemoMovePref(on){ try { localStorage.setItem(DEMO_MOVE_KEY, on ? '1' : '0'); } catch(e){} }
   demoMoveToggle.addEventListener('change', function(){
+    setDemoMovePref(demoMoveToggle.checked);
     if (demoMoveToggle.checked) startDemoMotion(); else stopDemoMotion();
   });
   function startDemoMotion(){
@@ -3457,10 +3473,7 @@
     demoLon += ms * Math.sin(h) / (111320 * cosLat);
     var ae = document.activeElement;
     if (ae !== demoLatInput && ae !== demoLonInput) updateDemoCoordsInputs(); // don't fight someone typing
-    if (Date.now() - demoSim.lastSave > 10000){
-      demoSim.lastSave = Date.now();
-      try { localStorage.setItem(DEMO_LAT_KEY, demoLat); localStorage.setItem(DEMO_LON_KEY, demoLon); } catch(e){}
-    }
+    try { localStorage.setItem(DEMO_LAT_KEY, demoLat); localStorage.setItem(DEMO_LON_KEY, demoLon); } catch(e){}
     onFix(demoLat, demoLon, 8, ms);
   }
 
@@ -3626,6 +3639,10 @@
       demoCoordsRow.style.display = 'flex';
       document.getElementById('demoMoveRow').style.display = 'flex';
       onFix(demoLat, demoLon, 8);
+      if (demoMovePref()){
+        startDemoMotion();
+        document.getElementById('demoMoveToggle').checked = !!demoSim;
+      }
     }
     startGeolocation();
     initSharedWaypoints(function(ok){
