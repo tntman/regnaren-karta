@@ -402,7 +402,7 @@
     /* --wp-scale: the "Storlek på fiskeplatser" setting (scales around the
        pin's centre; renderWaypoints lifts it by the scaled tip offset so
        the tip stays exactly on the spot) */
-    transform:translate(-50%,-50%) rotate(-45deg) scale(var(--wp-scale, 1));
+    transform:translate(-50%,-50%) rotate(-45deg) scale(var(--wp-scale, .7));
     border-radius:50% 50% 50% 0;
     background:var(--offwhite);
     border:2px solid var(--ink);
@@ -410,7 +410,10 @@
     pointer-events:auto;cursor:pointer;
     -webkit-tap-highlight-color:transparent;
   }
-  .wpPin:active{transform:translate(-50%,-50%) rotate(-45deg) scale(calc(var(--wp-scale, 1) * .9));}
+  .wpPin:active{transform:translate(-50%,-50%) rotate(-45deg) scale(calc(var(--wp-scale, .7) * .9));}
+  /* invisible tap area around small pins, so they stay easy to hit with a
+     finger (--wp-hit is set from the size setting in applyWpScale) */
+  .wpPin::after{content:'';position:absolute;inset:calc(var(--wp-hit, 0px) * -1);border-radius:50%;}
   .wpPin .pinHead{
     position:absolute;left:50%;top:46%;
     width:23px;height:23px;
@@ -693,10 +696,9 @@
           <div class="wpSizePreview"><div class="wpPin" id="wpSizePreviewPin"><div class="pinHead"></div></div></div>
         </div>
         <div class="segmented" id="wpSizeSeg" role="radiogroup" aria-label="Storlek på fiskeplatser">
-          <button type="button" data-size="0.7" role="radio">Liten</button>
-          <button type="button" data-size="1" role="radio">Normal</button>
-          <button type="button" data-size="1.35" role="radio">Stor</button>
-          <button type="button" data-size="1.7" role="radio">Extra stor</button>
+          <button type="button" data-size="0.5" role="radio">Liten</button>
+          <button type="button" data-size="0.7" role="radio">Normal</button>
+          <button type="button" data-size="1" role="radio">Stor</button>
         </div>
       </div>
       <label class="settingsRow" for="demoModeToggle">
@@ -1367,16 +1369,22 @@
 
   /* ---- Storlek på fiskeplatser (Settings) ---- */
   var WP_SIZE_KEY = 'regnaren_wp_size_v1';
-  var WP_SIZES = [0.7, 1, 1.35, 1.7];
-  var wpScale = 1;
+  // Liten / Normal / Stor. "Normal" (the default) is what used to be
+  // "Liten"; "Stor" is the original pin size.
+  var WP_SIZES = [0.5, 0.7, 1];
+  var wpScale = 0.7;
   try {
     var savedSize = parseFloat(localStorage.getItem(WP_SIZE_KEY));
     if (WP_SIZES.indexOf(savedSize) !== -1) wpScale = savedSize;
+    else if (savedSize > 1) wpScale = 1; // old "Stor"/"Extra stor" -> the biggest size now
   } catch(e){}
   var wpSizeSeg = document.getElementById('wpSizeSeg');
   document.getElementById('wpSizePreviewPin').querySelector('.pinHead').innerHTML = FISH_SVG;
   function applyWpScale(){
     document.documentElement.style.setProperty('--wp-scale', String(wpScale));
+    // keep the tap target at least ~34px on screen, whatever the pin size
+    var hitPx = Math.max(0, (34 - 30 * wpScale) / 2) / wpScale;
+    document.documentElement.style.setProperty('--wp-hit', hitPx.toFixed(1) + 'px');
     Array.from(wpSizeSeg.children).forEach(function(b){
       var on = parseFloat(b.getAttribute('data-size')) === wpScale;
       b.classList.toggle('active', on);
