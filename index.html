@@ -75,7 +75,7 @@
   }
   .sub{font-size:12.5px;color:var(--text-muted);margin-top:2px;letter-spacing:.01em;}
 
-  #marker{position:absolute;left:0;top:0;z-index:15;pointer-events:none;display:none;}
+  #marker{position:absolute;left:0;top:0;z-index:17;pointer-events:none;display:none;} /* own GPS dot: above boats and fishing spots (never blocks taps -- pointer-events:none) */
   #accRing{
     position:absolute;left:0;top:0;border-radius:50%;
     background:radial-gradient(circle, rgba(232,163,61,.22) 0%, rgba(232,163,61,.12) 60%, rgba(232,163,61,0) 100%);
@@ -156,19 +156,39 @@
   #refreshBtn.spinning svg{animation:spin .7s linear;}
   @keyframes spin{to{transform:rotate(360deg);}}
 
+  /* "add a fishing spot here" button, shaped exactly like a fishing-spot
+     pin (same teardrop, colours and fish as your own pins) with a small
+     amber "+" badge, so it's obvious what it creates */
   #addHereBtn{
-    position:absolute;right:21px;
-    bottom:calc(env(safe-area-inset-bottom,0px) + 86px);
-    z-index:22;
-    width:44px;height:44px;border-radius:50%;
-    background:var(--navy-glass);backdrop-filter:blur(6px);
-    color:var(--offwhite);border:1px solid rgba(255,255,255,.16);
-    display:flex;align-items:center;justify-content:center;
-    box-shadow:0 4px 14px rgba(0,0,0,.35);
+    position:absolute;right:18px;
+    bottom:calc(env(safe-area-inset-bottom,0px) + 84px);
+    z-index:22;width:50px;height:54px;padding:0;
+    background:transparent;border:none;
     -webkit-tap-highlight-color:transparent;
   }
-  #addHereBtn:active{transform:scale(.92);}
-  #addHereBtn svg{width:20px;height:20px;}
+  #addHereBtn .addPin{
+    position:absolute;left:7px;top:4px;width:36px;height:36px;
+    transform:rotate(-45deg);
+    border-radius:50% 50% 50% 0;
+    background:var(--offwhite);border:2px solid var(--ink);
+    box-shadow:0 4px 14px rgba(0,0,0,.45);
+    transition:transform .12s ease;
+  }
+  #addHereBtn:active .addPin{transform:rotate(-45deg) scale(.9);}
+  #addHereBtn .addPinHead{
+    position:absolute;left:50%;top:46%;width:26px;height:26px;
+    transform:translate(-50%,-50%) rotate(45deg);
+    display:flex;align-items:center;justify-content:center;
+  }
+  #addHereBtn .addPinHead svg{width:23px;height:23px;display:block;color:var(--ink);}
+  #addHereBtn .addPinHead .fishEye{fill:var(--offwhite);}
+  #addHereBtn .addBadge{
+    position:absolute;right:0;top:0;width:20px;height:20px;border-radius:50%;
+    background:var(--amber);color:var(--navy);border:2px solid var(--navy);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 2px 6px rgba(0,0,0,.4);
+  }
+  #addHereBtn .addBadge svg{width:11px;height:11px;display:block;}
   #addHereBtn:disabled{opacity:.4;}
 
   #visPanel{
@@ -351,7 +371,7 @@
     #legend{width:148px;padding:8px 10px 7px;}
     #locateBtn{width:50px;height:50px;}
     #refreshBtn{width:40px;height:40px;right:72px;}
-    #addHereBtn{width:40px;height:40px;bottom:calc(env(safe-area-inset-bottom,0px) + 82px);}
+    #addHereBtn{right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 80px);}
     #visPanel{padding:7px 9px;gap:6px;}
     .visLabel{font-size:11px;}
   }
@@ -361,12 +381,12 @@
     #scalebar{bottom:calc(env(safe-area-inset-bottom,0px) + 58px);}
     #locateBtn{bottom:calc(env(safe-area-inset-bottom,0px) + 8px);width:46px;height:46px;}
     #refreshBtn{bottom:calc(env(safe-area-inset-bottom,0px) + 13px);width:38px;height:38px;right:68px;}
-    #addHereBtn{bottom:calc(env(safe-area-inset-bottom,0px) + 58px);width:38px;height:38px;}
+    #addHereBtn{bottom:calc(env(safe-area-inset-bottom,0px) + 62px);}
     #farAway{bottom:calc(env(safe-area-inset-bottom,0px) + 58px);}
     #demoBanner{bottom:calc(env(safe-area-inset-bottom,0px) + 110px);padding:8px 22px;}
   }
 
-  #waypoints{position:absolute;inset:0;z-index:16;pointer-events:none;}
+  #waypoints{position:absolute;inset:0;z-index:14;pointer-events:none;} /* fishing spots: lowest of the map markers */
   .wpPin{
     position:absolute;left:0;top:0;
     width:30px;height:30px;
@@ -391,7 +411,7 @@
   .wpPin--other .pinHead svg{color:var(--offwhite);}
   .wpPin--other .pinHead .fishEye{fill:var(--teal);}
 
-  #boatsLayer{position:absolute;inset:0;z-index:16;pointer-events:none;}
+  #boatsLayer{position:absolute;inset:0;z-index:16;pointer-events:none;} /* other boats: above fishing spots */
   .boatPip{
     position:absolute;left:0;top:0;width:0;height:0;
     pointer-events:auto;cursor:pointer;
@@ -422,7 +442,7 @@
     position:absolute;left:0;top:0;width:54px;height:54px;
     border-radius:50%;border:3px solid var(--amber);
     transform:translate(-50%,-50%) scale(.3);
-    opacity:0;pointer-events:none;z-index:17;
+    opacity:0;pointer-events:none;z-index:18;
     transition:transform .55s linear, opacity .1s linear;
   }
   #longPressRing.active{transform:translate(-50%,-50%) scale(1);opacity:1;}
@@ -707,9 +727,8 @@
   </button>
 
   <button id="addHereBtn" aria-label="Lägg till fiskeplats på min position" title="Lägg till fiskeplats på min position" disabled>
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M12 5v14M5 12h14"></path>
-    </svg>
+    <span class="addPin"><span class="addPinHead"></span></span>
+    <span class="addBadge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg></span>
   </button>
 
   <div id="visPanel">
@@ -2165,6 +2184,7 @@
   var farAway = document.getElementById('farAway');
   var locateBtn = document.getElementById('locateBtn');
   var addHereBtn = document.getElementById('addHereBtn');
+  addHereBtn.querySelector('.addPinHead').innerHTML = FISH_SVG; // same fish as the pins it creates
 
   var lastFix = null; // {px, py, accM, onMap}
   var lastOwnLatLon = null; // {lat, lon} -- whatever position is currently shown as "you" (real or demo)
