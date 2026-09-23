@@ -74,6 +74,15 @@
     text-shadow:0 1px 6px rgba(0,0,0,.5);
   }
   .sub{font-size:12.5px;color:var(--text-muted);margin-top:2px;letter-spacing:.01em;}
+  /* logged-in name, small and discreet under the lake name */
+  #headerUser{
+    display:flex;align-items:center;gap:4px;margin-top:1px;
+    font-size:11.5px;color:var(--text-muted);letter-spacing:.02em;
+    text-shadow:0 1px 4px rgba(0,0,0,.6);
+    max-width:170px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  #headerUser:empty{display:none;}
+  #headerUser svg{width:11px;height:11px;flex:0 0 auto;opacity:.85;}
 
   #marker{position:absolute;left:0;top:0;z-index:17;pointer-events:none;display:none;} /* own GPS dot: above boats and fishing spots (never blocks taps -- pointer-events:none) */
   #accRing{
@@ -390,7 +399,10 @@
   .wpPin{
     position:absolute;left:0;top:0;
     width:30px;height:30px;
-    transform:translate(-50%,-50%) rotate(-45deg);
+    /* --wp-scale: the "Storlek på fiskeplatser" setting (scales around the
+       pin's centre; renderWaypoints lifts it by the scaled tip offset so
+       the tip stays exactly on the spot) */
+    transform:translate(-50%,-50%) rotate(-45deg) scale(var(--wp-scale, 1));
     border-radius:50% 50% 50% 0;
     background:var(--offwhite);
     border:2px solid var(--ink);
@@ -398,7 +410,7 @@
     pointer-events:auto;cursor:pointer;
     -webkit-tap-highlight-color:transparent;
   }
-  .wpPin:active{transform:translate(-50%,-50%) rotate(-45deg) scale(.9);}
+  .wpPin:active{transform:translate(-50%,-50%) rotate(-45deg) scale(calc(var(--wp-scale, 1) * .9));}
   .wpPin .pinHead{
     position:absolute;left:50%;top:46%;
     width:23px;height:23px;
@@ -590,6 +602,19 @@
   #netBadge .netText{font-size:11px;line-height:1.25;color:var(--offwhite);}
   #netBadge .netText b{font-weight:700;}
 
+  .settingsRowHead{display:flex;align-items:center;gap:12px;}
+  .wpSizePreview{position:relative;flex:0 0 auto;width:64px;height:64px;pointer-events:none;}
+  .wpSizePreview .wpPin{left:50%;top:44%;pointer-events:none;}
+  .segmented{
+    display:flex;gap:4px;margin-top:12px;padding:3px;
+    background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;
+  }
+  .segmented button{
+    flex:1 1 0;min-width:0;border:none;background:transparent;color:var(--text-muted);
+    font-family:inherit;font-size:13px;font-weight:600;padding:9px 2px;border-radius:8px;
+    white-space:nowrap;-webkit-tap-highlight-color:transparent;cursor:pointer;
+  }
+  .segmented button.active{background:var(--amber);color:var(--navy);}
   .sheetDistance{color:var(--amber);font-weight:600;}
 </style>
 </head>
@@ -659,6 +684,21 @@
         <div id="settingsNameDisplay"></div>
         <button id="logoutBtn" class="btnLogout" type="button">Logga ut (Byt namn)</button>
       </div>
+      <div class="settingsRow" style="flex-direction:column;align-items:stretch;">
+        <div class="settingsRowHead">
+          <div class="settingsRowText">
+            <div class="settingsRowTitle">Storlek på fiskeplatser</div>
+            <div class="settingsRowDesc">Hur stora fiskeplatserna visas på kartan.</div>
+          </div>
+          <div class="wpSizePreview"><div class="wpPin" id="wpSizePreviewPin"><div class="pinHead"></div></div></div>
+        </div>
+        <div class="segmented" id="wpSizeSeg" role="radiogroup" aria-label="Storlek på fiskeplatser">
+          <button type="button" data-size="0.7" role="radio">Liten</button>
+          <button type="button" data-size="1" role="radio">Normal</button>
+          <button type="button" data-size="1.35" role="radio">Stor</button>
+          <button type="button" data-size="1.7" role="radio">Extra stor</button>
+        </div>
+      </div>
       <label class="settingsRow" for="demoModeToggle">
         <div class="settingsRowText">
           <div class="settingsRowTitle">Demo Mode</div>
@@ -686,6 +726,7 @@
 
   <header>
     <div class="kicker">REGNAREN</div>
+    <div id="headerUser"></div>
     <div id="netBadge"><span class="netDot"></span><span class="netText" id="netText"></span></div>
   </header>
   <div id="farAway"></div>
@@ -1316,13 +1357,41 @@
       }
       el.className = 'wpPin' + (mine ? '' : ' wpPin--other');
       el.style.left = sx + 'px';
-      el.style.top = (sy - PIN_TIP_OFFSET) + 'px';
+      el.style.top = (sy - PIN_TIP_OFFSET * wpScale) + 'px';
     });
     Array.from(waypointsLayer.children).forEach(function(el){
       if (!seen[el.getAttribute('data-id')]) el.remove();
     });
     if (typeof logView !== 'undefined' && logView.classList.contains('show')) renderLogList();
   }
+
+  /* ---- Storlek på fiskeplatser (Settings) ---- */
+  var WP_SIZE_KEY = 'regnaren_wp_size_v1';
+  var WP_SIZES = [0.7, 1, 1.35, 1.7];
+  var wpScale = 1;
+  try {
+    var savedSize = parseFloat(localStorage.getItem(WP_SIZE_KEY));
+    if (WP_SIZES.indexOf(savedSize) !== -1) wpScale = savedSize;
+  } catch(e){}
+  var wpSizeSeg = document.getElementById('wpSizeSeg');
+  document.getElementById('wpSizePreviewPin').querySelector('.pinHead').innerHTML = FISH_SVG;
+  function applyWpScale(){
+    document.documentElement.style.setProperty('--wp-scale', String(wpScale));
+    Array.from(wpSizeSeg.children).forEach(function(b){
+      var on = parseFloat(b.getAttribute('data-size')) === wpScale;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-checked', on ? 'true' : 'false');
+    });
+  }
+  applyWpScale();
+  wpSizeSeg.addEventListener('click', function(e){
+    var b = e.target.closest ? e.target.closest('button[data-size]') : null;
+    if (!b) return;
+    wpScale = parseFloat(b.getAttribute('data-size'));
+    try { localStorage.setItem(WP_SIZE_KEY, String(wpScale)); } catch(e){}
+    applyWpScale();
+    renderWaypoints();
+  });
 
   var toggleMineEl = document.getElementById('toggleMine');
   var toggleOthersEl = document.getElementById('toggleOthers');
@@ -1340,6 +1409,15 @@
   });
 
   /* ---------------- other users' live positions ("Båtar") ---------------- */
+  // Names on the map are cut to 10 characters so the labels stay small (the
+  // popup you get by tapping a boat still shows the full names).
+  var BOAT_LABEL_MAX = 10;
+  function shortBoatName(n){
+    var chars = Array.from(n || '');
+    if (chars.length <= BOAT_LABEL_MAX) return n;
+    return chars.slice(0, BOAT_LABEL_MAX).join('').replace(/\s+$/, '') + '…';
+  }
+
   function renderBoats(){
     var seen = {};
     boatClustersById = {};
@@ -1396,7 +1474,7 @@
           nameEl.innerHTML = '';
           c.names.forEach(function(n){
             var row = document.createElement('span');
-            row.textContent = n;
+            row.textContent = shortBoatName(n);
             nameEl.appendChild(row);
           });
         }
@@ -2072,7 +2150,20 @@
     return (v || '').trim();
   }
   userName = canonicalName(userName);
-  settingsNameDisplay.textContent = userName;
+  var headerUserEl = document.getElementById('headerUser');
+  var HEADER_USER_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"></path></svg>';
+  function showUserName(){
+    settingsNameDisplay.textContent = userName;
+    if (userName){
+      headerUserEl.innerHTML = HEADER_USER_ICON;
+      var t = document.createElement('span');
+      t.textContent = userName;
+      headerUserEl.appendChild(t);
+    } else {
+      headerUserEl.innerHTML = '';
+    }
+  }
+  showUserName();
 
   function saveUserName(v){
     userName = canonicalName(v).slice(0, 24);
@@ -2143,7 +2234,7 @@
       return;
     }
     saveUserName(v);
-    settingsNameDisplay.textContent = userName;
+    showUserName();
     myUid = nameSlug(userName);
     hideNameModal();
     if (appStarted){
@@ -2171,7 +2262,7 @@
     myUid = null;
     lastPosWriteAt = 0;       // the next name gets shared right away
     lastWrittenLatLon = null;
-    settingsNameDisplay.textContent = '';
+    showUserName();
     showMapView();
     showNameModal();
   });
