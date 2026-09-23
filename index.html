@@ -667,6 +667,11 @@
   .statusDot.stale{background:var(--text-muted);}
   .adminNote{font-size:11.5px;color:var(--text-muted);margin-top:8px;line-height:1.4;}
   .adminNote a{color:var(--amber);}
+  .usageHead{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);margin-top:12px;}
+  .usagePerson{display:flex;gap:8px;font-size:12.5px;color:var(--offwhite);padding:5px 0;border-top:1px solid rgba(255,255,255,.06);font-variant-numeric:tabular-nums;}
+  .usagePerson:first-child{border-top:none;}
+  .usagePerson .n{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .usagePerson .v{flex:0 0 auto;color:var(--text-muted);}
   .usageLine{font-size:13.5px;color:var(--offwhite);margin-top:8px;font-variant-numeric:tabular-nums;}
   #adminRow .btnAdmin{flex:0 0 auto;}
   #pinBackdrop{
@@ -824,9 +829,14 @@
         <div id="adminUsers" style="margin-top:6px;"></div>
       </div>
       <div class="adminCard">
-        <div class="settingsRowTitle">Firebase-användning</div>
+        <div class="settingsRowTitle">Firebase-användning idag</div>
+        <div class="usageHead">Alla användare (uppskattning)</div>
+        <div id="adminUsageTotal"></div>
+        <div id="adminUsagePeople" style="margin-top:4px;"></div>
+        <div class="usageHead">Den här enheten</div>
         <div id="adminUsage"></div>
-        <div class="adminNote">Gäller bara den här enheten, sedan kvoten nollställdes kl 09:00. Gratiskvoten per dygn: 50 000 reads, 20 000 writes, 20 000 deletes. Totalen för alla ser du i <a href="https://console.firebase.google.com/project/regnaren-b8b6a/firestore" target="_blank" rel="noopener">Firebase-konsolen</a> (fliken Usage).</div>
+        <div class="btnRowWrap"><button id="adminUsageRefresh" class="btnAdmin" type="button">Uppdatera siffrorna</button></div>
+        <div class="adminNote">Räknas sedan kvoten nollställdes kl 09:00. Gratiskvot per dygn: 50 000 reads, 20 000 writes, 20 000 deletes. Varje telefon rapporterar sina siffror högst var 5:e minut medan appen är öppen, så totalen kan ligga några minuter efter. Exakta siffror finns i <a href="https://console.firebase.google.com/project/regnaren-b8b6a/firestore" target="_blank" rel="noopener">Firebase-konsolen</a> (fliken Usage).</div>
       </div>
       <div class="adminCard">
         <div class="settingsRowTitle">Fiskeplatser</div>
@@ -1394,6 +1404,7 @@
   var boatPositions = {}; // uid -> {lat, lon, name, uid, updatedAt}
   var boatClustersById = {}; // last-rendered clusters, keyed for click lookups (see renderBoats)
   var posCol = null; // Firestore 'positions' collection ref (see initSharedWaypoints)
+  var usageCol = null; // Firestore 'usage' collection: each device's daily read/write counts (admin page)
   var BOAT_GRAY_MS = 15 * 60 * 1000; // a boat that hasn't updated in this long turns grey -- still shown at its last known spot, just marked as not live anymore
   var BOAT_REMOVE_MS = 60 * 60 * 1000; // a boat that hasn't updated in THIS long is finally removed entirely
   var BOAT_CLUSTER_METERS = 30; // positions this close are treated as "the same boat"
@@ -2005,6 +2016,42 @@
   }
   function countGetReads(snap){ addUsage('r', Math.max(1, (snap && snap.size) || 0)); }
 
+  /* ---- report this device's counters, so the admin page can sum everyone ----
+     One small doc per device per quota day, overwritten with the running
+     totals: at most every 5 minutes while the app is open (only if anything
+     changed), plus when the app goes to the background. ~50 extra writes a
+     day for the whole group. Offline, Firestore keeps the write and sends it
+     when there's coverage again. */
+  var DEVICE_ID = null;
+  try { DEVICE_ID = localStorage.getItem('regnaren_device_id_v1'); } catch(e){}
+  if (!DEVICE_ID){
+    DEVICE_ID = 'd' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    try { localStorage.setItem('regnaren_device_id_v1', DEVICE_ID); } catch(e){}
+  }
+  var USAGE_REPORT_MS = 5 * 60 * 1000;
+  var lastUsageReportAt = 0, lastUsageReportKey = '';
+  var usageReportDenied = false;
+  function reportUsage(force){
+    if (!USE_FIREBASE || !usageCol || !myUid) return;
+    var u = loadUsage();
+    if (u.r + '/' + u.w + '/' + u.d === lastUsageReportKey) return; // nothing new
+    if (!force && Date.now() - lastUsageReportAt < USAGE_REPORT_MS) return;
+    addUsage('w', 1); // this report is itself a write
+    u = loadUsage();
+    lastUsageReportAt = Date.now();
+    lastUsageReportKey = u.r + '/' + u.w + '/' + u.d;
+    usageCol.doc(u.day + '_' + DEVICE_ID).set({
+      day: u.day, device: DEVICE_ID, uid: myUid, name: userName || '', lake: LAKE_ID,
+      r: u.r, w: u.w, d: u.d,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(function(){ usageReportDenied = false; })
+      .catch(function(e){ if (e && e.code === 'permission-denied') usageReportDenied = true; });
+  }
+  setInterval(function(){ reportUsage(false); }, 60 * 1000);
+  document.addEventListener('visibilitychange', function(){
+    if (document.visibilityState === 'hidden') reportUsage(true);
+  });
+
   function initSharedWaypoints(cb){
     if (!FIREBASE_CONFIG.apiKey || FIREBASE_CONFIG.apiKey.indexOf('DIN_') === 0 || typeof firebase === 'undefined'){
       cb(false); return;
@@ -2016,6 +2063,7 @@
       try { fsdb.enablePersistence({ synchronizeTabs:true }).catch(function(){}); } catch(e){}
       fsCol = fsdb.collection('waypoints');
       posCol = fsdb.collection('positions');
+      usageCol = fsdb.collection('usage');
       var started = false;
       auth.onAuthStateChanged(function(user){
         if (!user || started) return;
@@ -2608,7 +2656,9 @@
   function openAdminView(){
     if (!isAdminUnlocked()) return;
     adminEditAllToggle.checked = adminCanEditAll();
+    usageReports = null; usageFetchError = null;
     renderAdmin();
+    fetchUsageTotals();
     adminView.classList.add('show');
     adminBodyScrollTop();
     if (adminTimer) clearInterval(adminTimer);
@@ -2616,6 +2666,7 @@
   }
   function adminBodyScrollTop(){ var b = document.getElementById('adminBody'); if (b) b.scrollTop = 0; }
 
+  document.getElementById('adminUsageRefresh').addEventListener('click', fetchUsageTotals);
   adminEditAllToggle.addEventListener('change', function(){
     try { localStorage.setItem(ADMIN_EDITALL_KEY, adminEditAllToggle.checked ? '1' : '0'); } catch(e){}
   });
@@ -2706,13 +2757,86 @@
     });
 
     var usage = loadUsage();
-    adminUsageEl.innerHTML = '';
-    [['Reads', usage.r, 50000], ['Writes', usage.w, 20000], ['Deletes', usage.d, 20000]].forEach(function(x){
+    fillUsageLines(adminUsageEl, usage);
+    renderUsageTotals();
+  }
+
+  function fmtPct(n, max){
+    var pct = n / max * 100;
+    return (pct < 0.1 && n > 0) ? '<0,1' : pct.toFixed(1).replace('.', ',');
+  }
+  function fillUsageLines(el, u){
+    el.innerHTML = '';
+    [['Reads', u.r, 50000], ['Writes', u.w, 20000], ['Deletes', u.d, 20000]].forEach(function(x){
       var line = document.createElement('div'); line.className = 'usageLine';
-      var pct = x[1] / x[2] * 100;
-      line.textContent = x[0] + ': ' + x[1].toLocaleString('sv-SE') + '  (' + (pct < 0.1 && x[1] > 0 ? '<0,1' : pct.toFixed(1).replace('.', ',')) + ' % av kvoten)';
-      adminUsageEl.appendChild(line);
+      line.textContent = x[0] + ': ' + x[1].toLocaleString('sv-SE') + '  (' + fmtPct(x[1], x[2]) + ' % av kvoten)';
+      el.appendChild(line);
     });
+  }
+
+  // latest fetched reports for today (one per device), keyed by device id
+  var usageReports = null, usageFetchError = null, usageFetchedAt = 0;
+  function fetchUsageTotals(){
+    if (!USE_FIREBASE || !usageCol){ usageFetchError = 'offline'; renderUsageTotals(); return; }
+    reportUsage(true); // get this device's latest numbers in first
+    var day = loadUsage().day;
+    usageCol.where('day', '==', day).get().then(function(snap){
+      countGetReads(snap);
+      var list = {};
+      snap.forEach(function(doc){
+        var x = doc.data();
+        if ((x.lake || LAKE_ID) !== LAKE_ID) return;
+        list[x.device || doc.id] = x;
+      });
+      usageReports = list;
+      usageFetchError = null;
+      usageFetchedAt = Date.now();
+      renderUsageTotals();
+    }).catch(function(e){
+      usageFetchError = (e && e.code === 'permission-denied') ? 'denied' : 'failed';
+      renderUsageTotals();
+    });
+  }
+  function renderUsageTotals(){
+    var totalEl = document.getElementById('adminUsageTotal');
+    var peopleEl = document.getElementById('adminUsagePeople');
+    if (!totalEl) return;
+    peopleEl.innerHTML = '';
+    if (usageFetchError === 'denied' || usageReportDenied){
+      totalEl.innerHTML = '<div class="adminNote" style="color:var(--danger);">Totalen kräver en ny regel i Firestore (samlingen "usage"). Lägg till den i Firebase-konsolen under Firestore → Rules.</div>';
+      return;
+    }
+    if (!usageReports){
+      totalEl.innerHTML = '<div class="adminNote">' + (usageFetchError ? 'Kunde inte hämta totalen just nu.' : 'Hämtar…') + '</div>';
+      return;
+    }
+    // this device: use the live local counters rather than the last report
+    var reports = Object.assign({}, usageReports);
+    var mine = loadUsage();
+    reports[DEVICE_ID] = { uid: myUid, name: userName, r: mine.r, w: mine.w, d: mine.d };
+    var sum = { r: 0, w: 0, d: 0 }, people = {};
+    Object.keys(reports).forEach(function(k){
+      var x = reports[k];
+      sum.r += x.r || 0; sum.w += x.w || 0; sum.d += x.d || 0;
+      var key = x.uid || k;
+      var pp = people[key] || (people[key] = { name: x.name || key, r: 0, w: 0, d: 0 });
+      if (x.name) pp.name = x.name;
+      pp.r += x.r || 0; pp.w += x.w || 0; pp.d += x.d || 0;
+    });
+    fillUsageLines(totalEl, sum);
+    Object.keys(people).map(function(k){ return people[k]; })
+      .sort(function(a, b){ return b.r - a.r; })
+      .forEach(function(pp){
+        var row = document.createElement('div'); row.className = 'usagePerson';
+        var n = document.createElement('span'); n.className = 'n'; n.textContent = pp.name;
+        var v = document.createElement('span'); v.className = 'v';
+        v.textContent = pp.r.toLocaleString('sv-SE') + ' r · ' + pp.w.toLocaleString('sv-SE') + ' w · ' + pp.d.toLocaleString('sv-SE') + ' d';
+        row.appendChild(n); row.appendChild(v);
+        peopleEl.appendChild(row);
+      });
+    var ago = document.createElement('div'); ago.className = 'adminNote';
+    ago.textContent = 'Hämtat ' + timeAgo(usageFetchedAt) + ' · ' + Object.keys(reports).length + (Object.keys(reports).length === 1 ? ' enhet' : ' enheter');
+    peopleEl.appendChild(ago);
   }
 
   // Hide boats for everyone by marking their positions as ancient (the same
