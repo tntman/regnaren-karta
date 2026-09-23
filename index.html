@@ -104,19 +104,28 @@
     position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;
     transition:transform .5s ease-out;
     filter:drop-shadow(0 1px 3px rgba(0,0,0,.7));
+    animation:gpsArrowGlow 2.4s ease-out infinite;   /* in step with the ring */
   }
-  #dotArrow .arrowHalo{fill:none;stroke:#fff;stroke-width:3.4;stroke-linejoin:round;}
-  #dotArrow .arrowBody{fill:var(--amber);stroke:#0B2A3A;stroke-width:1.3;stroke-linejoin:round;}
+  #dotArrow .arrowHalo{fill:none;stroke:#fff;stroke-width:4.4;stroke-linejoin:round;}
+  #dotArrow .arrowBody{fill:#FF7A00;stroke:#0B2A3A;stroke-width:1.3;stroke-linejoin:round;animation:gpsArrowFill 2.4s ease-out infinite;}
+  /* one bright orange ring expanding from the arrow; the arrow lights up at the
+     start of every pulse and fades back to its normal strong orange */
   #dotGlow{
     position:absolute;left:0;top:0;width:20px;height:20px;
     transform:translate(-50%,-50%);border-radius:50%;
-    border:2.5px solid rgba(232,163,61,.95);
+    border:3px solid #FFB23F;
+    box-shadow:0 0 10px 3px rgba(255,150,30,.9), inset 0 0 5px 1px rgba(255,190,90,.7);
     animation:gpsRadar 2.4s cubic-bezier(.2,.6,.4,1) infinite;
+  }
+  @keyframes gpsArrowFill{0%{fill:#FFE39A;}40%,100%{fill:#FF7A00;}}
+  @keyframes gpsArrowGlow{
+    0%{filter:drop-shadow(0 1px 3px rgba(0,0,0,.7)) drop-shadow(0 0 8px rgba(255,150,30,1));}
+    40%,100%{filter:drop-shadow(0 1px 3px rgba(0,0,0,.7)) drop-shadow(0 0 2px rgba(255,150,30,.35));}
   }
   #dotGlow2{display:none;}
   #accRing{display:none !important;} /* just the arrow + one expanding ring -- no static accuracy circle */
-  @media (prefers-reduced-motion:reduce){#dotGlow{animation:none;opacity:0;}}
-  @keyframes gpsRadar{0%{transform:translate(-50%,-50%) scale(.5);opacity:.95;}100%{transform:translate(-50%,-50%) scale(3);opacity:0;}}
+  @media (prefers-reduced-motion:reduce){#dotGlow{animation:none;opacity:0;} #dotArrow, #dotArrow .arrowBody{animation:none;}}
+  @keyframes gpsRadar{0%{transform:translate(-50%,-50%) scale(.5);opacity:1;}55%{opacity:.75;}100%{transform:translate(-50%,-50%) scale(3);opacity:0;}}
 
   #legend{
     position:absolute;left:14px;
@@ -243,8 +252,8 @@
     position:absolute;left:7px;top:4px;width:36px;height:36px;
     transform:rotate(-45deg);
     border-radius:50% 50% 50% 0;
-    background:var(--offwhite);border:2px solid var(--ink);
-    box-shadow:0 4px 14px rgba(0,0,0,.45);
+    background:var(--t-mark);border:3px solid #fff;
+    box-shadow:inset 0 0 0 1.5px rgba(0,0,0,.85), 0 0 0 1.5px rgba(0,0,0,.8), 0 4px 14px rgba(0,0,0,.5);
     transition:transform .12s ease;
   }
   #addHereBtn:active .addPin{transform:rotate(-45deg) scale(.9);}
@@ -546,11 +555,12 @@
     transform:translate(-50%,-50%) rotate(-45deg) scale(var(--wp-scale, .7));
     border-radius:50% 50% 50% 0;
     background:var(--offwhite);
-    border:2px solid var(--ink);
-    /* style D: thin dark edge + soft glow all round + shadow downwards, so pins
-       stand out on both bright shallows and dark water/forest. (Offsets are in
-       the pin's own rotated frame: -x,+y points straight down on screen.) */
-    box-shadow:0 0 0 1.5px rgba(0,0,0,.6), 0 0 9px 3px rgba(0,0,0,.5), -4px 4px 8px rgba(0,0,0,.65);
+    /* map-app style: coloured core with a thin black line + clear white outline + dark outer edge,
+       a soft dark halo (so contour lines don't eat the pin) and a shadow
+       downwards. (Offsets are in the pin's own rotated frame: -x,+y points
+       straight down on screen.) */
+    border:3px solid #fff;
+    box-shadow:inset 0 0 0 1.5px rgba(0,0,0,.85), 0 0 0 1.5px rgba(0,0,0,.8), 0 0 10px 3px rgba(0,0,0,.45), -4px 4px 8px rgba(0,0,0,.6);
     pointer-events:auto;cursor:pointer;
     -webkit-tap-highlight-color:transparent;
   }
@@ -568,26 +578,26 @@
   .wpPin .pinHead .fishEye{fill:var(--offwhite);}
   /* type = colour of the pin: Markering (neutral, a position dot), Abborre,
      Gädda, Gös (fish). Owner = the edge: dark on your own, white on others'. */
-  :root{ --t-mark:#F4F7F8; --t-abborre:#F3914F; --t-gadda:#7DBD5F; --t-gos:#B7B38B; }
+  /* strong, saturated colours that stand out from the depth colours (the
+     white outline + dark edge separate them even over the shallows) */
+  :root{ --t-mark:#E4E9EC; --t-abborre:#FF7A1A; --t-gadda:#35D24A; --t-gos:#FFD21A; }
   .wpPin--mark{background-color:var(--t-mark);}
   .wpPin--abborre{background-color:var(--t-abborre);}
   .wpPin--gadda{background-color:var(--t-gadda);}
   .wpPin--gos{background-color:var(--t-gos);}
   .wpPin--mark .pinHead svg{width:15px;height:15px;}
-  /* OTHERS' spots: small plain circles in the type colour (60 % of the size of
-     your own pins, no icon), centred on the spot -- colour-coded, but they
-     take much less attention than your own. Drawn under your own pins. */
+  /* OTHERS' spots: the same drop and style as your own, but 70 % of the size
+     and with no icon -- just the type colour. Drawn under your own. (Outline
+     and shadow are a bit thicker in their own units, since they're drawn
+     smaller -- so on screen they look the same as on your pins.) */
   .wpPin{z-index:2;}
   .wpPin--other{
     z-index:1;
-    border-radius:50%;
-    transform:translate(-50%,-50%) scale(calc(var(--wp-scale, .7) * .6));
-    border:2.5px solid rgba(10,20,26,.75);
-    /* same shadow as your own pins: thin dark edge + soft glow + shadow downwards
-       (a bit bigger in the circle's own units, since it's drawn smaller) */
-    box-shadow:0 0 0 1.5px rgba(0,0,0,.6), 0 0 11px 4px rgba(0,0,0,.5), 0 7px 10px rgba(0,0,0,.65);
+    transform:translate(-50%,-50%) rotate(-45deg) scale(calc(var(--wp-scale, .7) * .7));
+    border-width:4px;
+    box-shadow:inset 0 0 0 2px rgba(0,0,0,.85), 0 0 0 2px rgba(0,0,0,.8), 0 0 13px 4px rgba(0,0,0,.45), -5px 5px 10px rgba(0,0,0,.6);
   }
-  .wpPin--other:active{transform:translate(-50%,-50%) scale(calc(var(--wp-scale, .7) * .54));}
+  .wpPin--other:active{transform:translate(-50%,-50%) rotate(-45deg) scale(calc(var(--wp-scale, .7) * .63));}
   .wpPin--other .pinHead{display:none;}
   .wpPin--other::after{inset:calc(var(--wp-hit-o, 0px) * -1);}
 
@@ -797,6 +807,15 @@
   .settingsRowHead{display:flex;align-items:center;gap:12px;}
   .wpSizePreview{position:relative;flex:0 0 auto;width:64px;height:64px;pointer-events:none;}
   .wpSizePreview .wpPin{left:50%;top:44%;pointer-events:none;}
+  /* "Kartans färg" (saturation) slider */
+  .satRow{display:flex;align-items:center;gap:12px;margin-top:10px;}
+  .satSlider{flex:1 1 auto;min-width:0;-webkit-appearance:none;appearance:none;height:30px;margin:0;background:transparent;cursor:pointer;}
+  .satSlider:focus{outline:none;}
+  .satSlider::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:linear-gradient(to right,#7b8084,#2f7fe0 55%,#19c9c3 75%,#f5c518 88%,#ef3b2d);}
+  .satSlider::-moz-range-track{height:6px;border-radius:3px;background:linear-gradient(to right,#7b8084,#2f7fe0 55%,#19c9c3 75%,#f5c518 88%,#ef3b2d);}
+  .satSlider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:24px;height:24px;margin-top:-9px;border-radius:50%;background:var(--amber);border:3px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.5),0 2px 6px rgba(0,0,0,.5);}
+  .satSlider::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--amber);border:3px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.5),0 2px 6px rgba(0,0,0,.5);}
+  .satVal{flex:0 0 auto;min-width:46px;text-align:right;font-size:14px;font-weight:700;color:var(--offwhite);}
   .segmented{
     display:flex;gap:4px;margin-top:12px;padding:3px;
     background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;
@@ -979,6 +998,16 @@
           <button type="button" data-size="0.5" role="radio">Liten</button>
           <button type="button" data-size="0.7" role="radio">Normal</button>
           <button type="button" data-size="1" role="radio">Stor</button>
+        </div>
+      </div>
+      <div class="settingsRow" style="flex-direction:column;align-items:stretch;">
+        <div class="settingsRowText">
+          <div class="settingsRowTitle">Kartans färg</div>
+          <div class="settingsRowDesc">Dämpa kartans färger (satellitbild och djupfärger) så att markeringarna syns tydligare. 0 % = gråskala, 100 % = fulla färger.</div>
+        </div>
+        <div class="satRow">
+          <input type="range" class="satSlider" id="mapSatSlider" min="0" max="100" step="5" value="80" aria-label="Kartans färgmättnad">
+          <span class="satVal" id="mapSatVal">80 %</span>
         </div>
       </div>
       <div class="settingsRow" style="flex-direction:column;align-items:stretch;">
@@ -1826,6 +1855,7 @@
   }
 
   var pinEls = {}; // waypoint id -> its element (no DOM lookups per pin on every frame)
+  var OTHER_PIN_SCALE = 0.7; // others' spots, relative to yours (must match .wpPin--other in the CSS)
   function renderWaypoints(){
     var seen = {};
     if (pendingSheetRestore) tryRestoreSheet();
@@ -1868,7 +1898,7 @@
       var cls = 'wpPin wpPin--' + type + (mine ? '' : ' wpPin--other');
       if (el.className !== cls) el.className = cls;
       el.style.left = sx + 'px';
-      el.style.top = (mine ? sy - PIN_TIP_OFFSET * wpScale : sy) + 'px'; // others' circles are centred on the spot
+      el.style.top = (sy - PIN_TIP_OFFSET * wpScale * (mine ? 1 : OTHER_PIN_SCALE)) + 'px'; // the tip on the spot (others' are smaller)
     });
     Object.keys(pinEls).forEach(function(id){
       if (!seen[id]){ pinEls[id].remove(); delete pinEls[id]; }
@@ -1896,8 +1926,8 @@
     // keep the tap target at least ~34px on screen, whatever the pin size
     var hitPx = Math.max(0, (34 - 30 * wpScale) / 2) / wpScale;
     document.documentElement.style.setProperty('--wp-hit', hitPx.toFixed(1) + 'px');
-    // others' circles are half size: a ~30px tap target (a bit smaller, since they can sit close together)
-    var so = wpScale * 0.6;
+    // others' spots are smaller: a ~30px tap target (a bit smaller, since they can sit close together)
+    var so = wpScale * OTHER_PIN_SCALE;
     document.documentElement.style.setProperty('--wp-hit-o', (Math.max(0, (30 - 30 * so) / 2) / so).toFixed(1) + 'px');
     Array.from(wpSizeSeg.children).forEach(function(b){
       var on = parseFloat(b.getAttribute('data-size')) === wpScale;
@@ -1914,6 +1944,30 @@
     applyWpScale();
     renderWaypoints();
   });
+
+  /* ---- Kartans färg (Settings): how saturated the map image is ----
+     A CSS filter on the map image only (markers, boats and buttons keep
+     their colours). The depth-scale bar gets the same filter so its colours
+     still match the map. Remembered on this phone. */
+  var MAP_SAT_KEY = 'ffmap_map_saturation_v1';
+  var mapSat = 80; // percent -- default: a bit calmer than the raw map
+  try { var savedSat = parseInt(localStorage.getItem(MAP_SAT_KEY), 10); if (savedSat >= 0 && savedSat <= 100) mapSat = savedSat; } catch(e){}
+  var mapSatSlider = document.getElementById('mapSatSlider');
+  var mapSatVal = document.getElementById('mapSatVal');
+  function applyMapSaturation(){
+    var f = mapSat >= 100 ? '' : 'saturate(' + (mapSat / 100) + ')';
+    document.getElementById('mapImg').style.filter = f;
+    var bar = document.querySelector('#legend .bar');
+    if (bar) bar.style.filter = f;
+    mapSatSlider.value = String(mapSat);
+    mapSatVal.textContent = mapSat + ' %';
+  }
+  mapSatSlider.addEventListener('input', function(){
+    mapSat = Math.max(0, Math.min(100, parseInt(mapSatSlider.value, 10) || 0));
+    applyMapSaturation();
+    try { localStorage.setItem(MAP_SAT_KEY, String(mapSat)); } catch(e){}
+  });
+  applyMapSaturation();
 
   var toggleMineEl = document.getElementById('toggleMine');
   var toggleOthersEl = document.getElementById('toggleOthers');
