@@ -551,19 +551,6 @@
   #netBadge .netText{font-size:11px;line-height:1.25;color:var(--offwhite);}
   #netBadge .netText b{font-weight:700;}
 
-  /* warning toast (e.g. someone else is using your name) */
-  #toast{
-    position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + 70px);
-    transform:translateX(-50%);z-index:26;width:min(92vw,380px);
-    background:var(--navy);border:1px solid rgba(232,163,61,.55);border-radius:12px;
-    padding:12px 14px;box-shadow:0 8px 24px rgba(0,0,0,.5);
-    font-size:13px;line-height:1.45;color:var(--offwhite);display:none;
-  }
-  #toast.show{display:block;}
-  #toast b{color:var(--amber);}
-  #toast .sheetRow{margin-top:10px;}
-  #toast .btnPrimary{padding:8px 16px;font-size:13px;}
-
   .sheetDistance{color:var(--amber);font-weight:600;}
   .settingsRow.disabled{opacity:.5;}
   .settingsRow.disabled .toggle{pointer-events:none;}
@@ -674,12 +661,6 @@
     <div class="kicker">REGNAREN</div>
     <div id="netBadge"><span class="netDot"></span><span class="netText" id="netText"></span></div>
   </header>
-
-  <div id="toast">
-    <div id="toastText"></div>
-    <div class="sheetRow"><button id="toastOk" class="btnPrimary" type="button">OK</button></div>
-  </div>
-
   <div id="farAway"></div>
   <div id="demoBanner">
     <div class="demoBannerTitle">DEMO MODE</div>
@@ -1271,21 +1252,10 @@
     var h = Math.round(m / 60); if (h < 24) return h + ' h sedan';
     return Math.round(h / 24) + ' d sedan';
   }
-  function escapeHtml(s){
-    return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
   function fmtMeters(m){
     if (m < 1000) return (m < 100 ? Math.round(m) : Math.round(m / 10) * 10) + ' m';
     return (m / 1000).toFixed(1).replace('.', ',') + ' km';
   }
-
-  var toastEl = document.getElementById('toast');
-  var toastTextEl = document.getElementById('toastText');
-  function showToast(html){
-    toastTextEl.innerHTML = html;
-    toastEl.classList.add('show');
-  }
-  document.getElementById('toastOk').addEventListener('click', function(){ toastEl.classList.remove('show'); });
 
   function renderWaypoints(){
     var seen = {};
@@ -1468,16 +1438,6 @@
   boatInfoCloseBtn.addEventListener('click', hideBoatInfo);
   boatInfoBackdrop.addEventListener('click', hideBoatInfo);
 
-  // A random id for this particular phone/browser, stored with every position
-  // write -- lets us notice when ANOTHER device is writing under your name.
-  var DEVICE_ID = null;
-  try { DEVICE_ID = localStorage.getItem('regnaren_device_id_v1'); } catch(e){}
-  if (!DEVICE_ID){
-    DEVICE_ID = 'd' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-    try { localStorage.setItem('regnaren_device_id_v1', DEVICE_ID); } catch(e){}
-  }
-  var nameClashWarned = false;
-
   function applyPositionsSnapshot(snap){
     var now = Date.now();
     var fresh = {};
@@ -1485,23 +1445,8 @@
       var d = doc.data();
       var docLake = d.lake || LAKE_ID;
       if (docLake !== LAKE_ID) return;
+      if (d.uid === myUid) return; // that's you -- your own big GPS dot already shows it
       var updatedMs = (d.updatedAt && d.updatedAt.toMillis) ? d.updatedAt.toMillis() : now;
-      if (d.uid === myUid){
-        // that's "you" -- your own big GPS dot already shows it. But if a
-        // DIFFERENT device recently wrote here, well away from you, someone
-        // else has most likely picked the same name.
-        // (Needs our own position first, to tell "your iPad in the same boat"
-        // apart from "someone else" -- otherwise re-checked on the next update.)
-        if (!nameClashWarned && lastOwnLatLon && d.device && d.device !== DEVICE_ID && now - updatedMs < 3 * 60 * 1000){
-          var awayM = haversineKm(lastOwnLatLon.lat, lastOwnLatLon.lon, d.lat, d.lon) * 1000;
-          if (awayM > 200){
-            nameClashWarned = true;
-            showToast('Namnet <b>' + escapeHtml(userName) + '</b> verkar användas på en annan enhet just nu (' +
-              fmtMeters(awayM) + ' härifrån). Är det inte du? Byt namn under Inställningar, annars krockar era positioner och fiskeplatser.');
-          }
-        }
-        return;
-      }
       fresh[doc.id] = { lat: d.lat, lon: d.lon, name: d.name || '', uid: d.uid, updatedAt: updatedMs };
     });
     boatPositions = fresh;
@@ -1536,7 +1481,7 @@
     lastPosWriteAt = now;
     lastWrittenLatLon = { lat: lat, lon: lon };
     posCol.doc(myUid).set({
-      lat: lat, lon: lon, name: userName || '', uid: myUid, lake: LAKE_ID, device: DEVICE_ID,
+      lat: lat, lon: lon, name: userName || '', uid: myUid, lake: LAKE_ID,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true }).catch(function(e){ console.warn('kunde inte dela position', e); });
   }
@@ -2137,7 +2082,6 @@
     myUid = null;
     lastPosWriteAt = 0;       // the next name gets shared right away
     lastWrittenLatLon = null;
-    nameClashWarned = false;
     settingsNameDisplay.textContent = '';
     showMapView();
     showNameModal();
