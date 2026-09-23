@@ -309,6 +309,8 @@
   #demoBanner.show{display:block;}
   .demoBannerTitle{font-weight:700;font-size:15px;letter-spacing:.06em;}
   .demoBannerSub{font-weight:600;font-size:11.5px;letter-spacing:.03em;margin-top:3px;opacity:.85;}
+  .demoBannerTimer{font-weight:600;font-size:10.5px;margin-top:4px;opacity:.75;white-space:nowrap;}
+  .demoBannerTimer:empty{display:none;}
   @keyframes demoBannerBlink{
     0%, 100% { background:var(--amber); }
     50% { background:var(--danger); }
@@ -665,6 +667,7 @@
   <div id="demoBanner">
     <div class="demoBannerTitle">DEMO MODE</div>
     <div class="demoBannerSub">Använd ej på vattnet!</div>
+    <div class="demoBannerTimer" id="demoBannerTimer"></div>
   </div>
 
   <div id="marker">
@@ -1885,14 +1888,46 @@
   var demoLatInput = document.getElementById('demoLatInput');
   var demoLonInput = document.getElementById('demoLonInput');
   var demoRerollBtn = document.getElementById('demoRerollBtn');
+  // Safety: Demo Mode switches itself off after 15 minutes, so nobody heads
+  // out on the water still seeing (and sharing) a fake position. The start
+  // time is stored, so a reload doesn't restart the clock -- and if the app
+  // was closed for longer than that, it simply starts with Demo Mode off.
+  var DEMO_SINCE_KEY = 'regnaren_demo_since_v1';
+  var DEMO_MAX_MS = 15 * 60 * 1000;
+  var demoSince = 0;
+  var demoBannerTimerEl = document.getElementById('demoBannerTimer');
   try {
     demoMode = localStorage.getItem(DEMO_KEY) === '1';
+    demoSince = Number(localStorage.getItem(DEMO_SINCE_KEY) || 0);
+    if (demoMode && (!demoSince || Date.now() - demoSince >= DEMO_MAX_MS)){
+      demoMode = false;
+      localStorage.setItem(DEMO_KEY, '0');
+      localStorage.removeItem(DEMO_SINCE_KEY);
+    }
     var savedLat = parseFloat(localStorage.getItem(DEMO_LAT_KEY));
     var savedLon = parseFloat(localStorage.getItem(DEMO_LON_KEY));
     if (isFinite(savedLat) && isFinite(savedLon)){ demoLat = savedLat; demoLon = savedLon; }
   } catch(e){}
   demoModeToggle.checked = demoMode;
   demoBannerEl.classList.toggle('show', demoMode);
+
+  function updateDemoTimer(){
+    if (!demoMode) return;
+    var left = DEMO_MAX_MS - (Date.now() - demoSince);
+    if (left <= 0){
+      setDemoMode(false);
+      demoModeToggle.checked = false;
+      return;
+    }
+    demoBannerTimerEl.textContent = 'Stängs av automatiskt om ' + Math.ceil(left / 60000) + ' min';
+  }
+  // checked often enough to be on time, and right away when you come back
+  // to the app (timers are paused while the phone is locked)
+  setInterval(updateDemoTimer, 5000);
+  updateDemoTimer(); // show the countdown right away if Demo Mode was left on
+  document.addEventListener('visibilitychange', function(){
+    if (document.visibilityState === 'visible') updateDemoTimer();
+  });
 
   // picks a spot well inside the map, away from the shoreline edges of the crop
   function randomDemoPoint(){
@@ -1939,8 +1974,14 @@
 
   function setDemoMode(on){
     demoMode = on;
-    try { localStorage.setItem(DEMO_KEY, on ? '1' : '0'); } catch(e){}
+    demoSince = on ? Date.now() : 0;
+    try {
+      localStorage.setItem(DEMO_KEY, on ? '1' : '0');
+      if (on) localStorage.setItem(DEMO_SINCE_KEY, String(demoSince));
+      else localStorage.removeItem(DEMO_SINCE_KEY);
+    } catch(e){}
     demoBannerEl.classList.toggle('show', on);
+    updateDemoTimer();
     demoCoordsRow.style.display = on ? 'flex' : 'none';
     if (on){
       setDemoCoords(randomDemoPoint()); // fresh random spot every time Demo Mode is switched on
