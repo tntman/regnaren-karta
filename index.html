@@ -114,20 +114,20 @@
     z-index:20;
     background:var(--navy-glass);backdrop-filter:blur(6px);
     border:1px solid rgba(255,255,255,.12);
-    border-radius:12px;padding:8px 12px 7px;
+    border-radius:10px;padding:5px 8px 4px;
     box-shadow:0 4px 14px rgba(0,0,0,.35);
-    width:168px;
+    width:126px; /* compact: 25 % shorter than before (168px) */
   }
   #legend .ttl{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:6px;}
   #legend .bar{
-    height:9px;border-radius:5px;
+    height:7px;border-radius:4px;
     background:linear-gradient(to right,#d62728 0%,#ff7f0e 18%,#ffdd00 36%,#2ca02c 55%,#17becf 72%,#1f4fd6 87%,#0a1a5c 100%);
   }
-  #legend .ticks{display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-top:4px;}
+  #legend .ticks{display:flex;justify-content:space-between;font-size:9.5px;line-height:1.2;color:var(--text-muted);margin-top:3px;}
 
   #scalebar{
     position:absolute;left:14px;
-    bottom:calc(env(safe-area-inset-bottom,0px) + 106px);
+    bottom:calc(env(safe-area-inset-bottom,0px) + 94px);
     z-index:20;color:var(--offwhite);font-size:11px;
     text-shadow:0 1px 4px rgba(0,0,0,.6);
     display:flex;flex-direction:column;align-items:flex-start;gap:2px;
@@ -171,7 +171,7 @@
      amber "+" badge, so it's obvious what it creates */
   /* ---- knot meter (under the scale bar) ---- */
   #speedPill{
-    position:absolute;left:14px;bottom:calc(env(safe-area-inset-bottom,0px) + 68px);z-index:20;
+    position:absolute;left:14px;bottom:calc(env(safe-area-inset-bottom,0px) + 56px);z-index:20;
     display:none;align-items:baseline;gap:4px;pointer-events:none;
     background:var(--navy-glass);backdrop-filter:blur(6px);
     border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:4px 10px;
@@ -217,6 +217,7 @@
     -webkit-tap-highlight-color:transparent;cursor:pointer;
   }
   .mpBtn:disabled{opacity:.35;}
+  .mpIco{display:none;width:16px;height:16px;}
   .mpBtn:active{transform:scale(.95);}
   .mpClose{width:34px;height:34px;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;}
   .mpClose svg{width:15px;height:15px;}
@@ -242,7 +243,7 @@
     transform:translate(-50%,-50%) rotate(45deg);
     display:flex;align-items:center;justify-content:center;
   }
-  #addHereBtn .addPinHead svg{width:23px;height:23px;display:block;color:var(--ink);}
+  #addHereBtn .addPinHead svg{width:16px;height:16px;display:block;color:var(--ink);}
   #addHereBtn .addPinHead .fishEye{fill:var(--offwhite);}
   #addHereBtn .addBadge{
     position:absolute;right:0;top:0;width:20px;height:20px;border-radius:50%;
@@ -274,8 +275,20 @@
   }
   .visSwatch svg{width:12px;height:12px;display:block;}
   .visSwatch .fishEye{fill:var(--offwhite);}
-  .visSwatch--other{background:var(--teal);color:var(--offwhite);border-color:rgba(244,247,248,.55);}
-  .visSwatch--other .fishEye{fill:var(--teal);}
+  .visSwatch.ws-mark{background-color:var(--t-mark);}
+  .visSwatch.ws-abborre{background-color:var(--t-abborre);}
+  .visSwatch.ws-gadda{background-color:var(--t-gadda);}
+  .visSwatch.ws-gos{background-color:var(--t-gos);}
+  /* others' spots (log list + the "Andras" toggle): same look as their pins */
+  .visSwatch--other{
+    border-color:#fff;color:#fff;
+    background-image:repeating-linear-gradient(-45deg, rgba(0,0,0,.26) 0 2px, transparent 2px 4.5px);
+  }
+  .visSwatch--other.ws-mark{background-color:#8F9AA0;}
+  .logItem .visSwatch--other{background-image:repeating-linear-gradient(-45deg, rgba(0,0,0,.26) 0 3px, transparent 3px 6.5px);}
+  /* "Mina" / "Andras" toggles: one person / two people; others' on a striped white + light grey field */
+  .visSwatch--person svg{width:13px;height:13px;}
+  .visSwatch--peopleStriped{background:repeating-linear-gradient(-45deg, #ffffff 0 2px, #c9d1d5 2px 4px);}
   .visLabel{font-size:12px;color:var(--offwhite);flex:1 1 auto;white-space:nowrap;}
   .toggle{position:relative;display:inline-block;width:34px;height:20px;flex:0 0 auto;}
   .toggle input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer;z-index:1;}
@@ -389,6 +402,17 @@
     animation:demoBannerBlink 3s ease-in-out infinite;
   }
   #demoBanner.show{display:block;}
+  #demoBanner{position:relative;}
+  /* the sign itself lets taps through to the map; only its cross is a button */
+  #demoBannerClose{
+    position:absolute;top:-7px;right:-7px;width:22px;height:22px;padding:0;border-radius:50%;
+    background:var(--navy);color:var(--offwhite);border:1.5px solid rgba(255,255,255,.75);
+    display:flex;align-items:center;justify-content:center;pointer-events:auto;cursor:pointer;
+    box-shadow:0 2px 6px rgba(0,0,0,.45);-webkit-tap-highlight-color:transparent;
+  }
+  #demoBannerClose::after{content:'';position:absolute;inset:-9px;border-radius:50%;} /* bigger tap area */
+  #demoBannerClose svg{width:11px;height:11px;display:block;}
+  #demoBannerClose:active{transform:scale(.9);}
   .demoBannerTitle{font-weight:700;font-size:12.5px;letter-spacing:.06em;}
   .demoBannerSub{font-weight:600;font-size:10.5px;letter-spacing:.02em;margin-top:2px;opacity:.85;line-height:1.25;}
   .demoBannerTimer{font-weight:600;font-size:10px;margin-top:3px;opacity:.75;white-space:nowrap;}
@@ -430,7 +454,7 @@
 
   @media (max-width:420px){
     .kicker{font-size:19px;}
-    #legend{width:148px;padding:8px 10px 7px;}
+    #legend{width:111px;padding:5px 7px 4px;}
     #locateBtn{width:50px;height:50px;}
     #refreshBtn{width:40px;height:40px;right:72px;}
     #measureBtn{width:40px;height:40px;right:72px;bottom:calc(env(safe-area-inset-bottom,0px) + 82px);}
@@ -440,15 +464,32 @@
   }
 
   @media (orientation:landscape) and (max-height:520px){
-    #legend{bottom:calc(env(safe-area-inset-bottom,0px) + 8px);padding:6px 10px 6px;}
-    #scalebar{bottom:calc(env(safe-area-inset-bottom,0px) + 58px);}
+    #legend{bottom:calc(env(safe-area-inset-bottom,0px) + 8px);}
+    #scalebar{bottom:calc(env(safe-area-inset-bottom,0px) + 50px);}
     #locateBtn{bottom:calc(env(safe-area-inset-bottom,0px) + 8px);width:46px;height:46px;}
     #refreshBtn{bottom:calc(env(safe-area-inset-bottom,0px) + 13px);width:38px;height:38px;right:68px;}
     #addHereBtn{bottom:calc(env(safe-area-inset-bottom,0px) + 62px);}
     #farAway{bottom:calc(env(safe-area-inset-bottom,0px) + 58px);}
     #measureBtn{bottom:calc(env(safe-area-inset-bottom,0px) + 62px);width:38px;height:38px;right:68px;}
-    #speedPill{left:190px;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);}
-    #measurePanel{bottom:calc(env(safe-area-inset-bottom,0px) + 114px);}
+    #speedPill{left:148px;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);}
+    /* landscape: along the bottom edge, in a row with the depth scale and the
+       knot meter, between them and the buttons on the right -- out of the
+       middle of the map */
+    #measurePanel{
+      left:230px;right:118px;width:auto;max-width:420px;transform:none;
+      bottom:calc(env(safe-area-inset-bottom,0px) + 8px);
+      padding:6px 7px 6px 12px;gap:6px;
+    }
+    .mpMain{font-size:15px;}
+    .mpBtn{padding:7px 9px;font-size:12.5px;}
+    .mpClose{width:32px;height:32px;padding:0;}
+  }
+  /* narrow phones in landscape (e.g. iPhone SE): icon buttons, so the
+     distance and time get the room */
+  @media (orientation:landscape) and (max-height:520px) and (max-width:760px){
+    .mpLbl{display:none;}
+    .mpIco{display:block;}
+    #mpUndo, #mpClear{width:32px;height:32px;padding:0;display:flex;align-items:center;justify-content:center;}
   }
 
   #waypoints{position:absolute;inset:0;z-index:14;pointer-events:none;} /* fishing spots: lowest of the map markers */
@@ -481,9 +522,24 @@
   }
   .wpPin .pinHead svg{width:20px;height:20px;display:block;color:var(--ink);}
   .wpPin .pinHead .fishEye{fill:var(--offwhite);}
-  .wpPin--other{background:var(--teal);border-color:rgba(244,247,248,.55);}
-  .wpPin--other .pinHead svg{color:var(--offwhite);}
-  .wpPin--other .pinHead .fishEye{fill:var(--teal);}
+  /* type = colour of the pin: Markering (neutral, a position dot), Abborre,
+     Gädda, Gös (fish). Owner = the edge: dark on your own, white on others'. */
+  :root{ --t-mark:#F4F7F8; --t-abborre:#F3914F; --t-gadda:#7DBD5F; --t-gos:#B7B38B; }
+  .wpPin--mark{background-color:var(--t-mark);}
+  .wpPin--abborre{background-color:var(--t-abborre);}
+  .wpPin--gadda{background-color:var(--t-gadda);}
+  .wpPin--gos{background-color:var(--t-gos);}
+  .wpPin--mark .pinHead svg{width:15px;height:15px;}
+  /* OTHERS' spots: white edge, white fish/dot and a striped colour field, so
+     they're easy to tell apart from your own solid ones. (The pin is rotated
+     -45deg, so a 0deg stripe pattern in its own frame comes out as 45-degree
+     "/" stripes on screen.) */
+  .wpPin--other{
+    border-color:#fff;
+    background-image:repeating-linear-gradient(0deg, rgba(0,0,0,.26) 0 2.5px, transparent 2.5px 5.5px);
+  }
+  .wpPin--other .pinHead svg{color:#fff;}
+  .wpPin--other.wpPin--mark{background-color:#8F9AA0;} /* a darker neutral, so the white dot shows */
 
   #boatsLayer{position:absolute;inset:0;z-index:16;pointer-events:none;} /* other boats: above fishing spots */
   .boatPip{
@@ -542,6 +598,23 @@
   /* bigger, invisible grab area around the little handle bar */
   .sheetGrab{margin:-10px -18px 0;padding:10px 18px 0;cursor:grab;}
   .sheetHandle{width:36px;height:4px;background:rgba(255,255,255,.25);border-radius:2px;margin:2px auto 14px;}
+  /* type picker in the spot sheet */
+  .typeSeg{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:14px;}
+  .typeSeg button{
+    display:flex;align-items:center;justify-content:center;gap:5px;min-width:0;
+    padding:9px 2px;border-radius:9px;border:1px solid rgba(255,255,255,.16);
+    background:rgba(255,255,255,.06);color:var(--offwhite);
+    font-family:inherit;font-size:12.5px;font-weight:600;white-space:nowrap;
+    -webkit-tap-highlight-color:transparent;cursor:pointer;
+  }
+  .typeSeg button[data-type="mark"]{--tc:var(--t-mark);}
+  .typeSeg button[data-type="abborre"]{--tc:var(--t-abborre);}
+  .typeSeg button[data-type="gadda"]{--tc:var(--t-gadda);}
+  .typeSeg button[data-type="gos"]{--tc:var(--t-gos);}
+  .typeSeg button.active{background:var(--tc);border-color:var(--tc);color:var(--ink);}
+  .typeSeg button:disabled{opacity:.45;cursor:default;}
+  .typeSeg button.active:disabled{opacity:1;}
+  .typeDot{width:10px;height:10px;border-radius:50%;flex:0 0 auto;background:var(--tc);border:1.5px solid rgba(0,0,0,.4);}
   .sheetLabel{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:6px;}
   .sheetMeta{font-size:11.5px;color:var(--text-muted);margin:-6px 0 12px;}
   #wpName:disabled{opacity:.75;}
@@ -1001,8 +1074,8 @@
   <div id="farAway"></div>
   <div id="measurePanel" role="region" aria-label="Mätverktyg">
     <div class="mpText"><div class="mpMain" id="mpMain">Tryck på kartan</div><div class="mpSub" id="mpSub"></div></div>
-    <button id="mpUndo" class="mpBtn" type="button">Ångra</button>
-    <button id="mpClear" class="mpBtn" type="button">Rensa</button>
+    <button id="mpUndo" class="mpBtn" type="button" aria-label="Ångra senaste punkten"><svg class="mpIco" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"></path><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"></path></svg><span class="mpLbl">Ångra</span></button>
+    <button id="mpClear" class="mpBtn" type="button" aria-label="Rensa alla punkter"><svg class="mpIco" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M6 6l1 14h10l1-14"></path></svg><span class="mpLbl">Rensa</span></button>
     <button id="mpClose" class="mpBtn mpClose" type="button" aria-label="Stäng mätverktyget" title="Stäng">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"></path></svg>
     </button>
@@ -1053,7 +1126,7 @@
   <div id="topRight">
   <div id="visPanel">
     <label class="visRow">
-      <span class="visSwatch"><svg viewBox="0 0 384 384" fill="currentColor"><path d="M 200.40625 82.164062 L 191.828125 82.164062 L 178.441406 84.570312 L 167.804688 88.34375 L 157.164062 94.175781 L 151.328125 98.640625 L 143.429688 106.539062 L 139.65625 111.335938 L 135.195312 118.207031 L 130.734375 127.46875 L 130.050781 130.558594 L 142.402344 129.53125 L 157.507812 129.53125 L 173.976562 130.90625 L 188.390625 133.648438 L 188.738281 119.234375 L 190.800781 107.566406 L 194.574219 95.550781 Z M 200.40625 82.164062 "/><path d="M 96.75 142.574219 L 101.210938 149.78125 L 107.390625 162.824219 L 111.855469 178.265625 L 113.917969 192.691406 L 113.917969 209.503906 L 111.511719 225.292969 L 109.792969 231.816406 L 106.019531 242.453125 L 101.210938 252.066406 L 96.75 258.585938 L 117 263.046875 L 139.65625 265.453125 L 167.113281 265.109375 L 177.757812 264.082031 L 194.226562 261.328125 L 216.539062 255.496094 L 238.507812 247.261719 L 261.503906 235.933594 L 293.085938 217.402344 L 313.671875 233.191406 L 334.957031 247.605469 L 349.371094 256.183594 L 359.324219 261.328125 L 361.386719 262.019531 L 363.441406 261.675781 L 363.441406 260.300781 L 339.421875 203.324219 L 339.074219 201.609375 L 348.683594 183.421875 L 356.578125 166.941406 L 367.558594 140.859375 L 367.558594 139.140625 L 363.789062 139.828125 L 358.980469 142.230469 L 338.046875 154.925781 L 313.335938 172.09375 L 295.140625 186.164062 L 263.21875 167.289062 L 239.199219 155.273438 L 218.601562 147.039062 L 203.152344 142.230469 L 191.828125 139.484375 L 178.441406 137.085938 L 166.769531 135.710938 L 145.492188 135.023438 L 132.796875 135.710938 L 121.125 137.085938 L 108.082031 139.484375 Z M 96.75 142.574219 "/><path d="M 87.832031 145.320312 L 77.871094 149.4375 L 65.863281 155.273438 L 53.851562 162.140625 L 45.609375 167.632812 L 33.253906 177.238281 L 22.613281 187.539062 L 16.441406 195.089844 L 15.75 198.179688 L 17.8125 202.980469 L 20.558594 207.441406 L 28.449219 217.738281 L 37.027344 226.664062 L 45.609375 233.871094 L 54.878906 240.398438 L 64.828125 246.234375 L 82.335938 254.121094 L 88.171875 256.183594 L 90.234375 256.183594 L 93.667969 252.75 L 97.09375 246.914062 L 101.558594 236.960938 L 104.300781 228.382812 L 107.390625 211.90625 L 107.738281 194.746094 L 105.328125 177.929688 L 103.621094 171.40625 L 99.839844 161.109375 L 95.378906 152.183594 L 91.605469 146.347656 L 89.886719 145.320312 Z M 87.832031 145.320312 "/><path d="M 186.683594 301.492188 L 180.15625 287.414062 L 173.640625 269.574219 L 161.96875 270.601562 L 135.539062 270.253906 L 137.59375 274.371094 L 143.429688 281.925781 L 150.984375 289.132812 L 158.878906 294.628906 L 166.769531 298.402344 L 175.011719 300.800781 L 182.21875 301.835938 Z M 186.683594 301.492188 "/></svg></span>
+      <span class="visSwatch visSwatch--person" id="swatchMine"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"></path></svg></span>
       <span class="visLabel">Mina</span>
       <span class="toggle">
         <input type="checkbox" id="toggleMine" checked>
@@ -1061,7 +1134,7 @@
       </span>
     </label>
     <label class="visRow">
-      <span class="visSwatch visSwatch--other"><svg viewBox="0 0 384 384" fill="currentColor"><path d="M 200.40625 82.164062 L 191.828125 82.164062 L 178.441406 84.570312 L 167.804688 88.34375 L 157.164062 94.175781 L 151.328125 98.640625 L 143.429688 106.539062 L 139.65625 111.335938 L 135.195312 118.207031 L 130.734375 127.46875 L 130.050781 130.558594 L 142.402344 129.53125 L 157.507812 129.53125 L 173.976562 130.90625 L 188.390625 133.648438 L 188.738281 119.234375 L 190.800781 107.566406 L 194.574219 95.550781 Z M 200.40625 82.164062 "/><path d="M 96.75 142.574219 L 101.210938 149.78125 L 107.390625 162.824219 L 111.855469 178.265625 L 113.917969 192.691406 L 113.917969 209.503906 L 111.511719 225.292969 L 109.792969 231.816406 L 106.019531 242.453125 L 101.210938 252.066406 L 96.75 258.585938 L 117 263.046875 L 139.65625 265.453125 L 167.113281 265.109375 L 177.757812 264.082031 L 194.226562 261.328125 L 216.539062 255.496094 L 238.507812 247.261719 L 261.503906 235.933594 L 293.085938 217.402344 L 313.671875 233.191406 L 334.957031 247.605469 L 349.371094 256.183594 L 359.324219 261.328125 L 361.386719 262.019531 L 363.441406 261.675781 L 363.441406 260.300781 L 339.421875 203.324219 L 339.074219 201.609375 L 348.683594 183.421875 L 356.578125 166.941406 L 367.558594 140.859375 L 367.558594 139.140625 L 363.789062 139.828125 L 358.980469 142.230469 L 338.046875 154.925781 L 313.335938 172.09375 L 295.140625 186.164062 L 263.21875 167.289062 L 239.199219 155.273438 L 218.601562 147.039062 L 203.152344 142.230469 L 191.828125 139.484375 L 178.441406 137.085938 L 166.769531 135.710938 L 145.492188 135.023438 L 132.796875 135.710938 L 121.125 137.085938 L 108.082031 139.484375 Z M 96.75 142.574219 "/><path d="M 87.832031 145.320312 L 77.871094 149.4375 L 65.863281 155.273438 L 53.851562 162.140625 L 45.609375 167.632812 L 33.253906 177.238281 L 22.613281 187.539062 L 16.441406 195.089844 L 15.75 198.179688 L 17.8125 202.980469 L 20.558594 207.441406 L 28.449219 217.738281 L 37.027344 226.664062 L 45.609375 233.871094 L 54.878906 240.398438 L 64.828125 246.234375 L 82.335938 254.121094 L 88.171875 256.183594 L 90.234375 256.183594 L 93.667969 252.75 L 97.09375 246.914062 L 101.558594 236.960938 L 104.300781 228.382812 L 107.390625 211.90625 L 107.738281 194.746094 L 105.328125 177.929688 L 103.621094 171.40625 L 99.839844 161.109375 L 95.378906 152.183594 L 91.605469 146.347656 L 89.886719 145.320312 Z M 87.832031 145.320312 "/><path d="M 186.683594 301.492188 L 180.15625 287.414062 L 173.640625 269.574219 L 161.96875 270.601562 L 135.539062 270.253906 L 137.59375 274.371094 L 143.429688 281.925781 L 150.984375 289.132812 L 158.878906 294.628906 L 166.769531 298.402344 L 175.011719 300.800781 L 182.21875 301.835938 Z M 186.683594 301.492188 "/></svg></span>
+      <span class="visSwatch visSwatch--person visSwatch--peopleStriped" id="swatchOthers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.4"></circle><path d="M2.5 20c0-3.6 2.9-6.2 6.5-6.2s6.5 2.6 6.5 6.2"></path><circle cx="17" cy="9" r="2.8"></circle><path d="M16 13.9c3.3 0 5.5 2.4 5.5 5.6"></path></svg></span>
       <span class="visLabel">Andras</span>
       <span class="toggle">
         <input type="checkbox" id="toggleOthers" checked>
@@ -1087,6 +1160,7 @@
     </label>
   </div>
   <div id="demoBanner">
+    <button id="demoBannerClose" type="button" aria-label="Stäng av Demo Mode" title="Stäng av Demo Mode"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
     <div class="demoBannerTitle">DEMO MODE</div>
     <div class="demoBannerSub">Använd ej<br>på vattnet!</div>
     <div class="demoBannerTimer" id="demoBannerTimer"></div>
@@ -1096,7 +1170,14 @@
   <div id="sheetBackdrop"></div>
   <div id="wpSheet">
     <div class="sheetGrab"><div class="sheetHandle"></div></div>
-    <label class="sheetLabel" for="wpName">Fiskeplats</label>
+    <div class="sheetLabel">Typ</div>
+    <div id="wpTypeSeg" class="typeSeg" role="radiogroup" aria-label="Typ av plats">
+      <button type="button" data-type="mark" role="radio"><span class="typeDot"></span>Markering</button>
+      <button type="button" data-type="abborre" role="radio"><span class="typeDot"></span>Abborre</button>
+      <button type="button" data-type="gadda" role="radio"><span class="typeDot"></span>Gädda</button>
+      <button type="button" data-type="gos" role="radio"><span class="typeDot"></span>Gös</button>
+    </div>
+    <label class="sheetLabel" for="wpName">Namn</label>
     <input id="wpName" type="text" maxlength="40" placeholder="T.ex. Gösvik">
     <div id="wpMeta" class="sheetMeta"></div>
     <div class="sheetRow">
@@ -1589,6 +1670,17 @@
 
   var FISH_SVG = '<svg viewBox="0 0 384 384" fill="currentColor"><path d="M 200.40625 82.164062 L 191.828125 82.164062 L 178.441406 84.570312 L 167.804688 88.34375 L 157.164062 94.175781 L 151.328125 98.640625 L 143.429688 106.539062 L 139.65625 111.335938 L 135.195312 118.207031 L 130.734375 127.46875 L 130.050781 130.558594 L 142.402344 129.53125 L 157.507812 129.53125 L 173.976562 130.90625 L 188.390625 133.648438 L 188.738281 119.234375 L 190.800781 107.566406 L 194.574219 95.550781 Z M 200.40625 82.164062 "/><path d="M 96.75 142.574219 L 101.210938 149.78125 L 107.390625 162.824219 L 111.855469 178.265625 L 113.917969 192.691406 L 113.917969 209.503906 L 111.511719 225.292969 L 109.792969 231.816406 L 106.019531 242.453125 L 101.210938 252.066406 L 96.75 258.585938 L 117 263.046875 L 139.65625 265.453125 L 167.113281 265.109375 L 177.757812 264.082031 L 194.226562 261.328125 L 216.539062 255.496094 L 238.507812 247.261719 L 261.503906 235.933594 L 293.085938 217.402344 L 313.671875 233.191406 L 334.957031 247.605469 L 349.371094 256.183594 L 359.324219 261.328125 L 361.386719 262.019531 L 363.441406 261.675781 L 363.441406 260.300781 L 339.421875 203.324219 L 339.074219 201.609375 L 348.683594 183.421875 L 356.578125 166.941406 L 367.558594 140.859375 L 367.558594 139.140625 L 363.789062 139.828125 L 358.980469 142.230469 L 338.046875 154.925781 L 313.335938 172.09375 L 295.140625 186.164062 L 263.21875 167.289062 L 239.199219 155.273438 L 218.601562 147.039062 L 203.152344 142.230469 L 191.828125 139.484375 L 178.441406 137.085938 L 166.769531 135.710938 L 145.492188 135.023438 L 132.796875 135.710938 L 121.125 137.085938 L 108.082031 139.484375 Z M 96.75 142.574219 "/><path d="M 87.832031 145.320312 L 77.871094 149.4375 L 65.863281 155.273438 L 53.851562 162.140625 L 45.609375 167.632812 L 33.253906 177.238281 L 22.613281 187.539062 L 16.441406 195.089844 L 15.75 198.179688 L 17.8125 202.980469 L 20.558594 207.441406 L 28.449219 217.738281 L 37.027344 226.664062 L 45.609375 233.871094 L 54.878906 240.398438 L 64.828125 246.234375 L 82.335938 254.121094 L 88.171875 256.183594 L 90.234375 256.183594 L 93.667969 252.75 L 97.09375 246.914062 L 101.558594 236.960938 L 104.300781 228.382812 L 107.390625 211.90625 L 107.738281 194.746094 L 105.328125 177.929688 L 103.621094 171.40625 L 99.839844 161.109375 L 95.378906 152.183594 L 91.605469 146.347656 L 89.886719 145.320312 Z M 87.832031 145.320312 "/><path d="M 186.683594 301.492188 L 180.15625 287.414062 L 173.640625 269.574219 L 161.96875 270.601562 L 135.539062 270.253906 L 137.59375 274.371094 L 143.429688 281.925781 L 150.984375 289.132812 L 158.878906 294.628906 L 166.769531 298.402344 L 175.011719 300.800781 L 182.21875 301.835938 Z M 186.683594 301.492188 "/></svg>';
 
+  /* Kinds of spot. Spots saved before types existed have no type -> Markering. */
+  var WP_TYPES = {
+    mark:    { label: 'Markering' },
+    abborre: { label: 'Abborre' },
+    gadda:   { label: 'Gädda' },
+    gos:     { label: 'Gös' }
+  };
+  function wpType(wp){ return (wp && WP_TYPES[wp.type]) ? wp.type : 'mark'; }
+  var MARK_SVG = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6" fill="currentColor"></circle></svg>'; // plain position dot
+  function wpIconSvg(type){ return type === 'mark' ? MARK_SVG : FISH_SVG; }
+
   function loadLocalWaypoints(){
     try {
       var raw = localStorage.getItem(WP_KEY);
@@ -1632,7 +1724,6 @@
       if (!el){
         el = document.createElement('div');
         el.setAttribute('data-id', wp.id);
-        el.innerHTML = '<div class="pinHead">' + FISH_SVG + '</div>';
         el.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
         el.addEventListener('click', function(e){
           e.stopPropagation();
@@ -1648,7 +1739,12 @@
         });
         waypointsLayer.appendChild(el);
       }
-      el.className = 'wpPin' + (mine ? '' : ' wpPin--other');
+      var type = wpType(wp);
+      if (el.getAttribute('data-type') !== type){ // (re)draw the icon only when the type changes
+        el.setAttribute('data-type', type);
+        el.innerHTML = '<div class="pinHead">' + wpIconSvg(type) + '</div>';
+      }
+      el.className = 'wpPin wpPin--' + type + (mine ? '' : ' wpPin--other');
       el.style.left = sx + 'px';
       el.style.top = (sy - PIN_TIP_OFFSET * wpScale) + 'px';
     });
@@ -1670,7 +1766,9 @@
     else if (savedSize > 1) wpScale = 1; // old "Stor"/"Extra stor" -> the biggest size now
   } catch(e){}
   var wpSizeSeg = document.getElementById('wpSizeSeg');
-  document.getElementById('wpSizePreviewPin').querySelector('.pinHead').innerHTML = FISH_SVG;
+  var sizePreviewPin = document.getElementById('wpSizePreviewPin');
+  sizePreviewPin.classList.add('wpPin--abborre');
+  sizePreviewPin.querySelector('.pinHead').innerHTML = FISH_SVG;
   function applyWpScale(){
     document.documentElement.style.setProperty('--wp-scale', String(wpScale));
     // keep the tap target at least ~34px on screen, whatever the pin size
@@ -1942,20 +2040,30 @@
 
   // "Fiskeplats N" numbered from YOUR spots only (not everyone's), and never
   // reusing a number you already have.
-  function nextWaypointName(){
-    var mine = waypoints.filter(isMine);
+  // "<Typ> N" numbered among YOUR spots of that type, never reusing a number
+  // you already have (excludeId: the spot being edited doesn't count itself)
+  function nextWaypointName(type, excludeId){
+    type = WP_TYPES[type] ? type : 'mark';
+    var label = WP_TYPES[type].label;
+    var same = waypoints.filter(function(w){ return isMine(w) && w.id !== excludeId && wpType(w) === type; });
+    var re = new RegExp('^' + label + ' (\\d+)$');
     var maxN = 0;
-    mine.forEach(function(w){
-      var m = /^Fiskeplats (\d+)$/.exec(w.name || '');
+    same.forEach(function(w){
+      var m = re.exec(w.name || '');
       if (m) maxN = Math.max(maxN, parseInt(m[1], 10));
     });
-    return 'Fiskeplats ' + (Math.max(maxN, mine.length) + 1);
+    return label + ' ' + (Math.max(maxN, same.length) + 1);
+  }
+  // a name the app made up itself (so switching type may replace it)
+  function isAutoWpName(v){
+    v = (v || '').trim();
+    return !v || /^(Markering|Abborre|Gädda|Gös|Fiskeplats) \d+$/.test(v);
   }
 
   function placeWaypointAtScreen(sx, sy){
     var imgX = (sx - originX) / scale, imgY = (sy - originY) / scale;
     var ll = imgPxToLatLon(imgX, imgY);
-    var name = nextWaypointName();
+    var name = nextWaypointName('mark'); // new spots start as a Markering
     if (USE_FIREBASE){
       // Create the doc id right here on the phone and open the sheet
       // immediately. (fsCol.add()'s promise only resolves once the SERVER
@@ -1966,13 +2074,13 @@
       var ref = fsCol.doc();
       addUsage('w', 1);
       ref.set({
-        lat: ll.lat, lon: ll.lon, name: name, uid: myUid, by: userName || '', lake: LAKE_ID,
+        lat: ll.lat, lon: ll.lon, name: name, type: 'mark', uid: myUid, by: userName || '', lake: LAKE_ID,
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       }).catch(function(err){ console.warn('kunde inte spara fiskeplats', err); });
-      openSheetForWp({ id:ref.id, lat:ll.lat, lon:ll.lon, name:name, uid:myUid, by:userName || '', lake:LAKE_ID, createdAt:Date.now() }, true);
+      openSheetForWp({ id:ref.id, lat:ll.lat, lon:ll.lon, name:name, type:'mark', uid:myUid, by:userName || '', lake:LAKE_ID, createdAt:Date.now() }, true);
     } else {
       var id = 'wp' + Date.now() + Math.random().toString(36).slice(2, 7);
-      var wp = { id:id, lat: ll.lat, lon: ll.lon, name: name, uid:'local', by:userName || '', lake:LAKE_ID, createdAt: Date.now() };
+      var wp = { id:id, lat: ll.lat, lon: ll.lon, name: name, type:'mark', uid:'local', by:userName || '', lake:LAKE_ID, createdAt: Date.now() };
       waypoints.push(wp);
       saveLocalWaypoints();
       renderWaypoints();
@@ -1997,15 +2105,37 @@
     }
   }
 
+  var wpTypeSeg = document.getElementById('wpTypeSeg');
+  var editingType = 'mark';
+  function showEditingType(){
+    Array.from(wpTypeSeg.children).forEach(function(b){
+      var on = b.getAttribute('data-type') === editingType;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-checked', on ? 'true' : 'false');
+    });
+  }
+  wpTypeSeg.addEventListener('click', function(e){
+    var b = e.target.closest ? e.target.closest('button[data-type]') : null;
+    if (!b || b.disabled || !editingId) return;
+    editingType = b.getAttribute('data-type');
+    showEditingType();
+    // switch the made-up name along with the type ("Markering 5" -> "Gös 3"),
+    // but never overwrite a name you typed yourself
+    if (isAutoWpName(wpNameInput.value)) wpNameInput.value = nextWaypointName(editingType, editingId);
+  });
+
   function openSheetForWp(wp, isNew){
     editingId = wp.id;
     editingIsNew = !!isNew;
+    editingType = wpType(wp);
     var mine = isMine(wp);
     var canEdit = mine || adminCanEditAll();
     wpNameInput.value = wp.name;
     wpNameInput.disabled = !canEdit;
     wpDeleteBtn.hidden = !canEdit;
     wpSaveBtn.hidden = !canEdit;
+    Array.from(wpTypeSeg.children).forEach(function(b){ b.disabled = !canEdit; });
+    showEditingType();
     editingWpInfo = { lat: wp.lat, lon: wp.lon, mine: mine, by: wp.by, createdAt: wp.createdAt };
     refreshSheetMeta();
     sheetBackdrop.classList.add('show');
@@ -2032,12 +2162,12 @@
   wpSaveBtn.addEventListener('click', function(){
     if (!editingId) { closeSheet(); return; }
     var v = wpNameInput.value.trim();
-    if (v){
-      if (USE_FIREBASE){ addUsage('w', 1); fsCol.doc(editingId).update({ name:v }).catch(function(e){ console.warn(e); }); }
-      else {
-        var wp = waypoints.filter(function(w){ return w.id === editingId; })[0];
-        if (wp){ wp.name = v; saveLocalWaypoints(); renderWaypoints(); }
-      }
+    var upd = { type: editingType };
+    if (v) upd.name = v;           // an emptied name keeps the old one
+    if (USE_FIREBASE){ addUsage('w', 1); fsCol.doc(editingId).update(upd).catch(function(e){ console.warn(e); }); }
+    else {
+      var wp = waypoints.filter(function(w){ return w.id === editingId; })[0];
+      if (wp){ wp.type = editingType; if (v) wp.name = v; saveLocalWaypoints(); renderWaypoints(); }
     }
     closeSheet();
   });
@@ -2107,7 +2237,7 @@
       var docLake = d.lake || 'regnaren';
       if (docLake !== LAKE_ID) return;
       waypoints.push({
-        id: doc.id, lat:d.lat, lon:d.lon, name:d.name, uid:d.uid, by:d.by || '', lake:docLake,
+        id: doc.id, lat:d.lat, lon:d.lon, name:d.name, type:d.type || 'mark', uid:d.uid, by:d.by || '', lake:docLake,
         createdAt: (d.createdAt && d.createdAt.toMillis) ? d.createdAt.toMillis() : Date.now()
       });
     });
@@ -2387,7 +2517,7 @@
       var name = (wp.name || 'Fiskeplats').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
       return '' +
         '<div class="logItem" data-id="' + wp.id + '">' +
-          '<span class="visSwatch' + (mine ? '' : ' visSwatch--other') + '">' + FISH_SVG + '</span>' +
+          '<span class="visSwatch ws-' + wpType(wp) + (mine ? '' : ' visSwatch--other') + '">' + wpIconSvg(wpType(wp)) + '</span>' +
           '<div class="logInfo">' +
             '<div class="logTitle">' + name + '</div>' +
             '<div class="logMeta">' + who + ' · ' + fmtLogDate(wp.createdAt) + ' · ' + timeAgo(wp.createdAt) + '</div>' +
@@ -2575,6 +2705,11 @@
   }
   demoModeToggle.addEventListener('change', function(){
     setDemoMode(demoModeToggle.checked);
+  });
+  document.getElementById('demoBannerClose').addEventListener('click', function(e){
+    e.stopPropagation();
+    demoModeToggle.checked = false;
+    setDemoMode(false);
   });
   demoRerollBtn.addEventListener('click', function(){
     demoRerollBtn.classList.remove('spinning');
@@ -3074,8 +3209,9 @@
       out.push('  <wpt lat="' + Number(w.lat).toFixed(7) + '" lon="' + Number(w.lon).toFixed(7) + '">');
       if (w.createdAt) out.push('    <time>' + new Date(w.createdAt).toISOString() + '</time>');
       out.push('    <name>' + xmlEsc(w.name || 'Fiskeplats') + '</name>');
-      out.push('    <desc>' + xmlEsc('Sparad av ' + wpOwnerName(w)) + '</desc>');
-      out.push('    <sym>Fishing Hot Spot Facility</sym>');
+      out.push('    <desc>' + xmlEsc(WP_TYPES[wpType(w)].label + ' · sparad av ' + wpOwnerName(w)) + '</desc>');
+      out.push('    <type>' + xmlEsc(WP_TYPES[wpType(w)].label) + '</type>');
+      out.push('    <sym>' + (wpType(w) === 'mark' ? 'Flag, Blue' : 'Fishing Hot Spot Facility') + '</sym>');
       out.push('  </wpt>');
     });
     out.push('</gpx>');
@@ -3087,9 +3223,9 @@
   }
   function buildCsv(){
     // semicolons + decimal commas = opens straight into Swedish Excel
-    var rows = [['Namn', 'Latitud', 'Longitud', 'Sparad av', 'Skapad']];
+    var rows = [['Namn', 'Typ', 'Latitud', 'Longitud', 'Sparad av', 'Skapad']];
     sortedWaypoints().forEach(function(w){
-      rows.push([w.name || 'Fiskeplats',
+      rows.push([w.name || 'Fiskeplats', WP_TYPES[wpType(w)].label,
         Number(w.lat).toFixed(6).replace('.', ','), Number(w.lon).toFixed(6).replace('.', ','),
         wpOwnerName(w), w.createdAt ? new Date(w.createdAt).toLocaleString('sv-SE').slice(0, 16) : '']);
     });
@@ -3313,6 +3449,15 @@
   var mpUndo = document.getElementById('mpUndo');
   var mpClear = document.getElementById('mpClear');
 
+  // kept on the phone until you close the tool with ✕ -- the home-screen app
+  // reloads the page when you rotate the phone, which used to wipe it
+  var MEASURE_KEY = 'ffmap_measure_v1';
+  function saveMeasure(){
+    try {
+      if (measureMode) localStorage.setItem(MEASURE_KEY, JSON.stringify({ on: true, pts: measurePts }));
+      else localStorage.removeItem(MEASURE_KEY);
+    } catch(e){}
+  }
   function setMeasureMode(on){
     measureMode = on;
     measurePts = [];
@@ -3323,17 +3468,19 @@
     document.body.classList.toggle('measuring', on);
     renderMeasure();
     updateMeasurePanel();
+    saveMeasure();
   }
   measureBtn.addEventListener('click', function(){ setMeasureMode(!measureMode); });
   document.getElementById('mpClose').addEventListener('click', function(){ setMeasureMode(false); });
-  mpClear.addEventListener('click', function(){ measurePts = []; renderMeasure(); updateMeasurePanel(); });
-  mpUndo.addEventListener('click', function(){ measurePts.pop(); renderMeasure(); updateMeasurePanel(); });
+  mpClear.addEventListener('click', function(){ measurePts = []; renderMeasure(); updateMeasurePanel(); saveMeasure(); });
+  mpUndo.addEventListener('click', function(){ measurePts.pop(); renderMeasure(); updateMeasurePanel(); saveMeasure(); });
 
   function addMeasurePoint(lat, lon){
     measurePts.push({ lat: lat, lon: lon });
     if (navigator.vibrate){ try { navigator.vibrate(8); } catch(e){} }
     renderMeasure();
     updateMeasurePanel();
+    saveMeasure();
   }
   function addMeasurePointAtScreen(sx, sy){
     var ll = imgPxToLatLon((sx - originX) / scale, (sy - originY) / scale);
@@ -3404,6 +3551,18 @@
       mlLabel.textContent = '';
     }
   }
+
+  // bring back a measurement that was open before the page reloaded
+  try {
+    var savedMeasure = JSON.parse(localStorage.getItem(MEASURE_KEY) || 'null');
+    if (savedMeasure && savedMeasure.on){
+      setMeasureMode(true);
+      measurePts = (savedMeasure.pts || []).filter(function(q){ return q && isFinite(q.lat) && isFinite(q.lon); });
+      renderMeasure();
+      updateMeasurePanel();
+      saveMeasure();
+    }
+  } catch(e){}
 
   // once a second: knot meter, the measuring panel (the speed it uses can
   // change while you drive) and the speed numbers under Settings
@@ -3485,7 +3644,7 @@
   var farAway = document.getElementById('farAway');
   var locateBtn = document.getElementById('locateBtn');
   var addHereBtn = document.getElementById('addHereBtn');
-  addHereBtn.querySelector('.addPinHead').innerHTML = FISH_SVG; // same fish as the pins it creates
+  addHereBtn.querySelector('.addPinHead').innerHTML = MARK_SVG; // looks like what it creates: a Markering
 
   var lastFix = null; // {px, py, accM, onMap}
   var lastOwnLatLon = null; // {lat, lon} -- whatever position is currently shown as "you" (real or demo)
@@ -3600,11 +3759,18 @@
     else { farAway.style.display = lastFix ? 'block' : farAway.style.display; }
   });
 
+  // First pan + zoom to your position (exactly like the GPS button), then drop
+  // the spot there once the map has arrived -- so it's obvious where it goes.
+  var addHerePending = false;
   addHereBtn.addEventListener('click', function(){
-    if (!lastFix || !lastFix.onMap) return;
-    var sx = originX + lastFix.px * scale;
-    var sy = originY + lastFix.py * scale;
-    placeWaypointAtScreen(sx, sy);
+    if (!lastFix || !lastFix.onMap || addHerePending) return;
+    addHerePending = true;
+    var fix = lastFix; // the position at the moment you pressed, even if a new fix arrives meanwhile
+    centerOnFix(false);
+    setTimeout(function(){
+      addHerePending = false;
+      placeWaypointAtScreen(originX + fix.px * scale, originY + fix.py * scale);
+    }, reduceMotion ? 0 : 540);
   });
 
   function startGeolocation(){
