@@ -92,21 +92,31 @@
     border:1px solid rgba(232,163,61,.45);
     transform:translate(-50%,-50%);
   }
+  /* your own position: just an amber arrow pointing the way you're going
+     (it keeps the last direction when you stop), with one amber ring
+     expanding from its centre. */
+  #dot{
+    position:absolute;left:0;top:0;width:24px;height:24px;
+    transform:translate(-50%,-50%);
+  }
+  #dotCenter{display:none;}
+  #dotArrow{
+    position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;
+    transition:transform .5s ease-out;
+    filter:drop-shadow(0 1px 3px rgba(0,0,0,.7));
+  }
+  #dotArrow .arrowHalo{fill:none;stroke:#fff;stroke-width:3.4;stroke-linejoin:round;}
+  #dotArrow .arrowBody{fill:var(--amber);stroke:#0B2A3A;stroke-width:1.3;stroke-linejoin:round;}
   #dotGlow{
     position:absolute;left:0;top:0;width:20px;height:20px;
     transform:translate(-50%,-50%);border-radius:50%;
-    background:transparent;
-    border:1.5px solid rgba(232,163,61,.85);
-    animation:dotpulse 4.5s cubic-bezier(.15,.6,.4,1) infinite;
+    border:2.5px solid rgba(232,163,61,.95);
+    animation:gpsRadar 2.4s cubic-bezier(.2,.6,.4,1) infinite;
   }
-  @media (prefers-reduced-motion:reduce){#dotGlow{animation:none;}}
-  @keyframes dotpulse{0%{transform:translate(-50%,-50%) scale(.3);opacity:.8;}23.3%{opacity:.15;}33.3%{transform:translate(-50%,-50%) scale(3.1);opacity:0;}100%{transform:translate(-50%,-50%) scale(3.1);opacity:0;}}
-  #dot{
-    position:absolute;left:0;top:0;width:16px;height:16px;
-    transform:translate(-50%,-50%);border-radius:50%;
-    background:var(--amber);border:2.5px solid #fff;
-    box-shadow:0 1px 6px rgba(0,0,0,.5);
-  }
+  #dotGlow2{display:none;}
+  #accRing{display:none !important;} /* just the arrow + one expanding ring -- no static accuracy circle */
+  @media (prefers-reduced-motion:reduce){#dotGlow{animation:none;opacity:0;}}
+  @keyframes gpsRadar{0%{transform:translate(-50%,-50%) scale(.5);opacity:.95;}100%{transform:translate(-50%,-50%) scale(3);opacity:0;}}
 
   #legend{
     position:absolute;left:14px;
@@ -282,15 +292,13 @@
   .visSwatch.ws-gadda{background-color:var(--t-gadda);}
   .visSwatch.ws-gos{background-color:var(--t-gos);}
   /* others' spots (log list + the "Andras" toggle): same look as their pins */
-  .visSwatch--other{
-    border-color:#fff;color:#fff;
-    background-image:repeating-linear-gradient(-45deg, rgba(0,0,0,.26) 0 2px, transparent 2px 4.5px);
-  }
-  .visSwatch--other.ws-mark{background-color:#8F9AA0;}
-  .logItem .visSwatch--other{background-image:repeating-linear-gradient(-45deg, rgba(0,0,0,.26) 0 3px, transparent 3px 6.5px);}
+  .visSwatch--other{border-color:rgba(10,20,26,.75);}
+  .visSwatch--other svg{display:none;}
+  /* in the log: a small plain circle, like on the map (same slot width, so the rows line up) */
+  .logItem .visSwatch.visSwatch--other{width:18px;height:18px;margin:0 8px;border-width:2px;}
   /* "Mina" / "Andras" toggles: one person / two people; others' on a striped white + light grey field */
   .visSwatch--person svg{width:13px;height:13px;}
-  .visSwatch--peopleStriped{background:repeating-linear-gradient(-45deg, #ffffff 0 2px, #c9d1d5 2px 4px);}
+
   .visLabel{font-size:12px;color:var(--offwhite);flex:1 1 auto;white-space:nowrap;}
   .toggle{position:relative;display:inline-block;width:34px;height:20px;flex:0 0 auto;}
   .toggle input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer;z-index:1;}
@@ -304,7 +312,7 @@
   .toggle input:checked ~ .toggleTrack .toggleThumb{transform:translateX(14px);}
   .visSeparator{height:1px;background:rgba(255,255,255,.14);margin:2px 1px;}
   .visSwatch--boat{display:flex;align-items:center;justify-content:center;}
-  .boatSwatchDot{width:8px;height:8px;border-radius:50%;background:#fff;border:1.5px solid #000;}
+  .boatSwatchDot{width:8px;height:8px;border-radius:1.5px;background:#fff;border:1.5px solid #000;transform:rotate(45deg);}
   .visSwatch--name{font-size:9.5px;font-weight:700;}
   #visRowNames.disabled{opacity:.45;}
   #visRowNames.disabled .toggle{pointer-events:none;}
@@ -566,16 +574,20 @@
   .wpPin--gadda{background-color:var(--t-gadda);}
   .wpPin--gos{background-color:var(--t-gos);}
   .wpPin--mark .pinHead svg{width:15px;height:15px;}
-  /* OTHERS' spots: white edge, white fish/dot and a striped colour field, so
-     they're easy to tell apart from your own solid ones. (The pin is rotated
-     -45deg, so a 0deg stripe pattern in its own frame comes out as 45-degree
-     "/" stripes on screen.) */
+  /* OTHERS' spots: small plain circles in the type colour (half the size of
+     your own pins, no icon), centred on the spot -- colour-coded, but they
+     take much less attention than your own. Drawn under your own pins. */
+  .wpPin{z-index:2;}
   .wpPin--other{
-    border-color:#fff;
-    background-image:repeating-linear-gradient(0deg, rgba(0,0,0,.26) 0 2.5px, transparent 2.5px 5.5px);
+    z-index:1;
+    border-radius:50%;
+    transform:translate(-50%,-50%) scale(calc(var(--wp-scale, .7) * .5));
+    border:2.5px solid rgba(10,20,26,.75);
+    box-shadow:0 0 0 1.5px rgba(255,255,255,.35), 0 2px 6px rgba(0,0,0,.6);
   }
-  .wpPin--other .pinHead svg{color:#fff;}
-  .wpPin--other.wpPin--mark{background-color:#8F9AA0;} /* a darker neutral, so the white dot shows */
+  .wpPin--other:active{transform:translate(-50%,-50%) scale(calc(var(--wp-scale, .7) * .45));}
+  .wpPin--other .pinHead{display:none;}
+  .wpPin--other::after{inset:calc(var(--wp-hit-o, 0px) * -1);}
 
   #boatsLayer{position:absolute;inset:0;z-index:16;pointer-events:none;} /* other boats: above fishing spots */
   .boatPip{
@@ -583,18 +595,20 @@
     pointer-events:auto;cursor:pointer;
     -webkit-tap-highlight-color:transparent;
   }
+  /* other boats: a white diamond (like AIS targets on a sea chart), so they
+     can't be mixed up with the round fishing-spot circles */
   .boatDot{
     position:absolute;left:0;top:0;
-    width:11px;height:11px;border-radius:50%;
-    background:#fff;border:1.5px solid #000;
-    box-shadow:0 1px 4px rgba(0,0,0,.5);
-    transform:translate(-50%,-50%);
+    width:13px;height:13px;border-radius:2px;
+    background:#fff;border:2px solid #0a141a;
+    box-shadow:0 1px 5px rgba(0,0,0,.6);
+    transform:translate(-50%,-50%) rotate(45deg);
   }
-  .boatPip:active .boatDot{transform:translate(-50%,-50%) scale(.88);}
-  .boatPip--group .boatDot{width:13px;height:13px;border-width:2px;}
-  .boatPip--stale .boatDot{background:var(--text-muted);}
+  .boatPip:active .boatDot{transform:translate(-50%,-50%) rotate(45deg) scale(.88);}
+  .boatPip--group .boatDot{width:15px;height:15px;}
+  .boatPip--stale .boatDot{background:#9aa6ab;}
   .boatName{
-    position:absolute;left:9px;top:0;
+    position:absolute;left:14px;top:0;
     transform:translateY(-50%);
     display:flex;flex-direction:column;gap:1px;
     font-size:10.5px;font-weight:600;color:var(--offwhite);
@@ -1130,7 +1144,8 @@
   <div id="marker">
     <div id="accRing"></div>
     <div id="dotGlow"></div>
-    <div id="dot"></div>
+    <div id="dotGlow2"></div>
+    <div id="dot"><span id="dotCenter"></span><svg id="dotArrow" viewBox="0 0 24 24"><path class="arrowHalo" d="M12 3.25l7 17.5-7-4.2-7 4.2z"></path><path class="arrowBody" d="M12 3.25l7 17.5-7-4.2-7 4.2z"></path></svg></div>
   </div>
 
   <div id="legend">
@@ -1181,7 +1196,7 @@
       </span>
     </label>
     <label class="visRow">
-      <span class="visSwatch visSwatch--person visSwatch--peopleStriped" id="swatchOthers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.4"></circle><path d="M2.5 20c0-3.6 2.9-6.2 6.5-6.2s6.5 2.6 6.5 6.2"></path><circle cx="17" cy="9" r="2.8"></circle><path d="M16 13.9c3.3 0 5.5 2.4 5.5 5.6"></path></svg></span>
+      <span class="visSwatch visSwatch--person" id="swatchOthers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.4"></circle><path d="M2.5 20c0-3.6 2.9-6.2 6.5-6.2s6.5 2.6 6.5 6.2"></path><circle cx="17" cy="9" r="2.8"></circle><path d="M16 13.9c3.3 0 5.5 2.4 5.5 5.6"></path></svg></span>
       <span class="visLabel">Andras</span>
       <span class="toggle">
         <input type="checkbox" id="toggleOthers" checked>
@@ -1770,11 +1785,11 @@
   function wpType(wp){ return (wp && WP_TYPES[wp.type]) ? wp.type : 'mark'; }
   // Filter (fold-out under the toggles): hidden spot types, and others' opacity.
   var TYPE_FILTER_KEY = 'ffmap_type_filter_v1';  // JSON list of HIDDEN types -- default: all shown
-  var OTHERS_OP_KEY = 'ffmap_others_opacity_v1'; // '0.5' (default) or '1'
+  var OTHERS_OP_KEY = 'ffmap_others_opacity_v1'; // '1' (default) or '0.5'
   var hiddenTypes = {};
   try { (JSON.parse(localStorage.getItem(TYPE_FILTER_KEY)) || []).forEach(function(t){ if (WP_TYPES[t]) hiddenTypes[t] = true; }); } catch(e){}
-  var othersOpacity = 0.5;
-  try { if (localStorage.getItem(OTHERS_OP_KEY) === '1') othersOpacity = 1; } catch(e){}
+  var othersOpacity = 1;
+  try { if (localStorage.getItem(OTHERS_OP_KEY) === '0.5') othersOpacity = 0.5; } catch(e){}
   var MARK_SVG = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6" fill="currentColor"></circle></svg>'; // plain position dot
   function wpIconSvg(type){ return type === 'mark' ? MARK_SVG : FISH_SVG; }
 
@@ -1851,7 +1866,7 @@
       var cls = 'wpPin wpPin--' + type + (mine ? '' : ' wpPin--other');
       if (el.className !== cls) el.className = cls;
       el.style.left = sx + 'px';
-      el.style.top = (sy - PIN_TIP_OFFSET * wpScale) + 'px';
+      el.style.top = (mine ? sy - PIN_TIP_OFFSET * wpScale : sy) + 'px'; // others' circles are centred on the spot
     });
     Object.keys(pinEls).forEach(function(id){
       if (!seen[id]){ pinEls[id].remove(); delete pinEls[id]; }
@@ -1879,6 +1894,9 @@
     // keep the tap target at least ~34px on screen, whatever the pin size
     var hitPx = Math.max(0, (34 - 30 * wpScale) / 2) / wpScale;
     document.documentElement.style.setProperty('--wp-hit', hitPx.toFixed(1) + 'px');
+    // others' circles are half size: a ~30px tap target (a bit smaller, since they can sit close together)
+    var so = wpScale * 0.5;
+    document.documentElement.style.setProperty('--wp-hit-o', (Math.max(0, (30 - 30 * so) / 2) / so).toFixed(1) + 'px');
     Array.from(wpSizeSeg.children).forEach(function(b){
       var on = parseFloat(b.getAttribute('data-size')) === wpScale;
       b.classList.toggle('active', on);
@@ -3581,6 +3599,54 @@
     var kn = sum / n * KN_PER_MS;
     return kn < 0.3 ? 0 : kn;
   }
+  /* ---- which way you're going: the arrow in your GPS dot ----
+     Uses the heading the GPS chip reports while moving when there is one,
+     otherwise the direction from a recent position that's clearly far enough
+     behind you (~6 m+, so GPS jitter doesn't spin it). Only updated while
+     you're under way (knot meter 0,8 kn or more); when you stop it keeps
+     pointing the last way you went -- remembered on the phone, so it's the
+     same after a restart or a rotation. (Before the very first trip: north.) */
+  var HEADING_KEY = 'ffmap_last_heading_v1';
+  var headingDeg = 0;
+  try { var savedHdg = parseFloat(localStorage.getItem(HEADING_KEY)); if (isFinite(savedHdg)) headingDeg = savedHdg; } catch(e){}
+  var arrowAngle = null, lastHeadingSave = 0;
+  var MOVING_KN = 0.8;
+  function bearingDeg(lat1, lon1, lat2, lon2){
+    var r = Math.PI / 180, p1 = lat1 * r, p2 = lat2 * r, dl = (lon2 - lon1) * r;
+    var y = Math.sin(dl) * Math.cos(p2);
+    var x = Math.cos(p1) * Math.sin(p2) - Math.sin(p1) * Math.cos(p2) * Math.cos(dl);
+    return (Math.atan2(y, x) / r + 360) % 360;
+  }
+  function updateHeading(lat, lon, gpsHeading){
+    if (currentSpeedKn() >= MOVING_KN){
+      var h = (typeof gpsHeading === 'number' && isFinite(gpsHeading) && gpsHeading >= 0) ? gpsHeading : null;
+      if (h === null){
+        for (var i = speedFixes.length - 2; i >= 0; i--){
+          var f = speedFixes[i];
+          if (haversineKm(f.lat, f.lon, lat, lon) * 1000 >= Math.max(6, (f.acc || 15) * 0.5)){ h = bearingDeg(f.lat, f.lon, lat, lon); break; }
+        }
+      }
+      if (h !== null){
+        headingDeg = h;
+        var now = Date.now();
+        if (now - lastHeadingSave > 3000){ lastHeadingSave = now; try { localStorage.setItem(HEADING_KEY, headingDeg.toFixed(1)); } catch(e){} }
+      }
+    }
+    drawHeadingArrow();
+  }
+  function drawHeadingArrow(){
+    var arrow = document.getElementById('dotArrow');
+    if (arrowAngle === null){
+      arrowAngle = headingDeg; // first time: point the right way at once, no swing from north
+      arrow.style.transition = 'none';
+      arrow.style.transform = 'rotate(' + arrowAngle.toFixed(1) + 'deg)';
+      void arrow.offsetWidth;
+      arrow.style.transition = '';
+      return;
+    }
+    arrowAngle += ((headingDeg - arrowAngle) % 360 + 540) % 360 - 180; // the short way round
+    arrow.style.transform = 'rotate(' + arrowAngle.toFixed(1) + 'deg)';
+  }
   function fmtKn(kn){ return (Math.round(kn * 10) / 10).toFixed(1).replace('.', ','); }
 
   var speedPill = document.getElementById('speedPill');
@@ -3925,6 +3991,7 @@
   var accRing = document.getElementById('accRing');
   var dot = document.getElementById('dot');
   var dotGlow = document.getElementById('dotGlow');
+  var dotGlow2 = document.getElementById('dotGlow2'); // second radar ring, half a beat later
   var farAway = document.getElementById('farAway');
   var farText = document.getElementById('farText');
   function showFarAway(html){ farText.innerHTML = html; farAway.classList.add('show'); }
@@ -3970,6 +4037,7 @@
     var sy = originY + lastFix.py * scale;
     accRing.style.left = sx + 'px'; accRing.style.top = sy + 'px';
     dotGlow.style.left = sx + 'px'; dotGlow.style.top = sy + 'px';
+    dotGlow2.style.left = sx + 'px'; dotGlow2.style.top = sy + 'px';
     dot.style.left = sx + 'px'; dot.style.top = sy + 'px';
     var accWebPx = lastFix.accM / WEB_METERS_PER_PX;
     var d = Math.max(16, Math.min(360, accWebPx * scale * 2));
@@ -3991,12 +4059,13 @@
     document.getElementById('scaleLabel').textContent = meters >= 1000 ? (meters/1000) + ' km' : meters + ' m';
   }
 
-  function onFix(lat, lon, accM, speedMs){
+  function onFix(lat, lon, accM, speedMs, gpsHeading){
     // whatever position is actually shown as "you" -- real GPS, or the demo
     // position while Demo Mode is on -- is also what the others see for you
     // (maybeBroadcastPosition itself skips anything not at the lake)
     maybeBroadcastPosition(lat, lon);
     recordSpeed(lat, lon, accM, speedMs); // knot meter + average speed (on the phone only)
+    updateHeading(lat, lon, gpsHeading);  // the arrow in your GPS dot
     lastOwnLatLon = { lat: lat, lon: lon };
     var p = latLonToImgPx(lat, lon);
     var onMap = isNearLake(lat, lon);
@@ -4070,8 +4139,8 @@
     navigator.geolocation.watchPosition(
       function(pos){
         lastGpsErrorCode = null;
-        lastRealFix = { lat: pos.coords.latitude, lon: pos.coords.longitude, acc: pos.coords.accuracy, speed: pos.coords.speed };
-        if (!demoMode) onFix(lastRealFix.lat, lastRealFix.lon, lastRealFix.acc, lastRealFix.speed);
+        lastRealFix = { lat: pos.coords.latitude, lon: pos.coords.longitude, acc: pos.coords.accuracy, speed: pos.coords.speed, heading: pos.coords.heading };
+        if (!demoMode) onFix(lastRealFix.lat, lastRealFix.lon, lastRealFix.acc, lastRealFix.speed, lastRealFix.heading);
       },
       function(err){
         lastGpsErrorCode = err.code;
