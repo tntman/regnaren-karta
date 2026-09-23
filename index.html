@@ -169,6 +169,59 @@
   /* "add a fishing spot here" button, shaped exactly like a fishing-spot
      pin (same teardrop, colours and fish as your own pins) with a small
      amber "+" badge, so it's obvious what it creates */
+  /* ---- knot meter (under the scale bar) ---- */
+  #speedPill{
+    position:absolute;left:14px;bottom:calc(env(safe-area-inset-bottom,0px) + 68px);z-index:20;
+    display:none;align-items:baseline;gap:4px;pointer-events:none;
+    background:var(--navy-glass);backdrop-filter:blur(6px);
+    border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:4px 10px;
+    box-shadow:0 4px 14px rgba(0,0,0,.35);font-variant-numeric:tabular-nums;
+  }
+  #speedPill.show{display:inline-flex;}
+  #speedPill .spV{font-size:16px;font-weight:700;color:var(--offwhite);}
+  #speedPill .spU{font-size:11px;color:var(--text-muted);}
+
+  /* ---- measuring tool ---- */
+  #measureBtn{
+    position:absolute;right:76px;bottom:calc(env(safe-area-inset-bottom,0px) + 86px);
+    z-index:22;width:44px;height:44px;border-radius:50%;
+    background:var(--navy-glass);backdrop-filter:blur(6px);
+    color:var(--offwhite);border:1px solid rgba(255,255,255,.16);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 4px 14px rgba(0,0,0,.35);-webkit-tap-highlight-color:transparent;
+  }
+  #measureBtn:active{transform:scale(.92);}
+  #measureBtn svg{width:21px;height:21px;}
+  #measureBtn.active{background:var(--amber);color:var(--navy);border-color:var(--amber);}
+  #measureLayer{position:absolute;left:0;top:0;width:100%;height:100%;z-index:15;pointer-events:none;overflow:visible;}
+  #measureLayer .mlUnder{fill:none;stroke:rgba(0,0,0,.55);stroke-width:6;stroke-linecap:round;stroke-linejoin:round;}
+  #measureLayer .mlLine{fill:none;stroke:var(--amber);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:9 6;}
+  #measureLayer .mlPt{fill:#fff;stroke:#14181C;stroke-width:2;}
+  #measureLayer .mlPt.start{fill:var(--amber);}
+  #measureLayer .mlLabel{font:700 12px Calibri,"Segoe UI",system-ui,sans-serif;fill:#fff;stroke:rgba(4,12,17,.85);stroke-width:3.5px;paint-order:stroke;}
+  #measurePanel{
+    position:absolute;left:50%;transform:translateX(-50%);
+    bottom:calc(env(safe-area-inset-bottom,0px) + 146px);z-index:24;
+    width:min(calc(100vw - 28px), 420px);
+    display:none;align-items:center;gap:8px;
+    background:var(--navy);border:1px solid rgba(232,163,61,.5);border-radius:14px;
+    padding:9px 9px 9px 14px;box-shadow:0 6px 20px rgba(0,0,0,.45);
+  }
+  #measurePanel.show{display:flex;}
+  .mpText{flex:1 1 auto;min-width:0;}
+  .mpMain{font-size:16px;font-weight:700;color:var(--offwhite);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .mpSub{font-size:11.5px;color:var(--text-muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .mpBtn{
+    flex:0 0 auto;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.07);color:var(--offwhite);
+    border-radius:9px;padding:8px 10px;font-size:13px;font-weight:600;font-family:inherit;
+    -webkit-tap-highlight-color:transparent;cursor:pointer;
+  }
+  .mpBtn:disabled{opacity:.35;}
+  .mpBtn:active{transform:scale(.95);}
+  .mpClose{width:34px;height:34px;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+  .mpClose svg{width:15px;height:15px;}
+  body.measuring #demoBanner{bottom:calc(env(safe-area-inset-bottom,0px) + 214px);}
+
   #addHereBtn{
     position:absolute;right:18px;
     bottom:calc(env(safe-area-inset-bottom,0px) + 84px);
@@ -381,6 +434,7 @@
     #legend{width:148px;padding:8px 10px 7px;}
     #locateBtn{width:50px;height:50px;}
     #refreshBtn{width:40px;height:40px;right:72px;}
+    #measureBtn{width:40px;height:40px;right:72px;bottom:calc(env(safe-area-inset-bottom,0px) + 82px);}
     #addHereBtn{right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 80px);}
     #visPanel{padding:7px 9px;gap:6px;}
     .visLabel{font-size:11px;}
@@ -394,6 +448,10 @@
     #addHereBtn{bottom:calc(env(safe-area-inset-bottom,0px) + 62px);}
     #farAway{bottom:calc(env(safe-area-inset-bottom,0px) + 58px);}
     #demoBanner{bottom:calc(env(safe-area-inset-bottom,0px) + 110px);padding:8px 22px;}
+    #measureBtn{bottom:calc(env(safe-area-inset-bottom,0px) + 62px);width:38px;height:38px;right:68px;}
+    #speedPill{left:190px;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);}
+    #measurePanel{bottom:calc(env(safe-area-inset-bottom,0px) + 114px);}
+    body.measuring #demoBanner{bottom:calc(env(safe-area-inset-bottom,0px) + 176px);}
   }
 
   #waypoints{position:absolute;inset:0;z-index:14;pointer-events:none;} /* fishing spots: lowest of the map markers */
@@ -701,6 +759,22 @@
     border-radius:10px;padding:11px 12px;color:var(--offwhite);font-size:18px;letter-spacing:.3em;
     font-family:inherit;margin-bottom:14px;box-sizing:border-box;text-align:center;
   }
+  /* speed settings */
+  .speedFields{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;}
+  .speedField{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:8px 10px;min-width:0;}
+  .speedLabel{display:block;font-size:11px;color:var(--text-muted);margin-bottom:4px;}
+  .speedValue{font-size:15px;font-weight:700;color:var(--offwhite);font-variant-numeric:tabular-nums;}
+  .speedSub{display:block;font-size:10.5px;color:var(--text-muted);margin-top:2px;}
+  .speedInputWrap{display:flex;align-items:baseline;gap:5px;}
+  #cruiseInput{
+    width:64px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:8px;
+    padding:5px 7px;color:var(--offwhite);font-size:16px;font-weight:700;font-family:inherit;
+    font-variant-numeric:tabular-nums;box-sizing:border-box;
+  }
+  #cruiseInput.invalid{border-color:var(--danger);}
+  .speedUnit{font-size:12px;color:var(--text-muted);}
+  .speedUsed{font-size:12px;color:var(--offwhite);margin-top:10px;}
+  .speedUsed b{color:var(--amber);}
   .sheetDistance{color:var(--amber);font-weight:600;}
 </style>
 </head>
@@ -713,6 +787,7 @@
   </div>
 
   <div id="waypoints"></div>
+  <svg id="measureLayer" aria-hidden="true"><polyline class="mlUnder"></polyline><polyline class="mlLine"></polyline><g class="mlPts"></g><text class="mlLabel"></text></svg>
   <div id="boatsLayer"></div>
   <div id="longPressRing"></div>
   <div id="bottomFade"></div>
@@ -784,6 +859,25 @@
           <button type="button" data-size="1" role="radio">Stor</button>
         </div>
       </div>
+      <div class="settingsRow" style="flex-direction:column;align-items:stretch;">
+        <div class="settingsRowText">
+          <div class="settingsRowTitle">Fart för mätverktyget</div>
+          <div class="settingsRowDesc">Restiden räknas med din snittfart när den finns, annars med marschfarten. Snittfarten är snittet av de senaste 2 minuterna du faktiskt kört (över 0,8 kn) och används så fort du kört i 2 minuter. Stannar du behålls farten från senaste körningen.</div>
+        </div>
+        <div class="speedFields">
+          <div class="speedField">
+            <label class="speedLabel" for="cruiseInput">Marschfart</label>
+            <span class="speedInputWrap"><input id="cruiseInput" type="text" inputmode="decimal" autocomplete="off"><span class="speedUnit">kn</span></span>
+          </div>
+          <div class="speedField">
+            <span class="speedLabel">Din snittfart</span>
+            <span class="speedValue" id="avgSpeedVal">–</span>
+            <span class="speedSub" id="avgSpeedSub">Inte kört än</span>
+          </div>
+        </div>
+        <div class="speedUsed" id="speedUsedNote"></div>
+        <div class="btnRowWrap"><button id="avgResetBtn" class="btnAdmin small" type="button">Nollställ snittfart</button></div>
+      </div>
       <div class="settingsRow" id="adminRow" hidden>
         <div class="settingsRowText">
           <div class="settingsRowTitle">Admin</div>
@@ -813,6 +907,16 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"></path><polyline points="21 3 21 9 15 9"></polyline></svg>
         </button>
       </div>
+      <label class="settingsRow" for="demoMoveToggle" id="demoMoveRow" style="display:none;">
+        <div class="settingsRowText">
+          <div class="settingsRowTitle">Simulera rörelse</div>
+          <div class="settingsRowDesc">Båten kör runt kring demo-positionen i ungefär marschfart, lite upp och ner, så knopmätare, snittfart och mätverktyg går att testa. Den vet inte var land är, så den kan köra över land.</div>
+        </div>
+        <span class="toggle">
+          <input type="checkbox" id="demoMoveToggle">
+          <span class="toggleTrack"><span class="toggleThumb"></span></span>
+        </span>
+      </label>
     </div>
   </div>
 
@@ -898,6 +1002,14 @@
     <div id="netBadge"><span class="netDot"></span><span class="netText" id="netText"></span></div>
   </header>
   <div id="farAway"></div>
+  <div id="measurePanel" role="region" aria-label="Mätverktyg">
+    <div class="mpText"><div class="mpMain" id="mpMain">Tryck på kartan</div><div class="mpSub" id="mpSub"></div></div>
+    <button id="mpUndo" class="mpBtn" type="button">Ångra</button>
+    <button id="mpClear" class="mpBtn" type="button">Rensa</button>
+    <button id="mpClose" class="mpBtn mpClose" type="button" aria-label="Stäng mätverktyget" title="Stäng">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"></path></svg>
+    </button>
+  </div>
   <div id="demoBanner">
     <div class="demoBannerTitle">DEMO MODE</div>
     <div class="demoBannerSub">Använd ej på vattnet!</div>
@@ -920,6 +1032,8 @@
     <span id="scaleLabel">100 m</span>
   </div>
 
+  <div id="speedPill" aria-live="off"><span class="spV" id="speedVal">0,0</span><span class="spU">kn</span></div>
+
   <button id="locateBtn" aria-label="Centrera på min position" title="Centrera på min position" disabled>
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <circle cx="12" cy="12" r="3"></circle>
@@ -933,6 +1047,10 @@
       <path d="M21 12a9 9 0 1 1-3-6.7"></path>
       <polyline points="21 3 21 9 15 9"></polyline>
     </svg>
+  </button>
+
+  <button id="measureBtn" aria-label="Mätverktyg" title="Mät sträcka och restid">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17 17 3l4 4L7 21z"></path><path d="M7 13l2 2M10 10l2 2M13 7l2 2"></path></svg>
   </button>
 
   <button id="addHereBtn" aria-label="Lägg till fiskeplats på min position" title="Lägg till fiskeplats på min position" disabled>
@@ -1116,6 +1234,7 @@
     updateScaleBar();
     renderWaypoints();
     renderBoats();
+    renderMeasure();
   }
 
   // Touch/wheel events can fire far more often than the screen redraws
@@ -1292,7 +1411,7 @@
       var p = pointers.values().next().value;
       panStart = {x:p.x, y:p.y, originX:originX, originY:originY, moved:0, t0:performance.now()};
       pinch = null;
-      startLongPress(p.x, p.y);
+      if (!measureMode) startLongPress(p.x, p.y); // (in measuring mode a tap adds a point instead)
     } else if (pointers.size === 2){
       cancelLongPress();
       var pts = Array.from(pointers.values());
@@ -1338,7 +1457,11 @@
       pinch = null;
     } else if (pointers.size === 0){
       stage.classList.remove('dragging');
-      if (wasSingle && panStart && panStart.moved < 10 && (performance.now() - panStart.t0) < 300){
+      if (measureMode && wasSingle && panStart && panStart.moved < 10 && (performance.now() - panStart.t0) < 600){
+        // measuring: every tap on the map is a new point (no double-tap zoom)
+        addMeasurePointAtScreen(p.x, p.y);
+        lastTap = null;
+      } else if (wasSingle && panStart && panStart.moved < 10 && (performance.now() - panStart.t0) < 300){
         var now = performance.now();
         if (lastTap && (now - lastTap.t) < 350 && dist(lastTap, p) < 30){
           var mid = (scale < fitScale * 1.6) ? Math.min(maxScale, fitScale * 2.4) : fitScale;
@@ -1520,7 +1643,9 @@
           // reopening the sheet with whatever name/data the pin had when first drawn.
           var currentId = el.getAttribute('data-id');
           var current = waypoints.filter(function(w){ return w.id === currentId; })[0];
-          if (current) openSheetForWp(current, false);
+          if (!current) return;
+          if (measureMode){ addMeasurePoint(current.lat, current.lon); return; } // snap a point onto the spot
+          openSheetForWp(current, false);
         });
         waypointsLayer.appendChild(el);
       }
@@ -1635,7 +1760,9 @@
             // on every snapshot update, so a stale closure would show old data
             var currentId = el.getAttribute('data-cluster');
             var current = boatClustersById[currentId];
-            if (current) showBoatInfo(current);
+            if (!current) return;
+            if (measureMode){ addMeasurePoint(current.lat, current.lon); return; }
+            showBoatInfo(current);
           });
           boatsLayer.appendChild(el);
         }
@@ -2292,6 +2419,7 @@
     toggleMenu(false);
   }
   function showSettingsView(){
+    updateSpeedSettings(); // fresh speed numbers the moment it opens
     settingsView.classList.add('show');
     logView.classList.remove('show');
     menuItemMap.classList.remove('menuItem--active');
@@ -2387,6 +2515,7 @@
   }
   function rerollDemoPosition(){
     setDemoCoords(randomDemoPoint());
+    demoJumped();
     if (demoMode) onFix(demoLat, demoLon, 8);
   }
 
@@ -2401,6 +2530,7 @@
     demoLonInput.classList.toggle('invalid', !okLon);
     if (!okLat || !okLon) return; // leave the bad field marked, don't touch the stored position yet
     setDemoCoords({ lat: lat, lon: lon });
+    demoJumped();
     if (demoMode) onFix(demoLat, demoLon, 8);
   }
   demoLatInput.addEventListener('blur', commitManualDemoCoords);
@@ -2412,6 +2542,13 @@
 
   function setDemoMode(on){
     demoMode = on;
+    resetSpeedTracking();           // don't mix speeds from the real and the demo position
+    stopDemoMotion();
+    var moveRow = document.getElementById('demoMoveRow');
+    if (moveRow) moveRow.style.display = on ? 'flex' : 'none';
+    var moveToggle = document.getElementById('demoMoveToggle');
+    if (moveToggle) moveToggle.checked = false;
+    if (on) demoAvg = { b: [] };    // a fresh demo average every time
     demoSince = on ? Date.now() : 0;
     try {
       localStorage.setItem(DEMO_KEY, on ? '1' : '0');
@@ -2979,6 +3116,354 @@
     exportFile('ffmap-' + LAKE_ID + '-fiskeplatser-' + exportStamp() + '.csv', 'text/csv', buildCsv());
   });
 
+  /* ================= Fart: knopmätare + snittfart =================
+     Everything here stays on the phone -- nothing is written to the
+     database. */
+  var KN_PER_MS = 1.943844;                 // 1 m/s in knots
+  var UNDERWAY_MS = 0.8 / KN_PER_MS;        // slower than 0.8 kn = drifting / GPS jitter, not "on the move"
+  var MAX_PLAUSIBLE_MS = 25 / KN_PER_MS;    // faster than 25 kn = a GPS jump, ignored
+  var speedFixes = [];   // recent fixes {t, lat, lon, acc} (last ~20 s)
+  var speedSamples = []; // recent speeds {t, v} in m/s (last ~10 s)
+  function resetSpeedTracking(){ speedFixes = []; speedSamples = []; }
+
+  // Called for every position (real GPS or demo). Prefers the speed the GPS
+  // chip itself reports (accurate even at trolling speed); otherwise works
+  // it out from how far we moved over the last ~6 s, treating movement
+  // smaller than the GPS accuracy as standing still.
+  function recordSpeed(lat, lon, accM, speedMs){
+    var now = Date.now();
+    var prev = speedFixes.length ? speedFixes[speedFixes.length - 1] : null;
+    speedFixes.push({ t: now, lat: lat, lon: lon, acc: accM || 15 });
+    while (speedFixes.length && now - speedFixes[0].t > 20000) speedFixes.shift();
+    var v = (typeof speedMs === 'number' && isFinite(speedMs) && speedMs >= 0) ? speedMs : null;
+    if (v === null){
+      var base = null;
+      for (var i = speedFixes.length - 2; i >= 0; i--){
+        if (now - speedFixes[i].t >= 6000){ base = speedFixes[i]; break; }
+      }
+      if (!base) base = prev;
+      if (base && now > base.t){
+        var d = haversineKm(base.lat, base.lon, lat, lon) * 1000;
+        var noise = Math.max(base.acc, accM || 15) * 0.5;
+        v = d <= noise ? 0 : d / ((now - base.t) / 1000);
+      }
+    }
+    if (v === null || v > MAX_PLAUSIBLE_MS) return;
+    speedSamples.push({ t: now, v: v });
+    while (speedSamples.length && now - speedSamples[0].t > 10000) speedSamples.shift();
+    if (prev){
+      var dt = (now - prev.t) / 1000;
+      if (dt > 0 && dt <= 30 && v >= UNDERWAY_MS) addUnderway(v * dt, dt);
+    }
+    updateSpeedPill();
+  }
+  // What the knot meter shows: the average of the last ~8 s. No new position
+  // for that long means we're not moving (phones send fewer fixes when still).
+  function currentSpeedKn(){
+    var now = Date.now(), sum = 0, n = 0;
+    speedSamples.forEach(function(x){ if (now - x.t <= 8000){ sum += x.v; n++; } });
+    if (!n) return 0;
+    var kn = sum / n * KN_PER_MS;
+    return kn < 0.3 ? 0 : kn;
+  }
+  function fmtKn(kn){ return (Math.round(kn * 10) / 10).toFixed(1).replace('.', ','); }
+
+  var speedPill = document.getElementById('speedPill');
+  var speedValEl = document.getElementById('speedVal');
+  function updateSpeedPill(){
+    var show = !!(lastFix && lastFix.onMap);
+    speedPill.classList.toggle('show', show);
+    if (show) speedValEl.textContent = fmtKn(currentSpeedKn());
+  }
+
+  /* ---- average speed ("snittfart") for the travel-time estimate ----
+     Only time actually spent on the move counts (anchored/drifting is left
+     out, so a fishing stop doesn't drag it down). It's the average of the
+     most recent 2 minutes of such driving -- so it quickly follows how you
+     drive right now -- and it isn't used until there are 2 minutes of
+     driving behind it; until then the cruise speed from Settings is used.
+     When you stop, it keeps the speed of your last 2 minutes of driving.
+     Stored in 10-second pieces on the phone; forgotten after 12 h without
+     driving (a new day / a new boat). Demo Mode keeps its own average in
+     memory, so testing never touches the real one. */
+  var AVG_KEY = 'ffmap_avg_speed_v2';       // v2: 10-second pieces (v1 was per minute)
+  var AVG_BUCKET_MS = 10000;
+  var AVG_WINDOW_S = 120, AVG_MIN_S = 120, AVG_MAX_AGE_MS = 12 * 3600 * 1000;
+  try { localStorage.removeItem('ffmap_avg_speed_v1'); } catch(e){}
+  var realAvg = { b: [] };
+  try { var ra = JSON.parse(localStorage.getItem(AVG_KEY) || 'null'); if (ra && ra.b) realAvg = ra; } catch(e){}
+  var demoAvg = { b: [] };
+  var avgSaveTimer = null;
+  function saveAvgNow(){
+    if (avgSaveTimer){ clearTimeout(avgSaveTimer); avgSaveTimer = null; }
+    try { localStorage.setItem(AVG_KEY, JSON.stringify(realAvg)); } catch(e){}
+  }
+  function saveAvgSoon(){ if (!avgSaveTimer) avgSaveTimer = setTimeout(saveAvgNow, 10000); }
+  document.addEventListener('visibilitychange', function(){ if (document.visibilityState === 'hidden') saveAvgNow(); });
+  function activeAvg(){ return demoMode ? demoAvg : realAvg; }
+  function addUnderway(dist, dt){
+    var a = activeAvg();
+    var m = Math.floor(Date.now() / AVG_BUCKET_MS);
+    var last = a.b[a.b.length - 1];
+    if (last && last.m === m){ last.d += dist; last.dt += dt; }
+    else a.b.push({ m: m, d: dist, dt: dt });
+    var tot = 0;
+    for (var i = a.b.length - 1; i >= 0; i--){
+      tot += a.b[i].dt;
+      if (tot > AVG_WINDOW_S + 20){ a.b.splice(0, i); break; }
+    }
+    if (a === realAvg) saveAvgSoon();
+  }
+  function avgSpeedInfo(){
+    var a = activeAvg();
+    if (!a.b.length) return null;
+    if (Date.now() - a.b[a.b.length - 1].m * AVG_BUCKET_MS > AVG_MAX_AGE_MS){
+      a.b = [];
+      if (a === realAvg) saveAvgNow();
+      return null;
+    }
+    var d = 0, dt = 0;
+    for (var i = a.b.length - 1; i >= 0 && dt < AVG_WINDOW_S; i--){
+      var take = Math.min(1, (AVG_WINDOW_S - dt) / a.b[i].dt); // only as much of the oldest piece as fits in 2 min
+      d += a.b[i].d * take; dt += a.b[i].dt * take;
+    }
+    return { kn: dt ? d / dt * KN_PER_MS : 0, seconds: dt, ready: dt >= AVG_MIN_S };
+  }
+
+  var CRUISE_KEY = 'ffmap_cruise_kn_v1';
+  var cruiseKn = 2;
+  try { var cs = parseFloat(localStorage.getItem(CRUISE_KEY)); if (isFinite(cs) && cs >= 0.5 && cs <= 40) cruiseKn = cs; } catch(e){}
+  // the speed the measuring tool uses
+  function effectiveSpeed(){
+    var a = avgSpeedInfo();
+    if (a && a.ready && a.kn >= 0.5) return { kn: a.kn, src: 'avg' };
+    return { kn: cruiseKn, src: 'cruise' };
+  }
+
+  var cruiseInput = document.getElementById('cruiseInput');
+  cruiseInput.value = fmtKn(cruiseKn);
+  function commitCruise(){
+    var v = parseFloat(cruiseInput.value.replace(',', '.'));
+    if (!isFinite(v) || v < 0.5 || v > 40){
+      cruiseInput.classList.add('invalid');
+      return;
+    }
+    cruiseKn = Math.round(v * 10) / 10;
+    cruiseInput.value = fmtKn(cruiseKn);
+    cruiseInput.classList.remove('invalid');
+    try { localStorage.setItem(CRUISE_KEY, String(cruiseKn)); } catch(e){}
+    updateSpeedSettings();
+    updateMeasurePanel();
+  }
+  cruiseInput.addEventListener('blur', commitCruise);
+  cruiseInput.addEventListener('keydown', function(e){ if (e.key === 'Enter') cruiseInput.blur(); });
+  cruiseInput.addEventListener('input', function(){ cruiseInput.classList.remove('invalid'); });
+  document.getElementById('avgResetBtn').addEventListener('click', function(){
+    var a = activeAvg();
+    a.b = [];
+    if (a === realAvg) saveAvgNow();
+    updateSpeedSettings();
+    updateMeasurePanel();
+  });
+  function updateSpeedSettings(){
+    var a = avgSpeedInfo();
+    var valEl = document.getElementById('avgSpeedVal');
+    var subEl = document.getElementById('avgSpeedSub');
+    var demoTag = demoMode ? ' (demo)' : '';
+    if (!a || a.seconds < 1){
+      valEl.textContent = '–';
+      subEl.textContent = 'Inte kört än' + demoTag;
+    } else if (!a.ready){
+      valEl.textContent = fmtKn(a.kn) + ' kn';
+      subEl.textContent = 'Mäter… ' + Math.round(a.seconds) + ' av 120 s' + demoTag;
+    } else {
+      valEl.textContent = fmtKn(a.kn) + ' kn';
+      subEl.textContent = 'Senaste 2 min i rörelse' + demoTag;
+    }
+    var e = effectiveSpeed();
+    document.getElementById('speedUsedNote').innerHTML = 'Mätverktyget räknar just nu med <b>' +
+      (e.src === 'avg' ? 'snittfarten ' : 'marschfarten ') + fmtKn(e.kn) + ' kn</b>';
+  }
+  updateSpeedSettings();
+
+  /* ================= Mätverktyg =================
+     Tap points on the map (or on a fishing spot / boat to snap onto it);
+     shows the distance start -> end along the points and the travel time.
+     Nothing is saved or shared. */
+  var measureMode = false;
+  var measurePts = [];
+  var measureBtn = document.getElementById('measureBtn');
+  var measurePanel = document.getElementById('measurePanel');
+  var measureSvg = document.getElementById('measureLayer');
+  var mlUnder = measureSvg.querySelector('.mlUnder');
+  var mlLine = measureSvg.querySelector('.mlLine');
+  var mlPts = measureSvg.querySelector('.mlPts');
+  var mlLabel = measureSvg.querySelector('.mlLabel');
+  var mpMain = document.getElementById('mpMain');
+  var mpSub = document.getElementById('mpSub');
+  var mpUndo = document.getElementById('mpUndo');
+  var mpClear = document.getElementById('mpClear');
+
+  function setMeasureMode(on){
+    measureMode = on;
+    measurePts = [];
+    cancelLongPress();
+    lastTap = null;
+    measureBtn.classList.toggle('active', on);
+    measurePanel.classList.toggle('show', on);
+    document.body.classList.toggle('measuring', on);
+    renderMeasure();
+    updateMeasurePanel();
+  }
+  measureBtn.addEventListener('click', function(){ setMeasureMode(!measureMode); });
+  document.getElementById('mpClose').addEventListener('click', function(){ setMeasureMode(false); });
+  mpClear.addEventListener('click', function(){ measurePts = []; renderMeasure(); updateMeasurePanel(); });
+  mpUndo.addEventListener('click', function(){ measurePts.pop(); renderMeasure(); updateMeasurePanel(); });
+
+  function addMeasurePoint(lat, lon){
+    measurePts.push({ lat: lat, lon: lon });
+    if (navigator.vibrate){ try { navigator.vibrate(8); } catch(e){} }
+    renderMeasure();
+    updateMeasurePanel();
+  }
+  function addMeasurePointAtScreen(sx, sy){
+    var ll = imgPxToLatLon((sx - originX) / scale, (sy - originY) / scale);
+    addMeasurePoint(ll.lat, ll.lon);
+  }
+  function measureDistanceM(){
+    var d = 0;
+    for (var i = 1; i < measurePts.length; i++){
+      d += haversineKm(measurePts[i-1].lat, measurePts[i-1].lon, measurePts[i].lat, measurePts[i].lon) * 1000;
+    }
+    return d;
+  }
+  function fmtDist(m){
+    if (m < 1000) return Math.round(m) + ' m';
+    return (m / 1000).toFixed(m < 10000 ? 2 : 1).replace('.', ',') + ' km';
+  }
+  function fmtDuration(sec){
+    var min = Math.round(sec / 60);
+    if (min < 1) return 'under 1 min';
+    if (min < 60) return 'ca ' + min + ' min';
+    var h = Math.floor(min / 60), mm = min % 60;
+    return 'ca ' + h + ' h ' + (mm < 10 ? '0' : '') + mm + ' min';
+  }
+  function updateMeasurePanel(){
+    if (!measureMode) return;
+    var n = measurePts.length;
+    mpUndo.disabled = n === 0;
+    mpClear.disabled = n === 0;
+    if (n === 0){
+      mpMain.textContent = 'Tryck på kartan';
+      mpSub.textContent = 'Sätt ut startpunkten (eller tryck på en fiskeplats)';
+      return;
+    }
+    if (n === 1){
+      mpMain.textContent = 'Tryck ut nästa punkt';
+      mpSub.textContent = 'Startpunkt satt';
+      return;
+    }
+    var m = measureDistanceM();
+    var sp = effectiveSpeed();
+    mpMain.textContent = fmtDist(m) + ' · ' + fmtDuration(m / (sp.kn / KN_PER_MS));
+    mpSub.textContent = n + ' punkter · vid ' + fmtKn(sp.kn) + ' kn (' + (sp.src === 'avg' ? 'din snittfart' : 'marschfart') + ')';
+  }
+  function renderMeasure(){
+    if (!measureMode || !measurePts.length){
+      mlUnder.setAttribute('points', ''); mlLine.setAttribute('points', '');
+      mlPts.innerHTML = ''; mlLabel.textContent = '';
+      return;
+    }
+    var pts = measurePts.map(function(q){
+      var ip = latLonToImgPx(q.lat, q.lon);
+      return [originX + ip.x * scale, originY + ip.y * scale];
+    });
+    var str = pts.map(function(q){ return q[0].toFixed(1) + ',' + q[1].toFixed(1); }).join(' ');
+    mlUnder.setAttribute('points', str);
+    mlLine.setAttribute('points', str);
+    var html = '';
+    pts.forEach(function(q, i){
+      html += '<circle class="mlPt' + (i === 0 ? ' start' : '') + '" cx="' + q[0].toFixed(1) + '" cy="' + q[1].toFixed(1) + '" r="' + (i === 0 || i === pts.length - 1 ? 6 : 4.5) + '"></circle>';
+    });
+    mlPts.innerHTML = html;
+    if (pts.length > 1){
+      var last = pts[pts.length - 1];
+      mlLabel.setAttribute('x', (last[0] + 10).toFixed(1));
+      mlLabel.setAttribute('y', (last[1] - 10).toFixed(1));
+      mlLabel.textContent = fmtDist(measureDistanceM());
+    } else {
+      mlLabel.textContent = '';
+    }
+  }
+
+  // once a second: knot meter, the measuring panel (the speed it uses can
+  // change while you drive) and the speed numbers under Settings
+  setInterval(function(){
+    updateSpeedPill();
+    if (measureMode) updateMeasurePanel();
+    if (settingsView.classList.contains('show')) updateSpeedSettings();
+  }, 1000);
+
+  /* ================= Demo: simulerad rörelse =================
+     Drives the demo position around its starting point at about the cruise
+     speed, a bit up and down, turning gently -- and back towards the start
+     when it gets more than ~350 m away. Every second it feeds a position
+     (with its speed) through exactly the same path as real GPS, so the knot
+     meter, average speed, measuring tool and position sharing all get
+     exercised. */
+  var demoSim = null;
+  var demoMoveToggle = document.getElementById('demoMoveToggle');
+  demoMoveToggle.addEventListener('change', function(){
+    if (demoMoveToggle.checked) startDemoMotion(); else stopDemoMotion();
+  });
+  function startDemoMotion(){
+    if (demoSim || !demoMode || demoLat == null) return;
+    demoSim = { heading: Math.random() * 360, turn: 0, t0: Date.now(), phase: Math.random() * 100,
+                cLat: demoLat, cLon: demoLon, lastSave: Date.now() };
+    demoSim.timer = setInterval(demoSimTick, 1000);
+  }
+  function stopDemoMotion(){
+    if (!demoSim) return;
+    clearInterval(demoSim.timer);
+    demoSim = null;
+    if (demoLat != null) setDemoCoords({ lat: demoLat, lon: demoLon }); // stay where the boat got to
+  }
+  // a jump (reroll / typed coordinates): speed history would be nonsense,
+  // and the simulated boat now circles the new spot
+  function demoJumped(){
+    resetSpeedTracking();
+    if (demoSim){ demoSim.cLat = demoLat; demoSim.cLon = demoLon; }
+  }
+  function demoSimTick(){
+    if (!demoMode){ stopDemoMotion(); return; }
+    var t = (Date.now() - demoSim.t0) / 1000;
+    var kn = cruiseKn * (1 + 0.16 * Math.sin(t / 23 + demoSim.phase) + 0.07 * Math.sin(t / 7.3 + demoSim.phase * 2))
+             + (Math.random() - 0.5) * 0.12 * cruiseKn;
+    kn = Math.max(0.2, kn);
+    var ms = kn / KN_PER_MS;
+    // gentle random turning ...
+    demoSim.turn = (demoSim.turn + (Math.random() - 0.5) * 4) * 0.85;
+    // ... and back towards the start when too far away
+    var cosLat = Math.cos(demoLat * Math.PI / 180);
+    var dN = (demoSim.cLat - demoLat) * 111320, dE = (demoSim.cLon - demoLon) * 111320 * cosLat;
+    if (Math.sqrt(dN * dN + dE * dE) > 350){
+      var toStart = Math.atan2(dE, dN) * 180 / Math.PI;
+      var diff = ((toStart - demoSim.heading + 540) % 360) - 180;
+      demoSim.turn += Math.max(-10, Math.min(10, diff)) * 0.5;
+    }
+    demoSim.heading = (demoSim.heading + demoSim.turn + 360) % 360;
+    var h = demoSim.heading * Math.PI / 180;
+    demoLat += ms * Math.cos(h) / 111320;
+    demoLon += ms * Math.sin(h) / (111320 * cosLat);
+    var ae = document.activeElement;
+    if (ae !== demoLatInput && ae !== demoLonInput) updateDemoCoordsInputs(); // don't fight someone typing
+    if (Date.now() - demoSim.lastSave > 10000){
+      demoSim.lastSave = Date.now();
+      try { localStorage.setItem(DEMO_LAT_KEY, demoLat); localStorage.setItem(DEMO_LON_KEY, demoLon); } catch(e){}
+    }
+    onFix(demoLat, demoLon, 8, ms);
+  }
+
   /* ---------------- GPS ---------------- */
   var marker = document.getElementById('marker');
   var accRing = document.getElementById('accRing');
@@ -3048,11 +3533,12 @@
     document.getElementById('scaleLabel').textContent = meters >= 1000 ? (meters/1000) + ' km' : meters + ' m';
   }
 
-  function onFix(lat, lon, accM){
+  function onFix(lat, lon, accM, speedMs){
     // whatever position is actually shown as "you" -- real GPS, or the demo
     // position while Demo Mode is on -- is also what the others see for you
     // (maybeBroadcastPosition itself skips anything not at the lake)
     maybeBroadcastPosition(lat, lon);
+    recordSpeed(lat, lon, accM, speedMs); // knot meter + average speed (on the phone only)
     lastOwnLatLon = { lat: lat, lon: lon };
     var p = latLonToImgPx(lat, lon);
     var onMap = isNearLake(lat, lon);
@@ -3119,8 +3605,8 @@
     navigator.geolocation.watchPosition(
       function(pos){
         lastGpsErrorCode = null;
-        lastRealFix = { lat: pos.coords.latitude, lon: pos.coords.longitude, acc: pos.coords.accuracy };
-        if (!demoMode) onFix(lastRealFix.lat, lastRealFix.lon, lastRealFix.acc);
+        lastRealFix = { lat: pos.coords.latitude, lon: pos.coords.longitude, acc: pos.coords.accuracy, speed: pos.coords.speed };
+        if (!demoMode) onFix(lastRealFix.lat, lastRealFix.lon, lastRealFix.acc, lastRealFix.speed);
       },
       function(err){
         lastGpsErrorCode = err.code;
@@ -3138,6 +3624,7 @@
       if (demoLat == null || demoLon == null) setDemoCoords(randomDemoPoint());
       else updateDemoCoordsInputs();
       demoCoordsRow.style.display = 'flex';
+      document.getElementById('demoMoveRow').style.display = 'flex';
       onFix(demoLat, demoLon, 8);
     }
     startGeolocation();
