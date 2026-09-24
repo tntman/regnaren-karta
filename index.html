@@ -219,6 +219,31 @@
   #measureBtn svg{width:21px;height:21px;}
   #measureBtn.active{background:var(--amber);color:var(--navy);border-color:var(--amber);}
   #measureLayer{position:absolute;left:0;top:0;width:100%;height:100%;z-index:15;pointer-events:none;overflow:visible;}
+  /* depth probe ("lodlina"): tap the map -> depth + distance there; tap again -> gone */
+  #probe{position:absolute;left:0;top:0;z-index:18;pointer-events:none;display:none;font-family:inherit;}
+  #probe.show{display:block;}
+  #probe .pbRip{position:absolute;left:0;top:0;width:18px;height:6px;border:1.2px solid rgba(255,255,255,.9);border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 0 .8px rgba(0,0,0,.35);}
+  #probe .pbRip2{width:28px;height:10px;border-color:rgba(255,255,255,.45);}
+  #probe .pbLine{position:absolute;left:0;bottom:0;width:1.5px;height:34px;transform:translateX(-50%);transform-origin:50% 0;background:repeating-linear-gradient(to bottom,#fff 0 3px,transparent 3px 5.5px);filter:drop-shadow(0 0 1px rgba(0,0,0,.85));}
+  #probe .pbWt{position:absolute;left:0;top:-3px;transform:translate(-50%,-50%);}
+  #probe .pbWt svg{display:block;}
+  #probe .pbTag{position:absolute;left:0;bottom:34px;transform:translateX(-50%);white-space:nowrap;display:flex;align-items:center;gap:7px;padding:3px 8px;
+    background:rgba(11,42,58,.96);color:#F4F7F8;border:1.2px solid rgba(255,255,255,.25);border-radius:9px;box-shadow:0 4px 12px rgba(0,0,0,.5);}
+  #probe .pbD{font-weight:800;font-size:15px;line-height:1.05;}
+  #probe .pbD small{font-size:10px;font-weight:700;color:#FFB23F;}
+  #probe .pbDiv{width:1px;height:16px;background:rgba(255,255,255,.22);}
+  #probe .pbK{display:flex;align-items:center;gap:3px;font-size:9.5px;color:#B7C4C9;font-weight:600;}
+  #probe.noDist .pbDiv, #probe.noDist .pbK{display:none;}
+  /* the lead drops in */
+  #probe.drop .pbLine{animation:pbLine .28s ease-out;}
+  #probe.drop .pbWt{animation:pbWt .28s ease-out;}
+  #probe.drop .pbTag{animation:pbTag .22s ease-out;}
+  #probe.drop .pbRip{animation:pbRip .45s ease-out;}
+  @keyframes pbLine{from{transform:translateX(-50%) scaleY(0);}to{transform:translateX(-50%) scaleY(1);}}
+  @keyframes pbWt{from{transform:translate(-50%,calc(-50% - 34px));}to{transform:translate(-50%,-50%);}}
+  @keyframes pbTag{from{opacity:0;transform:translateX(-50%) translateY(4px);}to{opacity:1;transform:translateX(-50%);}}
+  @keyframes pbRip{0%,55%{opacity:0;transform:translate(-50%,-50%) scale(.4);}100%{opacity:1;transform:translate(-50%,-50%) scale(1);}}
+  @media (prefers-reduced-motion:reduce){#probe.drop .pbLine,#probe.drop .pbWt,#probe.drop .pbTag,#probe.drop .pbRip{animation:none;}}
   /* your route today ("Spår"): under the fishing spots and boats */
   #trackLayer{position:absolute;left:0;top:0;width:100%;height:100%;z-index:13;pointer-events:none;overflow:visible;}
   #trackLayer path{fill:none;stroke-linecap:round;stroke-linejoin:round;}
@@ -1015,6 +1040,7 @@
   <div id="waypoints"></div>
   <svg id="measureLayer" aria-hidden="true"><polyline class="mlUnder"></polyline><polyline class="mlLine"></polyline><g class="mlPts"></g><text class="mlLabel"></text></svg>
   <div id="boatsLayer"></div>
+  <div id="probe" aria-live="polite"><div class="pbRip pbRip2"></div><div class="pbRip"></div><div class="pbLine"></div><div class="pbWt"><svg viewBox="0 0 16 22" width="9" height="12"><path d="M8 1.5c1 0 1.6.8 1.6 1.7v1.6c3 1.4 4.9 5.2 4.9 9.2 0 3.9-2.9 6.5-6.5 6.5S1.5 17.9 1.5 14c0-4 1.9-7.8 4.9-9.2V3.2c0-.9.6-1.7 1.6-1.7z" fill="#FFB23F" stroke="#0B2A3A" stroke-width="2"></path></svg></div><div class="pbTag"><span class="pbD" id="probeDepth"></span><span class="pbDiv"></span><span class="pbK" id="probeDist"><svg viewBox="0 0 24 24" width="9" height="9"><path d="M12 3l7 17-7-4-7 4z" fill="#FFB23F"></path></svg><span id="probeDistTxt"></span></span></div></div>
   <div id="longPressRing"></div>
   <div id="bottomFade"></div>
 
@@ -1569,9 +1595,55 @@
     // restore after a rotation reload, ...) doesn't need to change.
   }
 
+  /* ---- depth probe ("lodlina") ----
+     One tap on the map (not a double tap, not a long press, not in the
+     measuring tool) drops a small lead line there showing the depth and how
+     far it is from you. The next tap removes it; tap again for a new one. */
+  var probe = null;         // {x, y} in map-image pixels
+  var probeTimer = null;
+  var probeEl = document.getElementById('probe');
+  function cancelProbeTap(){ if (probeTimer){ clearTimeout(probeTimer); probeTimer = null; } }
+  function scheduleProbeTap(sx, sy, hadMenu){
+    cancelProbeTap();
+    // wait a moment: a second tap right after means double tap = zoom
+    probeTimer = setTimeout(function(){
+      probeTimer = null;
+      if (hadMenu || measureMode) return;
+      if (typeof wpSheet !== 'undefined' && wpSheet.classList.contains('show')) return;
+      if (probe){ setProbe(null); return; }        // tap again = remove
+      setProbe({ x: (sx - originX) / scale, y: (sy - originY) / scale });
+    }, 360);
+  }
+  function setProbe(pr){
+    probe = pr;
+    probeEl.classList.toggle('show', !!pr);
+    if (pr){
+      probeEl.classList.remove('drop'); void probeEl.offsetWidth; probeEl.classList.add('drop');
+      updateProbeText();
+      renderProbe();
+    }
+  }
+  function updateProbeText(){
+    if (!probe) return;
+    var dm = depthAtImgPx(probe.x, probe.y);
+    document.getElementById('probeDepth').innerHTML = dm == null ? 'Land' : fmtDepth(dm) + ' <small>m</small>';
+    var ll = imgPxToLatLon(probe.x, probe.y);
+    var have = !!(lastOwnLatLon && lastFix && lastFix.onMap);
+    probeEl.classList.toggle('noDist', !have);
+    if (have){
+      var m = haversineKm(lastOwnLatLon.lat, lastOwnLatLon.lon, ll.lat, ll.lon) * 1000;
+      document.getElementById('probeDistTxt').textContent = m < 10 ? 'här' : fmtMeters(m);
+    }
+  }
+  function renderProbe(){
+    if (!probe) return;
+    probeEl.style.transform = 'translate(' + (originX + probe.x * scale).toFixed(1) + 'px,' + (originY + probe.y * scale).toFixed(1) + 'px)';
+  }
+
   function render(){
     world.style.transform = 'translate(' + originX + 'px,' + originY + 'px) scale(' + scale + ')';
     renderTrack();
+    renderProbe();
     updateMarker();
     updateScaleBar();
     renderWaypoints();
@@ -1770,12 +1842,14 @@
   function midpoint(a,b){ return {x:(a.x+b.x)/2, y:(a.y+b.y)/2}; }
 
   var gestureWasMulti = false; // this touch sequence has had 2 fingers down (a pinch)
+  var tapHadMenuOpen = false;   // a tap that just closes the menu shouldn't also drop a depth probe
   stage.addEventListener('pointerdown', function(e){
     pointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
     stage.classList.add('dragging');
     animToken++; // touching the map stops a running pan/zoom animation
     if (pointers.size === 1){
       gestureWasMulti = false;
+      tapHadMenuOpen = typeof menuPanel !== 'undefined' && menuPanel.classList.contains('show');
       var p = pointers.values().next().value;
       panStart = {x:p.x, y:p.y, originX:originX, originY:originY, moved:0, t0:performance.now()};
       pinch = null;
@@ -1833,6 +1907,7 @@
       } else if (wasSingle && panStart && panStart.moved < 10 && (performance.now() - panStart.t0) < 300){
         var now = performance.now();
         if (lastTap && (now - lastTap.t) < 350 && dist(lastTap, p) < 30){
+          cancelProbeTap(); // it was a double tap (zoom), not a depth probe
           var mid = (scale < fitScale * 1.6) ? Math.min(maxScale, fitScale * 2.4) : fitScale;
           var tx = p.x - (p.x - originX) * (mid/scale);
           var ty = p.y - (p.y - originY) * (mid/scale);
@@ -1840,6 +1915,7 @@
           lastTap = null;
         } else {
           lastTap = {t: now, x:p.x, y:p.y};
+          scheduleProbeTap(p.x, p.y, tapHadMenuOpen);
         }
       }
       panStart = null; pinch = null;
@@ -2570,7 +2646,8 @@
     cancelLongPress();
     longPressRing.style.left = sx + 'px';
     longPressRing.style.top = sy + 'px';
-    requestAnimationFrame(function(){ longPressRing.classList.add('active'); });
+    // (only if the finger is still down -- a quick tap may already have ended before this frame)
+    requestAnimationFrame(function(){ if (longPressTimer) longPressRing.classList.add('active'); });
     longPressTimer = setTimeout(function(){
       longPressTimer = null;
       placeWaypointAtScreen(sx, sy);
@@ -4207,6 +4284,7 @@
   }
   function setMeasureMode(on){
     measureMode = on;
+    if (on && probe) setProbe(null); // the measuring tool takes over taps
     measurePts = [];
     cancelLongPress();
     lastTap = null;
@@ -4550,6 +4628,7 @@
     var onMap = isNearLake(lat, lon);
     lastFix = { px:p.x, py:p.y, accM: accM || 15, onMap: onMap };
     refreshSheetMeta(); // keep "X m bort" in an open spot sheet up to date
+    updateProbeText();  // ... and in the depth probe
 
     if (onMap){
       hideFarAway();
@@ -4902,6 +4981,7 @@
       };
       st.menu = menuPanel.classList.contains('show');
       st.wx = wxCard.classList.contains('show');
+      st.probe = probe;
       if (editingId && wpSheet.classList.contains('show')){
         st.sheet = { id: editingId, isNew: editingIsNew, name: wpNameInput.value, type: editingType };
       }
@@ -4942,6 +5022,7 @@
       }
       if (r.menu) toggleMenu(true);
       if (r.wx) setWxOpen(true);
+      if (r.probe && typeof r.probe.x === 'number'){ setProbe(r.probe); probeEl.classList.remove('drop'); }
       if (r.sheet && r.sheet.id){
         pendingSheetRestore = { s: r.sheet, until: Date.now() + 10000 };
         tryRestoreSheet();
