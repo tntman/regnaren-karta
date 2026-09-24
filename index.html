@@ -220,8 +220,10 @@
   /* your route today ("Spår"): under the fishing spots and boats */
   #trackLayer{position:absolute;left:0;top:0;width:100%;height:100%;z-index:13;pointer-events:none;overflow:visible;}
   #trackLayer path{fill:none;stroke-linecap:round;stroke-linejoin:round;}
-  #trackLayer .trkUnder{stroke:rgba(10,20,26,.7);stroke-width:5.5;}
-  #trackLayer .trkLine{stroke:#FF8A1F;stroke-width:2.6;}
+  #trackLayer{opacity:.3;} /* 70 % see-through */
+  #trackLayer path{stroke-dasharray:7 5;}
+  #trackLayer .trkUnder{stroke:rgba(10,20,26,.8);stroke-width:3.4;}
+  #trackLayer .trkLine{stroke:#FF8A1F;stroke-width:1.8;}
   #trackLayer.off{display:none;}
   #measureLayer .mlUnder{fill:none;stroke:rgba(0,0,0,.55);stroke-width:6;stroke-linecap:round;stroke-linejoin:round;}
   #measureLayer .mlLine{fill:none;stroke:var(--amber);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:9 6;}
@@ -500,10 +502,10 @@
   /* temporary GPS status ("X km från Regnaren", "Söker GPS-position…"): a small
      pill under the lake name + user name, same style as the offline badge */
   #farAway{
-    display:none;align-items:flex-start;gap:6px;margin-top:6px;
+    display:none;align-items:flex-start;gap:6px;margin-top:5px;margin-left:-50px; /* flush with the menu button (14px from the edge) */
     background:rgba(11,42,58,.82);border:1px solid rgba(232,163,61,.5);
     border-radius:12px;padding:4px 10px 4px 7px;width:max-content;
-    max-width:min(190px, calc(100vw - 215px)); /* wraps instead of sliding under the toggle panel */
+    max-width:min(300px, calc(100vw - 28px));
   }
   #farAway.show{display:flex;}
   #farAway svg{width:12px;height:12px;flex:0 0 auto;color:var(--amber);margin-top:1px;}
@@ -807,10 +809,48 @@
 
   /* offline / local-only indicator, under the REGNAREN title */
   #netBadge{
-    display:none;align-items:center;gap:6px;margin-top:6px;
+    display:none;align-items:center;gap:6px;margin-top:5px;margin-left:-50px; /* flush with the menu button */
     background:rgba(11,42,58,.82);border:1px solid rgba(214,69,69,.55);
     border-radius:12px;padding:4px 10px 4px 8px;width:max-content;
-    max-width:min(175px, calc(100vw - 230px)); /* wraps instead of sliding under the toggle panel */
+    max-width:min(300px, calc(100vw - 28px));
+  }
+  /* ---- weather: small chip under your name, tap for details ---- */
+  #wxChip{
+    display:none;align-items:center;gap:7px;margin:5px 0 0 -50px;pointer-events:auto;
+    background:rgba(11,42,58,.82);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:4px 10px 4px 8px;
+    font:600 12px Calibri,"Segoe UI",system-ui,sans-serif;color:var(--offwhite);white-space:nowrap;
+    box-shadow:0 4px 14px rgba(0,0,0,.3);cursor:pointer;-webkit-tap-highlight-color:transparent;
+  }
+  #wxChip.show{display:inline-flex;}
+  #wxChip .mut{color:var(--text-muted);font-weight:500;}
+  #wxChip .sep{width:1px;height:12px;background:rgba(255,255,255,.2);}
+  #wxChip .up{color:#7fd47f;} #wxChip .down{color:#FFB23F;}
+  .wxArrow{display:block;flex:0 0 auto;}
+  #wxCard{
+    position:absolute;left:14px;right:14px;top:calc(env(safe-area-inset-top,0px) + 84px);z-index:30;
+    max-width:460px;display:none;
+    background:rgba(11,42,58,.97);border:1px solid rgba(255,255,255,.14);border-radius:16px;padding:12px 14px 10px;
+    color:var(--offwhite);box-shadow:0 10px 30px rgba(0,0,0,.5);
+  }
+  #wxCard.show{display:block;}
+  .wxHead{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+  .wxHead span{font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--text-muted);text-transform:uppercase;}
+  #wxClose{width:30px;height:30px;margin:-6px -6px -6px 0;border:none;background:none;color:var(--text-muted);font-size:18px;cursor:pointer;}
+  .wxGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .wxTile{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:8px 10px;min-width:0;}
+  .wxLab{font-size:11px;color:var(--text-muted);}
+  .wxBig{font-size:21px;font-weight:700;display:flex;align-items:center;gap:7px;margin-top:2px;}
+  .wxBig small{font-size:12.5px;color:var(--text-muted);font-weight:600;}
+  .wxSub{font-size:11.5px;color:var(--text-muted);margin-top:2px;}
+  .wxSub b{color:#FFB23F;} .wxSub b.up{color:#7fd47f;}
+  .wxHours{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:8px;}
+  .wxH{text-align:center;background:rgba(255,255,255,.05);border-radius:10px;padding:5px 2px;font-size:11px;color:var(--text-muted);}
+  .wxH b{display:block;color:var(--offwhite);font-size:13px;margin:1px 0;}
+  .wxH .wxArrow{margin:1px auto;}
+  .wxFoot{font-size:10.5px;color:#8FA3AB;margin-top:8px;text-align:right;}
+  @media (orientation:landscape) and (max-height:520px){
+    #wxCard{top:calc(env(safe-area-inset-top,0px) + 10px);left:auto;right:auto;left:50%;transform:translateX(-50%);width:440px;max-height:calc(100vh - 20px);overflow-y:auto;}
+    .wxGrid{grid-template-columns:repeat(4,1fr);}
   }
   #netBadge.show{display:inline-flex;}
   #netBadge .netDot{width:8px;height:8px;border-radius:50%;background:var(--danger);flex:0 0 auto;}
@@ -1027,9 +1067,9 @@
       <div class="settingsRow">
         <div class="settingsRowText">
           <div class="settingsRowTitle">Spår</div>
-          <div class="settingsRowDesc">Dagens rutt ritas som en linje på kartan (visa/dölj under Filter). Sparas bara på den här telefonen och börjar om varje dag.</div>
+          <div class="settingsRowDesc">Din rutt ritas som en streckad linje på kartan (visa/dölj under Filter). "Börja om" suddar spåret hittills – det fortsätter sedan från där du är nu. Sparas bara på den här telefonen och börjar om varje dag.</div>
         </div>
-        <button id="trackClearBtn" class="btnAdmin small" type="button">Rensa</button>
+        <button id="trackClearBtn" class="btnAdmin small" type="button">Börja om</button>
       </div>
       <label class="settingsRow" for="gpsPulseToggle">
         <div class="settingsRowText">
@@ -1191,9 +1231,14 @@
   <header>
     <div class="kicker">REGNAREN</div>
     <div id="headerUser"></div>
+    <button type="button" id="wxChip" aria-expanded="false" aria-controls="wxCard" aria-label="Väder och vind"></button>
     <div id="farAway"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11z"></path><circle cx="12" cy="10" r="2.2"></circle></svg><span class="farText" id="farText"></span></div>
     <div id="netBadge"><span class="netDot"></span><span class="netText" id="netText"></span></div>
   </header>
+  <div id="wxCard" role="dialog" aria-label="Väder vid Regnaren">
+    <div class="wxHead"><span>Väder vid Regnaren</span><button id="wxClose" type="button" aria-label="Stäng">✕</button></div>
+    <div id="wxBody"></div>
+  </div>
   <div id="measurePanel" role="region" aria-label="Mätverktyg">
     <div class="mpText"><div class="mpMain" id="mpMain">Tryck på kartan</div><div class="mpSub" id="mpSub"></div></div>
     <button id="mpUndo" class="mpBtn" type="button" aria-label="Ångra senaste punkten"><svg class="mpIco" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"></path><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"></path></svg><span class="mpLbl">Ångra</span></button>
@@ -2050,9 +2095,13 @@
     renderTrack();
   });
   document.getElementById('trackClearBtn').addEventListener('click', function(){
-    if (!confirm('Rensa dagens spår på den här telefonen?')) return;
+    if (!confirm('Börja om spåret härifrån? Spåret hittills suddas.')) return;
     track = { day: todayStr(), segs: [] };
+    // the new track starts right where you are now, and keeps recording as you go
+    if (lastOwnLatLon && lastFix && lastFix.onMap) track.segs.push([[Math.round(lastOwnLatLon.lat * 1e6) / 1e6, Math.round(lastOwnLatLon.lon * 1e6) / 1e6, Date.now()]]);
     trackDirty = true; saveTrack(); renderTrack();
+    var btn = document.getElementById('trackClearBtn');
+    btn.textContent = 'Klart ✓'; setTimeout(function(){ btn.textContent = 'Börja om'; }, 1800);
   });
 
   var toggleMineEl = document.getElementById('toggleMine');
@@ -4452,6 +4501,114 @@
     );
   }
 
+  /* ---------------- Väder och vind (Open-Meteo, free, no account) ----------------
+     Fetched at most every 30 min while the app is open (and when it's opened
+     again after that), kept on the phone so the last forecast still shows
+     without coverage. Costs nothing in Firebase. */
+  var WX_KEY = 'ffmap_weather_v1', WX_MAX_AGE = 30 * 60 * 1000;
+  var WX_URL = 'https://api.open-meteo.com/v1/forecast?latitude=' + LAKE_CENTER_LAT + '&longitude=' + LAKE_CENTER_LON +
+    '&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m,pressure_msl' +
+    '&hourly=temperature_2m,wind_speed_10m,wind_direction_10m,wind_gusts_10m,pressure_msl&daily=sunrise,sunset' +
+    '&wind_speed_unit=ms&timezone=Europe%2FStockholm&past_hours=12&forecast_hours=24&forecast_days=2';
+  var wx = null, wxFetching = false;
+  try { wx = JSON.parse(localStorage.getItem(WX_KEY) || 'null'); } catch(e){}
+  var wxChip = document.getElementById('wxChip'), wxCard = document.getElementById('wxCard'), wxBody = document.getElementById('wxBody');
+  function wxArrow(dirFrom, size){
+    // the arrow shows where the wind is blowing TO (like on a weather map)
+    return '<svg class="wxArrow" viewBox="0 0 24 24" width="' + size + '" height="' + size + '" style="transform:rotate(' + Math.round((dirFrom + 180) % 360) + 'deg)"><path d="M12 3l5.5 11.5h-3.8V21h-3.4v-6.5H6.5z" fill="#E8F2F6"></path></svg>';
+  }
+  function wxCompass(d){ return ['N','NO','O','SO','S','SV','V','NV'][Math.round(((d % 360) + 360) % 360 / 45) % 8]; }
+  function wxDesc(c){
+    if (c === 0) return 'klart'; if (c <= 2) return 'halvklart'; if (c === 3) return 'mulet';
+    if (c === 45 || c === 48) return 'dimma'; if (c >= 51 && c <= 57) return 'duggregn'; if (c >= 61 && c <= 67) return 'regn';
+    if (c >= 71 && c <= 77) return 'snö'; if (c >= 80 && c <= 82) return 'regnskurar'; if (c >= 85 && c <= 86) return 'snöbyar';
+    if (c >= 95) return 'åska'; return '';
+  }
+  function wxNum(v, dec){ return (Math.round(v * Math.pow(10, dec || 0)) / Math.pow(10, dec || 0)).toFixed(dec || 0).replace('.', ','); }
+  function wxHm(ms){ var d = new Date(ms); return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2); }
+  function wxIn(ms){ var m = Math.max(0, Math.round(ms / 60000)); return m < 60 ? m + ' min' : Math.floor(m / 60) + ' h ' + (m % 60) + ' min'; }
+  // local "YYYY-MM-DDTHH:MM" (the API's own time zone = Swedish time) -> ms
+  function wxT(s){ var p = s.split(/[-T:]/); return new Date(+p[0], +p[1] - 1, +p[2], +p[3] || 0, +p[4] || 0).getTime(); }
+  function wxPressureTrend(){
+    // change over the last 3 hours, from the hourly series
+    var h = wx.data.hourly, now = Date.now(), iNow = -1, iPast = -1;
+    for (var i = 0; i < h.time.length; i++){
+      var t = wxT(h.time[i]);
+      if (t <= now) iNow = i;
+      if (t <= now - 3 * 3600000) iPast = i;
+    }
+    if (iNow < 0 || iPast < 0) return 0;
+    return h.pressure_msl[iNow] - h.pressure_msl[iPast];
+  }
+  function renderWeather(){
+    var ok = !!(wx && wx.data && wx.data.current);
+    wxChip.classList.toggle('show', ok);
+    if (!ok){ wxCard.classList.remove('show'); return; }
+    var c = wx.data.current, trend = wxPressureTrend();
+    var tr = trend > 1 ? '<span class="up">↗</span>' : trend < -1 ? '<span class="down">↘</span>' : '<span class="mut">→</span>';
+    wxChip.innerHTML = wxArrow(c.wind_direction_10m, 15) + '<span>' + wxNum(c.wind_speed_10m) + ' <span class="mut">(' + wxNum(c.wind_gusts_10m) + ') m/s</span></span>' +
+      '<span class="sep"></span><span>' + wxNum(c.pressure_msl) + ' <span class="mut">hPa</span> ' + tr + '</span>' +
+      '<span class="sep"></span><span>' + wxNum(c.temperature_2m) + '°</span>';
+    if (!wxCard.classList.contains('show')) return;
+    // pressure curve: last 12 h up to now
+    var h = wx.data.hourly, now = Date.now(), pts = [];
+    for (var i = 0; i < h.time.length; i++){ var t = wxT(h.time[i]); if (t <= now && t >= now - 12.5 * 3600000) pts.push(h.pressure_msl[i]); }
+    var spark = '';
+    if (pts.length > 1){
+      var mn = Math.min.apply(null, pts), mx = Math.max.apply(null, pts), rg = Math.max(2, mx - mn);
+      spark = '<svg viewBox="0 0 120 28" width="100%" height="28" style="display:block;margin-top:3px" preserveAspectRatio="none"><polyline points="' +
+        pts.map(function(v, k){ return (k / (pts.length - 1) * 120).toFixed(1) + ',' + (24 - (v - mn) / rg * 20).toFixed(1); }).join(' ') +
+        '" fill="none" stroke="' + (trend < -1 ? '#FFB23F' : trend > 1 ? '#7fd47f' : '#B7C4C9') + '" stroke-width="2" stroke-linecap="round" vector-effect="non-scaling-stroke"></polyline></svg>';
+    }
+    var trendTxt = trend > 1 ? '<b class="up">Stiger</b> +' + wxNum(trend) : trend < -1 ? '<b>Sjunker</b> −' + wxNum(-trend) : 'Stabilt ' + (trend >= 0 ? '+' : '−') + wxNum(Math.abs(trend));
+    // sun: next event
+    var d = wx.data.daily, sunTxt = '', rise = wxT(d.sunrise[0]), set = wxT(d.sunset[0]);
+    if (now < rise) sunTxt = 'Soluppgång om ' + wxIn(rise - now);
+    else if (now < set) sunTxt = 'Solnedgång om ' + wxIn(set - now);
+    else if (d.sunrise[1]) sunTxt = 'Soluppgång om ' + wxIn(wxT(d.sunrise[1]) - now);
+    // the next hours: now, +3, +6, +9, +12
+    var hours = '', iNow = 0;
+    for (var j = 0; j < h.time.length; j++){ if (wxT(h.time[j]) <= now) iNow = j; }
+    for (var k = 0; k < 5; k++){
+      var ix = iNow + k * 3; if (ix >= h.time.length) break;
+      hours += '<div class="wxH">' + (k ? h.time[ix].slice(11, 13) : 'Nu') + '<b>' + wxNum(h.wind_speed_10m[ix]) + ' m/s</b>' + wxArrow(h.wind_direction_10m[ix], 14) + wxNum(h.temperature_2m[ix]) + '°</div>';
+    }
+    wxBody.innerHTML =
+      '<div class="wxGrid">' +
+        '<div class="wxTile"><div class="wxLab">Vind</div><div class="wxBig">' + wxArrow(c.wind_direction_10m, 22) + wxNum(c.wind_speed_10m) + ' <small>m/s</small></div><div class="wxSub">Byar ' + wxNum(c.wind_gusts_10m) + ' m/s · från ' + wxCompass(c.wind_direction_10m) + '</div></div>' +
+        '<div class="wxTile"><div class="wxLab">Lufttryck</div><div class="wxBig">' + wxNum(c.pressure_msl) + ' <small>hPa</small></div><div class="wxSub">' + trendTxt + ' hPa på 3 h</div>' + spark + '</div>' +
+        '<div class="wxTile"><div class="wxLab">Temperatur</div><div class="wxBig">' + wxNum(c.temperature_2m) + '°</div><div class="wxSub">Känns som ' + wxNum(c.apparent_temperature) + '°' + (wxDesc(c.weather_code) ? ' · ' + wxDesc(c.weather_code) : '') + '</div></div>' +
+        '<div class="wxTile"><div class="wxLab">Sol</div><div class="wxBig" style="font-size:16px">☀ ' + wxHm(rise) + ' – ' + wxHm(set) + '</div><div class="wxSub">' + sunTxt + '</div></div>' +
+      '</div><div class="wxHours">' + hours + '</div>' +
+      '<div class="wxFoot">Open-Meteo · uppdaterad ' + wxHm(wx.t) + (Date.now() - wx.t > 2 * 3600000 ? ' (utan nät just nu)' : '') + '</div>';
+  }
+  function fetchWeather(force){
+    if (wxFetching) return;
+    if (!force && wx && Date.now() - wx.t < WX_MAX_AGE) return;
+    if (typeof fetch !== 'function') return;
+    wxFetching = true;
+    fetch(WX_URL).then(function(r){ return r.ok ? r.json() : null; }).then(function(data){
+      wxFetching = false;
+      if (!data || !data.current || !data.hourly || !data.daily) return;
+      wx = { t: Date.now(), data: data };
+      try { localStorage.setItem(WX_KEY, JSON.stringify(wx)); } catch(e){}
+      renderWeather();
+    }).catch(function(){ wxFetching = false; });
+  }
+  function setWxOpen(open){
+    if (open && !(window.innerHeight <= 520 && window.innerWidth > window.innerHeight)){
+      wxCard.style.top = Math.round(wxChip.getBoundingClientRect().bottom + 6) + 'px'; // right under the chip
+    } else wxCard.style.top = '';
+    wxCard.classList.toggle('show', open);
+    wxChip.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (open) renderWeather();
+  }
+  wxChip.addEventListener('click', function(e){ e.stopPropagation(); setWxOpen(!wxCard.classList.contains('show')); });
+  document.getElementById('wxClose').addEventListener('click', function(){ setWxOpen(false); });
+  renderWeather();
+  setInterval(function(){ if (document.visibilityState !== 'hidden') fetchWeather(false); renderWeather(); }, 60000);
+  document.addEventListener('visibilitychange', function(){ if (document.visibilityState === 'visible') fetchWeather(false); });
+
   /* ---------------- init ---------------- */
   var appStarted = false; // true once geolocation + Firebase have been started for this page load
   function continueBootAfterName(){
@@ -4527,6 +4684,7 @@
         admin: document.getElementById('adminBody').scrollTop
       };
       st.menu = menuPanel.classList.contains('show');
+      st.wx = wxCard.classList.contains('show');
       if (editingId && wpSheet.classList.contains('show')){
         st.sheet = { id: editingId, isNew: editingIsNew, name: wpNameInput.value, type: editingType };
       }
@@ -4566,6 +4724,7 @@
         }
       }
       if (r.menu) toggleMenu(true);
+      if (r.wx) setWxOpen(true);
       if (r.sheet && r.sheet.id){
         pendingSheetRestore = { s: r.sheet, until: Date.now() + 10000 };
         tryRestoreSheet();
@@ -4601,6 +4760,7 @@
       showNameModal();
     }
     restoreRotationUi();
+    fetchWeather(false);
   }
   if (img.complete) boot(); else img.addEventListener('load', boot);
 
