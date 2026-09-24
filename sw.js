@@ -2,18 +2,19 @@
    - The app page itself: always tries the network first (so a new version
      reaches everyone as soon as they have coverage), but gives up after
      4 s and uses the saved copy instead.
-   - Icons, manifest and the Firebase library: served from the saved copy
-     (fetched and saved the first time).
+   - Icons, manifest, the map pictures and the Firebase library: served
+     from the saved copy (fetched and saved the first time).
    - Firebase's own traffic (the database, sign-in) is never touched here --
      the app's offline data is handled by Firebase itself. */
-var CACHE = 'ffmap-v1';
+var CACHE = 'ffmap-v2';
 var APP_KEY = './';   // the page is stored under one key, whatever URL it was opened with
 var FIREBASE_LIBS = [
   'https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js',
   'https://www.gstatic.com/firebasejs/12.19.0/firebase-auth-compat.js',
   'https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-compat.js'
 ];
-var STATIC = ['./manifest.webmanifest', './apple-touch-icon.png', './icon-192.png', './icon-512.png'];
+var STATIC = ['./manifest.webmanifest', './apple-touch-icon.png', './icon-192.png', './icon-512.png',
+  './map_v1_s1.jpg'];  // the default map; other map styles are saved the first time they're used
 
 self.addEventListener('install', function(e){
   e.waitUntil(caches.open(CACHE).then(function(c){
