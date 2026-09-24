@@ -123,6 +123,7 @@
     40%,100%{filter:drop-shadow(0 1px 3px rgba(0,0,0,.7)) drop-shadow(0 0 2px rgba(255,150,30,.35));}
   }
   #dotGlow2{display:none;}
+  #marker.noPulse #dotGlow{display:none;} /* Settings: "Pulserande ring vid din position" off */
   #accRing{display:none !important;} /* just the arrow + one expanding ring -- no static accuracy circle */
   @media (prefers-reduced-motion:reduce){#dotGlow{animation:none;opacity:0;} #dotArrow, #dotArrow .arrowBody{animation:none;}}
   @keyframes gpsRadar{0%{transform:translate(-50%,-50%) scale(.5);opacity:1;}55%{opacity:.75;}100%{transform:translate(-50%,-50%) scale(3);opacity:0;}}
@@ -1010,6 +1011,16 @@
           <span class="satVal" id="mapSatVal">80 %</span>
         </div>
       </div>
+      <label class="settingsRow" for="gpsPulseToggle">
+        <div class="settingsRowText">
+          <div class="settingsRowTitle">Pulserande ring vid din position</div>
+          <div class="settingsRowDesc">Den orange ringen som växer ut från din GPS-pil.</div>
+        </div>
+        <span class="toggle">
+          <input type="checkbox" id="gpsPulseToggle" checked>
+          <span class="toggleTrack"><span class="toggleThumb"></span></span>
+        </span>
+      </label>
       <div class="settingsRow" style="flex-direction:column;align-items:stretch;">
         <div class="settingsRowText">
           <div class="settingsRowTitle">Fart för mätverktyget</div>
@@ -1969,6 +1980,22 @@
   });
   applyMapSaturation();
 
+  /* ---- Pulserande ring vid din position (Settings, default on) ---- */
+  var GPS_PULSE_KEY = 'ffmap_gps_pulse_v1';
+  var gpsPulseOn = true;
+  try { if (localStorage.getItem(GPS_PULSE_KEY) === '0') gpsPulseOn = false; } catch(e){}
+  var gpsPulseToggle = document.getElementById('gpsPulseToggle');
+  function applyGpsPulse(){
+    gpsPulseToggle.checked = gpsPulseOn;
+    document.getElementById('marker').classList.toggle('noPulse', !gpsPulseOn);
+  }
+  gpsPulseToggle.addEventListener('change', function(){
+    gpsPulseOn = gpsPulseToggle.checked;
+    try { localStorage.setItem(GPS_PULSE_KEY, gpsPulseOn ? '1' : '0'); } catch(e){}
+    applyGpsPulse();
+  });
+  applyGpsPulse();
+
   var toggleMineEl = document.getElementById('toggleMine');
   var toggleOthersEl = document.getElementById('toggleOthers');
   toggleMineEl.checked = showMine;
@@ -2280,7 +2307,7 @@
   // on a steady tick and re-send the last known position whenever
   // maybeBroadcastPosition decides it's due (moved, or a minute has passed).
   setInterval(function(){
-    if (lastOwnLatLon) maybeBroadcastPosition(lastOwnLatLon.lat, lastOwnLatLon.lon);
+    if (lastOwnLatLon && !awaitingFreshFix) maybeBroadcastPosition(lastOwnLatLon.lat, lastOwnLatLon.lon);
   }, 2000); // (a steady, cheap tick; maybeBroadcastPosition itself decides when a write is due)
 
   function startLongPress(sx, sy){
@@ -4184,6 +4211,57 @@
     }, reduceMotion ? 0 : 540);
   });
 
+  function handleGpsFix(pos){
+    // right after coming back to the app: ignore a position the phone had
+    // cached from before it was put away -- wait for a really fresh one
+    if (awaitingFreshFix && pos.timestamp && pos.timestamp < resumedAt - 2000){
+      lastRealFix = { lat: pos.coords.latitude, lon: pos.coords.longitude, acc: pos.coords.accuracy, speed: pos.coords.speed, heading: pos.coords.heading };
+      return;
+    }
+    awaitingFreshFix = false;
+    lastGpsErrorCode = null;
+    lastRealFix = { lat: pos.coords.latitude, lon: pos.coords.longitude, acc: pos.coords.accuracy, speed: pos.coords.speed, heading: pos.coords.heading };
+    if (!demoMode) onFix(lastRealFix.lat, lastRealFix.lon, lastRealFix.acc, lastRealFix.speed, lastRealFix.heading);
+  }
+
+  /* ---- coming back to the app (from the home screen / a locked phone) ----
+     While the app is in the background iOS pauses it completely. When it's
+     opened again: send your FRESH position straight away (never the old one
+     from before you closed it), and fetch the other boats from the server
+     at once, so both sides see up-to-date positions immediately. (Fishing
+     spots come in through their live listener as it reconnects.) */
+  var hiddenAt = 0, awaitingFreshFix = false, resumedAt = 0;
+  document.addEventListener('visibilitychange', function(){
+    if (document.visibilityState === 'hidden'){ hiddenAt = Date.now(); return; }
+    var away = hiddenAt ? Date.now() - hiddenAt : 0;
+    hiddenAt = 0;
+    if (away >= 5000) onAppResumed();
+  });
+  function onAppResumed(){
+    if (!appStarted) return;
+    resumedAt = Date.now();
+    lastPosWriteAt = 0; // the first fresh position is shared at once, not after the interval
+    if (demoMode && demoLat != null){
+      awaitingFreshFix = false;
+      onFix(demoLat, demoLon, 8);
+    } else if ('geolocation' in navigator){
+      awaitingFreshFix = true; // (the 2-second share tick waits for it too)
+      navigator.geolocation.getCurrentPosition(handleGpsFix, function(){}, { enableHighAccuracy:true, maximumAge:0, timeout:15000 });
+      // safety net: if no fresh position has come within 8 s (poor signal),
+      // go on with the latest one the phone has rather than share nothing
+      var myResume = resumedAt;
+      setTimeout(function(){
+        if (!awaitingFreshFix || resumedAt !== myResume) return;
+        awaitingFreshFix = false;
+        if (lastRealFix && !demoMode) onFix(lastRealFix.lat, lastRealFix.lon, lastRealFix.acc, lastRealFix.speed, lastRealFix.heading);
+      }, 8000);
+    }
+    renderBoats(); // grey / gone status right away
+    if (USE_FIREBASE && posCol){
+      posCol.get({ source: 'server' }).then(function(snap){ countGetReads(snap); applyPositionsSnapshot(snap); }).catch(function(){});
+    }
+  }
+
   function startGeolocation(){
     if (!('geolocation' in navigator)){
       lastGpsErrorCode = 'unsupported';
@@ -4193,11 +4271,7 @@
     }
     showGpsProblem(); // "Söker GPS-position…" until the first fix (or an error) arrives
     navigator.geolocation.watchPosition(
-      function(pos){
-        lastGpsErrorCode = null;
-        lastRealFix = { lat: pos.coords.latitude, lon: pos.coords.longitude, acc: pos.coords.accuracy, speed: pos.coords.speed, heading: pos.coords.heading };
-        if (!demoMode) onFix(lastRealFix.lat, lastRealFix.lon, lastRealFix.acc, lastRealFix.speed, lastRealFix.heading);
-      },
+      handleGpsFix,
       function(err){
         lastGpsErrorCode = err.code;
         showGpsProblem();
