@@ -7,6 +7,12 @@ sjön Regnaren. Djupkarta + GPS + delade fiskeplatser och båtpositioner via Fir
 All text i appen är på svenska. Svara Filip på svenska, kort och tydligt.
 
 ## Arbetssätt
+- Repot ligger i `E:\github\regnaren-karta` (Windows). Filip använder inte terminalen
+  själv och git är inte installerat: kör **inga git-kommandon**. Filip gör commit och
+  push själv i GitHub Desktop.
+- **Bygg alltid `docs/` efter ändringar** (det är det som publiceras).
+  På Filips dator: `py -3 tools/build.py` (Python 3.7 via py-launchern;
+  `python`/`python3` pekar på Python 2.7 resp. Microsoft Store-stubben).
 - Källa: `src/app.html` (allt i en fil). Bygg: `python3 tools/build.py` → `docs/`.
 - Tester: `tests/run_all.sh` (Playwright + `tests/fakefb.py` som låtsas vara Firebase).
   Kör alltid testerna efter ändringar och lägg till nya tester för ny funktion.
