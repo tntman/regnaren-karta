@@ -42,6 +42,9 @@
   #detailLayer img{position:absolute;left:0;top:0;display:block;max-width:none;opacity:0;transition:opacity .25s;-webkit-user-drag:none;transform-origin:0 0;}
   #detailLayer img.ok{opacity:1;}
   #detailLayer img.bad{display:none;}
+  /* "Vind och lä": lee lighter + thin edge, wind comets over open water (screen canvas) */
+  #windLayer{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;display:none;}
+  #windLayer.on{display:block;}
   #mapLoading{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:1;color:var(--text-muted);font-size:13px;pointer-events:none;display:none;}
   #mapLoading.show{display:block;}
 
@@ -948,6 +951,15 @@
   .styleOpt.active .soCheck::after{content:'';width:8px;height:4px;border:2.5px solid var(--navy);border-top:none;border-right:none;transform:rotate(-45deg) translate(1px,-1px);}
   .styleOpt.loading .soCheck{border-top-color:var(--amber);animation:spin .8s linear infinite;}
   .styleMsg{font-size:12px;color:#FFB23F;margin-top:8px;}
+  /* "Ladda ner sjön för offline" */
+  .offRow{display:flex;align-items:center;gap:12px;}
+  .offBtn{flex:0 0 auto;background:var(--amber);color:var(--navy);border:none;border-radius:18px;padding:8px 14px;font-family:inherit;font-weight:700;font-size:13px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+  .offBtn.ghost{background:none;color:var(--offwhite);border:1.5px solid rgba(255,255,255,.3);}
+  .offBar{height:6px;background:rgba(255,255,255,.12);border-radius:3px;margin-top:10px;overflow:hidden;}
+  .offBar i{display:block;height:100%;width:0;background:var(--amber);transition:width .25s;}
+  .offStatus{font-size:12px;color:var(--text-muted);margin-top:6px;}
+  .offStatus:empty{display:none;}
+  .offStatus.ok{color:#7fd88a;}
   #legend.noBar .bar{display:none;}
   #legend.noBar .ticks{display:none;}
   #legend.noBar::after{content:attr(data-contour);font-size:10.5px;color:var(--text-muted);}
@@ -1067,6 +1079,7 @@
   <div id="stage">
     <div id="world"><img id="mapImg" alt="Djupkarta över sjön Regnaren" draggable="false"></div>
     <div id="detailLayer" aria-hidden="true"></div>
+    <canvas id="windLayer" aria-hidden="true"></canvas>
     <div id="mapLoading">Laddar karta…</div>
   </div>
 
@@ -1153,6 +1166,17 @@
         </div>
         <div class="styleList" id="mapStyleList" role="radiogroup" aria-label="Kartstil"></div>
         <div class="styleMsg" id="mapStyleMsg" hidden></div>
+      </div>
+      <div class="settingsRow" style="flex-direction:column;align-items:stretch;" id="offlineRow">
+        <div class="offRow">
+          <div class="settingsRowText">
+            <div class="settingsRowTitle" id="offTitle">Ladda ner sjön för offline</div>
+            <div class="settingsRowDesc" id="offDesc">Alla zoomnivåer för de fyra kartlägena i knappen (Djupfärger, Förenklad, Bottenhårdhet, Vegetation), så att kartan fungerar utan täckning. Helst på wifi.</div>
+          </div>
+          <button type="button" class="offBtn" id="offBtn">Ladda ner</button>
+        </div>
+        <div class="offBar" id="offBar" hidden><i id="offBarFill"></i></div>
+        <div class="offStatus" id="offStatus"></div>
       </div>
       <div class="settingsRow" style="flex-direction:column;align-items:stretch;">
         <div class="settingsRowText">
@@ -1471,6 +1495,14 @@
         <span class="visLabel">Väder</span>
         <span class="toggle">
           <input type="checkbox" id="toggleWeather" checked>
+          <span class="toggleTrack"><span class="toggleThumb"></span></span>
+        </span>
+      </label>
+      <label class="visRow">
+        <span class="visSwatch visSwatch--wx"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h9"></path><path d="M3 12h14"></path><path d="M6 16h8"></path><path d="M17 8l3 4-3 4"></path></svg></span>
+        <span class="visLabel">Vind och lä</span>
+        <span class="toggle">
+          <input type="checkbox" id="toggleWind">
           <span class="toggleTrack"><span class="toggleThumb"></span></span>
         </span>
       </label>
@@ -1804,6 +1836,7 @@
   function render(){
     world.style.transform = 'translate(' + originX + 'px,' + originY + 'px) scale(' + scale + ')';
     renderDetail();
+    if (windOn && windCanvas) drawWind();   // ("Vind och lä" -- set up further down)
     renderTrack();
     renderProbe();
     updateMarker();
@@ -2491,6 +2524,112 @@
     showMapTypeToast(id);
   });
   mapTypePop.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
+
+  /* ---- "Ladda ner sjön för offline" (Settings) ----
+     Everything for the four styles in the quick button (all zoom levels) + the
+     depth data, into a cache of its own per lake and map version
+     ("ffmap-offline-<lake>-<version>"). The service worker looks in every cache,
+     and keeps these when it clears its own. Stop = pause; pressing again goes on
+     where it stopped (what's already saved is skipped). A new map version makes
+     an old download out of date. */
+  var OFF_VER = (LAKE.mapFile.match(/map_(v\d+)_/) || [0, 'v1'])[1];
+  var OFF_CACHE = 'ffmap-offline-' + LAKE_ID + '-' + OFF_VER;
+  var OFF_KEY = lakeKey('ffmap_offline_v1', 'offline_v1');     // {ver, files, bytes, done}
+  var offBtn = document.getElementById('offBtn'), offBar = document.getElementById('offBar'),
+      offFill = document.getElementById('offBarFill'), offStatus = document.getElementById('offStatus');
+  var offRunning = false, offStop = false;
+  document.getElementById('offTitle').textContent = 'Ladda ner ' + LAKE.name + ' för offline';
+  function offlineFiles(){
+    var list = [LAKE_DIR + LAKE.depth.file];
+    QUICK_STYLES.forEach(function(sid){
+      list.push(mapFile(sid), thumbFile(sid));
+      ((DETAIL && DETAIL.levels) || []).forEach(function(L){
+        if (L.styles.indexOf(sid) === -1) return;
+        for (var r = 0; r < L.rows; r++) for (var c = 0; c < L.cols; c++){
+          if (L.have.charAt(r * L.cols + c) === '1')
+            list.push(LAKE_DIR + DETAIL.file.replace('{z}', L.z).replace('{style}', sid).replace('{c}', c).replace('{r}', r));
+        }
+      });
+    });
+    return list;
+  }
+  function offSaved(){ try { return JSON.parse(localStorage.getItem(OFF_KEY) || 'null'); } catch(e){ return null; } }
+  function fmtMB(b){ return (b / 1048576).toFixed(b < 10485760 ? 1 : 0).replace('.', ',') + ' MB'; }
+  function offShow(){
+    var s = offSaved(), n = offlineFiles().length;
+    offStatus.classList.remove('ok'); offBtn.classList.remove('ghost');
+    if (offRunning) return;
+    offBar.hidden = true;
+    if (s && s.done && s.ver === OFF_VER){
+      offStatus.textContent = 'Klar · ' + fmtMB(s.bytes) + ' sparat på telefonen · fungerar utan täckning';
+      offStatus.classList.add('ok'); offBtn.textContent = 'Ta bort'; offBtn.classList.add('ghost');
+    } else if (s && s.ver !== OFF_VER){
+      offStatus.textContent = 'Ny kartversion finns – ladda ner igen'; offBtn.textContent = 'Ladda ner';
+    } else if (s && s.files){
+      offStatus.textContent = 'Pausad · ' + Math.round(100 * s.files / n) + ' % · tryck för att fortsätta'; offBtn.textContent = 'Fortsätt';
+    } else {
+      offStatus.textContent = n + ' kartbitar · ca ' + fmtMB(n * 60000); offBtn.textContent = 'Ladda ner';
+    }
+  }
+  function offRemove(){
+    if (!window.caches) return Promise.resolve();
+    return caches.keys().then(function(keys){
+      return Promise.all(keys.filter(function(k){ return k.indexOf('ffmap-offline-' + LAKE_ID + '-') === 0; }).map(function(k){ return caches.delete(k); }));
+    }).then(function(){ try { localStorage.removeItem(OFF_KEY); } catch(e){} });
+  }
+  function offDownload(){
+    if (!window.caches){ offStatus.textContent = 'Den här webbläsaren kan inte spara kartan offline.'; return; }
+    if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(function(){});
+    var s = offSaved();
+    var start = (s && s.ver !== OFF_VER) ? offRemove() : Promise.resolve();
+    offRunning = true; offStop = false;
+    offBtn.textContent = 'Pausa'; offBtn.classList.add('ghost'); offBar.hidden = false;
+    var list = offlineFiles(), i = 0, done = 0, bytes = 0, failed = 0;
+    start.then(function(){ return caches.open(OFF_CACHE); }).then(function(cache){
+      function step(){
+        offFill.style.width = (100 * done / list.length).toFixed(1) + '%';
+        offStatus.textContent = 'Laddar ner… ' + done + ' av ' + list.length + ' · ' + fmtMB(bytes);
+        try { localStorage.setItem(OFF_KEY, JSON.stringify({ ver: OFF_VER, files: done, bytes: bytes, done: false })); } catch(e){}
+      }
+      function one(){
+        if (offStop || i >= list.length) return Promise.resolve();
+        var url = new URL(list[i++], location.href).href;
+        return cache.match(url).then(function(hit){
+          if (hit) return hit.clone().blob().then(function(b){ bytes += b.size; });
+          return fetch(url).then(function(r){
+            if (!r.ok) throw new Error(r.status);
+            return r.clone().blob().then(function(b){ bytes += b.size; return cache.put(url, r); });
+          });
+        }).catch(function(){ failed++; }).then(function(){ done++; if (done % 10 === 0 || done === list.length) step(); return one(); });
+      }
+      var workers = []; for (var k = 0; k < 6; k++) workers.push(one());   // 6 at a time
+      return Promise.all(workers).then(function(){
+        offRunning = false;
+        if (offStop){ step(); offShow(); return; }
+        if (failed){
+          try { localStorage.setItem(OFF_KEY, JSON.stringify({ ver: OFF_VER, files: done - failed, bytes: bytes, done: false })); } catch(e){}
+          offShow(); offStatus.textContent = failed + ' bitar kunde inte hämtas (täckning?) – tryck Fortsätt'; return;
+        }
+        try { localStorage.setItem(OFF_KEY, JSON.stringify({ ver: OFF_VER, files: done, bytes: bytes, done: true })); } catch(e){}
+        offMarkRunning(false); offShow();
+      });
+    }).catch(function(){ offRunning = false; offShow(); offStatus.textContent = 'Kunde inte spara (fullt minne?)'; });
+  }
+  // (turning the phone reloads the page: a download that was running goes on by itself)
+  var OFF_RUN_KEY = 'ffmap_offline_running_v1';
+  function offMarkRunning(on){ try { on ? sessionStorage.setItem(OFF_RUN_KEY, LAKE_ID) : sessionStorage.removeItem(OFF_RUN_KEY); } catch(e){} }
+  offBtn.addEventListener('click', function(){
+    if (offRunning){ offStop = true; offMarkRunning(false); return; }     // pause
+    var s = offSaved();
+    if (s && s.done && s.ver === OFF_VER){ offRemove().then(offShow); return; }
+    offMarkRunning(true); offDownload();
+  });
+  offShow();
+  (function(){
+    var r = null; try { r = sessionStorage.getItem(OFF_RUN_KEY); } catch(e){}
+    var s = offSaved();
+    if (r === LAKE_ID && !(s && s.done && s.ver === OFF_VER)) offDownload(); else offMarkRunning(false);
+  })();
   document.addEventListener('click', function(e){
     if (mapTypePop.classList.contains('show') && !mapTypePop.contains(e.target) && e.target !== mapTypeBtn) openMapTypePop(false);
   });
@@ -5178,7 +5317,7 @@
   var wxChip = document.getElementById('wxChip'), wxCard = document.getElementById('wxCard'), wxBody = document.getElementById('wxBody');
   function wxArrow(dirFrom, size){
     // the arrow shows where the wind is blowing TO (like on a weather map)
-    return '<svg class="wxArrow" viewBox="0 0 24 24" width="' + size + '" height="' + size + '" style="transform:rotate(' + Math.round((dirFrom + 180) % 360) + 'deg)"><path d="M12 3l5.5 11.5h-3.8V21h-3.4v-6.5H6.5z" fill="#E8F2F6"></path></svg>';
+    return '<svg class="wxArrow" viewBox="0 0 24 24" width="' + size + '" height="' + size + '" style="transform:rotate(' + Math.round((dirFrom + 180) % 360) + 'deg)"><path d="M12 3l5.5 11.5h-3.8V21h-3.4v-6.5H6.5z" fill="#FFB23F"></path></svg>';
   }
   function wxCompass(d){ return ['N','NO','O','SO','S','SV','V','NV'][Math.round(((d % 360) + 360) % 360 / 45) % 8]; }
   function wxDesc(c){
@@ -5312,6 +5451,160 @@
   });
   renderWeather();
   setInterval(function(){ if (document.visibilityState !== 'hidden') fetchWeather(false); renderWeather(); }, 60000);
+
+  /* ---- "Vind och lä" (Filter, off by default) ----
+     From the weather's wind (direction + speed): for each bit of the lake, how far
+     the wind has blown over open water to get there ("fetch", averaged over
+     +-15 deg; the lake = Genesis + OpenStreetMap, on the route grid). Lee = where
+     that's too short for waves: waves < ~5 cm by the usual fetch-limited wave
+     formula, so the lee is big in light wind and shrinks in strong wind (6 m/s:
+     100 m, 30-400 m; under 1,5 m/s the whole lake is calm). Lee: a lighter wash + a thin edge.
+     Open water: "comets" drifting with the wind -- more, longer and faster the
+     more open the water and the harder it blows. A screen canvas, redrawn with
+     the map; the drifting runs ~30 frames/s only while it's on and visible. */
+  var SHOW_WIND_KEY = 'ffmap_show_wind_v1';
+  var windOn = false;
+  try { windOn = localStorage.getItem(SHOW_WIND_KEY) === '1'; } catch(e){}
+  var windCanvas = document.getElementById('windLayer'), wctx = windCanvas.getContext('2d');
+  var windField = null, windParts = [], windLoop = null, windLastT = 0;
+  function windNow(){
+    if (!wx || !wx.data || !wx.data.current) return null;
+    var c = wx.data.current; return { from: c.wind_direction_10m, ms: c.wind_speed_10m };
+  }
+  // how far from land (upwind) the water still counts as lee: fetch-limited wave height
+  // ~ U*sqrt(F), so F = K / U^2 -- K set so that 6 m/s gives 100 m ("fishing-friendly"
+  // lee, Filip's judgement; waves under ~3 cm), limited to 30-400 m
+  var LEE_K = 3600;
+  function leeDistM(ms){
+    if (ms < 1.5) return Infinity;
+    return Math.max(30, Math.min(400, LEE_K / (ms * ms)));
+  }
+  function computeWindField(){
+    var w = windNow(); if (!w || !routeGrid()) return null;
+    var key = Math.round(w.from / 5) * 5 + '/' + Math.round(w.ms * 2);
+    if (windField && windField.key === key) return windField;
+    var R = RT, n = R.w * R.h, fetch = new Float32Array(n), MAXM = 900, maxS = Math.ceil(MAXM / R.cellM);
+    [-15, 0, 15].forEach(function(sp){
+      var a = (w.from + sp) * Math.PI / 180, dx = Math.sin(a), dy = -Math.cos(a);   // towards where the wind comes from
+      for (var cy = 0; cy < R.h; cy++) for (var cx = 0; cx < R.w; cx++){
+        var i = cy * R.w + cx; if (!R.water[i]) continue;
+        var f = MAXM;
+        for (var s = 1; s <= maxS; s++){
+          var x = Math.round(cx + dx * s), y = Math.round(cy + dy * s);
+          if (x < 0 || y < 0 || x >= R.w || y >= R.h || !R.water[y * R.w + x]){ f = s * R.cellM; break; }
+        }
+        fetch[i] += f / 3;
+      }
+    });
+    var leeD = leeDistM(w.ms), expo = new Float32Array(n), lee = new Uint8Array(n);
+    for (var i2 = 0; i2 < n; i2++){
+      if (!R.water[i2]) continue;
+      if (fetch[i2] < leeD) lee[i2] = 1; else expo[i2] = Math.min(1, (fetch[i2] - leeD) / 350);
+    }
+    // the lee as a picture over the whole map, at the depth grid's size (so it follows the shore)
+    var g = loadDepthGrid(), cv = document.createElement('canvas'); cv.width = DEPTH_W; cv.height = DEPTH_H;
+    var c2 = cv.getContext('2d'), im = c2.createImageData(DEPTH_W, DEPTH_H), px = im.data;
+    // lee per depth cell from the fetch interpolated between route cells (bilinear, water
+    // cells only) -- a smooth border instead of 9 m steps
+    var leeFine = new Uint8Array(DEPTH_W * DEPTH_H);
+    for (var y0 = 0; y0 < DEPTH_H; y0++){
+      var fy = (y0 + 0.5) / R.rf - 0.5, iy = Math.floor(fy), ty = fy - iy;
+      for (var x0 = 0; x0 < DEPTH_W; x0++){
+        if (g[y0 * DEPTH_W + x0] === 255) continue;
+        var fx = (x0 + 0.5) / R.rf - 0.5, ix = Math.floor(fx), tx = fx - ix, sum = 0, ws = 0;
+        for (var dy = 0; dy <= 1; dy++) for (var dx = 0; dx <= 1; dx++){
+          var cx2 = ix + dx, cy2 = iy + dy;
+          if (cx2 < 0 || cy2 < 0 || cx2 >= R.w || cy2 >= R.h || !R.water[cy2 * R.w + cx2]) continue;
+          var wgt = (dx ? tx : 1 - tx) * (dy ? ty : 1 - ty); sum += fetch[cy2 * R.w + cx2] * wgt; ws += wgt;
+        }
+        var fv = ws > 0 ? sum / ws : 0;
+        if (fv < leeD) leeFine[y0 * DEPTH_W + x0] = 1;
+      }
+    }
+    function leeAt(x, y){ return leeFine[y * DEPTH_W + x]; }
+    for (var y = 0; y < DEPTH_H; y++) for (var x = 0; x < DEPTH_W; x++){
+      var j = y * DEPTH_W + x; if (g[j] === 255 || !leeAt(x, y)) continue;
+      var edge = (x > 0 && g[j - 1] !== 255 && !leeAt(x - 1, y)) || (x < DEPTH_W - 1 && g[j + 1] !== 255 && !leeAt(x + 1, y)) ||
+                 (y > 0 && g[j - DEPTH_W] !== 255 && !leeAt(x, y - 1)) || (y < DEPTH_H - 1 && g[j + DEPTH_W] !== 255 && !leeAt(x, y + 1));
+      var k = j * 4;
+      if (edge){ px[k] = 255; px[k + 1] = 255; px[k + 2] = 255; px[k + 3] = 170; }
+      else { px[k] = 235; px[k + 1] = 250; px[k + 2] = 245; px[k + 3] = 72; }
+    }
+    c2.putImageData(im, 0, 0);
+    var nLee = 0, nWater = 0; for (var q = 0; q < n; q++){ if (R.water[q]){ nWater++; if (lee[q]) nLee++; } }
+    windField = { key: key, from: w.from, ms: w.ms, leeD: leeD, lee: lee, expo: expo, canvas: cv, leeShare: nWater ? nLee / nWater : 0 };
+    return windField;
+  }
+  function drawWind(){
+    var dpr = window.devicePixelRatio || 1, W = stage.clientWidth, H = stage.clientHeight;
+    if (windCanvas.width !== Math.round(W * dpr) || windCanvas.height !== Math.round(H * dpr)){
+      windCanvas.width = Math.round(W * dpr); windCanvas.height = Math.round(H * dpr);
+    }
+    wctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    wctx.clearRect(0, 0, W, H);
+    var F = windOn ? computeWindField() : null;
+    if (!F) return 0;
+    wctx.imageSmoothingEnabled = true;
+    wctx.drawImage(F.canvas, originX, originY, IMG_W * scale, IMG_H * scale);
+    if (F.ms < 1.5) return 0;
+    // comets
+    var R = RT, force = Math.max(0.25, Math.min(1, F.ms / 8));
+    var to = (F.from + 180) * Math.PI / 180, ux = Math.sin(to), uy = -Math.cos(to);
+    var want = Math.round(Math.min(420, W * H / 1500) * (0.45 + 0.55 * force));
+    while (windParts.length < want) windParts.push({ x: Math.random() * W, y: Math.random() * H, life: Math.random(), rate: 0.35 + Math.random() * 0.3 });
+    windParts.length = want;
+    var drawn = 0;
+    wctx.lineCap = 'round';
+    for (var i = 0; i < windParts.length; i++){
+      var p = windParts[i];
+      var ix = (p.x - originX) / scale, iy = (p.y - originY) / scale;
+      var cx = Math.floor(ix / IMG_W * DEPTH_W / R.rf), cy = Math.floor(iy / IMG_H * DEPTH_H / R.rf);
+      if (cx < 0 || cy < 0 || cx >= R.w || cy >= R.h) continue;
+      var e = F.expo[cy * R.w + cx]; if (!(e > 0)) continue;
+      var a = Math.sin(Math.PI * p.life) * (0.3 + 0.6 * e) * (0.5 + 0.5 * force);
+      var L = (10 + 14 * e) * (0.6 + 0.4 * force);
+      for (var k = 0; k < 5; k++){      // thin head, a bit thicker tail, fading backwards
+        var t0 = k / 5, t1 = (k + 1) / 5;
+        wctx.strokeStyle = 'rgba(255,255,255,' + (a * (1 - t0 * 0.75)).toFixed(3) + ')';
+        wctx.lineWidth = 2.2 - 0.9 * t0;
+        wctx.beginPath(); wctx.moveTo(p.x - ux * L * t0, p.y - uy * L * t0); wctx.lineTo(p.x - ux * L * t1, p.y - uy * L * t1); wctx.stroke();
+      }
+      drawn++;
+    }
+    return drawn;
+  }
+  function stepWind(now){
+    windLoop = null;
+    if (!windOn || document.visibilityState === 'hidden') return;
+    if (now - windLastT >= 33){                                // ~30 frames/s
+      var dt = windLastT ? Math.min(0.1, (now - windLastT) / 1000) : 0.033; windLastT = now;
+      var F = windField, W = stage.clientWidth, H = stage.clientHeight;
+      if (F){
+        var to = (F.from + 180) * Math.PI / 180, v = (14 + 5 * F.ms) * dt;    // screen px per frame
+        windParts.forEach(function(p){
+          p.x += Math.sin(to) * v; p.y -= Math.cos(to) * v; p.life += dt * p.rate;
+          if (p.life >= 1 || p.x < -30 || p.y < -30 || p.x > W + 30 || p.y > H + 30){ p.x = Math.random() * W; p.y = Math.random() * H; p.life = 0; }
+        });
+      }
+      drawWind();
+    }
+    windLoop = requestAnimationFrame(stepWind);
+  }
+  function applyWind(){
+    windCanvas.classList.toggle('on', windOn);
+    if (windOn && !windLoop){ windLastT = 0; windLoop = requestAnimationFrame(stepWind); }
+    drawWind();
+  }
+  var toggleWindEl = document.getElementById('toggleWind');
+  toggleWindEl.checked = windOn;
+  toggleWindEl.addEventListener('change', function(){
+    windOn = toggleWindEl.checked;
+    try { localStorage.setItem(SHOW_WIND_KEY, windOn ? '1' : '0'); } catch(e){}
+    applyWind();
+  });
+  document.addEventListener('visibilitychange', function(){ if (windOn) applyWind(); });
+  window.__ffWind = function(){ var F = windField; return F ? { leeShare: F.leeShare, leeD: F.leeD, ms: F.ms, from: F.from, drawn: drawWind() } : null; }; // (for the tests)
+  applyWind();
   document.addEventListener('visibilitychange', function(){ if (document.visibilityState === 'visible') fetchWeather(false); });
 
   /* ---------------- init ---------------- */

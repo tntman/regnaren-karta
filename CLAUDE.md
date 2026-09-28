@@ -66,6 +66,18 @@ All text i appen är på svenska. Svara Filip på svenska, kort och tydligt.
   fyr med ringar, `expiresAt` = +1 h, en per person, bara ägaren/admin tar bort; utgångna
   döljs och ägarens app raderar dem).
 - **Kartlägesknapp** (`#mapTypeBtn`, vänster om Filter): tryck = s1→s2→c1→v1, håll = alla.
+- **Offline-nedladdning** (Inställningar): de fyra kartlägena i knappen (`QUICK_STYLES`), alla
+  zoomnivåer + djupdata, i egen cache `ffmap-offline-<sjö>-<mapversion>` (sw.js rensar den
+  inte; `caches.match` hittar den). Status i localStorage (`lakeKey`), pausa/fortsätt,
+  fortsätter efter rotation (sessionStorage-flagga). Ny kartversion → "ladda ner igen".
+  Regnaren ~1 200 bitar / 66 MB.
+- **Vindpilen** i väderkortet/-chipet är orange (#FFB23F).
+- **Vind och lä** (Filter, av som standard, `ffmap_show_wind_v1`): canvas `#windLayer` i
+  skärmkoordinater. Fetch (öppet vatten uppvinds, ±15°) på ruttnätet, interpolerat till
+  djupnätet. Lä = fetch < gräns = 3600/U² (vågformel, kalibrerad efter Filip: 6 m/s → 100 m;
+  "5 cm-vågor" var för generöst), 30–400 m; < 1,5 m/s = hela sjön lä. Lä: ljus ton + tunn kant; öppet vatten: "kometer" (tunt huvud,
+  tjockare svans) som driver med vinden, fler/längre/snabbare vid mer vind. ~30 fps bara
+  när påslaget och synligt. `window.__ffWind()` för testerna.
 - **Positionsintervall** per sjö (`config/<lake>`, localStorage via `lakeKey`); sjö utan
   inställning i databasen = 20 s.
 - **Ny sjö:** receptet steg för steg + Genesis egenheter + vad som testats och förkastats

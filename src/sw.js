@@ -32,7 +32,9 @@ self.addEventListener('install', function(e){
 
 self.addEventListener('activate', function(e){
   e.waitUntil(caches.keys().then(function(keys){
-    return Promise.all(keys.filter(function(k){ return k !== CACHE; }).map(function(k){ return caches.delete(k); }));
+    // (a lake downloaded for offline -- "ffmap-offline-<lake>-<version>" -- is kept; the
+    //  page itself removes it when you press "Ta bort" or download a newer version)
+    return Promise.all(keys.filter(function(k){ return k !== CACHE && k.indexOf('ffmap-offline-') !== 0; }).map(function(k){ return caches.delete(k); }));
   }).then(function(){ return self.clients.claim(); }));
 });
 
@@ -93,7 +95,7 @@ self.addEventListener('fetch', function(e){
   var isLib = url.href.indexOf('https://www.gstatic.com/firebasejs/') === 0;
   if (!sameOrigin && !isLib) return; // Firebase database / sign-in etc.: straight to the network
 
-  e.respondWith(caches.match(req.url).then(function(hit){
+  e.respondWith(caches.match(req.url).then(function(hit){   // (looks in every cache, the offline ones too)
     if (hit) return hit;
     return fetch(req).then(function(r){
       if (r && (r.ok || r.type === 'opaque')){
