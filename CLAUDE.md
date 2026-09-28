@@ -14,6 +14,11 @@ All text i appen är på svenska. Svara Filip på svenska, kort och tydligt.
   På Filips dator: `py -3 tools/build.py` (Python 3.7 via py-launchern;
   `python`/`python3` pekar på Python 2.7 resp. Microsoft Store-stubben).
 - Källa: `src/app.html` (allt i en fil). Bygg: `python3 tools/build.py` → `docs/`.
+- Tester på Filips dator: `powershell -ExecutionPolicy Bypass -File tests\run_all.ps1`
+  (Python 3.7 + Playwright 1.35, kör i installerade Edge eftersom Playwrights Chromium
+  inte startar där). **Testerna får aldrig nå riktiga Firebase**: `fakefb.py` blockerar
+  Firebase-SDK:t och googleapis i varje context. Utan det skrev testerna i skarpa databasen
+  (hände 2026-09-28). Ta aldrig bort det skyddet.
 - Tester: `tests/run_all.sh` (Playwright + `tests/fakefb.py` som låtsas vara Firebase).
   Kör alltid testerna efter ändringar och lägg till nya tester för ny funktion.
 - Publicering: GitHub Pages från `main` / `docs`. Commit + push = live.

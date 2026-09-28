@@ -2,6 +2,27 @@ import os
 # Playwright's own Chromium, or set CHROMIUM=/path/to/chromium
 LAUNCH = {'executable_path': os.environ['CHROMIUM']} if os.environ.get('CHROMIUM') else {}
 
+# SAFETY: never let a test reach the real Firebase. With internet access the real
+# SDK (www.gstatic.com/firebasejs) would load, replace the fake below and write to
+# the live database. Every test imports this module, so patch new_context here:
+# each context blocks the Firebase SDK and all Google APIs before any page loads.
+BLOCKED_HITS = []
+def _block(route):
+    BLOCKED_HITS.append(route.request.url)
+    route.abort()
+def block_real_firebase(ctx):
+    for pat in ('**/firebasejs/**', '**/*.googleapis.com/**', '**/*.firebaseio.com/**',
+                '**/*.firebaseapp.com/**'):
+        ctx.route(pat, _block)
+    return ctx
+from playwright.sync_api import Browser as _Browser
+if not getattr(_Browser, '_ffGuarded', False):
+    _orig_new_context = _Browser.new_context
+    def _guarded_new_context(self, *a, **kw):
+        return block_real_firebase(_orig_new_context(self, *a, **kw))
+    _Browser.new_context = _guarded_new_context
+    _Browser._ffGuarded = True
+
 FAKE_FIREBASE_JS = r"""
 (function(){
   var cfg = window.__fakeCfg || {};
