@@ -136,15 +136,21 @@ def main():
     ]
     del s3
 
-    # ---- output folder: only this version's pictures
-    os.makedirs(OUT, exist_ok=True)
-    for f in os.listdir(OUT):
-        p = os.path.join(OUT, f)
-        shutil.rmtree(p) if os.path.isdir(p) else os.remove(p)
-    os.makedirs(os.path.join(OUT, 'thumbs_v%d' % V))
-    level_info = []; ntiles = 0
+    # "grid": only the depth grid + lake.json (pictures unchanged -- much faster)
+    grid_only = len(sys.argv) > 2 and sys.argv[2] == 'grid'
+    ntiles = 0
+    if grid_only:
+        level_info = json.load(open(os.path.join(L, 'lake.json'), encoding='utf-8'))['detail']['levels']
+    else:
+        # ---- output folder: only this version's pictures
+        os.makedirs(OUT, exist_ok=True)
+        for f in os.listdir(OUT):
+            p = os.path.join(OUT, f)
+            shutil.rmtree(p) if os.path.isdir(p) else os.remove(p)
+        os.makedirs(os.path.join(OUT, 'thumbs_v%d' % V))
+        level_info = []
 
-    for z in levels:
+    for z in ([] if grid_only else levels):
         f = 2 ** (DZ - z)                                   # DZ px per level px (< 1 above DZ)
         w, h = int(round(W / f)), int(round(H / f)); ox, oy = int(round(gx0 / f)), int(round(gy0 / f))
         Dz = os.path.join(ROOT, 'raw', lake, 'z%d' % z); gz = json.load(open(os.path.join(Dz, 'grid.json')))
@@ -212,20 +218,29 @@ def main():
         print('  zoom %d: %d x %d px, %d styles' % (z, w, h, len(styles_here)))
         del aer, t
 
-    # ---- depth grid for the app (one byte per cell = depth / step; 255 land; runs of land packed)
+    # ---- depth grid for the app: one byte per cell = depth / step (0-250); 252 = lake but no
+    # depth data (inside the OpenStreetMap outline, not logged in Genesis); 255 = land.
+    # Runs are packed: 251 n_lo n_hi = n land cells, 253 n_lo n_hi = n "lake, unknown depth" cells.
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import osm_water
+    osm = osm_water.mask(lake, DZ, gx0, gy0, W, H)
+    if osm is None: print('  (no OpenStreetMap outline -- run tools/osm_water.py %s)' % lake); osm = np.zeros_like(water)
     gd = src['grid_div']; gw, gh = int(round(W / gd)), int(round(H / gd))
     wf = water.astype(np.float32)
     num = np.array(Image.fromarray(dep0 * wf, 'F').resize((gw, gh), Image.BOX))
     den = np.array(Image.fromarray(wf, 'F').resize((gw, gh), Image.BOX))
+    lakef = np.array(Image.fromarray((osm | water).astype(np.float32), 'F').resize((gw, gh), Image.BOX))
     step = src['depth_step']
-    vals = np.where(den >= 0.5, np.clip(np.round(num / np.maximum(den, 1e-6) / step), 0, 250), 255).astype(np.uint8).ravel()
+    vals = np.where(den >= 0.5, np.clip(np.round(num / np.maximum(den, 1e-6) / step), 0, 250),
+                    np.where(lakef >= 0.5, 252, 255)).astype(np.uint8).ravel()
+    print('  depth grid: %d cells with depth, %d lake cells without depth data' % ((vals <= 250).sum(), (vals == 252).sum()))
     enc = bytearray(); i = 0
     while i < len(vals):
-        if vals[i] == 255:
-            j = i
-            while j < len(vals) and vals[j] == 255 and j - i < 65535: j += 1
+        if vals[i] in (255, 252):
+            v = vals[i]; j = i
+            while j < len(vals) and vals[j] == v and j - i < 65535: j += 1
             n = j - i
-            enc += bytes([251, n & 255, n >> 8]) if n >= 3 else bytes([255] * n)
+            enc += bytes([251 if v == 255 else 253, n & 255, n >> 8]) if n >= 3 else bytes([v] * n)
             i = j
         else:
             enc.append(vals[i]); i += 1
@@ -233,7 +248,7 @@ def main():
 
     # full-resolution depth for the tests (the crop at DZ): elevation_m = -depth, water, where it is
     np.savez_compressed(os.path.join(L, 'raw', 'depth_raw.npz'), elevation_m=(-dep0).astype(np.float16), water=water,
-                        zoom=DZ, origin=np.array([gx0, gy0]))
+                        lake=(osm | water), zoom=DZ, origin=np.array([gx0, gy0]))
 
     # ---- lake.json (the map picture = the lowest level)
     latc = (la0 + la1) / 2; mb = 2 ** (DZ - base)

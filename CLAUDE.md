@@ -63,6 +63,17 @@ All text i appen är på svenska. Svara Filip på svenska, kort och tydligt.
   47 siffror, 90 % inom 0,15 m), Vågsfjärden (zoom 17, 0–40 m, 86 siffror, 90 % inom 0,25 m).
   Genesis siffror: liten siffra efter talet = tiondelar. `lakes/<id>/raw/depth_raw.npz`
   = djup i full upplösning (används av testerna).
+- **Sjögräns från OpenStreetMap** (`tools/osm_water.py`, id i source.json "osm"): Genesis
+  djupdata täcker bara loggade delar (Regnaren ~2/3). Djupnätet har 252 = "sjö, okänt djup"
+  (RLE 253) inom OSM-sjön. Kartbilderna färgas INTE där (Filips val: flygfoto kvar).
+  `isLakeAtImgPx()` = sjö eller land. Uppskattning ur flygfoto testades – fungerar inte.
+- **Lodet** visar djup · sträcka SJÖVÄGEN · restid. Rutt: grovt rutnät (~9 m), Dijkstra från
+  lodet (en gång per lod) → sedan "gå nedför" från båten vid varje GPS-fix; håller avstånd
+  från land; räta ut med siktlinjer. Fart: aktuell om ≥1,5 kn, annars snitt/marschfart.
+- **Typer:** Markering, Abborre, Gädda, Gös, Fara (röd, triangel), Träffpunkt (`meet`:
+  fyr med ringar, `expiresAt` = +1 h, en per person, bara ägaren/admin tar bort; utgångna
+  döljs och ägarens app raderar dem).
+- **Kartlägesknapp** (`#mapTypeBtn`, vänster om Filter): tryck = s1→s2→c1→v1, håll = alla.
 - **Positionsintervall** per sjö (`config/<lake>`, localStorage via `lakeKey`); sjö utan
   inställning i databasen = 20 s.
 - **Ny sjö från Genesis Social Map:** `tools/genesis_tiles.py` → `genesis_depth.py`

@@ -224,6 +224,15 @@
   #probe .pbDiv{width:1px;height:16px;background:rgba(255,255,255,.22);}
   #probe .pbK{display:flex;align-items:center;gap:3px;font-size:9.5px;color:#B7C4C9;font-weight:600;}
   #probe.noDist .pbDiv, #probe.noDist .pbK{display:none;}
+  /* time to get there (by water, at your speed) */
+  #probe .pbT{font-size:10.5px;font-weight:800;color:#FFB23F;}
+  #probe.noDist .pbT, #probe.noTime .pbT, #probe.noDist .pbDivT, #probe.noTime .pbDivT{display:none;}
+  #probe .pbD.unk{font-size:12px;}
+  /* the route there by water (from your boat to the lead line) */
+  #routeLayer{position:absolute;left:0;top:0;width:100%;height:100%;z-index:14;pointer-events:none;overflow:visible;}
+  #routeLayer polyline{fill:none;stroke-linecap:round;stroke-linejoin:round;}
+  #routeLayer .rtUnder{stroke:rgba(0,0,0,.55);stroke-width:6;}
+  #routeLayer .rtLine{stroke:#FFB23F;stroke-width:3;stroke-dasharray:9 7;}
   /* the lead drops in */
   #probe.drop .pbLine{animation:pbLine .28s ease-out;}
   #probe.drop .pbWt{animation:pbWt .28s ease-out;}
@@ -309,6 +318,24 @@
     position:absolute;right:14px;top:calc(env(safe-area-inset-top,0px) + 14px);z-index:21;
     display:flex;flex-direction:column;align-items:stretch;gap:8px;pointer-events:none;
   }
+  /* quick map-style button, just left of the Filter panel: tap = next of the
+     four everyday styles, hold = all styles */
+  #mapTypeBtn{
+    position:absolute;right:calc(100% + 8px);top:0;width:40px;height:40px;border-radius:50%;
+    background:var(--navy-glass);backdrop-filter:blur(6px);color:var(--offwhite);border:1px solid rgba(255,255,255,.16);
+    display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.35);
+    pointer-events:auto;cursor:pointer;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;padding:0;
+  }
+  #mapTypeBtn svg{width:20px;height:20px;display:block;}
+  #mapTypeBtn:active{transform:scale(.93);}
+  #mapTypeToast{position:absolute;right:calc(100% + 8px);top:48px;white-space:nowrap;background:var(--navy);color:var(--amber);border:1px solid rgba(232,163,61,.5);
+    border-radius:14px;padding:4px 11px;font-size:12px;font-weight:700;opacity:0;transition:opacity .2s;pointer-events:none;}
+  #mapTypeToast.show{opacity:1;}
+  #mapTypePop{position:absolute;right:calc(100% + 8px);top:48px;width:230px;max-height:70vh;overflow-y:auto;display:none;flex-direction:column;gap:6px;padding:8px;
+    background:var(--navy);border:1px solid rgba(255,255,255,.14);border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.5);pointer-events:auto;z-index:2;}
+  #mapTypePop.show{display:flex;}
+  #mapTypePop .styleOpt{padding:5px;gap:9px;}
+  #mapTypePop .styleOpt img{width:64px;height:38px;}
   #visPanel{
     pointer-events:auto;
     max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 28px);
@@ -331,6 +358,8 @@
   .visSwatch.ws-abborre{background-color:var(--t-abborre);}
   .visSwatch.ws-gadda{background-color:var(--t-gadda);}
   .visSwatch.ws-gos{background-color:var(--t-gos);}
+  .visSwatch.ws-fara{background-color:var(--t-fara);color:#fff;}
+  .visSwatch.ws-meet{background-color:var(--t-meet);}
   /* others' spots (log list + the "Andras" toggle): same look as their pins */
   .visSwatch--other{border-color:rgba(10,20,26,.75);}
   .visSwatch--other svg{display:none;}
@@ -614,7 +643,21 @@
      Gädda, Gös (fish). Owner = the edge: dark on your own, white on others'. */
   /* strong, saturated colours that stand out from the depth colours (the
      white outline + dark edge separate them even over the shallows) */
-  :root{ --t-mark:#E4E9EC; --t-abborre:#FF7A1A; --t-gadda:#35D24A; --t-gos:#FFD21A; }
+  :root{ --t-mark:#E4E9EC; --t-abborre:#FF7A1A; --t-gadda:#35D24A; --t-gos:#FFD21A; --t-fara:#E5322D; --t-meet:#FFB23F; }
+  .wpPin--fara{background-color:var(--t-fara);}
+  .wpPin--fara .pinHead svg{color:#fff;}
+  /* "Träffpunkt" (gone after an hour): a beacon with rings spreading out, so
+     everyone sees it from far away; the same size for everybody's */
+  .wpBeacon{position:absolute;left:0;top:0;width:0;height:0;z-index:3;pointer-events:auto;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+  .wpBeacon .bcRing{position:absolute;left:-60px;top:-60px;width:120px;height:120px;border-radius:50%;border:3px solid var(--t-meet);box-sizing:border-box;animation:bcRing 2.4s ease-out infinite;pointer-events:none;}
+  .wpBeacon .bcRing:nth-child(2){animation-delay:.8s;}
+  .wpBeacon .bcRing:nth-child(3){animation-delay:1.6s;}
+  @keyframes bcRing{0%{transform:scale(.15);opacity:.95;}100%{transform:scale(1);opacity:0;}}
+  .wpBeacon .bcCore{position:absolute;left:-17px;top:-17px;width:34px;height:34px;border-radius:50%;box-sizing:border-box;background:var(--t-meet);border:3px solid #fff;
+    box-shadow:0 0 0 2px var(--navy),0 2px 8px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;}
+  .wpBeacon .bcCore svg{width:18px;height:18px;color:var(--navy);display:block;}
+  .wpBeacon .bcTag{position:absolute;left:21px;top:-38px;white-space:nowrap;background:var(--navy);border:1px solid var(--t-meet);border-radius:14px;padding:2px 9px;font-size:11.5px;font-weight:600;color:#fff;pointer-events:none;}
+  @media (prefers-reduced-motion:reduce){.wpBeacon .bcRing{animation-duration:5s;}}
   .wpPin--mark{background-color:var(--t-mark);}
   .wpPin--abborre{background-color:var(--t-abborre);}
   .wpPin--gadda{background-color:var(--t-gadda);}
@@ -695,7 +738,7 @@
   .sheetGrab{margin:-10px -18px 0;padding:10px 18px 0;cursor:grab;}
   .sheetHandle{width:36px;height:4px;background:rgba(255,255,255,.25);border-radius:2px;margin:2px auto 14px;}
   /* type picker in the spot sheet */
-  .typeSeg{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:14px;}
+  .typeSeg{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:14px;}
   .typeSeg button{
     display:flex;align-items:center;justify-content:center;gap:5px;min-width:0;
     padding:9px 2px;border-radius:9px;border:1px solid rgba(255,255,255,.16);
@@ -707,6 +750,9 @@
   .typeSeg button[data-type="abborre"]{--tc:var(--t-abborre);}
   .typeSeg button[data-type="gadda"]{--tc:var(--t-gadda);}
   .typeSeg button[data-type="gos"]{--tc:var(--t-gos);}
+  .typeSeg button[data-type="fara"]{--tc:var(--t-fara);}
+  .typeSeg button[data-type="fara"].active{color:#fff;}
+  .typeSeg button[data-type="meet"]{--tc:var(--t-meet);}
   .typeSeg button.active{background:var(--tc);border-color:var(--tc);color:var(--ink);}
   .typeSeg button:disabled{opacity:.45;cursor:default;}
   .typeSeg button.active:disabled{opacity:1;}
@@ -1025,10 +1071,11 @@
   </div>
 
   <svg id="trackLayer" aria-hidden="true"><path class="trkUnder"></path><path class="trkLine"></path></svg>
+  <svg id="routeLayer" aria-hidden="true"><polyline class="rtUnder"></polyline><polyline class="rtLine"></polyline></svg>
   <div id="waypoints"></div>
   <svg id="measureLayer" aria-hidden="true"><polyline class="mlUnder"></polyline><polyline class="mlLine"></polyline><g class="mlPts"></g><text class="mlLabel"></text></svg>
   <div id="boatsLayer"></div>
-  <div id="probe" aria-live="polite"><div class="pbRip pbRip2"></div><div class="pbRip"></div><div class="pbLine"></div><div class="pbWt"><svg viewBox="0 0 16 22" width="9" height="12"><path d="M8 1.5c1 0 1.6.8 1.6 1.7v1.6c3 1.4 4.9 5.2 4.9 9.2 0 3.9-2.9 6.5-6.5 6.5S1.5 17.9 1.5 14c0-4 1.9-7.8 4.9-9.2V3.2c0-.9.6-1.7 1.6-1.7z" fill="#FFB23F" stroke="#0B2A3A" stroke-width="2"></path></svg></div><div class="pbTag"><span class="pbD" id="probeDepth"></span><span class="pbDiv"></span><span class="pbK" id="probeDist"><svg viewBox="0 0 24 24" width="9" height="9"><path d="M12 3l7 17-7-4-7 4z" fill="#FFB23F"></path></svg><span id="probeDistTxt"></span></span></div></div>
+  <div id="probe" aria-live="polite"><div class="pbRip pbRip2"></div><div class="pbRip"></div><div class="pbLine"></div><div class="pbWt"><svg viewBox="0 0 16 22" width="9" height="12"><path d="M8 1.5c1 0 1.6.8 1.6 1.7v1.6c3 1.4 4.9 5.2 4.9 9.2 0 3.9-2.9 6.5-6.5 6.5S1.5 17.9 1.5 14c0-4 1.9-7.8 4.9-9.2V3.2c0-.9.6-1.7 1.6-1.7z" fill="#FFB23F" stroke="#0B2A3A" stroke-width="2"></path></svg></div><div class="pbTag"><span class="pbD" id="probeDepth"></span><span class="pbDiv"></span><span class="pbK" id="probeDist"><svg viewBox="0 0 24 24" width="9" height="9"><path d="M12 3l7 17-7-4-7 4z" fill="#FFB23F"></path></svg><span id="probeDistTxt"></span></span><span class="pbDiv pbDivT"></span><span class="pbT" id="probeTime"></span></div></div>
   <div id="longPressRing"></div>
   <div id="bottomFade"></div>
 
@@ -1355,6 +1402,11 @@
   </button>
 
   <div id="topRight">
+  <button type="button" id="mapTypeBtn" aria-label="Byt kartläge (håll inne för alla)" title="Tryck: byt kartläge · Håll inne: alla kartlägen">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M12 3 2.5 8 12 13l9.5-5z"></path><path d="M2.5 12.5 12 17.5l9.5-5"></path><path d="M2.5 17 12 22l9.5-5"></path></svg>
+  </button>
+  <div id="mapTypeToast" aria-live="polite"></div>
+  <div id="mapTypePop" role="dialog" aria-label="Välj kartläge"></div>
   <div id="visPanel">
     <button type="button" class="visMoreBtn" id="visMoreBtn" aria-expanded="false" aria-controls="visMore">
       <span class="visMoreIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"></path><circle cx="15" cy="7" r="2.2"></circle><circle cx="9" cy="17" r="2.2"></circle></svg><span class="visMoreDot"></span></span>
@@ -1451,6 +1503,8 @@
       <button type="button" data-type="abborre" role="radio"><span class="typeDot"></span>Abborre</button>
       <button type="button" data-type="gadda" role="radio"><span class="typeDot"></span>Gädda</button>
       <button type="button" data-type="gos" role="radio"><span class="typeDot"></span>Gös</button>
+      <button type="button" data-type="fara" role="radio"><span class="typeDot"></span>Fara</button>
+      <button type="button" data-type="meet" role="radio"><span class="typeDot"></span>Träffpunkt 1 h</button>
     </div>
     <label class="sheetLabel" for="wpName">Namn</label>
     <input id="wpName" type="text" maxlength="40" placeholder="T.ex. Gösvik">
@@ -1630,25 +1684,54 @@
   function setProbe(pr){
     probe = pr;
     probeEl.classList.toggle('show', !!pr);
+    if (!pr){ probeRoute = null; renderRoute(); }
     if (pr){
       probeEl.classList.remove('drop'); void probeEl.offsetWidth; probeEl.classList.add('drop');
       updateProbeText();
       renderProbe();
     }
   }
+  // lead line: depth | distance by water | time there at your speed (+ the route drawn)
+  var probeRoute = null;    // {pts, meters} or null
+  function fmtEtaShort(sec){
+    var min = Math.round(sec / 60);
+    if (min < 1) return '<1 min';
+    if (min < 60) return min + ' min';
+    return Math.floor(min / 60) + ' h ' + (min % 60 < 10 ? '0' : '') + (min % 60) + ' min';
+  }
   function updateProbeText(){
-    if (!probe) return;
-    var dm = depthAtImgPx(probe.x, probe.y);
-    document.getElementById('probeDepth').innerHTML = dm == null ? 'Land' : fmtDepth(dm) + ' <small>m</small>';
+    probeRoute = null;
+    if (!probe){ renderRoute(); return; }
+    var dm = depthAtImgPx(probe.x, probe.y), dEl = document.getElementById('probeDepth');
+    var lake = isLakeAtImgPx(probe.x, probe.y);
+    dEl.classList.toggle('unk', dm == null && lake);
+    dEl.innerHTML = dm != null ? fmtDepth(dm) + ' <small>m</small>' : (lake ? 'Okänt djup' : 'Land');
     var ll = imgPxToLatLon(probe.x, probe.y);
     var have = !!(lastOwnLatLon && lastFix && lastFix.onMap);
     probeEl.classList.toggle('noDist', !have);
+    var timeOk = false;
     if (have){
       var m = haversineKm(lastOwnLatLon.lat, lastOwnLatLon.lon, ll.lat, ll.lon) * 1000;
+      if (m >= 10){
+        var r = routeFrom(lastFix.px, lastFix.py, probe.x, probe.y);   // by water, not as the crow flies
+        if (r){ probeRoute = r; m = r.meters; }
+        // your speed right now when you're moving, otherwise your average / cruising speed (as the measuring tool)
+        var kn = currentSpeedKn(); if (!(kn >= 1.5)) kn = effectiveSpeed().kn;
+        if (r && kn > 0){ document.getElementById('probeTime').textContent = fmtEtaShort(m / (kn * 1852 / 3600)); timeOk = true; }
+      }
       document.getElementById('probeDistTxt').textContent = m < 10 ? 'här' : fmtMeters(m);
     }
+    probeEl.classList.toggle('noTime', !timeOk);
+    renderRoute();
+  }
+  function renderRoute(){
+    var svg = document.getElementById('routeLayer');
+    var pts = (probe && probeRoute) ? probeRoute.pts.map(function(p){ return (originX + p.x * scale).toFixed(1) + ',' + (originY + p.y * scale).toFixed(1); }).join(' ') : '';
+    svg.querySelector('.rtUnder').setAttribute('points', pts);
+    svg.querySelector('.rtLine').setAttribute('points', pts);
   }
   function renderProbe(){
+    renderRoute();
     if (!probe) return;
     probeEl.style.transform = 'translate(' + (originX + probe.x * scale).toFixed(1) + 'px,' + (originY + probe.y * scale).toFixed(1) + 'px)';
   }
@@ -2121,8 +2204,12 @@
     mark:    { label: 'Markering' },
     abborre: { label: 'Abborre' },
     gadda:   { label: 'Gädda' },
-    gos:     { label: 'Gös' }
+    gos:     { label: 'Gös' },
+    fara:    { label: 'Fara' },          // a shoal, a rock ... something to steer clear of
+    meet:    { label: 'Träffpunkt' }     // a beacon for everyone (lunch on an island ...), gone after an hour
   };
+  var MEET_MS = 60 * 60 * 1000;
+  function isExpired(wp){ return wpType(wp) === 'meet' && wp.expiresAt && Date.now() > wp.expiresAt; }
   function wpType(wp){ return (wp && WP_TYPES[wp.type]) ? wp.type : 'mark'; }
   // Filter (fold-out under the toggles): hidden spot types, and others' opacity.
   var TYPE_FILTER_KEY = 'ffmap_type_filter_v1';  // JSON list of HIDDEN types -- default: all shown
@@ -2132,7 +2219,9 @@
   var othersOpacity = 1;
   try { if (localStorage.getItem(OTHERS_OP_KEY) === '0.5') othersOpacity = 0.5; } catch(e){}
   var MARK_SVG = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6" fill="currentColor"></circle></svg>'; // plain position dot
-  function wpIconSvg(type){ return type === 'mark' ? MARK_SVG : FISH_SVG; }
+  var FARA_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"><path d="M12 3.5 21.5 20h-19z"></path><path d="M12 10v4.6"></path><circle cx="12" cy="17.3" r=".9" fill="currentColor"></circle></svg>'; // warning triangle
+  var MEET_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"><path d="M6 21V4"></path><path d="M6 4h11l-2.5 4L17 12H6"></path></svg>'; // flag
+  function wpIconSvg(type){ return type === 'mark' ? MARK_SVG : type === 'fara' ? FARA_SVG : type === 'meet' ? MEET_SVG : FISH_SVG; }
 
   function loadLocalWaypoints(){
     try {
@@ -2172,6 +2261,7 @@
     waypoints.forEach(function(wp){
       var mine = isMine(wp);
       var editing = wp.id === editingId; // the spot you're editing always shows, whatever the filters say
+      if (isExpired(wp) && !editing) return;   // a Träffpunkt whose hour is up
       if (!editing){
         if (mine && !showMine) return;
         if (!mine && !showOthers) return;
@@ -2203,7 +2293,20 @@
       var type = wpType(wp);
       if (el.getAttribute('data-type') !== type){ // (re)draw the icon only when the type changes
         el.setAttribute('data-type', type);
-        el.innerHTML = '<div class="pinHead">' + wpIconSvg(type) + '</div>';
+        el.innerHTML = type === 'meet'
+          ? '<span class="bcRing"></span><span class="bcRing"></span><span class="bcRing"></span><div class="bcCore">' + MEET_SVG + '</div><div class="bcTag"></div>'
+          : '<div class="pinHead">' + wpIconSvg(type) + '</div>';
+      }
+      if (type === 'meet'){
+        // a beacon, centred on the spot, the same for everyone: "Lunch · Calle · 42 min kvar"
+        if (el.className !== 'wpBeacon') el.className = 'wpBeacon';
+        var left = wp.expiresAt ? Math.max(1, Math.ceil((wp.expiresAt - Date.now()) / 60000)) : 60;
+        var tag = (wp.name || 'Träffpunkt') + ' · ' + (mine ? 'du' : (wp.by || 'lagkompis')) + ' · ' + left + ' min kvar';
+        var tagEl = el.querySelector('.bcTag');
+        if (tagEl.textContent !== tag) tagEl.textContent = tag;
+        el.style.left = sx + 'px';
+        el.style.top = sy + 'px';
+        return;
       }
       var cls = 'wpPin wpPin--' + type + (mine ? '' : ' wpPin--other');
       if (el.className !== cls) el.className = cls;
@@ -2215,6 +2318,19 @@
     });
     if (typeof logView !== 'undefined' && logView.classList.contains('show')) renderLogList();
   }
+  // Träffpunkt: when the hour is up it disappears for everyone (hidden right
+  // away); your own is then also removed from the database. The minutes left
+  // on the beacons are refreshed every half minute.
+  var removedExpired = {};
+  function pruneExpiredMeets(){
+    waypoints.forEach(function(wp){
+      if (isExpired(wp) && isMine(wp) && !removedExpired[wp.id] && wp.id !== editingId){
+        removedExpired[wp.id] = true;
+        deleteWaypointById(wp.id);
+      }
+    });
+  }
+  setInterval(function(){ pruneExpiredMeets(); renderWaypoints(); }, 30000);
 
   /* ---- Storlek på fiskeplatser (Settings) ---- */
   var WP_SIZE_KEY = 'regnaren_wp_size_v1';
@@ -2322,6 +2438,63 @@
     if (!b) return;
     var id = b.getAttribute('data-style');
     if (id !== mapStyle) loadMapStyle(id, false);
+  });
+
+  /* ---- the quick map-style button (top right, left of Filter) ----
+     Tap: the next of Djupfärger -> Förenklad -> Bottenhårdhet -> Vegetation
+     (the name shows for a moment). Hold: a list of all the lake's styles. */
+  var QUICK_STYLES = ['s1', 's2', 'c1', 'v1'].filter(function(id){ return MAP_STYLES.some(function(s){ return s.id === id; }); });
+  var mapTypeBtn = document.getElementById('mapTypeBtn');
+  var mapTypeToast = document.getElementById('mapTypeToast');
+  var mapTypePop = document.getElementById('mapTypePop');
+  var mapTypeToastTimer = null, mapTypeHold = null, mapTypeHeld = false;
+  function styleName(id){ var s = MAP_STYLES.filter(function(x){ return x.id === id; })[0]; return s ? s.name : id; }
+  function showMapTypeToast(id){
+    mapTypeToast.textContent = styleName(id);
+    mapTypeToast.classList.add('show');
+    clearTimeout(mapTypeToastTimer);
+    mapTypeToastTimer = setTimeout(function(){ mapTypeToast.classList.remove('show'); }, 1600);
+  }
+  function openMapTypePop(open){
+    mapTypePop.classList.toggle('show', open);
+    if (!open) return;
+    mapTypeToast.classList.remove('show');
+    mapTypePop.innerHTML = MAP_STYLES.map(function(st){
+      return '<button type="button" class="styleOpt' + (st.id === mapStyle ? ' active' : '') + '" data-style="' + st.id + '"><img src="' + thumbFile(st.id) + '" alt="">' +
+        '<span class="soText"><span class="soName">' + st.name + '</span></span><span class="soCheck"></span></button>';
+    }).join('');
+  }
+  mapTypeBtn.addEventListener('pointerdown', function(e){
+    e.stopPropagation();
+    mapTypeHeld = false;
+    clearTimeout(mapTypeHold);
+    mapTypeHold = setTimeout(function(){ mapTypeHeld = true; openMapTypePop(true); }, 500);
+  });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(function(ev){
+    mapTypeBtn.addEventListener(ev, function(){ clearTimeout(mapTypeHold); });
+  });
+  mapTypeBtn.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+  mapTypeBtn.addEventListener('click', function(e){
+    e.stopPropagation();
+    if (mapTypeHeld){ mapTypeHeld = false; return; }          // (that was a hold: the list is open)
+    if (mapTypePop.classList.contains('show')){ openMapTypePop(false); return; }
+    var i = QUICK_STYLES.indexOf(mapStyle);
+    var next = QUICK_STYLES[(i + 1) % QUICK_STYLES.length];   // (not one of the four: -> Djupfärger)
+    if (next && next !== mapStyle) loadMapStyle(next, false);
+    showMapTypeToast(next);
+  });
+  mapTypePop.addEventListener('click', function(e){
+    e.stopPropagation();
+    var b = e.target.closest ? e.target.closest('.styleOpt') : null;
+    if (!b) return;
+    var id = b.getAttribute('data-style');
+    openMapTypePop(false);
+    if (id !== mapStyle) loadMapStyle(id, false);
+    showMapTypeToast(id);
+  });
+  mapTypePop.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
+  document.addEventListener('click', function(e){
+    if (mapTypePop.classList.contains('show') && !mapTypePop.contains(e.target) && e.target !== mapTypeBtn) openMapTypePop(false);
   });
   markStyle(mapStyle, null);
   applyLegend(mapStyle);
@@ -2760,7 +2933,7 @@
   // a name the app made up itself (so switching type may replace it)
   function isAutoWpName(v){
     v = (v || '').trim();
-    return !v || /^(Markering|Abborre|Gädda|Gös|Fiskeplats) \d+$/.test(v);
+    return !v || /^(Markering|Abborre|Gädda|Gös|Fara|Träffpunkt|Fiskeplats) \d+$/.test(v);
   }
 
   function placeWaypointAtScreen(sx, sy){
@@ -2800,6 +2973,7 @@
     wpMetaEl.textContent = 'Sparad av ' + (w.mine ? 'dig' : (w.by || 'en lagkompis')) + ' · ' + fmtSheetDate(w.createdAt);
     var dm = depthAtLatLon(w.lat, w.lon);
     if (dm != null) wpMetaEl.textContent += (wpMetaEl.textContent ? ' · ' : '') + 'Djup ' + fmtDepth(dm) + ' m';
+    if (editingType === 'meet') wpMetaEl.textContent += ' · Syns för alla i 1 h';
     if (lastOwnLatLon){
       var m = haversineKm(lastOwnLatLon.lat, lastOwnLatLon.lon, w.lat, w.lon) * 1000;
       if (wpMetaEl.textContent) wpMetaEl.appendChild(document.createTextNode(' · '));
@@ -2824,6 +2998,7 @@
     if (!b || b.disabled || !editingId) return;
     editingType = b.getAttribute('data-type');
     showEditingType();
+    refreshSheetMeta(); // ("Syns för alla i 1 h" for a Träffpunkt)
     // switch the made-up name along with the type ("Markering 5" -> "Gös 3"),
     // but never overwrite a name you typed yourself
     if (isAutoWpName(wpNameInput.value)) wpNameInput.value = nextWaypointName(editingType, editingId);
@@ -2874,10 +3049,20 @@
     var cur = waypoints.filter(function(w){ return w.id === editingId; })[0];
     if (cur && wpType(cur) === editingType && (!v || v === cur.name)){ closeSheet(); return; } // nothing changed
     if (v) upd.name = v;           // an emptied name keeps the old one
+    // Träffpunkt: an hour from now (a new one, or a spot turned into one); only
+    // one per person -- your previous one goes. Turned into something else: stays.
+    var wasMeet = cur && wpType(cur) === 'meet';
+    if (editingType === 'meet' && !wasMeet){
+      upd.expiresAt = Date.now() + MEET_MS;
+      var id0 = editingId;
+      waypoints.filter(function(w){ return isMine(w) && wpType(w) === 'meet' && w.id !== id0; })
+        .forEach(function(w){ deleteWaypointById(w.id); });
+    }
+    if (editingType !== 'meet' && wasMeet) upd.expiresAt = null;
     if (USE_FIREBASE){ addUsage('w', 1); fsCol.doc(editingId).update(upd).catch(function(e){ console.warn(e); }); }
     else {
       var wp = waypoints.filter(function(w){ return w.id === editingId; })[0];
-      if (wp){ wp.type = editingType; if (v) wp.name = v; saveLocalWaypoints(); renderWaypoints(); }
+      if (wp){ wp.type = editingType; if (v) wp.name = v; if ('expiresAt' in upd) wp.expiresAt = upd.expiresAt; saveLocalWaypoints(); renderWaypoints(); }
     }
     closeSheet();
   });
@@ -2948,6 +3133,7 @@
       if (docLake !== LAKE_ID) return;
       waypoints.push({
         id: doc.id, lat:d.lat, lon:d.lon, name:d.name, type:d.type || 'mark', uid:d.uid, by:d.by || '', lake:docLake,
+        expiresAt: d.expiresAt || null,
         createdAt: (d.createdAt && d.createdAt.toMillis) ? d.createdAt.toMillis() : Date.now()
       });
     });
@@ -3293,7 +3479,7 @@
   }
 
   function renderLogList(){
-    var sorted = waypoints.slice().sort(function(a,b){ return (b.createdAt||0) - (a.createdAt||0); });
+    var sorted = waypoints.filter(function(w){ return !isExpired(w); }).sort(function(a,b){ return (b.createdAt||0) - (a.createdAt||0); });
     if (!sorted.length){
       logList.innerHTML = '<div id="logEmpty">Inga fiskeplatser sparade än.<br>Håll ner fingret på kartan för att lägga till en.</div>';
       return;
@@ -4192,7 +4378,9 @@
       var bin = atob(DEPTH_B64), g = new Uint8Array(DEPTH_W * DEPTH_H), j = 0;
       for (var i = 0; i < bin.length; i++){
         var v = bin.charCodeAt(i);
-        if (v === 251){ var n = bin.charCodeAt(i + 1) | (bin.charCodeAt(i + 2) << 8); g.fill(255, j, j + n); j += n; i += 2; }
+        if (v === 251 || v === 253){ // a run of land (255) / of lake without depth data (252)
+          var n = bin.charCodeAt(i + 1) | (bin.charCodeAt(i + 2) << 8); g.fill(v === 251 ? 255 : 252, j, j + n); j += n; i += 2;
+        }
         else g[j++] = v;
       }
       depthGrid = g;
@@ -4209,12 +4397,132 @@
       var xi = x0 + dx, yi = y0 + dy;
       if (xi < 0 || yi < 0 || xi >= DEPTH_W || yi >= DEPTH_H) continue;
       var v = g[yi * DEPTH_W + xi];
-      if (v === 255) continue; // land
+      if (v > 250) continue; // land (255), or lake without depth data (252)
       var w = (dx ? fx : 1 - fx) * (dy ? fy : 1 - fy);
       sum += v * w; wsum += w;
     }
-    if (wsum < 0.2) return null; // (on land / outside the map)
+    if (wsum < 0.2) return null; // (on land / no depth data / outside the map)
     return sum / wsum * DEPTH_STEP;
+  }
+  // lake or land? The lake = Genesis' data + the lake's outline from OpenStreetMap
+  // (Lantmäteriet), so this also knows the parts nobody has logged a depth for.
+  function isLakeAtImgPx(x, y){
+    var g = loadDepthGrid();
+    if (!g) return false;
+    var xi = Math.floor(x / IMG_W * DEPTH_W), yi = Math.floor(y / IMG_H * DEPTH_H);
+    if (xi < 0 || yi < 0 || xi >= DEPTH_W || yi >= DEPTH_H) return false;
+    return g[yi * DEPTH_W + xi] !== 255;
+  }
+
+  /* ---- route by water (for the lead line: "how far / how long by boat") ----
+     A coarse grid over the lake (~9 m cells; a cell is water if any of its
+     depth-grid cells is lake, so narrow sounds stay open). For a target, one
+     Dijkstra run gives every water cell its distance by water to the target;
+     after that the route from wherever the boat is is just "walk downhill",
+     so it's redone for free on every GPS fix. Close to the shore costs a bit
+     more, so the route keeps a few metres off land where it can. */
+  var RT = null;            // {rf, w, h, water, cost, cellM}
+  function routeGrid(){
+    if (RT) return RT;
+    var g = loadDepthGrid(); if (!g) return null;
+    var cellM0 = WEB_METERS_PER_PX * IMG_W / DEPTH_W;
+    var rf = Math.max(1, Math.round(9 / cellM0));
+    var w = Math.ceil(DEPTH_W / rf), h = Math.ceil(DEPTH_H / rf);
+    var water = new Uint8Array(w * h);
+    for (var y = 0; y < DEPTH_H; y++) for (var x = 0; x < DEPTH_W; x++)
+      if (g[y * DEPTH_W + x] !== 255) water[Math.floor(y / rf) * w + Math.floor(x / rf)] = 1;
+    // distance to land (in cells, chamfer 1/1.4), for "keep off the shore"
+    var d = new Float32Array(w * h), BIG = 1e6, i;
+    for (i = 0; i < w * h; i++) d[i] = water[i] ? BIG : 0;
+    function relax(i, j, c){ if (d[j] + c < d[i]) d[i] = d[j] + c; }
+    for (y = 0; y < h; y++) for (x = 0; x < w; x++){ i = y * w + x; if (!d[i]) continue;
+      if (x > 0) relax(i, i - 1, 1); if (y > 0){ relax(i, i - w, 1); if (x > 0) relax(i, i - w - 1, 1.4); if (x < w - 1) relax(i, i - w + 1, 1.4); } }
+    for (y = h - 1; y >= 0; y--) for (x = w - 1; x >= 0; x--){ i = y * w + x; if (!d[i]) continue;
+      if (x < w - 1) relax(i, i + 1, 1); if (y < h - 1){ relax(i, i + w, 1); if (x < w - 1) relax(i, i + w + 1, 1.4); if (x > 0) relax(i, i + w - 1, 1.4); } }
+    var cost = new Float32Array(w * h);
+    for (i = 0; i < w * h; i++) cost[i] = water[i] ? 1 + 1.5 / (1 + d[i]) : 0;
+    RT = { rf: rf, w: w, h: h, water: water, cost: cost, cellM: cellM0 * rf };
+    return RT;
+  }
+  function rtCell(x, y){ var R = RT; return { cx: Math.floor(x / IMG_W * DEPTH_W / R.rf), cy: Math.floor(y / IMG_H * DEPTH_H / R.rf) }; }
+  function rtImg(cx, cy){ var R = RT; return { x: (cx + 0.5) * R.rf * IMG_W / DEPTH_W, y: (cy + 0.5) * R.rf * IMG_H / DEPTH_H }; }
+  function rtNearestWater(c, maxR){      // the closest water cell (ring by ring), or null
+    var R = RT;
+    for (var r = 0; r <= maxR; r++) for (var dy = -r; dy <= r; dy++) for (var dx = -r; dx <= r; dx++){
+      if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+      var x = c.cx + dx, y = c.cy + dy;
+      if (x >= 0 && y >= 0 && x < R.w && y < R.h && R.water[y * R.w + x]) return { cx: x, cy: y };
+    }
+    return null;
+  }
+  var rtField = null;       // {key, dist: Float32Array (m), tx, ty}
+  function routeFieldTo(x, y){
+    if (!routeGrid()) return null;
+    var key = Math.round(x) + ',' + Math.round(y);
+    if (rtField && rtField.key === key) return rtField;
+    var R = RT, t = rtNearestWater(rtCell(x, y), 12); // (a lead line on the shore: the nearest water, up to ~100 m)
+    if (!t) { rtField = { key: key, dist: null }; return rtField; }
+    var n = R.w * R.h, dist = new Float32Array(n).fill(Infinity);
+    // Dijkstra with a binary heap (8 neighbours)
+    // (a cell can be queued more than once -- stale entries are skipped -- so the heap grows as needed)
+    var hi = [], hp = [], hn = 0, popP = 0;
+    function push(i, p){ var k = hn++; while (k > 0){ var q = (k - 1) >> 1; if (hp[q] <= p) break; hi[k] = hi[q]; hp[k] = hp[q]; k = q; } hi[k] = i; hp[k] = p; }
+    function pop(){ var top = hi[0]; popP = hp[0]; var li = hi[--hn], lp = hp[hn], k = 0;
+      while (true){ var c = 2 * k + 1; if (c >= hn) break; if (c + 1 < hn && hp[c + 1] < hp[c]) c++; if (hp[c] >= lp) break; hi[k] = hi[c]; hp[k] = hp[c]; k = c; }
+      hi[k] = li; hp[k] = lp; return top; }
+    var s = t.cy * R.w + t.cx; dist[s] = 0; push(s, 0);
+    var DX = [1, -1, 0, 0, 1, 1, -1, -1], DY = [0, 0, 1, -1, 1, -1, 1, -1], DL = [1, 1, 1, 1, 1.4142, 1.4142, 1.4142, 1.4142];
+    while (hn){
+      var i = pop();
+      if (popP > dist[i]) continue;          // stale: a shorter way here was already found
+      var di = dist[i], ix = i % R.w, iy = (i - ix) / R.w;
+      for (var k = 0; k < 8; k++){
+        var x2 = ix + DX[k], y2 = iy + DY[k];
+        if (x2 < 0 || y2 < 0 || x2 >= R.w || y2 >= R.h) continue;
+        var j = y2 * R.w + x2; if (!R.water[j]) continue;
+        var nd = di + DL[k] * R.cellM * (R.cost[i] + R.cost[j]) / 2;
+        if (nd < dist[j]){ dist[j] = nd; push(j, nd); }
+      }
+    }
+    rtField = { key: key, dist: dist, tx: t.cx, ty: t.cy };
+    return rtField;
+  }
+  function waterLineClear(a, b){         // a straight line between two cells stays on water?
+    var R = RT, n = Math.ceil(Math.max(Math.abs(b.cx - a.cx), Math.abs(b.cy - a.cy)) * 2) || 1;
+    for (var k = 0; k <= n; k++){
+      var x = Math.round(a.cx + (b.cx - a.cx) * k / n), y = Math.round(a.cy + (b.cy - a.cy) * k / n);
+      if (!R.water[y * R.w + x]) return false;
+    }
+    return true;
+  }
+  // the route from (fx, fy) to the target of routeFieldTo(tx, ty), in map-image px, and its length (m)
+  function routeFrom(fx, fy, tx, ty){
+    var F = routeFieldTo(tx, ty);
+    if (!F || !F.dist) return null;
+    var R = RT, s = rtNearestWater(rtCell(fx, fy), 6);
+    if (!s || !isFinite(F.dist[s.cy * R.w + s.cx])) return null;   // no way there by water
+    var cells = [s], c = s, guard = R.w * R.h;
+    while ((c.cx !== F.tx || c.cy !== F.ty) && guard--){      // downhill to the target
+      var best = null, bd = F.dist[c.cy * R.w + c.cx];
+      for (var dy = -1; dy <= 1; dy++) for (var dx = -1; dx <= 1; dx++){
+        var x = c.cx + dx, y = c.cy + dy;
+        if ((dx || dy) && x >= 0 && y >= 0 && x < R.w && y < R.h && F.dist[y * R.w + x] < bd){ bd = F.dist[y * R.w + x]; best = { cx: x, cy: y }; }
+      }
+      if (!best) break;
+      cells.push(best); c = best;
+    }
+    // straighten: keep only the corners needed to stay on water
+    var pts = [cells[0]], a = 0;
+    while (a < cells.length - 1){
+      var b = cells.length - 1;
+      while (b > a + 1 && !waterLineClear(cells[a], cells[b])) b--;
+      pts.push(cells[b]); a = b;
+    }
+    var img = pts.map(function(p){ return rtImg(p.cx, p.cy); });
+    img[0] = { x: fx, y: fy }; img[img.length - 1] = { x: tx, y: ty };   // exactly from you to the lead line
+    var m = 0;
+    for (var k = 1; k < img.length; k++) m += Math.hypot(img[k].x - img[k - 1].x, img[k].y - img[k - 1].y) * WEB_METERS_PER_PX;
+    return { pts: img, meters: m };
   }
   function depthAtLatLon(lat, lon){ var p = latLonToImgPx(lat, lon); return depthAtImgPx(p.x, p.y); }
   function fmtDepth(m){

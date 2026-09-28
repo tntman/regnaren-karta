@@ -32,7 +32,7 @@ with sync_playwright() as p:
     pg.click('#visMoreBtn'); pg.wait_for_timeout(250)
     check('filter opens', pg.is_visible('#visMore') and pg.get_attribute('#visMoreBtn','aria-expanded') == 'true')
     boxes = pg.eval_on_selector_all('#visTypes input', 'els => els.map(e => e.getAttribute("data-type") + ":" + e.checked)')
-    check('4 type toggles, all on', boxes == ['mark:true','abborre:true','gadda:true','gos:true'], boxes)
+    check('6 type toggles (incl. Fara, Träffpunkt), all on', boxes == ['mark:true','abborre:true','gadda:true','gos:true','fara:true','meet:true'], boxes)
     check('100 % selected by default', pg.inner_text('#othersOpacitySeg .active') == '100 %')
     check('no filter dot while everything is shown', not pg.is_visible('.visMoreDot'))
     pg.screenshot(path='shot_filter_open.png')

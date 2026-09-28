@@ -63,7 +63,9 @@ FAKE_FIREBASE_JS = r"""
   var wpDocs = {};
   (cfg.waypoints || []).forEach(function(w, i){
     wpDocs['w'+i] = { lat:w.lat, lon:w.lon, name:w.name, uid:w.uid, by:w.by||w.uid, lake:w.lake||'regnaren', createdAt: ts(now - 3600000) };
+    ['type', 'expiresAt'].forEach(function(k){ if (w[k] !== undefined && wpDocs['w'+i][k] === undefined) wpDocs['w'+i][k] = w[k]; });
   });
+  window.__wpDocs = wpDocs;
   var wpListeners = [], posListeners = [];
   function snapOf(docs){
     return { metadata: { fromCache: window.__fromCache }, size: Object.keys(docs).length,

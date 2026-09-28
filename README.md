@@ -44,8 +44,14 @@ databasen (se `tests/fakefb.py`).
 4. `py -3 tools/genesis_depth.py <id> sheet` – gör ett ark med Genesis djupsiffror.
    Läs av siffrorna (liten siffra efter = tiondelar) och fyll i `depth_m` i `lakes/<id>/raw/depth_labels.json`.
 5. `py -3 tools/genesis_depth.py <id>` – räknar fram djupet i meter (kalibrerat mot siffrorna).
+5b. Lägg sjöns OpenStreetMap-id i source.json (`"osm": {"type": "relation", "id": ...}`) och kör
+   `py -3 tools/osm_water.py <id>` – sjöns riktiga strandlinje, så appen vet var det är sjö även
+   där Genesis saknar djupdata (rutter sjövägen, "Okänt djup").
 6. `py -3 tools/genesis_render.py <id>` – ritar alla kartstilar på alla zoomnivåer (med Genesis
    egna djupkurvor för varje zoom), djupdata och `lake.json`, rakt in i `docs/lakes/<id>/`.
+   (`py -3 tools/genesis_render.py <id> grid` gör bara om djupdata + lake.json – snabbt.)
+
+Kartdata: C-MAP Genesis Social Map, Bing-flygfoto, sjögränser © OpenStreetMap-bidragsgivare (ODbL).
 7. Bygg och testa. Sjön dyker upp i menyn av sig själv.
 
 ## Publicera (GitHub Pages)
