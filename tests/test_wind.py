@@ -33,6 +33,19 @@ with sync_playwright() as p:
                          for (var i = 3; i < d.length; i += 4) if (d[i] > 0) n++; return n; }""")
     check('the canvas has something on it', lit > 1000, lit)
     pg.screenshot(path='shot_wind_6.png')
+    # zoomed far in: the lee edge is drawn per screen pixel, so it stays smooth
+    edge = pg.evaluate("""() => { var c = document.getElementById('windLayer'), dpr = window.devicePixelRatio || 1,
+        d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data, best = null, bd = 1e9;
+        for (var y = 120 * dpr; y < c.height - 200 * dpr; y += 3) for (var x = 20 * dpr; x < c.width - 20 * dpr; x += 3){
+          var k = (y * c.width + x) * 4;
+          if (d[k + 3] > 120 && d[k] > 240 && d[k + 1] > 240){ var dd = Math.hypot(x / dpr - 195, y / dpr - 422); if (dd < bd){ bd = dd; best = [x / dpr, y / dpr]; } }
+        } return best; }""")
+    pg.mouse.move(*(edge or (195, 560)))
+    for i in range(14):
+        pg.mouse.wheel(0, -400); pg.wait_for_timeout(50)
+    pg.wait_for_timeout(1500)
+    pg.screenshot(path='shot_wind_6_zoom.png')
+    check('zoomed in: still drawn, no errors', pg.evaluate('window.__ffWind()') is not None and not errs, errs)
     # remembered after a reload (rotation)
     pg.reload(); pg.wait_for_timeout(2200)
     check('stays on after a reload', pg.is_checked('#toggleWind') and pg.is_visible('#windLayer'))

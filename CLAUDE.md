@@ -74,7 +74,8 @@ All text i appen är på svenska. Svara Filip på svenska, kort och tydligt.
 - **Vindpilen** i väderkortet/-chipet är orange (#FFB23F).
 - **Vind och lä** (Filter, av som standard, `ffmap_show_wind_v1`): canvas `#windLayer` i
   skärmkoordinater. Fetch (öppet vatten uppvinds, ±15°) på ruttnätet, interpolerat till
-  djupnätet. Lä = fetch < gräns = 3600/U² (vågformel, kalibrerad efter Filip: 6 m/s → 100 m;
+  djupnätet och utjämnat ~10 m. Lä ritas per skärmpunkt (var 2:a css-px, `drawLeeView`,
+  görs om bara när vyn flyttas) – inte som förstorad bild, som blev kantig inzoomat. Lä = fetch < gräns = 3600/U² (vågformel, kalibrerad efter Filip: 6 m/s → 100 m;
   "5 cm-vågor" var för generöst), 30–400 m; < 1,5 m/s = hela sjön lä. Lä: ljus ton + tunn kant; öppet vatten: "kometer" (tunt huvud,
   tjockare svans) som driver med vinden, fler/längre/snabbare vid mer vind. ~30 fps bara
   när påslaget och synligt. `window.__ffWind()` för testerna.

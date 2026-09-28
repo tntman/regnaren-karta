@@ -5496,44 +5496,82 @@
         fetch[i] += f / 3;
       }
     });
-    var leeD = leeDistM(w.ms), expo = new Float32Array(n), lee = new Uint8Array(n);
-    for (var i2 = 0; i2 < n; i2++){
-      if (!R.water[i2]) continue;
-      if (fetch[i2] < leeD) lee[i2] = 1; else expo[i2] = Math.min(1, (fetch[i2] - leeD) / 350);
-    }
-    // the lee as a picture over the whole map, at the depth grid's size (so it follows the shore)
-    var g = loadDepthGrid(), cv = document.createElement('canvas'); cv.width = DEPTH_W; cv.height = DEPTH_H;
-    var c2 = cv.getContext('2d'), im = c2.createImageData(DEPTH_W, DEPTH_H), px = im.data;
-    // lee per depth cell from the fetch interpolated between route cells (bilinear, water
-    // cells only) -- a smooth border instead of 9 m steps
-    var leeFine = new Uint8Array(DEPTH_W * DEPTH_H);
+    var leeD = leeDistM(w.ms);
+    // A smooth fetch field at the depth grid's size: bilinear between route cells, then
+    // blurred ~10 m inside the lake (no speckles / 9 m steps). The lee is then drawn per
+    // screen pixel from this field (drawLeeView), so its edge stays smooth at any zoom.
+    var g = loadDepthGrid(), N = DEPTH_W * DEPTH_H;
+    var ff = new Float32Array(N), lk = new Float32Array(N);
     for (var y0 = 0; y0 < DEPTH_H; y0++){
       var fy = (y0 + 0.5) / R.rf - 0.5, iy = Math.floor(fy), ty = fy - iy;
       for (var x0 = 0; x0 < DEPTH_W; x0++){
-        if (g[y0 * DEPTH_W + x0] === 255) continue;
+        var j0 = y0 * DEPTH_W + x0; if (g[j0] === 255) continue;
+        lk[j0] = 1;
         var fx = (x0 + 0.5) / R.rf - 0.5, ix = Math.floor(fx), tx = fx - ix, sum = 0, ws = 0;
         for (var dy = 0; dy <= 1; dy++) for (var dx = 0; dx <= 1; dx++){
           var cx2 = ix + dx, cy2 = iy + dy;
           if (cx2 < 0 || cy2 < 0 || cx2 >= R.w || cy2 >= R.h || !R.water[cy2 * R.w + cx2]) continue;
           var wgt = (dx ? tx : 1 - tx) * (dy ? ty : 1 - ty); sum += fetch[cy2 * R.w + cx2] * wgt; ws += wgt;
         }
-        var fv = ws > 0 ? sum / ws : 0;
-        if (fv < leeD) leeFine[y0 * DEPTH_W + x0] = 1;
+        ff[j0] = ws > 0 ? sum / ws : 0;
       }
     }
-    function leeAt(x, y){ return leeFine[y * DEPTH_W + x]; }
-    for (var y = 0; y < DEPTH_H; y++) for (var x = 0; x < DEPTH_W; x++){
-      var j = y * DEPTH_W + x; if (g[j] === 255 || !leeAt(x, y)) continue;
-      var edge = (x > 0 && g[j - 1] !== 255 && !leeAt(x - 1, y)) || (x < DEPTH_W - 1 && g[j + 1] !== 255 && !leeAt(x + 1, y)) ||
-                 (y > 0 && g[j - DEPTH_W] !== 255 && !leeAt(x, y - 1)) || (y < DEPTH_H - 1 && g[j + DEPTH_W] !== 255 && !leeAt(x, y + 1));
-      var k = j * 4;
-      if (edge){ px[k] = 255; px[k + 1] = 255; px[k + 2] = 255; px[k + 3] = 170; }
-      else { px[k] = 235; px[k + 1] = 250; px[k + 2] = 245; px[k + 3] = 72; }
+    var rad = Math.max(1, Math.round(10 / (WEB_METERS_PER_PX * IMG_W / DEPTH_W)));
+    function boxBlur(horiz){                      // weighted by the lake mask, so land doesn't pull it to 0
+      var out = new Float32Array(N), L1 = horiz ? DEPTH_W : DEPTH_H, L2 = horiz ? DEPTH_H : DEPTH_W;
+      for (var b = 0; b < L2; b++){
+        var s = 0, sw = 0;
+        for (var a0 = -rad; a0 < L1 + rad; a0++){
+          var ai = a0 + rad; if (ai < L1){ var jj = horiz ? b * DEPTH_W + ai : ai * DEPTH_W + b; s += ff[jj] * lk[jj]; sw += lk[jj]; }
+          var ao = a0 - rad - 1; if (ao >= 0 && ao < L1){ var jo = horiz ? b * DEPTH_W + ao : ao * DEPTH_W + b; s -= ff[jo] * lk[jo]; sw -= lk[jo]; }
+          if (a0 >= 0 && a0 < L1){ var jc = horiz ? b * DEPTH_W + a0 : a0 * DEPTH_W + b; if (lk[jc]) out[jc] = sw > 0 ? s / sw : 0; }
+        }
+      }
+      ff = out;
     }
-    c2.putImageData(im, 0, 0);
-    var nLee = 0, nWater = 0; for (var q = 0; q < n; q++){ if (R.water[q]){ nWater++; if (lee[q]) nLee++; } }
-    windField = { key: key, from: w.from, ms: w.ms, leeD: leeD, lee: lee, expo: expo, canvas: cv, leeShare: nWater ? nLee / nWater : 0 };
+    boxBlur(true); boxBlur(false); boxBlur(true); boxBlur(false);
+    var nLee = 0, nWater = 0; for (var q = 0; q < N; q++){ if (lk[q]){ nWater++; if (ff[q] < leeD) nLee++; } }
+    windField = { key: key, from: w.from, ms: w.ms, leeD: leeD, ff: ff, lk: lk, view: null, leeShare: nWater ? nLee / nWater : 0 };
     return windField;
+  }
+  // value of a depth-grid field at a map-picture point (bilinear)
+  function gridAt(arr, ix, iy){
+    var gx = ix / IMG_W * DEPTH_W - 0.5, gy = iy / IMG_H * DEPTH_H - 0.5;
+    var x0 = Math.floor(gx), y0 = Math.floor(gy), tx = gx - x0, ty = gy - y0;
+    if (x0 < 0 || y0 < 0 || x0 >= DEPTH_W - 1 || y0 >= DEPTH_H - 1) return 0;
+    var j = y0 * DEPTH_W + x0;
+    return (arr[j] * (1 - tx) + arr[j + 1] * tx) * (1 - ty) + (arr[j + DEPTH_W] * (1 - tx) + arr[j + DEPTH_W + 1] * tx) * ty;
+  }
+  // the lee for what's on screen, 1 point per 2 css px (redone only when the view moves)
+  function drawLeeView(F, W, H){
+    var STEP = 2, vw = Math.ceil(W / STEP), vh = Math.ceil(H / STEP);
+    var vkey = originX.toFixed(1) + ',' + originY.toFixed(1) + ',' + scale.toFixed(5) + ',' + W + 'x' + H;
+    if (!F.view || F.view.key !== vkey){
+      var cv = F.view ? F.view.cv : document.createElement('canvas');
+      if (cv.width !== vw || cv.height !== vh){ cv.width = vw; cv.height = vh; }
+      var c2 = cv.getContext('2d'), im = c2.createImageData(vw, vh), px = im.data;
+      var lee = new Float32Array(vw * vh), lake = new Float32Array(vw * vh), ff = F.ff, lk = F.lk, D = F.leeD;
+      for (var y = 0; y < vh; y++) for (var x = 0; x < vw; x++){
+        var ix = (x * STEP + 1 - originX) / scale, iy = (y * STEP + 1 - originY) / scale, i = y * vw + x;
+        var m = gridAt(lk, ix, iy); lake[i] = m;
+        if (m < 0.02) continue;
+        var f = gridAt(ff, ix, iy) / m;                         // (weighted: land cells hold 0)
+        lee[i] = f < D ? 1 : 0;
+      }
+      for (var y2 = 0; y2 < vh; y2++) for (var x2 = 0; x2 < vw; x2++){
+        var i2 = y2 * vw + x2; if (!lee[i2]) continue;
+        var m2 = Math.min(1, lake[i2] * 1.6), k = i2 * 4;
+        // edge: a lee point next to open lake water (not next to land) -- ~2 px, at every zoom
+        var edge = (x2 > 0 && !lee[i2 - 1] && lake[i2 - 1] > 0.5) || (x2 < vw - 1 && !lee[i2 + 1] && lake[i2 + 1] > 0.5) ||
+                   (y2 > 0 && !lee[i2 - vw] && lake[i2 - vw] > 0.5) || (y2 < vh - 1 && !lee[i2 + vw] && lake[i2 + vw] > 0.5);
+        if (edge){ px[k] = 255; px[k + 1] = 255; px[k + 2] = 255; px[k + 3] = Math.round(170 * m2); }
+        else { px[k] = 235; px[k + 1] = 250; px[k + 2] = 245; px[k + 3] = Math.round(72 * m2); }
+      }
+      c2.putImageData(im, 0, 0);
+      F.view = { key: vkey, cv: cv };
+    }
+    wctx.imageSmoothingEnabled = true;
+    wctx.drawImage(F.view.cv, 0, 0, vw * STEP, vh * STEP);
   }
   function drawWind(){
     var dpr = window.devicePixelRatio || 1, W = stage.clientWidth, H = stage.clientHeight;
@@ -5544,11 +5582,10 @@
     wctx.clearRect(0, 0, W, H);
     var F = windOn ? computeWindField() : null;
     if (!F) return 0;
-    wctx.imageSmoothingEnabled = true;
-    wctx.drawImage(F.canvas, originX, originY, IMG_W * scale, IMG_H * scale);
+    drawLeeView(F, W, H);
     if (F.ms < 1.5) return 0;
     // comets
-    var R = RT, force = Math.max(0.25, Math.min(1, F.ms / 8));
+    var force = Math.max(0.25, Math.min(1, F.ms / 8));
     var to = (F.from + 180) * Math.PI / 180, ux = Math.sin(to), uy = -Math.cos(to);
     var want = Math.round(Math.min(420, W * H / 1500) * (0.45 + 0.55 * force));
     while (windParts.length < want) windParts.push({ x: Math.random() * W, y: Math.random() * H, life: Math.random(), rate: 0.35 + Math.random() * 0.3 });
@@ -5558,9 +5595,8 @@
     for (var i = 0; i < windParts.length; i++){
       var p = windParts[i];
       var ix = (p.x - originX) / scale, iy = (p.y - originY) / scale;
-      var cx = Math.floor(ix / IMG_W * DEPTH_W / R.rf), cy = Math.floor(iy / IMG_H * DEPTH_H / R.rf);
-      if (cx < 0 || cy < 0 || cx >= R.w || cy >= R.h) continue;
-      var e = F.expo[cy * R.w + cx]; if (!(e > 0)) continue;
+      var m = gridAt(F.lk, ix, iy); if (m < 0.6) continue;
+      var e = Math.min(1, (gridAt(F.ff, ix, iy) / m - F.leeD) / 350); if (!(e > 0)) continue;
       var a = Math.sin(Math.PI * p.life) * (0.3 + 0.6 * e) * (0.5 + 0.5 * force);
       var L = (10 + 14 * e) * (0.6 + 0.4 * force);
       for (var k = 0; k < 5; k++){      // thin head, a bit thicker tail, fading backwards
