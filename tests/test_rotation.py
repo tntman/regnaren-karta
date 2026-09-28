@@ -78,7 +78,7 @@ with sync_playwright() as p:
       speed: document.getElementById('speedVal').textContent })""")
     print('   after: ', after)
     check('Båtar off + Namn disabled kept', after['boats'] == before['boats'] == False and after['namesDisabled'])
-    check('type filter kept', after['types'] == before['types'] == [True, False, True, True], after['types'])
+    check('type filter kept', after['types'] == before['types'] == [True, False, True, True, True, True], after['types'])
     check('opacity 50 % kept', after['op'] == '50 %')
     check('filter still open', pg.is_visible('#visMore'))
     check('pin size Stor kept', after['size'] == before['size'] == 'Stor', after['size'])

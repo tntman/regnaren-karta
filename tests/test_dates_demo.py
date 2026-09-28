@@ -40,6 +40,8 @@ with sync_playwright() as p:
     for i in range(8):
         pg.click('#demoModeToggle'); pg.wait_for_timeout(250)
         if pg.is_checked('#demoModeToggle'):
+            try: pg.wait_for_function("document.getElementById('depthVal').textContent !== '–'", timeout=3000)
+            except Exception: pass
             depths.append(pg.inner_text('#depthVal'))
             pg.click('#demoModeToggle'); pg.wait_for_timeout(150)
     ok = all(d not in ('–',) and (d == '10+' or float(d.replace(',', '.')) >= 1.4) for d in depths)

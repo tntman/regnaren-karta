@@ -30,6 +30,18 @@ from matplotlib import colors as mcolors
 Image.MAX_IMAGE_PIXELS = None
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TL = 512
+# Flygfoto + linjer: the white lines thinner (alpha ** LINE_THIN keeps the cores) and see-through
+LINE_THIN = float(os.environ.get('FF_LINE_THIN', 2.5))
+LINE_OPACITY = float(os.environ.get('FF_LINE_OPACITY', 0.55))
+# Bottenhårdhet: Genesis' 4 colours (soft -> hard) and what we draw them as
+HARD_SRC = [(255, 255, 204), (254, 194, 93), (252, 134, 67), (250, 74, 41)]
+HARD_PALS = {'genesis': HARD_SRC,
+             'warm': [(255, 244, 150), (255, 170, 0), (240, 70, 10), (150, 0, 40)],     # pale yellow -> dark red
+             'bluered': [(80, 170, 255), (140, 230, 120), (255, 190, 0), (215, 20, 40)]}  # blue (soft) -> red (hard)
+HARD_PAL = HARD_PALS[os.environ.get('FF_HARD', 'warm')]      # "warm" chosen (Filip)
+# Fixed depth colour scale for every lake: 0-10 m = 2/3 of the scale, 10-50 m the rest, deeper = 50 m
+DEPTH_KNOTS_M = [0, 10, 50]
+DEPTH_KNOTS_F = [0, 2 / 3, 1]
 
 def hx(s): return np.array([int(s[i:i + 2], 16) for i in (1, 3, 5)], np.float32)
 
@@ -50,17 +62,40 @@ def hill(e, zf, az, alt):
     a, b = np.deg2rad(az), np.deg2rad(alt)
     return np.clip((nx * np.cos(b) * np.sin(a) - ny * np.cos(b) * np.cos(a) + nz * np.sin(b)) / n, 0, 1)
 
-def relief(dep0, water, dz):
-    """Brightness factor (1 = unchanged): light from the north + softer north-west fill,
-    steep slopes darker. The same look at zoom 16 and 17 (sizes in metres)."""
-    k = 2 ** (dz - 16)
-    e = -dep0.copy(); e[water] = ndimage.gaussian_filter(e, 3.0 * k)[water]
-    dif = 0.7 * hill(e, 40 * k, 350, 38) + 0.3 * hill(e, 40 * k, 300, 50)
-    lo, hi = np.percentile(dif[water], [2, 98]); nm = np.clip((dif - lo) / (hi - lo + 1e-6), 0, 1)
-    sh = 1 + (nm - 0.5) * 2 * 0.75
-    gy, gx = np.gradient(ndimage.gaussian_filter(-dep0, 2.0 * k)); slope = np.hypot(gx, gy)
-    sh *= 1 - 0.35 * np.clip(slope / np.percentile(slope[water], 97), 0, 1)
-    return np.clip(sh, 0.35, 1.6).astype(np.float32)
+def shift(a, dy, dx):
+    """a moved so that out[p] = a[p + (dy, dx)] (edges repeat the original)"""
+    out = a.copy(); H, W = a.shape
+    out[max(-dy, 0):H + min(-dy, 0), max(-dx, 0):W + min(-dx, 0)] = a[max(dy, 0):H + min(dy, 0), max(dx, 0):W + min(dx, 0)]
+    return out
+
+def relief(dep0, water, px, solid=None):
+    """Brightness factor (1 = unchanged) -- "T1 x AO" (Filip's choice, see tools/KARTOR.md 8):
+    a height map (-depth, smoothed ~1.2 m, heights x12) -> normal map -> diffuse light from
+    NW, 45 deg up (T1), times ambient occlusion (holes/gullies darker, ~25 m around).
+    All sizes in metres (px = metres per pixel), so it looks the same at every zoom."""
+    # solid = where the bottom continues (water + unmapped parts of the lake, filled with
+    # the nearest depth) -- so an unmapped hole is no "wall": it doesn't shade its edges
+    sol = water if solid is None else solid
+    wf = sol.astype(np.float32); s = max(0.5, 1.2 / px)
+    h = -np.where(sol, ndimage.gaussian_filter(dep0 * wf, s) / np.maximum(ndimage.gaussian_filter(wf, s), 1e-6), 0).astype(np.float32)
+    EX = 12
+    gx = ndimage.sobel(h, 1) / (8 * px) * EX; gy = ndimage.sobel(h, 0) / (8 * px) * EX
+    n = np.sqrt(gx * gx + gy * gy + 1)
+    a, b = math.radians(315), math.radians(45)
+    t1 = np.clip((-gx * math.cos(b) * math.sin(a) + gy * math.cos(b) * math.cos(a) + math.sin(b)) / n, 0, 1)
+    del gx, gy, n
+    he = h * EX; occ = np.zeros_like(h)
+    steps = sorted(set(max(1, int(round(1.35 ** i))) for i in range(40) if 1.35 ** i * px <= 25.0)) or [1]
+    for i in range(16):
+        ang = 2 * math.pi * i / 16; best = np.zeros_like(h)
+        for st in steps:
+            best = np.maximum(best, (shift(he, int(round(math.sin(ang) * st)), int(round(math.cos(ang) * st))) - he) / (st * px))
+        occ += np.sin(np.arctan(best))
+    ao = 1 - occ / 16
+    def fac(x, strength):
+        lo, hi = np.percentile(x[water], [2, 98]); x = np.clip((x - lo) / (hi - lo + 1e-6), 0, 1)
+        return 1 + (x - np.median(x[water])) * 2 * strength
+    return np.clip(fac(t1, 0.5) * fac(ao, 0.4), 0.3, 1.6).astype(np.float32)
 
 def resize(arr, w, h):
     """float array (H, W[, C]) -> (h, w[, C]); area average when shrinking, bilinear when growing"""
@@ -106,40 +141,64 @@ def main():
     maxd = float(np.nanmax(dep)); sc = 2 if maxd <= 20 else 5
     DMAX = sc * math.ceil(maxd / sc)
     print('max depth %.1f m -> colour scale 0-%d m' % (maxd, DMAX))
-    sh = relief(dep0, water, DZ)
-    mild = 1 + (sh - 1) * 0.6
+    PXD = 156543.03392 * math.cos(math.radians((la0 + la1) / 2)) / 2 ** DZ   # metres per px at DZ
+    # Parts of the lake Genesis has no data for (inside the OpenStreetMap outline): a hard
+    # cut-out -- the aerial photo shows there. For the relief and the colours at their
+    # edges they're filled with the nearest known depth, so they don't act as a wall
+    # (shade) or bleed "0 m" colour into the lake around them.
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import osm_water
+    osm0 = osm_water.mask(lake, DZ, gx0, gy0, W, H)
+    unm = (osm0 & ~water) if osm0 is not None else np.zeros_like(water)
+    depc = dep0
+    if unm.any():
+        iy, ix = ndimage.distance_transform_edt(~water, return_distances=False, return_indices=True)
+        depc = dep0.copy(); depc[unm] = dep0[iy[unm], ix[unm]]; del iy, ix
+    sh = relief(depc, water, PXD, solid=water | unm)   # only Djupfärger (s1) and Blå relief (s6) are shaded
 
     # ---- the water colour of every style, at DZ (uint8 to save memory); None = no own colour
-    def ramp(cmap): return cmap(np.clip(dep0 / DMAX, 0, 1))[..., :3].astype(np.float32) * 255
+    # FIXED depth -> colour, the same in every lake (Filip): most colour change 0-10 m
+    # (where you fish) = 2/3 of the scale, then 10-50 m blue -> dark blue, deeper = as 50 m
+    def fpos(d): return np.interp(d, DEPTH_KNOTS_M, DEPTH_KNOTS_F)
+    def ramp(cmap): return cmap(fpos(depc))[..., :3].astype(np.float32) * 255
     def u8(a): return np.clip(a, 0, 255).astype(np.uint8)
     def legend_css(cmap, n=7):
         return 'linear-gradient(to right,' + ','.join('%s %d%%' % (mcolors.to_hex(cmap(i / (n - 1))), round(100 * i / (n - 1))) for i in range(n)) + ')'
-    c1 = mcolors.LinearSegmentedColormap.from_list('c1', [(0.0, '#d62728'), (0.18, '#ff7f0e'), (0.36, '#ffdd00'), (0.55, '#2ca02c'), (0.72, '#17becf'), (0.87, '#1f4fd6'), (1.0, '#0a1a5c')])
-    c2 = plt.get_cmap('turbo_r')
-    c4 = mcolors.LinearSegmentedColormap.from_list('n', ['#24475a', '#153a55', '#0c2749', '#061532'])
+    # Djupfärger: red 0 m, orange 1,5, yellow 3, green 5, turquoise 7,5, blue 10, dark blue 50 m
+    c1 = mcolors.LinearSegmentedColormap.from_list('c1', [(float(fpos(d)), c) for d, c in
+        ((0, '#d62728'), (1.5, '#ff7f0e'), (3, '#ffdd00'), (5, '#2ca02c'), (7.5, '#17becf'), (10, '#1f4fd6'), (25, '#0f2c8a'), (50, '#03081f'))])
     c6 = mcolors.LinearSegmentedColormap.from_list('b', ['#cfeefa', '#6fc3e8', '#2a86c9', '#12509a', '#0a2c63'])
     bands = ['#dff3fb', '#c4e7f6', '#a9dbf2', '#8fcdec', '#74bde4', '#5aa9d8', '#4796cb', '#3a84bd', '#2f72ae']
-    edges = [round(DMAX * f, 1) for f in (0, 0.05, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875)]
+    edges = [0, 1, 2, 3, 5, 7.5, 10, 20, 30]           # Sjökort: fixed depths (m) where a new band starts
     s3 = np.zeros(dep0.shape + (3,), np.float32); s3[:] = hx(bands[0])
-    for lo, col in zip(edges[1:], bands[1:]): s3[dep0 >= lo] = hx(col)
+    for lo, col in zip(edges[1:], bands[1:]): s3[depc >= lo] = hx(col)
     # (id, name, desc, legend, extra, water colour at DZ, how Genesis' lines are drawn)
     STY = [
-        ('s1', 'Djupfärger', 'Flygfoto + djupfärger med relief', legend_css(c1), {}, u8(ramp(c1) * sh[..., None]), 'black'),
-        ('s2', 'Förenklad', 'Klara djupfärger, utan skuggning', legend_css(c2, 9), {}, u8(ramp(c2)), 'black'),
-        ('s3', 'Sjökort', 'Blå djupband som en papperskarta', 'linear-gradient(to right,' + ','.join('%s %d%%' % (c, round(100 * e / DMAX)) for c, e in zip(bands, edges)) + ')', {}, u8(s3), 'black'),
-        ('s4', 'Natt', 'Mörkt vatten med ljusa djupkurvor', legend_css(c4, 4), {}, u8(ramp(c4) * mild[..., None]), (143, 233, 244)),
+        ('s1', 'Djupfärger', 'Flygfoto + djupfärger med relief', legend_css(c1, 13), {}, u8(ramp(c1) * sh[..., None]), 'black'),
+        ('s2', 'Förenklad', 'Samma djupfärger, utan skuggning', legend_css(c1, 13), {}, u8(ramp(c1)), 'black'),
+        ('s3', 'Sjökort', 'Blå djupband som en papperskarta', 'linear-gradient(to right,' + ','.join('%s %d%%' % (c, round(100 * float(fpos(e)))) for c, e in zip(bands, edges)) + ')', {}, u8(s3), 'black'),
+        # (no "Natt" (s4) -- dropped, Filip's decision; see tools/KARTOR.md)
         ('s5', 'Flygfoto + linjer', 'Naturlig bild med vita djupkurvor', None, {}, None, (255, 255, 255)),
         ('s6', 'Blå relief', 'Blå toner med skuggad bottenform', legend_css(c6, 5), {}, u8(ramp(c6) * sh[..., None]), 'black'),
         ('g1', 'C-MAP original', 'Som på Genesis-kartan – med djupsiffror', None, {'note': 'Siffror = djup i m (liten siffra = tiondelar)'}, 'genesis', 'black'),
-        ('v1', 'Vegetation', 'Grönt där ekolodet sett växtlighet', 'linear-gradient(to right,#6fc3e8 0%,#6fc3e8 50%,#46dc3c 50%,#46dc3c 100%)', {'ticks': ['Ingen', '', 'Växtlighet']}, u8(ramp(c6) * mild[..., None]), 'black'),
-        ('c1', 'Bottenhårdhet', 'Mjuk (ljus) till hård (röd) botten, där det finns mätt', 'linear-gradient(to right,#ffffcc 0%,#fec25d 33%,#fc8643 66%,#fa4a29 100%)', {'ticks': ['Mjuk', '', 'Hård']}, u8(ramp(c6) * 0.55 + 60), 'black'),
+        ('v1', 'Vegetation', 'Grönt där ekolodet sett växtlighet', 'linear-gradient(to right,#6fc3e8 0%,#6fc3e8 50%,#46dc3c 50%,#46dc3c 100%)', {'ticks': ['Ingen', '', 'Växtlighet']}, u8(ramp(c6)), 'black'),
+        ('c1', 'Bottenhårdhet', 'Mjuk (ljus) till hård (röd) botten, där det finns mätt', 'linear-gradient(to right,' + ','.join('%s %d%%' % (mcolors.to_hex(np.array(c) / 255), p) for c, p in zip(HARD_PAL, (0, 33, 66, 100))) + ')', {'ticks': ['Mjuk', '', 'Hård']}, None, (255, 255, 255)),
+        # (Bottenhårdhet: no water colour -- the aerial photo where nothing is measured, the
+        #  hardness colours where it is, thin light depth lines on top)
     ]
     del s3
 
     # "grid": only the depth grid + lake.json (pictures unchanged -- much faster)
     grid_only = len(sys.argv) > 2 and sys.argv[2] == 'grid'
+    # "preview <levels> <folder>": whole pictures of those levels, all styles, into a folder
+    # of your choice -- nothing in docs/ or lakes/ is touched (for looking before building)
+    preview = len(sys.argv) > 4 and sys.argv[2] == 'preview'
+    if preview:
+        levels = [int(x) for x in sys.argv[3].split(',')]; PREV = sys.argv[4]; os.makedirs(PREV, exist_ok=True)
     ntiles = 0
-    if grid_only:
+    if preview:
+        level_info = []
+    elif grid_only:
         level_info = json.load(open(os.path.join(L, 'lake.json'), encoding='utf-8'))['detail']['levels']
     else:
         # ---- output folder: only this version's pictures
@@ -172,6 +231,8 @@ def main():
         # depth numbers = the light halo round them (lines, even melted together on steep slopes, are black)
         labels = ndimage.binary_dilation((t[..., :3].mean(2) > 170) & (t[..., 3] > 60), iterations=3)[..., None]
         styles_here = [s for s in STY if z <= DZ or not top_styles or s[0] in top_styles]
+        if preview and os.environ.get('FF_PREVIEW_STYLES'):     # (a preview of just some styles)
+            styles_here = [s for s in styles_here if s[0] in os.environ['FF_PREVIEW_STYLES'].split(',')]
         for sid, name, desc, leg, extra, colour, lines in styles_here:
             if isinstance(colour, np.ndarray):
                 img = aer * (1 - alpha) + resize(colour.astype(np.float32), w, h) * alpha
@@ -186,15 +247,23 @@ def main():
             if sid == 'c1':
                 c = lay('c')
                 if c is not None:
-                    c = c.astype(np.float32); ca = c[..., 3:4] / 255 * 0.9 * alpha
-                    img = img * (1 - ca) + c[..., :3] * ca
+                    # Genesis' 4 hardness levels (soft -> hard), recoloured with more contrast
+                    c = c.astype(np.float32); ca = c[..., 3:4] / 255 * alpha
+                    src4 = np.array(HARD_SRC, np.float32); dst4 = np.array(HARD_PAL, np.float32)
+                    k = np.argmin(((c[..., None, :3] - src4) ** 2).sum(-1), axis=-1)
+                    img = img * (1 - ca) + dst4[k] * ca
             # Genesis' contour lines + depth numbers for this zoom (light lines on dark styles; numbers as they are)
             if lines == 'black':
                 img = img * (1 - ta) + t[..., :3] * ta
             else:
+                # light lines (Flygfoto + linjer): thinner (only the line cores -- the soft
+                # edges fade out) and see-through; the depth numbers as they are
+                thin = np.where(labels, ta, (ta ** LINE_THIN) * LINE_OPACITY)
                 col = np.where(labels, t[..., :3], np.asarray(lines, np.float32))
-                img = img * (1 - ta) + col * ta
+                img = img * (1 - thin) + col * thin
             im = Image.fromarray(np.clip(img, 0, 255).astype(np.uint8))
+            if preview:
+                im.save(os.path.join(PREV, '%s_z%d_%s.jpg' % (lake, z, sid)), quality=88); continue
             if z == base:
                 im.save(os.path.join(OUT, 'map_v%d_%s.jpg' % (V, sid)), quality=84, optimize=True, progressive=True)
             else:
@@ -217,6 +286,8 @@ def main():
                     os.path.join(OUT, 'thumbs_v%d' % V, '%s.jpg' % sid), quality=82)
         print('  zoom %d: %d x %d px, %d styles' % (z, w, h, len(styles_here)))
         del aer, t
+    if preview:
+        print('preview pictures in', PREV); return
 
     # ---- depth grid for the app: one byte per cell = depth / step (0-250); 252 = lake but no
     # depth data (inside the OpenStreetMap outline, not logged in Genesis); 255 = land.
@@ -260,7 +331,7 @@ def main():
                 'metersPerPx': 156543.03392 * math.cos(math.radians(latc)) / 2 ** base,
                 'imgW': W // mb, 'imgH': H // mb},
         'depth': {'file': 'depth_v%d.txt' % V, 'w': gw, 'h': gh, 'step': step, 'max': DMAX, 'capped': False},
-        'legendTicks': ['0 m', '%d m' % (DMAX // 2), '%d m' % DMAX],
+        'legendTicks': ['0 m', '5 m', '10 m', '50 m'],        # (fixed scale, the same for every lake)
         'contourText': 'Djupkurvor från C-MAP Genesis',
         'mapFile': 'map_v%d_{style}.jpg' % V,
         'thumbFile': 'thumbs_v%d/{style}.jpg' % V,

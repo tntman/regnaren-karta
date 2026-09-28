@@ -147,25 +147,21 @@ def build(lake):
     print('colour table: %d colours, %.2f .. %.2f m (%d label readings)' % (ncol, table[0], table[-1], len(pts)))
 
     # holes in the water: islands (ringed by shallow colours) or the uncoloured deepest spots
+    # Holes in the colour layer (inside the lake) are islands OR areas Genesis has no
+    # data for (unmapped) -- either way NO depth: they're left out (not coloured; the
+    # map shows the aerial photo there, OpenStreetMap says whether it's lake).
+    # (Earlier we took holes ringed by deep colours for "extra deep" -- wrong: they
+    # were unmapped strips, see tools/KARTOR.md.)
     holes = ndimage.binary_fill_holes(water) & ~water
-    hl, nh = ndimage.label(holes)
-    near = ndimage.distance_transform_edt(hl == 0, return_distances=False, return_indices=True)
-    ring = ndimage.binary_dilation(holes, iterations=3) & water
-    ring_hole = hl[near[0], near[1]]
-    deep = np.zeros(nh + 1, bool)
-    for h in range(1, nh + 1):
-        v = idx[ring & (ring_hole == h)]
-        if v.size and np.median(v) >= ncol * 0.6: deep[h] = True
-    del near, ring_hole
-    deep_holes = deep[hl]
-    print('holes: %d islands, %d uncoloured deep spots' % (nh - deep.sum(), deep.sum()))
-    water_all = water | deep_holes
-
+    print('holes in the colour layer (islands / unmapped): %d' % ndimage.label(holes)[1])
+    water_all = water
     # Inside each colour band the depth runs smoothly from the band's shallow
     # edge to its deep edge (by distance to the shallower / deeper colours),
     # instead of one flat value per band -- otherwise flat bottoms become
     # terraces. (Done at half resolution; plenty for bands tens of px wide.)
-    ih = np.where(deep_holes, ncol, idx)[::2, ::2]; land_h = land_of(water_all)[::2, ::2]
+    # A hole is neither shallower nor deeper (we don't know) -- only real land
+    # (outside the lake) counts as "shallower".
+    ih = idx[::2, ::2]; land_h = land_of(water | holes)[::2, ::2]
     edges = np.concatenate([[0.0], (table[:-1] + table[1:]) / 2, [table[-1] + 0.75]])  # edges[i]..edges[i+1] = band i
     dh = np.zeros(ih.shape, np.float32)
     M = 150
@@ -184,6 +180,12 @@ def build(lake):
         t = du / (du + dd + 1e-6)
         mm = m[y0:y1, x0:x1]
         dh[y0:y1, x0:x1][mm] = (lo + (hi - lo) * t)[mm]
+    # before scaling up: cells without depth (land, holes) take the nearest known depth,
+    # or the bilinear scaling blends "0 m" into the edge pixels (the edge of an unmapped
+    # hole became ~7 m too shallow and got a dark relief rim)
+    known = ih >= 0
+    iy, ix = ndimage.distance_transform_edt(~known, return_distances=False, return_indices=True)
+    dh = dh[iy, ix]; del iy, ix
     dep = np.array(Image.fromarray(dh, 'F').resize((water.shape[1], water.shape[0]), Image.BILINEAR))
     wf = water_all.astype(np.float32)
     num = ndimage.gaussian_filter(dep * wf, 2.0); den = ndimage.gaussian_filter(wf, 2.0)

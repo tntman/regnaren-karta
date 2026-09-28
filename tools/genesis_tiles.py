@@ -45,6 +45,8 @@ def ll2px(lat, lon, z):
 def fetch(url, path):
     if os.path.exists(path):
         return True
+    if os.path.exists(path + '.none'):   # known to be missing (403 earlier) -- don't ask again
+        return False
     for attempt in range(3):
         try:
             r = urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=30)
@@ -53,8 +55,10 @@ def fetch(url, path):
             open(path, 'wb').write(data)
             return True
         except urllib.error.HTTPError as e:
-            if e.code in (403, 404):
-                return False  # no data there
+            if e.code in (403, 404):     # no data there -- remember it
+                os.makedirs(os.path.dirname(path), exist_ok=True)
+                open(path + '.none', 'w').close()
+                return False
             time.sleep(1 + attempt)
         except Exception:
             time.sleep(1 + attempt)
@@ -70,20 +74,30 @@ def main():
     out = os.path.join(ROOT, 'raw', lake, 'z%d' % z)
     print('zoom %d: %d x %d tiles = %d per layer' % (z, nx, ny, nx * ny))
     json.dump({'zoom': z, 'tile_x0': tx0, 'tile_y0': ty0, 'nx': nx, 'ny': ny}, open(os.path.join(out, 'grid.json') if os.path.isdir(out) else _mk(out, 'grid.json'), 'w'))
+    # FF_SHARD=k/n: only fetch every n-th row (starting at k), no stitching -- run several
+    # of these side by side to download faster, then once without FF_SHARD to stitch
+    # (everything is cached by then, so that run is quick)
+    shard = os.environ.get('FF_SHARD')
+    sk, sn = (int(v) for v in shard.split('/')) if shard else (0, 1)
     for L in layers:
         mode = 'RGB' if L == 'a' else 'RGBA'
-        canvas = Image.new(mode, (nx * 256, ny * 256))
+        canvas = None if shard else Image.new(mode, (nx * 256, ny * 256))
         got = 0
         for j in range(ny):
+            if j % sn != sk: continue
             for i in range(nx):
                 qk = quadkey(tx0 + i, ty0 + j, z)
                 p = os.path.join(out, L, qk + ('.jpg' if L == 'a' else '.png'))
                 if fetch(SRC[L].format(qk=qk, s=(i + j) % 4), p):
+                    got += 1
+                    if canvas is None: continue
                     try:
-                        canvas.paste(Image.open(p).convert(mode), (i * 256, j * 256)); got += 1
+                        canvas.paste(Image.open(p).convert(mode), (i * 256, j * 256))
                     except Exception as e:
                         print('  bad tile', p, e)
             print('  %s row %d/%d' % (L, j + 1, ny), end='\r')
+        if canvas is None:
+            print('  %s: shard %d/%d fetched (%d tiles)' % (L, sk, sn, got)); continue
         canvas.save(os.path.join(out, L + '.png'))
         print('  %s: %d/%d tiles -> %s.png' % (L, got, nx * ny, L))
 

@@ -27,32 +27,23 @@ sjön väljs i menyn.
 
 ## Testa
 
-    py -3 -m pip install --user playwright numpy pillow
+    py -3 -m pip install --user playwright numpy pillow scipy
     py -3 -m playwright install chromium
     powershell -ExecutionPolicy Bypass -File tests\run_all.ps1     (tests/run_all.sh på Mac/Linux)
+
+Testerna körs parallellt, 6 åt gången (`$env:TEST_JOBS` ändrar), cirka 3 minuter.
 
 Testerna kör mot `docs/` med en låtsas-Firebase och kan aldrig nå den riktiga
 databasen (se `tests/fakefb.py`).
 
-## Lägga till en sjö (från Genesis Social Map)
+## Lägga till en sjö / ändra hur kartorna ritas
 
-1. Hitta sjön på genesismaps.com/SocialMap och ta fram lat/lon-gränser för utsnittet.
-2. `py -3 tools/genesis_tiles.py <id> <zoom> <lat_min> <lat_max> <lon_min> <lon_max>`
-   för varje zoom 14 … högsta (17 om Genesis har det, annars 16; 18 går också)
-   – laddar ner djupfärger, djupkurvor, vegetation, bottenhårdhet och flygfoto till `raw/<id>/z<zoom>/`.
-3. Skriv `lakes/<id>/raw/source.json` (se Vågsfjärden: `zoom` = djupdatans zoom, `levels`).
-4. `py -3 tools/genesis_depth.py <id> sheet` – gör ett ark med Genesis djupsiffror.
-   Läs av siffrorna (liten siffra efter = tiondelar) och fyll i `depth_m` i `lakes/<id>/raw/depth_labels.json`.
-5. `py -3 tools/genesis_depth.py <id>` – räknar fram djupet i meter (kalibrerat mot siffrorna).
-5b. Lägg sjöns OpenStreetMap-id i source.json (`"osm": {"type": "relation", "id": ...}`) och kör
-   `py -3 tools/osm_water.py <id>` – sjöns riktiga strandlinje, så appen vet var det är sjö även
-   där Genesis saknar djupdata (rutter sjövägen, "Okänt djup").
-6. `py -3 tools/genesis_render.py <id>` – ritar alla kartstilar på alla zoomnivåer (med Genesis
-   egna djupkurvor för varje zoom), djupdata och `lake.json`, rakt in i `docs/lakes/<id>/`.
-   (`py -3 tools/genesis_render.py <id> grid` gör bara om djupdata + lake.json – snabbt.)
+Allt om kartorna – receptet steg för steg (genesis_tiles → genesis_depth →
+osm_water → genesis_render → build → test), hur man ser vilka zoomnivåer
+Genesis har, Genesis egenheter, färgskalor, relief och vad som testats och
+förkastats – står i **[tools/KARTOR.md](tools/KARTOR.md)**.
 
 Kartdata: C-MAP Genesis Social Map, Bing-flygfoto, sjögränser © OpenStreetMap-bidragsgivare (ODbL).
-7. Bygg och testa. Sjön dyker upp i menyn av sig själv.
 
 ## Publicera (GitHub Pages)
 
@@ -67,7 +58,7 @@ blandas aldrig. Reglerna ligger i Firebase-konsolen (se CLAUDE.md).
 
 ## Obs
 
-Båda sjöarna är byggda med Genesis-verktygen ovan och djupet är kalibrerat mot
-Genesis egna djupsiffror. Regnaren finns bara till zoom 16 i Genesis (Vågsfjärden
-till 17) och har behållit sitt gamla utsnitt, så fiskeplatser hamnar rätt.
-Genesis djupsiffror: den lilla siffran efter talet är tiondelar.
+Båda sjöarna är byggda med Genesis-verktygen och djupet är kalibrerat mot
+Genesis egna djupsiffror. Regnaren har behållit sitt gamla utsnitt, så
+fiskeplatser hamnar rätt. Genesis har zoom 12–18 för båda sjöarna; i appen
+används 14 och uppåt (se tools/KARTOR.md).

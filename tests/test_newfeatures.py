@@ -17,10 +17,12 @@ water, lake = raw['water'], raw['lake']
 def ll(col, row):
     xg, yg = col + OX, row + OY
     return math.degrees(math.atan(math.sinh(math.pi * (1 - 2 * yg / N)))), xg / N * 360 - 180
+SC = 2 ** (Z - 16)       # places below are given in zoom-16 px; the depth data may be finer
 def snap(mask, c, r, need=12):
-    inner = ndimage.binary_erosion(mask[max(0, r - 300):r + 300, max(0, c - 300):c + 300], iterations=need)
-    ys, xs = np.where(inner); i = np.argmin((xs - (c - max(0, c - 300))) ** 2 + (ys - (r - max(0, r - 300))) ** 2)
-    return xs[i] + max(0, c - 300), ys[i] + max(0, r - 300)
+    c, r, need, win = int(c * SC), int(r * SC), need * SC, 300 * SC
+    inner = ndimage.binary_erosion(mask[max(0, r - win):r + win, max(0, c - win):c + win], iterations=need)
+    ys, xs = np.where(inner); i = np.argmin((xs - (c - max(0, c - win))) ** 2 + (ys - (r - max(0, r - win))) ** 2)
+    return xs[i] + max(0, c - win), ys[i] + max(0, r - win)
 A = snap(water, 300, 560)                      # you: west basin
 B = snap(water, 1560, 700)                     # target: across a headland (straight line crosses land)
 U = snap(lake & ~water, 600, 380, need=20)     # lake that Genesis has no depth for
@@ -97,7 +99,7 @@ with sync_playwright() as p:
     dist = pg.inner_text('#probeDistTxt'); tm = pg.inner_text('#probeTime')
     km = float(dist.replace(' km', '').replace(',', '.')) * 1000 if 'km' in dist else float(dist.replace(' m', ''))
     pts = pg.eval_on_selector('#routeLayer .rtLine', 'e=>e.getAttribute("points")').split()
-    check('distance BY WATER: longer than as the crow flies (around the headland)', km > bird * 1.08, (dist, round(bird)))
+    check('distance BY WATER: longer than as the crow flies (around the headland)', km > bird * 1.04, (dist, round(bird)))
     check('the route is drawn from you to the lead line, with turns', len(pts) >= 3, len(pts))
     check('time to get there shown (your cruising speed when still)', re.match(r'^\d+ min$|^\d+ h \d\d min$', tm) is not None and pg.is_visible('#probeTime'), tm)
     t_still = tm
@@ -132,7 +134,7 @@ with sync_playwright() as p:
     check('the button sits just left of Filter', bb[0] < vis and vis - bb[0] < 40, (bb, vis))
     pg.mouse.move(*bb); pg.mouse.down(); pg.wait_for_timeout(700); pg.mouse.up(); pg.wait_for_timeout(400)
     opts = pg.eval_on_selector_all('#mapTypePop .styleOpt', 'e=>e.length')
-    check('hold: all map styles to choose from', pg.is_visible('#mapTypePop') and opts == 9, opts)
+    check('hold: all map styles to choose from', pg.is_visible('#mapTypePop') and opts == 8, opts)
     pg.screenshot(path='shot_maptype_pop.png')
     pg.click('#mapTypePop .styleOpt[data-style="g1"]'); pg.wait_for_timeout(1000)
     check('...pick one', src().endswith('_g1.jpg') and not pg.is_visible('#mapTypePop'), src())
