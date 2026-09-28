@@ -72,8 +72,8 @@ with sync_playwright() as p:
     csv = open(dl.value.path(), encoding='utf-8-sig').read()
     print('   csv:\n     ' + csv.strip().replace('\n', '\n     '))
     check('CSV export: header + 4 rows', csv.strip().count('\n') == 4 and csv.startswith('Namn;Typ;Latitud'))
-    # edit-all switch -> can delete someone else's spot
-    pg.click('#adminEditAllToggle'); pg.wait_for_timeout(100)
+    # unlocked admin: can always change / delete someone else's spot (no switch any more)
+    check('no "Redigera allas fiskeplatser" switch', pg.query_selector('#adminEditAllToggle') is None)
     pg.click('#adminBackBtn'); pg.click('#settingsBackBtn'); pg.wait_for_timeout(300)
     pg.click('#menuBtn'); pg.click('#menuItemLog'); pg.wait_for_timeout(200)
     pg.click('.logItem:has-text("Kalles grund")'); pg.wait_for_timeout(700)
@@ -97,7 +97,7 @@ with sync_playwright() as p:
     check('after "Lås" the PIN is asked again', pg.eval_on_selector('#pinModal','e=>e.classList.contains("show")'))
     pg.click('#pinCancel'); pg.wait_for_timeout(200)
 
-    # logout -> admin gone, edit-all off for the next person
+    # logout -> admin gone for the next person
     pg.click('#logoutBtn'); pg.wait_for_timeout(200)
     login(pg, 'Calle'); pg.wait_for_timeout(600)
     pg.click('#menuBtn'); pg.click('#menuItemSettings'); pg.wait_for_timeout(200)

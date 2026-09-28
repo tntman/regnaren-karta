@@ -1,4 +1,4 @@
-# "Blixtar" (Filter, off by default): lightning from FMI (mocked here -- the real
+# "Blixtar" (Filter, on by default): lightning from FMI (mocked here -- the real
 # service is blocked in every test by fakefb). Warning under the weather chip
 # (red < 10 km, orange < 30 km), radar, ⚡ on the map, a marker at the screen edge
 # towards the nearest strike when it's off screen; nothing at all when it's quiet.
@@ -44,17 +44,19 @@ def page_with(p, strikes):
     pg.reload(); pg.wait_for_timeout(600); fakefb.login(pg, 'Filip'); pg.wait_for_timeout(1500)
     return b, ctx, pg, errs, hits
 
-def lt_on(pg):
+def lt_on(pg):   # (flips the switch)
     pg.click('#visMoreBtn'); pg.wait_for_timeout(200)
     pg.click('label:has(#toggleLightning) .toggle'); pg.click('#visMoreBtn'); pg.wait_for_timeout(1200)
 
 with sync_playwright() as p:
     b, ctx, pg, errs, hits = page_with(p, STORM)
     pg.click('#visMoreBtn'); pg.wait_for_timeout(200)
-    check('Filter has "Blixtar", off by default', pg.is_visible('label:has(#toggleLightning)') and not pg.is_checked('#toggleLightning'))
+    check('Filter has "Blixtar", on by default', pg.is_visible('label:has(#toggleLightning)') and pg.is_checked('#toggleLightning'))
     pg.click('#visMoreBtn'); pg.wait_for_timeout(300)
-    check('off: no warning, no radar, FMI never asked', not pg.is_visible('#ltPill') and not pg.is_visible('#ltRadar') and not hits, hits)
-    lt_on(pg)
+    lt_on(pg)          # (off)
+    check('turned off: no warning, no radar', not pg.is_visible('#ltPill') and not pg.is_visible('#ltRadar'))
+    del hits[:]
+    lt_on(pg)          # (on again)
     s = pg.evaluate('window.__ffLightning()')
     check('on: FMI asked once, for the area round the lake and the last half hour',
           len(hits) == 1 and 'lightning' in hits[0] and 'bbox=15.028,58.490,16.528,59.290' in hits[0] and 'starttime=' in hits[0], hits)
@@ -89,14 +91,14 @@ with sync_playwright() as p:
     b.close()
     # only far away: orange
     b, ctx, pg, errs, hits = page_with(p, [(15, 5, 4)])
-    lt_on(pg)
+    pg.wait_for_timeout(300)   # (on by default)
     s = pg.evaluate('window.__ffLightning()'); txt = pg.inner_text('#ltPill')
     check('16 km away: orange warning "Åska 16 km O" · "senaste 4 min sedan"', pg.is_visible('#ltPill') and not s['red'] and 'Åska 16 km O' in txt and '4 min sedan' in txt, txt)
     pg.screenshot(path='shot_lightning_far.png')
     b.close()
     # quiet: nothing at all
     b, ctx, pg, errs, hits = page_with(p, [])
-    lt_on(pg)
+    pg.wait_for_timeout(300)   # (on by default)
     s = pg.evaluate('window.__ffLightning()')
     check('no strikes: no warning, no radar, nothing on the map', len(hits) == 1 and not pg.is_visible('#ltPill') and not pg.is_visible('#ltRadar') and s['drawn'] == 0 and s['edge'] is None, s)
     check('no page errors', not errs, errs)

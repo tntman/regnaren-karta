@@ -21,6 +21,8 @@ All text i appen är på svenska. Svara Filip på svenska, kort och tydligt.
   går förbi blockeringen – opt-in med `new_page(..., sw=True)`) och låser `window.firebase`
   så att riktiga SDK:t inte kan ersätta låtsas-Firebase. Utan det skrev testerna i skarpa
   databasen (hände 2026-09-28). Ta aldrig bort de skydden.
+- Admin (Filip, upplåst med koden på enheten) kan alltid ändra och ta bort allas fiskeplatser
+  (`adminCanEditAll()` = `isAdminUnlocked()`; det fanns förr en av/på-knapp, borttagen).
 - Admin-koden står aldrig i testerna: `fakefb.TEST_PIN` godtas bara i
   testwebbläsaren. Ny admin-kod = nytt `ADMIN_PIN_HASH` = sha256("ffmap-admin:" + kod).
 - Tester: `tests/run_all.ps1` / `run_all.sh` (Playwright + `tests/fakefb.py` som låtsas vara Firebase).
@@ -79,7 +81,7 @@ All text i appen är på svenska. Svara Filip på svenska, kort och tydligt.
   "5 cm-vågor" var för generöst), 30–400 m; < 1,5 m/s = hela sjön lä. Lä: ljus ton + tunn kant; öppet vatten: "kometer" (tunt huvud,
   tjockare svans) som driver med vinden, fler/längre/snabbare vid mer vind. ~30 fps bara
   när påslaget och synligt. `window.__ffWind()` för testerna.
-- **Blixtar** (Filter, av som standard, `ffmap_show_lightning_v1`): blixtnedslag i realtid från
+- **Blixtar** (Filter, PÅ som standard – Filips val, `ffmap_show_lightning_v1` = '0' när avslaget): blixtnedslag i realtid från
   FMI (Finlands meteorologiska institut, öppen data, täcker Sverige, ingen nyckel, CC BY 4.0,
   några min fördröjning), WFS `fmi::observations::lightning::simple`, ~40 km runt sjön, senaste
   30 min, hämtas var 2:a min när påslaget och synligt (inte via Firebase). Varning `#ltPill` under

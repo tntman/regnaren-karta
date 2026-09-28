@@ -1328,16 +1328,7 @@
       </div>
       <div class="adminCard">
         <div class="settingsRowTitle">Fiskeplatser</div>
-        <label class="adminToggleRow" for="adminEditAllToggle" style="display:flex;align-items:center;gap:12px;margin-top:10px;">
-          <div style="flex:1 1 auto;">
-            <div style="font-size:13.5px;color:var(--offwhite);">Redigera allas fiskeplatser</div>
-            <div class="adminNote" style="margin-top:2px;">När den är på kan du byta namn på och ta bort vem som helsts fiskeplatser på kartan.</div>
-          </div>
-          <span class="toggle">
-            <input type="checkbox" id="adminEditAllToggle">
-            <span class="toggleTrack"><span class="toggleThumb"></span></span>
-          </span>
-        </label>
+        <div class="adminNote" style="margin-top:6px;">Som admin kan du ändra och ta bort allas fiskeplatser – tryck på platsen på kartan eller i Loggen.</div>
         <div class="btnRowWrap">
           <button id="adminExportGpx" class="btnAdmin" type="button">Exportera GPX</button>
           <button id="adminExportCsv" class="btnAdmin" type="button">Exportera CSV</button>
@@ -4050,7 +4041,6 @@
   var ADMIN_NAME_SLUG = 'filip';
   var ADMIN_PIN_HASH = '08b9a012b423837c8dfa73b63ee55c2a3f2328e1657db955e7a4ca1ceee0eaf7';
   var ADMIN_UNLOCK_KEY = 'ffmap_admin_unlock_v1';
-  var ADMIN_EDITALL_KEY = 'ffmap_admin_editall_v1';
 
   // isAdminName() also runs while the page is still starting (from
   // showUserName), before the constants above are set -- so it compares
@@ -4060,10 +4050,8 @@
     if (!isAdminName()) return false;
     try { return localStorage.getItem(ADMIN_UNLOCK_KEY) === ADMIN_PIN_HASH; } catch(e){ return false; }
   }
-  function adminCanEditAll(){
-    if (!isAdminUnlocked()) return false;
-    try { return localStorage.getItem(ADMIN_EDITALL_KEY) === '1'; } catch(e){ return false; }
-  }
+  // the admin (unlocked on this device) can always change and delete everyone's spots
+  function adminCanEditAll(){ return isAdminUnlocked(); }
   // (looks its elements up by id every time: it's first called while the
   // page is still starting, before the rest of this section has run)
   function updateAdminVisibility(){
@@ -4085,7 +4073,6 @@
   var adminStatsEl = document.getElementById('adminStats');
   var adminUsersEl = document.getElementById('adminUsers');
   var adminUsageEl = document.getElementById('adminUsage');
-  var adminEditAllToggle = document.getElementById('adminEditAllToggle');
   var pinBackdrop = document.getElementById('pinBackdrop');
   var pinModal = document.getElementById('pinModal');
   var pinInput = document.getElementById('pinInput');
@@ -4146,7 +4133,6 @@
 
   function openAdminView(){
     if (!isAdminUnlocked()) return;
-    adminEditAllToggle.checked = adminCanEditAll();
     usageReports = null; usageFetchError = null;
     posIntervalSaveMsg = ''; renderPosIntervalAdmin();
     renderAdmin();
@@ -4159,9 +4145,6 @@
   function adminBodyScrollTop(){ var b = document.getElementById('adminBody'); if (b) b.scrollTop = 0; }
 
   document.getElementById('adminUsageRefresh').addEventListener('click', fetchUsageTotals);
-  adminEditAllToggle.addEventListener('change', function(){
-    try { localStorage.setItem(ADMIN_EDITALL_KEY, adminEditAllToggle.checked ? '1' : '0'); } catch(e){}
-  });
 
   function statTile(value, label){
     var t = document.createElement('div'); t.className = 'statTile';
@@ -5674,7 +5657,7 @@
   applyWind();
   document.addEventListener('visibilitychange', function(){ if (document.visibilityState === 'visible') fetchWeather(false); });
 
-  /* ---- "Blixtar" (Filter, off by default) ----
+  /* ---- "Blixtar" (Filter, on by default) ----
      Lightning strikes in real time from FMI (the Finnish Meteorological Institute's
      open data: it covers Sweden too, no key, CC BY 4.0, a few minutes' delay).
      Every 2 min while it's on and the app is showing: the last 30 min, ~40 km round
@@ -5685,8 +5668,8 @@
      arrow at the screen edge towards the nearest one when it's off screen.
      Distances from you when you're at the lake, otherwise from the lake's middle. */
   var SHOW_LT_KEY = 'ffmap_show_lightning_v1';
-  var ltOn = false;
-  try { ltOn = localStorage.getItem(SHOW_LT_KEY) === '1'; } catch(e){}
+  var ltOn = true;
+  try { ltOn = localStorage.getItem(SHOW_LT_KEY) !== '0'; } catch(e){ ltOn = true; }
   var LT_WIN_MIN = 30, LT_RANGE_KM = 30, LT_RED_KM = 10, LT_POLL_MS = 120000;
   var ltCanvas = document.getElementById('ltLayer'), lctx = ltCanvas.getContext('2d');
   var ltPill = document.getElementById('ltPill'), ltRadar = document.getElementById('ltRadar'), ltRadarCv = document.getElementById('ltRadarCv');

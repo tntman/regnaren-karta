@@ -49,7 +49,7 @@ with sync_playwright() as p:
     pg.click('#wpSizeSeg button[data-size="1"]')
     pg.click('#demoModeToggle'); pg.wait_for_timeout(2500)
     pg.click('#adminOpenBtn'); pg.wait_for_timeout(200); pg.fill('#pinInput', fakefb.TEST_PIN); pg.press('#pinInput', 'Enter'); pg.wait_for_timeout(300)
-    pg.click('#adminEditAllToggle'); pg.click('#adminBackBtn'); pg.wait_for_timeout(200)
+    pg.click('#adminBackBtn'); pg.wait_for_timeout(200)
     pg.fill('#cruiseInput', '3,5')   # typed, NOT committed (still focused)
     pg.evaluate("document.getElementById('settingsBody').scrollTop = 180")
     before = pg.evaluate("""() => ({
@@ -92,7 +92,7 @@ with sync_playwright() as p:
     check('demo boat continues from where it was (< 60 m)', dlat < 60, '%.0f m' % dlat)
     wa = pg.evaluate('window.__posWrites')
     check('no extra position write because of the rotation (keeps the 8 s rhythm)', last_w and all(x['t'] - last_w >= 7900 for x in wa), [x['t'] - last_w for x in wa])
-    check('admin still unlocked + edit-all kept', pg.evaluate("localStorage.getItem('ffmap_admin_editall_v1')") == '1')
+    check('admin still unlocked', pg.evaluate("localStorage.getItem('ffmap_admin_unlock_v1')") is not None)
     pg.screenshot(path='shot_rot_settings_land.png')
 
     # ---- rotate #2 with the admin page open ----
