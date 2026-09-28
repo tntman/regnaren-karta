@@ -6,9 +6,10 @@ src/app.html      the app (CSS + HTML + JS) -- edit this
 src/head.html     the <head> (title, icons, manifest, Firebase SDK)
 src/sw.js         service worker (offline start)
 lakes/<id>/       one folder per lake: lake.json (name, geo-reference, depth
-                  scale, map styles ...), map pictures, depth grid, thumbnails,
-                  detail tiles. lake.json is embedded in the page; the rest is
-                  copied to docs/lakes/<id>/ (except raw/ = source data only).
+                  scale, map styles, zoom levels ...) -- embedded in the page --
+                  and raw/ (source settings + data for tools/genesis_*.py).
+                  The pictures are made by tools/genesis_render.py straight
+                  into docs/lakes/<id>/.
 assets/           icons + manifest (copied as is)
 """
 import os, shutil, json
@@ -38,12 +39,13 @@ for f in os.listdir(os.path.join(ROOT, 'assets')):
     if f.endswith('.svg'): continue
     shutil.copy(os.path.join(ROOT, 'assets', f), out)
 
-# ---- lake folders -> docs/lakes/<id>/ (a fresh copy, so removed files go too)
-shutil.rmtree(os.path.join(out, 'lakes'), ignore_errors=True)
+# ---- the lakes' pictures (maps, detail tiles, thumbnails, depth grid) are
+# written straight into docs/lakes/<id>/ by tools/genesis_render.py -- nothing
+# to copy here; just check they're there
 for lk in lakes:
-    src = os.path.join(ROOT, 'lakes', lk['id'])
-    shutil.copytree(src, os.path.join(out, 'lakes', lk['id']),
-                    ignore=shutil.ignore_patterns('raw', 'lake.json', '*.npy', '*.npz'))
+    need = os.path.join(out, 'lakes', lk['id'], lk['mapFile'].replace('{style}', lk['styles'][0]['id']))
+    if not os.path.exists(need):
+        print('WARNING: %s missing -- run tools/genesis_render.py %s' % (need, lk['id']))
 # old single-lake files from before lakes/ existed
 for f in os.listdir(out):
     if f.startswith('map_v1_') and f.endswith('.jpg'):

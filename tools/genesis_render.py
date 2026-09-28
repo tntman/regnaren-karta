@@ -1,19 +1,25 @@
-"""Render a Genesis-based lake for the app: map styles, detail tiles,
-thumbnails, depth grid and lake.json.
+"""Render a Genesis-based lake for the app: one picture per zoom level and map
+style (Genesis' own contour lines + depth numbers for that zoom level, our
+colours and relief from the calibrated depth), thumbnails, depth grid, lake.json.
 
     py -3 tools/genesis_render.py <lake_id>
 
 Needs (see tools/genesis_tiles.py and tools/genesis_depth.py):
-    lakes/<lake>/raw/source.json      name, zoom, bbox (lat_min, lat_max, lon_min, lon_max), sizes
-    raw/<lake>/z<zoom>/{a,b,t,v,c}.png, depth_m.npy, water.npy, grid.json
-Writes lakes/<lake>/:
-    map_v1_<style>.jpg                the whole map, downscaled (base_div) -- shown first
-    tiles_v1/<style>/<c>_<r>.jpg      full-resolution pieces (tile px), only where there is water
-    thumbs/<style>.jpg                200x120 previews for the style picker
-    depth_v1.txt                      depth grid (see app: depthAtImgPx)
-    lake.json                         everything the app needs to know about the lake
+    lakes/<lake>/raw/source.json   name, zoom (= the depth data's zoom), levels, bbox or origin+size ...
+    raw/<lake>/z<zoom>/depth_m.npy, water.npy   (genesis_depth.py)
+    raw/<lake>/z<level>/{a,b,t,v,c}.png         for every level (genesis_tiles.py)
+Writes
+    docs/lakes/<lake>/map_v<V>_<style>.jpg              the whole lake at the lowest level (zoom 14)
+    docs/lakes/<lake>/tiles_v<V>/z<z>/<style>/<c>_<r>.jpg  higher levels in 512 px pieces (only near water)
+    docs/lakes/<lake>/thumbs_v<V>/<style>.jpg, depth_v<V>.txt
+    lakes/<lake>/lake.json, lakes/<lake>/raw/depth_raw.npz (full-resolution depth for the tests)
+(The pictures only live in docs/ -- they're built output, and a copy in lakes/
+as well would double the repository.)
+
+Depth lines are never drawn by us: every level shows exactly Genesis' contour
+layer for that zoom, so the number of lines grows as you zoom in, like on Genesis.
 """
-import sys, os, json, math, shutil
+import sys, os, json, math, shutil, base64
 import numpy as np
 from PIL import Image
 from scipy import ndimage
@@ -23,170 +29,193 @@ import matplotlib.pyplot as plt
 from matplotlib import colors as mcolors
 Image.MAX_IMAGE_PIXELS = None
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+TL = 512
 
 def hx(s): return np.array([int(s[i:i + 2], 16) for i in (1, 3, 5)], np.float32)
+
+def close_seams(B):
+    """Genesis leaves 1-2 px transparent seams between its data blocks: fill them."""
+    water = B[..., 3] > 200
+    for axis in (0, 1):
+        dry = ~water
+        s1 = dry & np.roll(water, 1, axis) & np.roll(water, -1, axis)
+        s2a = dry & np.roll(dry, -1, axis) & np.roll(water, 1, axis) & np.roll(water, -2, axis)
+        for s in (s1, s2a, np.roll(s2a, 1, axis)):
+            B[s] = np.roll(B, 1, axis)[s]; water |= s
+    return B
+
+def hill(e, zf, az, alt):
+    gx = ndimage.sobel(e, 1) / 8.0; gy = ndimage.sobel(e, 0) / 8.0
+    nx, ny, nz = -gx * zf, -gy * zf, np.ones_like(e); n = np.sqrt(nx * nx + ny * ny + nz * nz)
+    a, b = np.deg2rad(az), np.deg2rad(alt)
+    return np.clip((nx * np.cos(b) * np.sin(a) - ny * np.cos(b) * np.cos(a) + nz * np.sin(b)) / n, 0, 1)
+
+def relief(dep0, water, dz):
+    """Brightness factor (1 = unchanged): light from the north + softer north-west fill,
+    steep slopes darker. The same look at zoom 16 and 17 (sizes in metres)."""
+    k = 2 ** (dz - 16)
+    e = -dep0.copy(); e[water] = ndimage.gaussian_filter(e, 3.0 * k)[water]
+    dif = 0.7 * hill(e, 40 * k, 350, 38) + 0.3 * hill(e, 40 * k, 300, 50)
+    lo, hi = np.percentile(dif[water], [2, 98]); nm = np.clip((dif - lo) / (hi - lo + 1e-6), 0, 1)
+    sh = 1 + (nm - 0.5) * 2 * 0.75
+    gy, gx = np.gradient(ndimage.gaussian_filter(-dep0, 2.0 * k)); slope = np.hypot(gx, gy)
+    sh *= 1 - 0.35 * np.clip(slope / np.percentile(slope[water], 97), 0, 1)
+    return np.clip(sh, 0.35, 1.6).astype(np.float32)
+
+def resize(arr, w, h):
+    """float array (H, W[, C]) -> (h, w[, C]); area average when shrinking, bilinear when growing"""
+    shrink = w < arr.shape[1]
+    f = Image.BOX if shrink else Image.BILINEAR
+    if arr.ndim == 2: return np.array(Image.fromarray(arr.astype(np.float32), 'F').resize((w, h), f))
+    return np.dstack([np.array(Image.fromarray(arr[..., i].astype(np.float32), 'F').resize((w, h), f)) for i in range(arr.shape[2])])
 
 def main():
     lake = sys.argv[1]
     L = os.path.join(ROOT, 'lakes', lake)
+    OUT = os.path.join(ROOT, 'docs', 'lakes', lake)
     src = json.load(open(os.path.join(L, 'raw', 'source.json'), encoding='utf-8'))
-    z = src['zoom']; D = os.path.join(ROOT, 'raw', lake, 'z%d' % z)
-    g = json.load(open(os.path.join(D, 'grid.json')))
+    DZ = src['zoom']                                   # the depth data's zoom
+    levels = sorted(src['levels']); base, top = levels[0], levels[-1]
+    top_styles = src.get('top_styles')                 # styles that get levels above DZ (they're big)
+    V = src.get('version', 1)                          # new version = new file names (phones re-download)
 
-    # ---- crop = the bbox, in global pixels at this zoom
-    def gpx(lat, lon):
+    # ---- the crop at DZ, aligned so it's whole pixels at every level
+    def gpx(lat, lon, z):
         n = 256 * 2 ** z
         return ((lon + 180) / 360 * n,
                 (1 - math.log(math.tan(math.radians(lat)) + 1 / math.cos(math.radians(lat))) / math.pi) / 2 * n)
     la0, la1, lo0, lo1 = src['bbox']
-    if 'origin' in src:        # an exact crop (e.g. to keep an existing lake's geo-reference)
-        (gx0, gy0), (W, H) = src['origin'], src['size']
+    if 'origin' in src: (x0, y0), (W, H) = src['origin'], src['size']
     else:
-        gx0, gy0 = gpx(la1, lo0); gx1, gy1 = gpx(la0, lo1)
-        gx0, gy0 = int(round(gx0)), int(round(gy0))
-        W, H = int(round(gx1)) - gx0, int(round(gy1)) - gy0
-    V = src.get('version', 1)  # file version: a new version = new file names, so phones don't keep old copies
-    cx0, cy0 = gx0 - g['tile_x0'] * 256, gy0 - g['tile_y0'] * 256    # inside the canvases
-    TL = src['tile']; cols, rows = -(-W // TL), -(-H // TL)
-    PW, PH = cols * TL, rows * TL                                       # padded for whole tiles
-    print('crop %d x %d px at z%d, %d x %d detail tiles' % (W, H, z, cols, rows))
+        x0, y0 = gpx(la1, lo0, DZ); x1, y1 = gpx(la0, lo1, DZ); W, H = x1 - x0, y1 - y0
+    m = 2 ** (DZ - base)
+    gx0, gy0 = int(math.floor(x0 / m)) * m, int(math.floor(y0 / m)) * m
+    W = int(math.ceil((x0 + W - gx0) / m)) * m; H = int(math.ceil((y0 + H - gy0) / m)) * m
+    print('crop %d x %d px at z%d (depth data); levels %s' % (W, H, DZ, levels))
 
-    def crop(arr, fill=0):
-        out = np.full((PH, PW) + arr.shape[2:], fill, arr.dtype)
-        y1, x1 = min(arr.shape[0], cy0 + PH), min(arr.shape[1], cx0 + PW)
-        out[:y1 - cy0, :x1 - cx0] = arr[cy0:y1, cx0:x1]
+    D = os.path.join(ROOT, 'raw', lake, 'z%d' % DZ); g = json.load(open(os.path.join(D, 'grid.json')))
+    cx0, cy0 = gx0 - g['tile_x0'] * 256, gy0 - g['tile_y0'] * 256
+    def cropdz(a, fill):
+        out = np.full((H, W) + a.shape[2:], fill, a.dtype)
+        y1, x1 = min(a.shape[0], cy0 + H), min(a.shape[1], cx0 + W)
+        out[:y1 - cy0, :x1 - cx0] = a[cy0:y1, cx0:x1]
         return out
-    def layer(name, mode='RGBA'):
-        if name == 'b' and os.path.exists(os.path.join(D, 'b_fixed.png')): name = 'b_fixed'  # seams closed
-        return crop(np.array(Image.open(os.path.join(D, name + '.png')).convert(mode)))
-    aer = layer('a', 'RGB').astype(np.float32)
-    dep = crop(np.load(os.path.join(D, 'depth_m.npy')), np.nan)
-    water = crop(np.load(os.path.join(D, 'water.npy')), False)
+    dep = cropdz(np.load(os.path.join(D, 'depth_m.npy')), np.nan)
+    water = cropdz(np.load(os.path.join(D, 'water.npy')), False)
     dep0 = np.where(water, dep, 0).astype(np.float32)
-    maxd = float(np.nanmax(dep))
-    sc = 2 if maxd <= 20 else 5
-    DMAX = sc * math.ceil(maxd / sc)                   # colour scale 0..DMAX (Vågsfjärden 40, Regnaren 12)
-    print('max depth %.1f m -> scale 0-%d m' % (maxd, DMAX))
+    maxd = float(np.nanmax(dep)); sc = 2 if maxd <= 20 else 5
+    DMAX = sc * math.ceil(maxd / sc)
+    print('max depth %.1f m -> colour scale 0-%d m' % (maxd, DMAX))
+    sh = relief(dep0, water, DZ)
+    mild = 1 + (sh - 1) * 0.6
 
-    # soft shoreline + shading
-    alpha = ndimage.gaussian_filter(water.astype(np.float32), 1.0)
-    dsm = ndimage.gaussian_filter(dep0, 2.0)
-    def hillshade(zf, az=315, alt=40, sig=6):
-        zz = ndimage.gaussian_filter(dep0, sig)
-        gx = ndimage.sobel(zz, 1) / 8.0; gy = ndimage.sobel(zz, 0) / 8.0
-        nx, ny, nz = gx * zf, gy * zf, np.ones_like(zz)
-        n = np.sqrt(nx * nx + ny * ny + nz * nz); a, b = np.deg2rad(az), np.deg2rad(alt)
-        return np.clip((nx * np.cos(b) * np.sin(a) - ny * np.cos(b) * np.cos(a) + nz * np.sin(b)) / n, 0, 1)
-    hs = hillshade(1.6)
-    # depth contours, anti-aliased: each pixel's distance (px) to the nearest
-    # level line = depth difference / slope; the line fades out over its edge,
-    # so it stays smooth however far you zoom in
-    gy, gx = np.gradient(dsm); slope = np.hypot(gx, gy) + 1e-4
-    def dist(step):
-        f = np.mod(dsm, step); return np.minimum(f, step - f) / slope
-    def line_alpha(d, width, min_depth):
-        a = np.clip(width / 2 + 0.5 - d, 0, 1)
-        return (a * (water & (dsm > min_depth))).astype(np.float32)
-    # lines: every metre down to 10 m, then every 2 m; strong every 5 m
-    minor = line_alpha(np.where(dsm <= 10.5, dist(1.0), dist(2.0)), 1.6, 0.5)
-    major = line_alpha(dist(5.0), 2.6, 2.5)
-    del gx, gy
-    shore = (water & ~ndimage.binary_erosion(water, iterations=4)).astype(np.float32)
-    def mix(base, a, color, k):
-        a = (a * k)[..., None]
-        base *= (1 - a); base += np.asarray(color, np.float32) * a
-    def ramp(cmap):
-        return cmap(np.clip(dep0 / DMAX, 0, 1))[..., :3].astype(np.float32) * 255
+    # ---- the water colour of every style, at DZ (uint8 to save memory); None = no own colour
+    def ramp(cmap): return cmap(np.clip(dep0 / DMAX, 0, 1))[..., :3].astype(np.float32) * 255
+    def u8(a): return np.clip(a, 0, 255).astype(np.uint8)
     def legend_css(cmap, n=7):
-        return 'linear-gradient(to right,' + ','.join(
-            '%s %d%%' % (mcolors.to_hex(cmap(i / (n - 1))), round(100 * i / (n - 1))) for i in range(n)) + ')'
-    def finish(w):
-        return aer * (1 - alpha[..., None]) + np.clip(w, 0, 255) * alpha[..., None]
-    def over(base, name):   # a Genesis layer (RGBA) laid over an image
-        lay = layer(name).astype(np.float32); a = lay[..., 3:4] / 255
-        return base * (1 - a) + lay[..., :3] * a
-
-    styles = []
-    out = {}
-    # s1: depth colours with relief (the same colours as Regnaren's first style)
+        return 'linear-gradient(to right,' + ','.join('%s %d%%' % (mcolors.to_hex(cmap(i / (n - 1))), round(100 * i / (n - 1))) for i in range(n)) + ')'
     c1 = mcolors.LinearSegmentedColormap.from_list('c1', [(0.0, '#d62728'), (0.18, '#ff7f0e'), (0.36, '#ffdd00'), (0.55, '#2ca02c'), (0.72, '#17becf'), (0.87, '#1f4fd6'), (1.0, '#0a1a5c')])
-    w = ramp(c1) * (0.62 + 0.55 * hs[..., None]); mix(w, minor, (0, 0, 0), 0.28); mix(w, major, (0, 0, 0), 0.5); mix(w, shore, (20, 20, 20), 0.6)
-    out['s1'] = finish(w); styles.append(dict(id='s1', name='Djupfärger', desc='Flygfoto + djupfärger med relief', legend=legend_css(c1)))
-    # s2: simplified
     c2 = plt.get_cmap('turbo_r')
-    w = ramp(c2); mix(w, minor, (0, 0, 0), 0.4); mix(w, major, (0, 0, 0), 0.65); mix(w, shore, (20, 20, 20), 0.85)
-    out['s2'] = finish(w); styles.append(dict(id='s2', name='Förenklad', desc='Klara djupfärger och tydliga djupkurvor', legend=legend_css(c2, 9)))
-    # s3: sea chart, blue bands (at 40 m: 2, 5, 10, 15 ... 35 m -- scaled to the lake)
-    bands = ['#dff3fb', '#c4e7f6', '#a9dbf2', '#8fcdec', '#74bde4', '#5aa9d8', '#4796cb', '#3a84bd', '#2f72ae']
-    w = np.zeros(dep0.shape + (3,), np.float32); w[:] = hx(bands[0])
-    edges = [round(DMAX * f, 1) for f in (0, 0.05, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875)]
-    for lo, col in zip(edges[1:], bands[1:]): w[dsm >= lo] = hx(col)
-    mix(w, minor, hx('#3a78a8'), 0.45); mix(w, major, hx('#1f5a8a'), 0.7); mix(w, shore, hx('#5b4b2a'), 0.85)
-    out['s3'] = finish(w)
-    stops = ','.join('%s %d%%' % (c, round(100 * e / DMAX)) for c, e in zip(bands, edges))
-    styles.append(dict(id='s3', name='Sjökort', desc='Blå djupband som en papperskarta', legend='linear-gradient(to right,' + stops + ')'))
-    # s4: night
     c4 = mcolors.LinearSegmentedColormap.from_list('n', ['#24475a', '#153a55', '#0c2749', '#061532'])
-    w = ramp(c4) * (0.75 + 0.4 * hs[..., None]); mix(w, minor, hx('#39c5d6'), 0.4); mix(w, major, hx('#8fe9f4'), 0.6); mix(w, shore, hx('#8fd3dc'), 0.8)
-    out['s4'] = finish(w); styles.append(dict(id='s4', name='Natt', desc='Mörkt vatten med ljusa djupkurvor', legend=legend_css(c4, 4)))
-    # s5: aerial + lines
-    w = aer * np.array([0.9, 0.97, 1.05], np.float32); mix(w, minor, (255, 255, 255), 0.4); mix(w, major, (255, 255, 255), 0.75); mix(w, shore, (255, 236, 160), 0.85)
-    out['s5'] = finish(w); styles.append(dict(id='s5', name='Flygfoto + linjer', desc='Naturlig bild med vita djupkurvor', legend=None))
-    # s6: blue relief
     c6 = mcolors.LinearSegmentedColormap.from_list('b', ['#cfeefa', '#6fc3e8', '#2a86c9', '#12509a', '#0a2c63'])
-    w = ramp(c6) * (0.55 + 0.6 * hs[..., None]); mix(w, major, (10, 30, 60), 0.3); mix(w, shore, (245, 250, 252), 0.7)
-    out['s6'] = finish(w); styles.append(dict(id='s6', name='Blå relief', desc='Blå toner med skuggad bottenform', legend=legend_css(c6, 5)))
-    # g1: the original C-MAP Genesis look, with its depth numbers
-    base = over(over(aer.copy(), 'b'), 't')
-    out['g1'] = base; styles.append(dict(id='g1', name='C-MAP original', desc='Som på Genesis-kartan – med djupsiffror', legend=None, note='Siffror = djup i m (liten siffra = tiondelar)'))
-    # v1: vegetation over a calm blue depth picture
-    w = ramp(c6) * (0.7 + 0.35 * hs[..., None]); mix(w, major, (10, 30, 60), 0.35); mix(w, shore, (245, 250, 252), 0.6)
-    w = finish(w)
-    veg = layer('v').astype(np.float32); va = (veg[..., 3:4] / 255) * 0.72 * alpha[..., None]   # (only on our lake)
-    w = w * (1 - va) + np.array([70, 220, 60], np.float32) * va
-    out['v1'] = w; styles.append(dict(id='v1', name='Vegetation', desc='Grönt där ekolodet sett växtlighet', legend='linear-gradient(to right,#6fc3e8 0%,#6fc3e8 50%,#46dc3c 50%,#46dc3c 100%)', ticks=['Ingen', '', 'Växtlighet']))
-    # c1: bottom hardness (only where boats have logged sonar)
-    w = ramp(c6) * 0.55 + 60; mix(w, major, (10, 30, 60), 0.35); mix(w, shore, (245, 250, 252), 0.6)
-    w = finish(w)
-    hard = layer('c').astype(np.float32); ha = hard[..., 3:4] / 255 * 0.9 * alpha[..., None]
-    w = w * (1 - ha) + hard[..., :3] * ha
-    out['c1'] = w; styles.append(dict(id='c1', name='Bottenhårdhet', desc='Mjuk (ljus) till hård (röd) botten, där det finns mätt', legend='linear-gradient(to right,#ffffcc 0%,#fec25d 33%,#fc8643 66%,#fa4a29 100%)', ticks=['Mjuk', '', 'Hård']))
+    bands = ['#dff3fb', '#c4e7f6', '#a9dbf2', '#8fcdec', '#74bde4', '#5aa9d8', '#4796cb', '#3a84bd', '#2f72ae']
+    edges = [round(DMAX * f, 1) for f in (0, 0.05, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875)]
+    s3 = np.zeros(dep0.shape + (3,), np.float32); s3[:] = hx(bands[0])
+    for lo, col in zip(edges[1:], bands[1:]): s3[dep0 >= lo] = hx(col)
+    # (id, name, desc, legend, extra, water colour at DZ, how Genesis' lines are drawn)
+    STY = [
+        ('s1', 'Djupfärger', 'Flygfoto + djupfärger med relief', legend_css(c1), {}, u8(ramp(c1) * sh[..., None]), 'black'),
+        ('s2', 'Förenklad', 'Klara djupfärger, utan skuggning', legend_css(c2, 9), {}, u8(ramp(c2)), 'black'),
+        ('s3', 'Sjökort', 'Blå djupband som en papperskarta', 'linear-gradient(to right,' + ','.join('%s %d%%' % (c, round(100 * e / DMAX)) for c, e in zip(bands, edges)) + ')', {}, u8(s3), 'black'),
+        ('s4', 'Natt', 'Mörkt vatten med ljusa djupkurvor', legend_css(c4, 4), {}, u8(ramp(c4) * mild[..., None]), (143, 233, 244)),
+        ('s5', 'Flygfoto + linjer', 'Naturlig bild med vita djupkurvor', None, {}, None, (255, 255, 255)),
+        ('s6', 'Blå relief', 'Blå toner med skuggad bottenform', legend_css(c6, 5), {}, u8(ramp(c6) * sh[..., None]), 'black'),
+        ('g1', 'C-MAP original', 'Som på Genesis-kartan – med djupsiffror', None, {'note': 'Siffror = djup i m (liten siffra = tiondelar)'}, 'genesis', 'black'),
+        ('v1', 'Vegetation', 'Grönt där ekolodet sett växtlighet', 'linear-gradient(to right,#6fc3e8 0%,#6fc3e8 50%,#46dc3c 50%,#46dc3c 100%)', {'ticks': ['Ingen', '', 'Växtlighet']}, u8(ramp(c6) * mild[..., None]), 'black'),
+        ('c1', 'Bottenhårdhet', 'Mjuk (ljus) till hård (röd) botten, där det finns mätt', 'linear-gradient(to right,#ffffcc 0%,#fec25d 33%,#fc8643 66%,#fa4a29 100%)', {'ticks': ['Mjuk', '', 'Hård']}, u8(ramp(c6) * 0.55 + 60), 'black'),
+    ]
+    del s3
 
-    # ---- write pictures
-    imgW = src['img_w'] if 'img_w' in src else int(round(W / src['base_div']))
-    S = imgW / W; imgH = int(round(H * S))
-    # clear out the lake's pictures (any version) -- only this version is kept
-    for f in os.listdir(L):
-        p = os.path.join(L, f)
-        if f.startswith(('thumbs', 'tiles_v')) and os.path.isdir(p): shutil.rmtree(p)
-        elif (f.startswith('map_v') and f.endswith('.jpg')) or (f.startswith('depth_v') and f.endswith('.txt')): os.remove(p)
-    os.makedirs(os.path.join(L, 'thumbs_v%d' % V))
-    near_water = ndimage.binary_dilation(water, iterations=40)
-    have = ''.join('1' if near_water[r * TL:(r + 1) * TL, c * TL:(c + 1) * TL].any() else '0'
-                   for r in range(rows) for c in range(cols))
-    ntiles = 0
-    for sid, arr in out.items():
-        im = Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8))
-        im.crop((0, 0, W, H)).resize((imgW, imgH), Image.LANCZOS).save(
-            os.path.join(L, 'map_v%d_%s.jpg' % (V, sid)), quality=84, optimize=True, progressive=True)
-        td = os.path.join(L, 'tiles_v%d' % V, sid); os.makedirs(td)
-        for r in range(rows):
-            for c in range(cols):
-                if have[r * cols + c] != '1': continue
-                im.crop((c * TL, r * TL, (c + 1) * TL, (r + 1) * TL)).save(
-                    os.path.join(td, '%d_%d.jpg' % (c, r)), quality=78, optimize=True)
-                ntiles += 1
-        # thumbnail: a 200x120 look at the middle of the lake
-        tw, th = int(W * 0.34), int(W * 0.34 * 0.6)
-        ys, xs = np.where(water[:H, :W]); my, mx = int(np.median(ys)), int(np.median(xs))
-        im.crop((mx - tw // 2, my - th // 2, mx + tw // 2, my + th // 2)).resize((200, 120), Image.LANCZOS).save(
-            os.path.join(L, 'thumbs_v%d' % V, '%s.jpg' % sid), quality=82)
-        print('  %s done' % sid)
+    # ---- output folder: only this version's pictures
+    os.makedirs(OUT, exist_ok=True)
+    for f in os.listdir(OUT):
+        p = os.path.join(OUT, f)
+        shutil.rmtree(p) if os.path.isdir(p) else os.remove(p)
+    os.makedirs(os.path.join(OUT, 'thumbs_v%d' % V))
+    level_info = []; ntiles = 0
+
+    for z in levels:
+        f = 2 ** (DZ - z)                                   # DZ px per level px (< 1 above DZ)
+        w, h = int(round(W / f)), int(round(H / f)); ox, oy = int(round(gx0 / f)), int(round(gy0 / f))
+        Dz = os.path.join(ROOT, 'raw', lake, 'z%d' % z); gz = json.load(open(os.path.join(Dz, 'grid.json')))
+        lx, ly = ox - gz['tile_x0'] * 256, oy - gz['tile_y0'] * 256
+        def lay(n, mode='RGBA'):
+            p = os.path.join(Dz, n + '.png')
+            if not os.path.exists(p): return None
+            a = np.array(Image.open(p).convert(mode)); out = np.zeros((h, w) + a.shape[2:], a.dtype)
+            y1, x1 = min(a.shape[0], ly + h), min(a.shape[1], lx + w)
+            out[:y1 - ly, :x1 - lx] = a[ly:y1, lx:x1]
+            return out
+        aer = lay('a', 'RGB').astype(np.float32)
+        t = lay('t').astype(np.float32)
+        wl = resize(water.astype(np.float32), w, h)
+        wat = wl >= 0.5
+        alpha = np.clip(ndimage.gaussian_filter(wl, 0.6), 0, 1)[..., None]
+        near = ndimage.binary_dilation(wat, iterations=max(3, int(14 / f)))[..., None]   # Genesis layers only on our lake
+        ta = t[..., 3:4] / 255 * near
+        # depth numbers = the light halo round them (lines, even melted together on steep slopes, are black)
+        labels = ndimage.binary_dilation((t[..., :3].mean(2) > 170) & (t[..., 3] > 60), iterations=3)[..., None]
+        styles_here = [s for s in STY if z <= DZ or not top_styles or s[0] in top_styles]
+        for sid, name, desc, leg, extra, colour, lines in styles_here:
+            if isinstance(colour, np.ndarray):
+                img = aer * (1 - alpha) + resize(colour.astype(np.float32), w, h) * alpha
+            elif colour == 'genesis':
+                b = lay('b'); b = close_seams(b).astype(np.float32); ba = b[..., 3:4] / 255 * near
+                img = aer * (1 - ba) + b[..., :3] * ba
+            else:
+                img = aer * np.array([0.9, 0.97, 1.05], np.float32)
+            if sid == 'v1':
+                v = lay('v'); va = (v[..., 3:4].astype(np.float32) / 255) * 0.72 * alpha if v is not None else 0
+                img = img * (1 - va) + np.array([70, 220, 60], np.float32) * va
+            if sid == 'c1':
+                c = lay('c')
+                if c is not None:
+                    c = c.astype(np.float32); ca = c[..., 3:4] / 255 * 0.9 * alpha
+                    img = img * (1 - ca) + c[..., :3] * ca
+            # Genesis' contour lines + depth numbers for this zoom (light lines on dark styles; numbers as they are)
+            if lines == 'black':
+                img = img * (1 - ta) + t[..., :3] * ta
+            else:
+                col = np.where(labels, t[..., :3], np.asarray(lines, np.float32))
+                img = img * (1 - ta) + col * ta
+            im = Image.fromarray(np.clip(img, 0, 255).astype(np.uint8))
+            if z == base:
+                im.save(os.path.join(OUT, 'map_v%d_%s.jpg' % (V, sid)), quality=84, optimize=True, progressive=True)
+            else:
+                cols, rows = -(-w // TL), -(-h // TL)
+                nearw = ndimage.binary_dilation(wat, iterations=24)
+                have = ''.join('1' if nearw[r * TL:(r + 1) * TL, c * TL:(c + 1) * TL].any() else '0' for r in range(rows) for c in range(cols))
+                td = os.path.join(OUT, 'tiles_v%d' % V, 'z%d' % z, sid); os.makedirs(td)
+                pad = Image.new('RGB', (cols * TL, rows * TL)); pad.paste(im, (0, 0))
+                for r in range(rows):
+                    for c in range(cols):
+                        if have[r * cols + c] == '1':
+                            pad.crop((c * TL, r * TL, (c + 1) * TL, (r + 1) * TL)).save(os.path.join(td, '%d_%d.jpg' % (c, r)), quality=80, optimize=True)
+                            ntiles += 1
+                if sid == styles_here[0][0]:
+                    level_info.append({'z': z, 'cols': cols, 'rows': rows, 'have': have, 'styles': [s[0] for s in styles_here]})
+            if z == base + 1:   # thumbnails: a 200x120 look at the middle of the lake at zoom 15
+                ys, xs = np.where(wat); my, mx = int(np.median(ys)), int(np.median(xs))
+                tw = int(w * 0.3); th = int(tw * 0.6)
+                im.crop((mx - tw // 2, my - th // 2, mx + tw // 2, my + th // 2)).resize((200, 120), Image.LANCZOS).save(
+                    os.path.join(OUT, 'thumbs_v%d' % V, '%s.jpg' % sid), quality=82)
+        print('  zoom %d: %d x %d px, %d styles' % (z, w, h, len(styles_here)))
+        del aer, t
 
     # ---- depth grid for the app (one byte per cell = depth / step; 255 land; runs of land packed)
     gd = src['grid_div']; gw, gh = int(round(W / gd)), int(round(H / gd))
-    wf = water[:H, :W].astype(np.float32)
-    num = np.array(Image.fromarray(dep0[:H, :W] * wf, 'F').resize((gw, gh), Image.BOX))
+    wf = water.astype(np.float32)
+    num = np.array(Image.fromarray(dep0 * wf, 'F').resize((gw, gh), Image.BOX))
     den = np.array(Image.fromarray(wf, 'F').resize((gw, gh), Image.BOX))
     step = src['depth_step']
     vals = np.where(den >= 0.5, np.clip(np.round(num / np.maximum(den, 1e-6) / step), 0, 250), 255).astype(np.uint8).ravel()
@@ -196,40 +225,37 @@ def main():
             j = i
             while j < len(vals) and vals[j] == 255 and j - i < 65535: j += 1
             n = j - i
-            if n >= 3: enc += bytes([251, n & 255, n >> 8])
-            else: enc += bytes([255] * n)
+            enc += bytes([251, n & 255, n >> 8]) if n >= 3 else bytes([255] * n)
             i = j
         else:
             enc.append(vals[i]); i += 1
-    import base64
-    open(os.path.join(L, 'depth_v%d.txt' % V), 'w').write(base64.b64encode(bytes(enc)).decode())
+    open(os.path.join(OUT, 'depth_v%d.txt' % V), 'w').write(base64.b64encode(bytes(enc)).decode())
 
-    # full-resolution depth for the tests (same crop as the map): elevation_m = -depth, water
-    np.savez_compressed(os.path.join(L, 'raw', 'depth_raw.npz'),
-                        elevation_m=(-dep0[:H, :W]).astype(np.float16), water=water[:H, :W])
+    # full-resolution depth for the tests (the crop at DZ): elevation_m = -depth, water, where it is
+    np.savez_compressed(os.path.join(L, 'raw', 'depth_raw.npz'), elevation_m=(-dep0).astype(np.float16), water=water,
+                        zoom=DZ, origin=np.array([gx0, gy0]))
 
-    # ---- lake.json
-    latc = (la0 + la1) / 2
+    # ---- lake.json (the map picture = the lowest level)
+    latc = (la0 + la1) / 2; mb = 2 ** (DZ - base)
     lk = {
         'id': src['id'], 'name': src['name'],
         'center': src.get('center') or [round(latc, 5), round((lo0 + lo1) / 2, 5)],
         'source': src.get('source', ''),
-        'geo': {'zoom': z, 'originX': gx0, 'originY': gy0, 'fullW': W,
-                'metersPerPx': 156543.03392 * math.cos(math.radians(latc)) / 2 ** z,
-                'imgW': imgW, 'imgH': imgH},
+        'geo': {'zoom': base, 'originX': gx0 // mb, 'originY': gy0 // mb, 'fullW': W // mb,
+                'metersPerPx': 156543.03392 * math.cos(math.radians(latc)) / 2 ** base,
+                'imgW': W // mb, 'imgH': H // mb},
         'depth': {'file': 'depth_v%d.txt' % V, 'w': gw, 'h': gh, 'step': step, 'max': DMAX, 'capped': False},
         'legendTicks': ['0 m', '%d m' % (DMAX // 2), '%d m' % DMAX],
-        'contourText': 'Djupkurvor var 1 m' if maxd <= 10.5 else 'Djupkurvor var 1 m (2 m under 10 m)',
+        'contourText': 'Djupkurvor från C-MAP Genesis',
         'mapFile': 'map_v%d_{style}.jpg' % V,
         'thumbFile': 'thumbs_v%d/{style}.jpg' % V,
-        'styles': styles,
-        'detail': {'file': 'tiles_v%d/{style}/{c}_{r}.jpg' % V, 'tile': TL, 'cols': cols, 'rows': rows,
-                   'have': have, 'styles': [s['id'] for s in styles]},
+        'styles': [dict(id=s[0], name=s[1], desc=s[2], legend=s[3], **s[4]) for s in STY],
+        'detail': {'file': 'tiles_v%d/z{z}/{style}/{c}_{r}.jpg' % V, 'tile': TL, 'levels': level_info},
     }
     json.dump(lk, open(os.path.join(L, 'lake.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
-    size = sum(os.path.getsize(os.path.join(dp, f)) for dp, _, fs in os.walk(L) for f in fs if 'raw' not in dp)
-    print('image %d x %d, %d detail tiles, depth grid %d x %d (%d kB), lake folder %.1f MB' % (
-        imgW, imgH, ntiles, gw, gh, len(enc) * 4 // 3 // 1024, size / 1e6))
+    size = sum(os.path.getsize(os.path.join(dp, f2)) for dp, _, fs in os.walk(OUT) for f2 in fs)
+    print('map %d x %d (zoom %d), %d detail tiles, depth grid %d x %d, docs/lakes/%s = %.1f MB' % (
+        W // mb, H // mb, base, ntiles, gw, gh, lake, size / 1e6))
 
 if __name__ == '__main__':
     main()

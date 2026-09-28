@@ -4,9 +4,10 @@ import numpy as np, math
 results = []
 def check(name, cond, info=''):
     results.append(bool(cond)); print(('PASS ' if cond else 'FAIL ') + name + ('  -- ' + str(info) if info != '' else ''))
-ZOOM, TILE = 16, 256; N = 2 ** ZOOM; XT, YT, CX0, CY0 = 35618, 19409, 1853, 4026
+_raw = np.load('../lakes/regnaren/raw/depth_raw.npz')   # full-resolution depth + where it lies (zoom, origin)
+ZOOM, TILE = int(_raw['zoom']), 256; N = 2 ** ZOOM; OX, OY = [int(v) for v in _raw['origin']]
 def full_to_latlon(col, row):
-    xg = col + CX0 + XT * TILE; yg = row + CY0 + YT * TILE
+    xg = col + OX; yg = row + OY
     lon = xg / (N * TILE) * 360 - 180; n = math.pi - 2 * math.pi * yg / (N * TILE)
     return math.degrees(math.atan(math.sinh(n))), lon
 e = np.load('../lakes/regnaren/raw/depth_raw.npz')['elevation_m'].astype('float32'); o = np.load('../lakes/regnaren/raw/depth_raw.npz')['water']; dep = -e

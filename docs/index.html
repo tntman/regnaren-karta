@@ -61,6 +61,7 @@
   #detailLayer{position:absolute;left:0;top:0;width:0;height:0;pointer-events:none;}
   #detailLayer img{position:absolute;left:0;top:0;display:block;max-width:none;opacity:0;transition:opacity .25s;-webkit-user-drag:none;transform-origin:0 0;}
   #detailLayer img.ok{opacity:1;}
+  #detailLayer img.bad{display:none;}
   #mapLoading{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:1;color:var(--text-muted);font-size:13px;pointer-events:none;display:none;}
   #mapLoading.show{display:block;}
 
@@ -161,6 +162,10 @@
     pointer-events:none;
   }
   #scalebar .line{height:3px;background:var(--offwhite);border-radius:2px;box-shadow:0 0 0 1px rgba(0,0,0,.5);}
+  /* zoom level (same numbers as web maps / Genesis), after the scale; "HD" = sharper pieces on screen */
+  #scalebar .scaleRow{display:flex;align-items:baseline;gap:6px;}
+  #zoomLabel{font-size:10px;opacity:.85;font-variant-numeric:tabular-nums;}
+  #zoomLabel b{font-weight:700;color:var(--amber);margin-left:3px;}
 
   #locateBtn{
     position:absolute;right:16px;
@@ -1343,7 +1348,7 @@
 
   <div id="scalebar">
     <div class="line" id="scaleLine" style="width:80px;"></div>
-    <span id="scaleLabel">100 m</span>
+    <span class="scaleRow"><span id="scaleLabel">100 m</span><span id="zoomLabel"></span></span>
   </div>
 
   <div id="speedPill" aria-live="off"><span class="spV" id="speedVal">0,0</span><span class="spU">kn</span><span class="spDepth"><span class="spSep"></span><span class="spV" id="depthVal">–</span><span class="spU">m</span></span></div>
@@ -1516,7 +1521,7 @@
      (?lake=<id> in the address picks one directly); switching lakes in the
      menu reloads the page with the new one. Waypoints, boats and settings
      in Firestore are tagged with the lake id, so lakes never mix. */
-  var LAKES = [{"id":"regnaren","name":"Regnaren","center":[58.88951,15.77759],"source":"C-MAP Genesis Social Map + Bing aerial (rebuilt 2026-09-28; before that: C-MAP colours, uncalibrated)","geo":{"zoom":16,"originX":9120061,"originY":4972730,"fullW":6507,"metersPerPx":1.2343575150547,"imgW":3600,"imgH":1758},"depth":{"file":"depth_v2.txt","w":1627,"h":794,"step":0.08,"max":12,"capped":false},"legendTicks":["0 m","6 m","12 m"],"contourText":"Djupkurvor var 1 m (2 m under 10 m)","mapFile":"map_v2_{style}.jpg","thumbFile":"thumbs_v2/{style}.jpg","styles":[{"id":"s1","name":"Djupfärger","desc":"Flygfoto + djupfärger med relief","legend":"linear-gradient(to right,#d62728 0%,#fc7810 17%,#ffcf02 33%,#61af21 50%,#1eb59c 67%,#1d69d4 83%,#0a1a5c 100%)"},{"id":"s2","name":"Förenklad","desc":"Klara djupfärger och tydliga djupkurvor","legend":"linear-gradient(to right,#7a0403 0%,#d23105 12%,#fb8122 25%,#ecd13a 38%,#a1fd3d 50%,#2ff19b 62%,#2ab9ee 75%,#4669e0 88%,#30123b 100%)"},{"id":"s3","name":"Sjökort","desc":"Blå djupband som en papperskarta","legend":"linear-gradient(to right,#dff3fb 0%,#c4e7f6 5%,#a9dbf2 12%,#8fcdec 25%,#74bde4 38%,#5aa9d8 50%,#4796cb 62%,#3a84bd 75%,#2f72ae 88%)"},{"id":"s4","name":"Natt","desc":"Mörkt vatten med ljusa djupkurvor","legend":"linear-gradient(to right,#24475a 0%,#153a55 33%,#0c2749 67%,#061532 100%)"},{"id":"s5","name":"Flygfoto + linjer","desc":"Naturlig bild med vita djupkurvor","legend":null},{"id":"s6","name":"Blå relief","desc":"Blå toner med skuggad bottenform","legend":"linear-gradient(to right,#cfeefa 0%,#6fc3e8 25%,#2a86c9 50%,#125099 75%,#0a2c63 100%)"},{"id":"g1","name":"C-MAP original","desc":"Som på Genesis-kartan – med djupsiffror","legend":null,"note":"Siffror = djup i m (liten siffra = tiondelar)"},{"id":"v1","name":"Vegetation","desc":"Grönt där ekolodet sett växtlighet","legend":"linear-gradient(to right,#6fc3e8 0%,#6fc3e8 50%,#46dc3c 50%,#46dc3c 100%)","ticks":["Ingen","","Växtlighet"]},{"id":"c1","name":"Bottenhårdhet","desc":"Mjuk (ljus) till hård (röd) botten, där det finns mätt","legend":"linear-gradient(to right,#ffffcc 0%,#fec25d 33%,#fc8643 66%,#fa4a29 100%)","ticks":["Mjuk","","Hård"]}],"detail":{"file":"tiles_v2/{style}/{c}_{r}.jpg","tile":512,"cols":13,"rows":7,"have":"1111111111110111111111111100000111110110000001111001000000011110000000001111100000000000110","styles":["s1","s2","s3","s4","s5","s6","g1","v1","c1"]}},{"id":"vagsfjarden","name":"Vågsfjärden","center":[62.9216,18.26966],"source":"C-MAP Genesis Social Map (https://www.genesismaps.com/SocialMap/Index?mwID=1204609) + Bing aerial","geo":{"zoom":17,"originX":18476589,"originY":9171115,"fullW":6966,"metersPerPx":0.5436693453204581,"imgW":2786,"imgH":2096},"depth":{"file":"depth_v1.txt","w":1161,"h":873,"step":0.16,"max":40,"capped":false},"legendTicks":["0 m","20 m","40 m"],"contourText":"Djupkurvor var 1 m (2 m under 10 m)","mapFile":"map_v1_{style}.jpg","thumbFile":"thumbs_v1/{style}.jpg","styles":[{"id":"s1","name":"Djupfärger","desc":"Flygfoto + djupfärger med relief","legend":"linear-gradient(to right,#d62728 0%,#fc7810 17%,#ffcf02 33%,#61af21 50%,#1eb59c 67%,#1d69d4 83%,#0a1a5c 100%)"},{"id":"s2","name":"Förenklad","desc":"Klara djupfärger och tydliga djupkurvor","legend":"linear-gradient(to right,#7a0403 0%,#d23105 12%,#fb8122 25%,#ecd13a 38%,#a1fd3d 50%,#2ff19b 62%,#2ab9ee 75%,#4669e0 88%,#30123b 100%)"},{"id":"s3","name":"Sjökort","desc":"Blå djupband som en papperskarta","legend":"linear-gradient(to right,#dff3fb 0%,#c4e7f6 5%,#a9dbf2 12%,#8fcdec 25%,#74bde4 38%,#5aa9d8 50%,#4796cb 62%,#3a84bd 75%,#2f72ae 88%)"},{"id":"s4","name":"Natt","desc":"Mörkt vatten med ljusa djupkurvor","legend":"linear-gradient(to right,#24475a 0%,#153a55 33%,#0c2749 67%,#061532 100%)"},{"id":"s5","name":"Flygfoto + linjer","desc":"Naturlig bild med vita djupkurvor","legend":null},{"id":"s6","name":"Blå relief","desc":"Blå toner med skuggad bottenform","legend":"linear-gradient(to right,#cfeefa 0%,#6fc3e8 25%,#2a86c9 50%,#125099 75%,#0a2c63 100%)"},{"id":"g1","name":"C-MAP original","desc":"Som på Genesis-kartan – med djupsiffror","legend":null,"note":"Siffror = djup i m (liten siffra = tiondelar)"},{"id":"v1","name":"Vegetation","desc":"Grönt där ekolodet sett växtlighet","legend":"linear-gradient(to right,#6fc3e8 0%,#6fc3e8 50%,#46dc3c 50%,#46dc3c 100%)","ticks":["Ingen","","Växtlighet"]},{"id":"c1","name":"Bottenhårdhet","desc":"Mjuk (ljus) till hård (röd) botten, där det finns mätt","legend":"linear-gradient(to right,#ffffcc 0%,#fec25d 33%,#fc8643 66%,#fa4a29 100%)","ticks":["Mjuk","","Hård"]}],"detail":{"file":"tiles_v1/{style}/{c}_{r}.jpg","tile":512,"cols":14,"rows":11,"have":"0000111100000000011111110011001111111111110111111111111011111111111110111111111111100011111111111000111011111100011100000101100110000000011000000000000000","styles":["s1","s2","s3","s4","s5","s6","g1","v1","c1"]}}];
+  var LAKES = [{"id":"regnaren","name":"Regnaren","center":[58.88951,15.77759],"source":"C-MAP Genesis Social Map + Bing aerial (rebuilt 2026-09-28; before that: C-MAP colours, uncalibrated)","geo":{"zoom":14,"originX":2280015,"originY":1243182,"fullW":1627,"metersPerPx":4.9374300602188,"imgW":1627,"imgH":795},"depth":{"file":"depth_v3.txt","w":1627,"h":795,"step":0.08,"max":12,"capped":false},"legendTicks":["0 m","6 m","12 m"],"contourText":"Djupkurvor från C-MAP Genesis","mapFile":"map_v3_{style}.jpg","thumbFile":"thumbs_v3/{style}.jpg","styles":[{"id":"s1","name":"Djupfärger","desc":"Flygfoto + djupfärger med relief","legend":"linear-gradient(to right,#d62728 0%,#fc7810 17%,#ffcf02 33%,#61af21 50%,#1eb59c 67%,#1d69d4 83%,#0a1a5c 100%)"},{"id":"s2","name":"Förenklad","desc":"Klara djupfärger, utan skuggning","legend":"linear-gradient(to right,#7a0403 0%,#d23105 12%,#fb8122 25%,#ecd13a 38%,#a1fd3d 50%,#2ff19b 62%,#2ab9ee 75%,#4669e0 88%,#30123b 100%)"},{"id":"s3","name":"Sjökort","desc":"Blå djupband som en papperskarta","legend":"linear-gradient(to right,#dff3fb 0%,#c4e7f6 5%,#a9dbf2 12%,#8fcdec 25%,#74bde4 38%,#5aa9d8 50%,#4796cb 62%,#3a84bd 75%,#2f72ae 88%)"},{"id":"s4","name":"Natt","desc":"Mörkt vatten med ljusa djupkurvor","legend":"linear-gradient(to right,#24475a 0%,#153a55 33%,#0c2749 67%,#061532 100%)"},{"id":"s5","name":"Flygfoto + linjer","desc":"Naturlig bild med vita djupkurvor","legend":null},{"id":"s6","name":"Blå relief","desc":"Blå toner med skuggad bottenform","legend":"linear-gradient(to right,#cfeefa 0%,#6fc3e8 25%,#2a86c9 50%,#125099 75%,#0a2c63 100%)"},{"id":"g1","name":"C-MAP original","desc":"Som på Genesis-kartan – med djupsiffror","legend":null,"note":"Siffror = djup i m (liten siffra = tiondelar)"},{"id":"v1","name":"Vegetation","desc":"Grönt där ekolodet sett växtlighet","legend":"linear-gradient(to right,#6fc3e8 0%,#6fc3e8 50%,#46dc3c 50%,#46dc3c 100%)","ticks":["Ingen","","Växtlighet"]},{"id":"c1","name":"Bottenhårdhet","desc":"Mjuk (ljus) till hård (röd) botten, där det finns mätt","legend":"linear-gradient(to right,#ffffcc 0%,#fec25d 33%,#fc8643 66%,#fa4a29 100%)","ticks":["Mjuk","","Hård"]}],"detail":{"file":"tiles_v3/z{z}/{style}/{c}_{r}.jpg","tile":512,"levels":[{"z":15,"cols":7,"rows":4,"have":"1111111001111100011100000010","styles":["s1","s2","s3","s4","s5","s6","g1","v1","c1"]},{"z":16,"cols":13,"rows":7,"have":"1111111111110101111111111100000111110110000001111001000000011110000000001111100000000000110","styles":["s1","s2","s3","s4","s5","s6","g1","v1","c1"]}]}},{"id":"vagsfjarden","name":"Vågsfjärden","center":[62.9216,18.26966],"source":"C-MAP Genesis Social Map (https://www.genesismaps.com/SocialMap/Index?mwID=1204609) + Bing aerial","geo":{"zoom":14,"originX":2309573,"originY":1146389,"fullW":872,"metersPerPx":4.349354762563665,"imgW":872,"imgH":656},"depth":{"file":"depth_v2.txt","w":1163,"h":875,"step":0.16,"max":40,"capped":false},"legendTicks":["0 m","20 m","40 m"],"contourText":"Djupkurvor från C-MAP Genesis","mapFile":"map_v2_{style}.jpg","thumbFile":"thumbs_v2/{style}.jpg","styles":[{"id":"s1","name":"Djupfärger","desc":"Flygfoto + djupfärger med relief","legend":"linear-gradient(to right,#d62728 0%,#fc7810 17%,#ffcf02 33%,#61af21 50%,#1eb59c 67%,#1d69d4 83%,#0a1a5c 100%)"},{"id":"s2","name":"Förenklad","desc":"Klara djupfärger, utan skuggning","legend":"linear-gradient(to right,#7a0403 0%,#d23105 12%,#fb8122 25%,#ecd13a 38%,#a1fd3d 50%,#2ff19b 62%,#2ab9ee 75%,#4669e0 88%,#30123b 100%)"},{"id":"s3","name":"Sjökort","desc":"Blå djupband som en papperskarta","legend":"linear-gradient(to right,#dff3fb 0%,#c4e7f6 5%,#a9dbf2 12%,#8fcdec 25%,#74bde4 38%,#5aa9d8 50%,#4796cb 62%,#3a84bd 75%,#2f72ae 88%)"},{"id":"s4","name":"Natt","desc":"Mörkt vatten med ljusa djupkurvor","legend":"linear-gradient(to right,#24475a 0%,#153a55 33%,#0c2749 67%,#061532 100%)"},{"id":"s5","name":"Flygfoto + linjer","desc":"Naturlig bild med vita djupkurvor","legend":null},{"id":"s6","name":"Blå relief","desc":"Blå toner med skuggad bottenform","legend":"linear-gradient(to right,#cfeefa 0%,#6fc3e8 25%,#2a86c9 50%,#125099 75%,#0a2c63 100%)"},{"id":"g1","name":"C-MAP original","desc":"Som på Genesis-kartan – med djupsiffror","legend":null,"note":"Siffror = djup i m (liten siffra = tiondelar)"},{"id":"v1","name":"Vegetation","desc":"Grönt där ekolodet sett växtlighet","legend":"linear-gradient(to right,#6fc3e8 0%,#6fc3e8 50%,#46dc3c 50%,#46dc3c 100%)","ticks":["Ingen","","Växtlighet"]},{"id":"c1","name":"Bottenhårdhet","desc":"Mjuk (ljus) till hård (röd) botten, där det finns mätt","legend":"linear-gradient(to right,#ffffcc 0%,#fec25d 33%,#fc8643 66%,#fa4a29 100%)","ticks":["Mjuk","","Hård"]}],"detail":{"file":"tiles_v2/z{z}/{style}/{c}_{r}.jpg","tile":512,"levels":[{"z":15,"cols":4,"rows":3,"have":"111111111011","styles":["s1","s2","s3","s4","s5","s6","g1","v1","c1"]},{"z":16,"cols":7,"rows":6,"have":"011110111111111111111011111111001110000000","styles":["s1","s2","s3","s4","s5","s6","g1","v1","c1"]},{"z":17,"cols":14,"rows":11,"have":"0000111100000000011111110011001111111111110011111111111011111111111110111111111111100011111111111000111011111100011100000101100110000000011000000000000000","styles":["s1","s2","s3","s4","s5","s6","g1","v1","c1"]},{"z":18,"cols":28,"rows":21,"have":"000000000000000000000000000000000000011001100000000000000000001111111111000000000000000000111111111111100000111000000011111111111111000111100000011111111111111111111110000011111111111111111111110000001111111111111101111111000111111111111011110111111100011111111111100000011111110001111111111111100000111110000110111111111111100111111000000001111111111111111111100000000111100111111111111110000000111110000110011111110000000011111000000000111111000000111110000000000011001110000011111000000000000000011000001110000000000000000001100000000000000000000000000000000000000000000000000000000000","styles":["s1","g1"]}]}}];
   var LAKE_KEY = 'ffmap_lake_v1';
   var LAKE_ID = (function(){
     function known(id){ return LAKES.some(function(l){ return l.id === id; }); }
@@ -1610,6 +1615,11 @@
     // zooming out further than fitScale reveals the whole lake at once
     minScale = Math.min(stageW / IMG_W, stageH / IMG_H) * 0.92;
     maxScale = Math.max(fitScale * 10, 4);
+    // ...and at least half a step past the lake's highest zoom level
+    if (LAKE.detail && LAKE.detail.levels && LAKE.detail.levels.length){
+      var topZ = Math.max.apply(null, LAKE.detail.levels.map(function(L){ return L.z; }));
+      maxScale = Math.max(maxScale, Math.pow(2, topZ + 0.6 - ZOOM) / S);
+    }
   }
 
   function clampOrigin(){
@@ -1666,49 +1676,70 @@
     probeEl.style.transform = 'translate(' + (originX + probe.x * scale).toFixed(1) + 'px,' + (originY + probe.y * scale).toFixed(1) + 'px)';
   }
 
-  /* ---- detail tiles ("skarpare när du zoomar in") ----
-     A lake can have its map styles also as full-resolution pieces
-     (lake.json "detail": tile size in full-resolution px, grid size, and
-     which pieces exist -- only those with water). Once you zoom in so far
-     that the ordinary map picture would get blurry, the pieces that are on
-     screen are laid on top of it (fetched then, kept by the service worker
-     afterwards). Without coverage the ordinary picture simply stays. */
+  /* ---- zoom levels ("lager") ----
+     Like Genesis: every zoom level has its own picture, with Genesis' depth
+     lines and numbers for exactly that zoom -- more lines the closer you get.
+     The map picture itself is the lowest level (zoom 14); higher levels
+     (lake.json "detail".levels: which exist, for which styles, which 512 px
+     pieces have water) are laid on top in pieces, only those on screen
+     (fetched then, kept by the service worker afterwards). The level follows
+     the zoom (rounded); past the highest level its pieces are just enlarged.
+     While a new level's pieces load, the previous ones stay underneath, and
+     without coverage the ordinary picture simply stays. */
   var DETAIL = LAKE.detail || null;
   var detailLayer = document.getElementById('detailLayer');
-  var detailEls = {};   // key -> img
-  function detailWanted(){
-    if (!DETAIL || DETAIL.styles.indexOf(mapStyle) === -1) return false;
-    return scale * (window.devicePixelRatio || 1) > 1.15; // map picture pixels now bigger than screen pixels
+  var detailEls = {};   // 'z/style/c_r' -> img
+  function currentZoom(){ return ZOOM + Math.log(scale * S) / Math.LN2; }
+  function detailLevel(){           // the level shown now (null = the map picture itself)
+    if (!DETAIL || !DETAIL.levels) return null;
+    var want = Math.round(currentZoom()), best = null;
+    DETAIL.levels.forEach(function(L){
+      if (L.z <= want && L.styles.indexOf(mapStyle) !== -1 && (!best || L.z > best.z)) best = L;
+    });
+    return best;
+  }
+  function detailWanted(){ return !!detailLevel(); }
+  function placeTile(el, z, c, r){
+    var size = DETAIL.tile * Math.pow(2, ZOOM - z) * S * scale;   // a piece on screen (css px)
+    // whole pixels + 1 px overlap: no hairline gaps between the pieces
+    var x = Math.floor(originX + c * size), y = Math.floor(originY + r * size);
+    el.style.width = (Math.ceil(originX + (c + 1) * size) - x + 1) + 'px';
+    el.style.height = (Math.ceil(originY + (r + 1) * size) - y + 1) + 'px';
+    el.style.transform = 'translate(' + x + 'px,' + y + 'px)';
+    return x < stageW && y < stageH && x + size > 0 && y + size > 0;
   }
   function renderDetail(){
-    var want = {}, T = DETAIL ? DETAIL.tile * S : 0;
-    if (detailWanted()){
-      var c0 = Math.max(0, Math.floor(-originX / scale / T)), c1 = Math.min(DETAIL.cols - 1, Math.floor((stageW - originX) / scale / T));
-      var r0 = Math.max(0, Math.floor(-originY / scale / T)), r1 = Math.min(DETAIL.rows - 1, Math.floor((stageH - originY) / scale / T));
-      var size = T * scale;
+    var want = {}, allLoaded = true, L = detailLevel();
+    if (L){
+      var T = DETAIL.tile * Math.pow(2, ZOOM - L.z) * S;          // a piece in map-picture px
+      var c0 = Math.max(0, Math.floor(-originX / scale / T)), c1 = Math.min(L.cols - 1, Math.floor((stageW - originX) / scale / T));
+      var r0 = Math.max(0, Math.floor(-originY / scale / T)), r1 = Math.min(L.rows - 1, Math.floor((stageH - originY) / scale / T));
       for (var r = r0; r <= r1; r++) for (var c = c0; c <= c1; c++){
-        if (DETAIL.have.charAt(r * DETAIL.cols + c) !== '1') continue;
-        var key = mapStyle + '/' + c + '_' + r;
+        if (L.have.charAt(r * L.cols + c) !== '1') continue;
+        var key = L.z + '/' + mapStyle + '/' + c + '_' + r;
         want[key] = true;
         var el = detailEls[key];
         if (!el){
           el = document.createElement('img');
           el.alt = ''; el.draggable = false; el.decoding = 'async';
-          el.onload = function(){ this.classList.add('ok'); };
-          el.onerror = function(){ this.remove(); };
-          el.src = LAKE_DIR + DETAIL.file.replace('{style}', mapStyle).replace('{c}', c).replace('{r}', r);
+          el._z = L.z; el._c = c; el._r = r;
+          el.onload = function(){ this.classList.add('ok'); scheduleRender(); };
+          el.onerror = function(){ this.classList.add('bad'); scheduleRender(); };
+          el.src = LAKE_DIR + DETAIL.file.replace('{z}', L.z).replace('{style}', mapStyle).replace('{c}', c).replace('{r}', r);
           detailLayer.appendChild(el);
           detailEls[key] = el;
         }
-        // whole pixels + 1 px overlap: no hairline gaps between the pieces
-        var x = Math.floor(originX + c * size), y = Math.floor(originY + r * size);
-        el.style.width = (Math.ceil(originX + (c + 1) * size) - x + 1) + 'px';
-        el.style.height = (Math.ceil(originY + (r + 1) * size) - y + 1) + 'px';
-        el.style.transform = 'translate(' + x + 'px,' + y + 'px)';
+        el.style.zIndex = 2;
+        placeTile(el, L.z, c, r);
+        if (!el.classList.contains('ok') && !el.classList.contains('bad')) allLoaded = false;
       }
     }
+    // pieces of another level/style: kept (underneath) until the new ones are there
     Object.keys(detailEls).forEach(function(k){
-      if (!want[k]){ detailEls[k].remove(); delete detailEls[k]; }
+      if (want[k]) return;
+      var el = detailEls[k];
+      if (!allLoaded && el.classList.contains('ok') && placeTile(el, el._z, el._c, el._r)){ el.style.zIndex = 1; return; }
+      el.remove(); delete detailEls[k];
     });
   }
 
@@ -4704,6 +4735,10 @@
     var barPx = meters * pxPerMeter;
     document.getElementById('scaleLine').style.width = Math.max(24, barPx) + 'px';
     document.getElementById('scaleLabel').textContent = meters >= 1000 ? (meters/1000) + ' km' : meters + ' m';
+    // zoom like web maps / Genesis, and which level's picture (lines) is shown
+    var L = detailLevel();
+    document.getElementById('zoomLabel').innerHTML = 'Zoom ' + currentZoom().toFixed(1).replace('.', ',') +
+      '<b>lager ' + (L ? L.z : ZOOM) + '</b>';
   }
 
   function onFix(lat, lon, accM, speedMs, gpsHeading){

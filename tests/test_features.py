@@ -6,10 +6,11 @@ def check(name, cond, info=''):
     results.append(bool(cond)); print(('PASS ' if cond else 'FAIL ') + name + ('  -- ' + str(info) if info != '' else ''))
 
 # ---- geo helpers (same projection as the app) ----
-ZOOM, TILE = 16, 256; N = 2 ** ZOOM
-XT, YT, CX0, CY0 = 35618, 19409, 1853, 4026
+_raw = np.load('../lakes/regnaren/raw/depth_raw.npz')   # full-resolution depth + where it lies (zoom, origin)
+ZOOM, TILE = int(_raw['zoom']), 256; N = 2 ** ZOOM
+OX, OY = [int(v) for v in _raw['origin']]
 def full_to_latlon(col, row):
-    xg = col + CX0 + XT * TILE; yg = row + CY0 + YT * TILE
+    xg = col + OX; yg = row + OY
     lon = xg / (N * TILE) * 360 - 180
     n = math.pi - 2 * math.pi * yg / (N * TILE)
     lat = math.degrees(math.atan(math.sinh(n)))
@@ -84,7 +85,7 @@ with sync_playwright() as p:
     ctx.set_offline(True)
     pg.reload(); pg.wait_for_timeout(2500)
     check('service worker installed', ok)
-    check('app opens with NO network (from the saved copy)', pg.title() == 'FF Map' and pg.is_visible('#visMoreBtn') and pg.eval_on_selector('#mapImg', 'e=>e.naturalWidth') == 3600)
+    check('app opens with NO network (from the saved copy)', pg.title() == 'FF Map' and pg.is_visible('#visMoreBtn') and pg.eval_on_selector('#mapImg', 'e=>e.naturalWidth') > 1000)
     ctx.set_offline(False)
     # (errors from the real Firebase SDK, which the service worker may fetch and which
     #  then fails against the locked fake -- see fakefb.py -- are expected here)

@@ -12,8 +12,8 @@ sjön väljs i menyn.
 | `src/app.html` | Hela appen (CSS + HTML + JavaScript). **Här ändrar man.** |
 | `src/head.html` | `<head>`: titel, ikoner, manifest, Firebase-bibliotek |
 | `src/sw.js` | Service worker (gör att appen startar utan nät) |
-| `lakes/<id>/` | **En mapp per sjö**: `lake.json` (namn, geo-referens, djupskala, kartstilar), kartbilder `map_v1_<stil>.jpg`, djupdata `depth_v1.txt`, förhandsbilder `thumbs/`, detaljrutor `tiles_v1/` |
-| `lakes/<id>/raw/` | Källdata/inställningar för att bygga om sjön (kopieras inte till sajten) |
+| `lakes/<id>/` | **En mapp per sjö**: `lake.json` (namn, geo-referens, djupskala, kartstilar, zoomnivåer) + `raw/` (inställningar och källdata för att bygga om sjön) |
+| `docs/lakes/<id>/` | Sjöns bilder, gjorda av `tools/genesis_render.py`: kartbild (zoom 14), zoomnivåer i bitar `tiles_v*/z<zoom>/`, förhandsbilder, djupdata |
 | `assets/` | Ikoner och manifest |
 | `tools/build.py` | Bygger sajten till `docs/` |
 | `tools/genesis_*.py` | Bygger en sjö från C-MAP Genesis Social Map (se nedan) |
@@ -37,13 +37,15 @@ databasen (se `tests/fakefb.py`).
 ## Lägga till en sjö (från Genesis Social Map)
 
 1. Hitta sjön på genesismaps.com/SocialMap och ta fram lat/lon-gränser för utsnittet.
-2. `py -3 tools/genesis_tiles.py <id> 17 <lat_min> <lat_max> <lon_min> <lon_max>`
-   – laddar ner djupfärger, djupkurvor, vegetation, bottenhårdhet och flygfoto till `raw/<id>/z17/`.
-3. Skriv `lakes/<id>/raw/source.json` (se Vågsfjärden).
+2. `py -3 tools/genesis_tiles.py <id> <zoom> <lat_min> <lat_max> <lon_min> <lon_max>`
+   för varje zoom 14 … högsta (17 om Genesis har det, annars 16; 18 går också)
+   – laddar ner djupfärger, djupkurvor, vegetation, bottenhårdhet och flygfoto till `raw/<id>/z<zoom>/`.
+3. Skriv `lakes/<id>/raw/source.json` (se Vågsfjärden: `zoom` = djupdatans zoom, `levels`).
 4. `py -3 tools/genesis_depth.py <id> sheet` – gör ett ark med Genesis djupsiffror.
    Läs av siffrorna (liten siffra efter = tiondelar) och fyll i `depth_m` i `lakes/<id>/raw/depth_labels.json`.
 5. `py -3 tools/genesis_depth.py <id>` – räknar fram djupet i meter (kalibrerat mot siffrorna).
-6. `py -3 tools/genesis_render.py <id>` – ritar kartstilar, detaljrutor, djupdata och `lake.json`.
+6. `py -3 tools/genesis_render.py <id>` – ritar alla kartstilar på alla zoomnivåer (med Genesis
+   egna djupkurvor för varje zoom), djupdata och `lake.json`, rakt in i `docs/lakes/<id>/`.
 7. Bygg och testa. Sjön dyker upp i menyn av sig själv.
 
 ## Publicera (GitHub Pages)

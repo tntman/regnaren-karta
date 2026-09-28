@@ -46,11 +46,18 @@ All text i appen är på svenska. Svara Filip på svenska, kort och tydligt.
 - **Service worker** (`src/sw.js`): nätet först för sidan (4 s), cache för bilder.
   Sidan skickar `precache` med sjöns startfiler. Ändras kartbilder: nytt filnamn
   (`map_v2_*`, `tiles_v2/`, `depth_v2.txt`) och höj `CACHE` i sw.js.
-- **Kartstilar:** `lakes/<id>/map_v1_<stil>.jpg` (samma geo-referens som `latLonToImgPx`).
-  Bara vald stil laddas ner. **Detaljrutor** (`lake.json` "detail"): full upplösning i
-  512-px-bitar, läggs ovanpå (`#detailLayer`, skärmkoordinater – inte i `#world`, som
-  har will-change och skulle bli suddig) när kartbilden blir suddig; bara synliga hämtas.
-- **Djupdata:** `lakes/<id>/depth_v1.txt` (hämtas vid start; byte = djup/steg, 255 land,
+- **Kartbilder = zoomnivåer som på Genesis.** Kartbilden `docs/lakes/<id>/map_v<V>_<stil>.jpg`
+  är zoom 14 (lägsta nivån; 12–13 används inte, Filips beslut). Högre nivåer (Regnaren 15–16,
+  Vågsfjärden 15–18; z18 bara för s1/g1 pga storlek) = 512-px-bitar
+  `tiles_v<V>/z<z>/<stil>/<c>_<r>.jpg`, läggs ovanpå i `#detailLayer` (skärmkoordinater –
+  inte i `#world`, som har will-change och skulle bli suddig). Nivå = avrundad zoom; förra
+  nivån ligger kvar tills nya laddat. Zoomindikator vid skalstocken: "Zoom 15,3 lager 15".
+- **Djupkurvor ritas ALDRIG av oss** (Filips krav): varje nivå visar exakt Genesis kurvlager
+  (t_) för den zoomen, så antalet linjer ökar som på Genesis. Egna är bara färger + relief
+  (ur kalibrerat djup; relief "E": ljus från N + NV, branta sluttningar mörkare).
+- **Bilderna finns bara i `docs/lakes/`** (genesis_render.py skriver dit direkt, build.py
+  kopierar inget) – en kopia i lakes/ skulle dubbla repot. `lakes/<id>/` = lake.json + raw/.
+- **Djupdata:** `docs/lakes/<id>/depth_v<V>.txt` (hämtas vid start; byte = djup/steg, 255 land,
   251 = land-RLE). Båda sjöarna byggda med Genesis-verktygen och kalibrerade mot Genesis
   djupsiffror: Regnaren (zoom 16, samma utsnitt/geo-referens som förr, filer v2, 0–10,5 m,
   47 siffror, 90 % inom 0,15 m), Vågsfjärden (zoom 17, 0–40 m, 86 siffror, 90 % inom 0,25 m).

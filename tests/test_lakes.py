@@ -1,8 +1,9 @@
 # Several lakes: lake menu, switching (page reload), per-lake map/depth/waypoints/boats,
 # detail tiles when zoomed in, and the lake staying chosen through a rotation reload.
 from playwright.sync_api import sync_playwright
-import fakefb, json, re
+import fakefb, json, re, math
 from fakefb import new_page
+VAGS_W = json.load(open('../lakes/vagsfjarden/lake.json', encoding='utf-8'))['geo']['imgW']
 results = []
 def check(name, cond, info=''):
     results.append(bool(cond)); print(('PASS ' if cond else 'FAIL ') + name + ('  -- ' + str(info) if info != '' else ''))
@@ -35,7 +36,7 @@ with sync_playwright() as p:
     src = lambda: pg.get_attribute('#mapImg', 'src')
     lakes = pg.eval_on_selector_all('#lakeList .menuItem', 'e=>e.map(x=>x.textContent.trim())')
     check('lake menu lists both lakes, Regnaren first', lakes == ['Regnaren', 'Vågsfjärden'], lakes)
-    check('starts on Regnaren (as before)', src() == 'lakes/regnaren/map_v2_s1.jpg')
+    check('starts on Regnaren (as before)', src() == 'lakes/regnaren/map_v3_s1.jpg')
     check("Regnaren shows only Regnaren's spot", titles(pg) == ['Regnarplatsen'])
     check("Regnaren uses its own position interval (30 s)", pos_interval(pg) == '30/null', pos_interval(pg))
 
@@ -43,7 +44,7 @@ with sync_playwright() as p:
     ctx.set_geolocation({'latitude': VAGS[0], 'longitude': VAGS[1], 'accuracy': 5})
     pg.click('#menuBtn'); pg.click('#lakeList .menuItem[data-lake-id="vagsfjarden"]')
     pg.wait_for_load_state('load'); pg.wait_for_timeout(1500)
-    check('switching reloads with the Vågsfjärden map', src() == 'lakes/vagsfjarden/map_v1_s1.jpg' and pg.eval_on_selector('#mapImg', 'e=>e.naturalWidth') == 2786, src())
+    check('switching reloads with the Vågsfjärden map', src() == 'lakes/vagsfjarden/map_v2_s1.jpg' and pg.eval_on_selector('#mapImg', 'e=>e.naturalWidth') == VAGS_W, src())
     check('name kept (no login again)', not pg.evaluate("[].some.call(document.querySelectorAll('.show'), function(e){ return /name/i.test(e.id); })"),
           pg.evaluate("[].map.call(document.querySelectorAll('.show'), function(e){ return e.id; })"))
     check("only Vågsfjärden's spot", titles(pg) == ['Vågsgrundet'])
@@ -68,35 +69,48 @@ with sync_playwright() as p:
         check('depth at a %g m label: %s m' % (want, got), v is not None and abs(v - want) <= 1.0, got)
 
     # ---- zoom in: sharper pieces appear, only for what's on screen
-    check('no detail pieces at the normal zoom', pg.eval_on_selector_all('#detailLayer img', 'e=>e.length') == 0)
+    zf = lambda s: float(s.split()[1].replace(',', '.').replace('lager', ''))
+    lv = lambda s: int(s.split('lager ')[1])
+    rnd = lambda x: int(math.floor(x + 0.5))
+    z_start = pg.inner_text('#zoomLabel')
+    check('zoom + level shown next to the scale; level = the zoom, rounded', z_start.startswith('Zoom ') and lv(z_start) == min(18, max(14, rnd(zf(z_start)))), z_start)
+    # all the way out: the zoom-14 picture only (12-13 are never used)
+    pg.mouse.move(195, 422)
+    for i in range(12):
+        pg.mouse.wheel(0, 400); pg.wait_for_timeout(60)
+    pg.wait_for_timeout(800)
+    z0 = pg.inner_text('#zoomLabel')
+    check('zoomed all the way out: lager 14, no pieces on top', z0.endswith('lager 14') and zf(z0) < 14 and pg.eval_on_selector_all('#detailLayer img', 'e=>e.length') == 0, z0)
     pg.mouse.move(195, 422)
     for i in range(12):
         pg.mouse.wheel(0, -400); pg.wait_for_timeout(60)
     pg.wait_for_timeout(1500)
     tiles = pg.eval_on_selector_all('#detailLayer img', 'e=>e.map(x=>[x.getAttribute("src"), x.naturalWidth, x.classList.contains("ok")])')
-    check('zoomed in: full-resolution pieces on screen', 0 < len(tiles) <= 12 and all('tiles_v1/s1/' in t[0] and t[1] == 512 and t[2] for t in tiles), tiles)
+    check('zoomed in: full-resolution pieces on screen', 0 < len(tiles) <= 12 and all(re.search(r'tiles_v2/z1[5-8]/s1/', t[0]) and t[1] == 512 and t[2] for t in tiles), tiles)
+    z1 = pg.inner_text('#zoomLabel')
+    check('zoom level goes up, and the level (lines) with it, like Genesis', zf(z1) > zf(z0) + 1 and lv(z1) == min(18, rnd(zf(z1))) and all('/z%d/' % lv(z1) in t[0] for t in tiles), (z0, z1))
     pg.screenshot(path='shot_lake_detail.png')
     pg.click('#menuBtn'); pg.click('#menuItemSettings'); pg.wait_for_timeout(200)
     pg.click('#mapStyleList .styleOpt[data-style="g1"]'); pg.wait_for_timeout(1200)
     pg.click('#settingsBackBtn'); pg.wait_for_timeout(1200)
     tiles = pg.eval_on_selector_all('#detailLayer img', 'e=>e.map(x=>x.getAttribute("src"))')
-    check('another style -> its own pieces', tiles and all('tiles_v1/g1/' in t for t in tiles), tiles)
-    check('style choice is per lake', src() == 'lakes/vagsfjarden/map_v1_g1.jpg')
+    check('another style -> its own pieces', tiles and all('/g1/' in t for t in tiles), tiles)
+    check('style choice is per lake', src() == 'lakes/vagsfjarden/map_v2_g1.jpg')
 
     # ---- a reload (rotation) keeps the lake; then back to Regnaren
     pg.reload(); pg.wait_for_timeout(1500)
-    check('after a reload: still Vågsfjärden', src() == 'lakes/vagsfjarden/map_v1_g1.jpg', src())
+    check('after a reload: still Vågsfjärden', src() == 'lakes/vagsfjarden/map_v2_g1.jpg', src())
     pg.click('#menuBtn'); pg.click('#lakeList .menuItem[data-lake-id="regnaren"]')
     pg.wait_for_load_state('load'); pg.wait_for_timeout(1500)
-    check("back on Regnaren: its map, its style and its spot", src() == 'lakes/regnaren/map_v2_s1.jpg' and titles(pg) == ['Regnarplatsen'], src())
+    check("back on Regnaren: its map, its style and its spot", src() == 'lakes/regnaren/map_v3_s1.jpg' and titles(pg) == ['Regnarplatsen'], src())
     check('no page errors', not errs, errs)
     b.close()
 
     # ---- ?lake= in the address picks a lake directly
     b, ctx, pg, errs = new_page(p, geo=REG, cfg=cfg, name='Filip')
     pg.goto('http://localhost:8899/index.html?lake=vagsfjarden'); pg.wait_for_timeout(1200)
-    check('?lake=vagsfjarden opens that lake', pg.get_attribute('#mapImg', 'src') == 'lakes/vagsfjarden/map_v1_s1.jpg')
+    check('?lake=vagsfjarden opens that lake', pg.get_attribute('#mapImg', 'src') == 'lakes/vagsfjarden/map_v2_s1.jpg')
     pg.goto('http://localhost:8899/index.html?lake=nonsense'); pg.wait_for_timeout(1200)
-    check('an unknown lake falls back to the remembered one', pg.get_attribute('#mapImg', 'src') == 'lakes/vagsfjarden/map_v1_s1.jpg')
+    check('an unknown lake falls back to the remembered one', pg.get_attribute('#mapImg', 'src') == 'lakes/vagsfjarden/map_v2_s1.jpg')
     b.close()
 print('\n%d/%d passed' % (sum(results), len(results)))

@@ -1,5 +1,7 @@
 from playwright.sync_api import sync_playwright
 from fakefb import new_page
+import json
+REG_W = json.load(open('../lakes/regnaren/lake.json', encoding='utf-8'))['geo']['imgW']
 results = []
 def check(name, cond, info=''):
     results.append(bool(cond)); print(('PASS ' if cond else 'FAIL ') + name + ('  -- ' + str(info) if info != '' else ''))
@@ -7,7 +9,7 @@ with sync_playwright() as p:
     b, ctx, pg, errs = new_page(p, geo=(58.8868, 15.7776), cfg={}, name='Filip')
     pg.wait_for_timeout(1500)
     src = lambda: pg.eval_on_selector('#mapImg', 'e=>e.getAttribute("src")')
-    check('default style: map_v1_s1.jpg loaded (3600 px)', src() == 'lakes/regnaren/map_v2_s1.jpg' and pg.eval_on_selector('#mapImg', 'e=>e.naturalWidth') == 3600)
+    check('default style: the zoom-14 map loaded', src() == 'lakes/regnaren/map_v3_s1.jpg' and pg.eval_on_selector('#mapImg', 'e=>e.naturalWidth') == REG_W)
     check('page itself is small now (map not inside it)', len(pg.content()) < 700000, len(pg.content()))
     pg.click('#menuBtn'); pg.click('#menuItemSettings'); pg.wait_for_timeout(200)
     n = pg.evaluate("document.querySelectorAll('#mapStyleList .styleOpt').length")
@@ -15,21 +17,21 @@ with sync_playwright() as p:
     pg.eval_on_selector('#mapStyleList', 'e=>e.scrollIntoView({block:"start"})'); pg.wait_for_timeout(150)
     pg.screenshot(path='mapstyle_settings.png')
     pg.click('.styleOpt[data-style="s3"]'); pg.wait_for_timeout(1200)
-    check('choose Sjökort -> map_v1_s3.jpg + legend colours follow', src() == 'lakes/regnaren/map_v2_s3.jpg' and 'rgb(223, 243, 251)' in pg.eval_on_selector('#legend .bar', 'e=>e.style.background'))
+    check('choose Sjökort -> map_v1_s3.jpg + legend colours follow', src() == 'lakes/regnaren/map_v3_s3.jpg' and 'rgb(223, 243, 251)' in pg.eval_on_selector('#legend .bar', 'e=>e.style.background'))
     pg.click('.styleOpt[data-style="s5"]'); pg.wait_for_timeout(1200)
-    check('Flygfoto + linjer -> no colour bar, "Djupkurvor var 1 m"', src() == 'lakes/regnaren/map_v2_s5.jpg' and pg.eval_on_selector('#legend', 'e=>e.classList.contains("noBar")'))
+    check('Flygfoto + linjer -> no colour bar, "Djupkurvor var 1 m"', src() == 'lakes/regnaren/map_v3_s5.jpg' and pg.eval_on_selector('#legend', 'e=>e.classList.contains("noBar")'))
     import os
-    os.rename('../docs/lakes/regnaren/map_v2_s4.jpg', '../docs/lakes/regnaren/map_v2_s4.jpg.off')   # like having no coverage the first time
+    os.rename('../docs/lakes/regnaren/map_v3_s4.jpg', '../docs/lakes/regnaren/map_v3_s4.jpg.off')   # like having no coverage the first time
     try:
         pg.click('.styleOpt[data-style="s4"]'); pg.wait_for_timeout(1500)
     finally:
-        os.rename('../docs/lakes/regnaren/map_v2_s4.jpg.off', '../docs/lakes/regnaren/map_v2_s4.jpg')
-    check('a style that cannot load (no coverage): old map kept + message', src() == 'lakes/regnaren/map_v2_s5.jpg' and pg.is_visible('#mapStyleMsg'), (src(), pg.inner_text('#mapStyleMsg'), pg.evaluate('navigator.onLine')))
+        os.rename('../docs/lakes/regnaren/map_v3_s4.jpg.off', '../docs/lakes/regnaren/map_v3_s4.jpg')
+    check('a style that cannot load (no coverage): old map kept + message', src() == 'lakes/regnaren/map_v3_s5.jpg' and pg.is_visible('#mapStyleMsg'), (src(), pg.inner_text('#mapStyleMsg'), pg.evaluate('navigator.onLine')))
     pg.click('.styleOpt[data-style="s3"]'); pg.wait_for_timeout(800)
-    check('an already used style switches back instantly', src() == 'lakes/regnaren/map_v2_s3.jpg')
+    check('an already used style switches back instantly', src() == 'lakes/regnaren/map_v3_s3.jpg')
     pg.click('.styleOpt[data-style="s2"]'); pg.wait_for_timeout(1200)
     pg.reload(); pg.wait_for_timeout(1800)
-    check('choice remembered after reload/rotation', src() == 'lakes/regnaren/map_v2_s2.jpg')
+    check('choice remembered after reload/rotation', src() == 'lakes/regnaren/map_v3_s2.jpg')
     pg.click('#settingsBackBtn') if pg.is_visible('#settingsBackBtn') else None
     pg.screenshot(path='mapstyle_s2_map.png')
     check('no page errors', not errs, errs)

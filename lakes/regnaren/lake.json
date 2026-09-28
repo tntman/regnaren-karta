@@ -7,18 +7,18 @@
  ],
  "source": "C-MAP Genesis Social Map + Bing aerial (rebuilt 2026-09-28; before that: C-MAP colours, uncalibrated)",
  "geo": {
-  "zoom": 16,
-  "originX": 9120061,
-  "originY": 4972730,
-  "fullW": 6507,
-  "metersPerPx": 1.2343575150547,
-  "imgW": 3600,
-  "imgH": 1758
+  "zoom": 14,
+  "originX": 2280015,
+  "originY": 1243182,
+  "fullW": 1627,
+  "metersPerPx": 4.9374300602188,
+  "imgW": 1627,
+  "imgH": 795
  },
  "depth": {
-  "file": "depth_v2.txt",
+  "file": "depth_v3.txt",
   "w": 1627,
-  "h": 794,
+  "h": 795,
   "step": 0.08,
   "max": 12,
   "capped": false
@@ -28,9 +28,9 @@
   "6 m",
   "12 m"
  ],
- "contourText": "Djupkurvor var 1 m (2 m under 10 m)",
- "mapFile": "map_v2_{style}.jpg",
- "thumbFile": "thumbs_v2/{style}.jpg",
+ "contourText": "Djupkurvor från C-MAP Genesis",
+ "mapFile": "map_v3_{style}.jpg",
+ "thumbFile": "thumbs_v3/{style}.jpg",
  "styles": [
   {
    "id": "s1",
@@ -41,7 +41,7 @@
   {
    "id": "s2",
    "name": "Förenklad",
-   "desc": "Klara djupfärger och tydliga djupkurvor",
+   "desc": "Klara djupfärger, utan skuggning",
    "legend": "linear-gradient(to right,#7a0403 0%,#d23105 12%,#fb8122 25%,#ecd13a 38%,#a1fd3d 50%,#2ff19b 62%,#2ab9ee 75%,#4669e0 88%,#30123b 100%)"
   },
   {
@@ -99,21 +99,43 @@
   }
  ],
  "detail": {
-  "file": "tiles_v2/{style}/{c}_{r}.jpg",
+  "file": "tiles_v3/z{z}/{style}/{c}_{r}.jpg",
   "tile": 512,
-  "cols": 13,
-  "rows": 7,
-  "have": "1111111111110111111111111100000111110110000001111001000000011110000000001111100000000000110",
-  "styles": [
-   "s1",
-   "s2",
-   "s3",
-   "s4",
-   "s5",
-   "s6",
-   "g1",
-   "v1",
-   "c1"
+  "levels": [
+   {
+    "z": 15,
+    "cols": 7,
+    "rows": 4,
+    "have": "1111111001111100011100000010",
+    "styles": [
+     "s1",
+     "s2",
+     "s3",
+     "s4",
+     "s5",
+     "s6",
+     "g1",
+     "v1",
+     "c1"
+    ]
+   },
+   {
+    "z": 16,
+    "cols": 13,
+    "rows": 7,
+    "have": "1111111111110101111111111100000111110110000001111001000000011110000000001111100000000000110",
+    "styles": [
+     "s1",
+     "s2",
+     "s3",
+     "s4",
+     "s5",
+     "s6",
+     "g1",
+     "v1",
+     "c1"
+    ]
+   }
   ]
  }
 }
