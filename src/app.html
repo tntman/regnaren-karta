@@ -36,6 +36,11 @@
   #stage.dragging{cursor:grabbing;}
   #world{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform;}
   #mapImg{display:block;max-width:none;-webkit-user-drag:none;pointer-events:none;}
+  /* sharper map pieces when zoomed in (lakes with detail tiles): screen-positioned,
+     so each piece is drawn at full sharpness instead of as a scaled layer */
+  #detailLayer{position:absolute;left:0;top:0;width:0;height:0;pointer-events:none;}
+  #detailLayer img{position:absolute;left:0;top:0;display:block;max-width:none;opacity:0;transition:opacity .25s;-webkit-user-drag:none;transform-origin:0 0;}
+  #detailLayer img.ok{opacity:1;}
   #mapLoading{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:1;color:var(--text-muted);font-size:13px;pointer-events:none;display:none;}
   #mapLoading.show{display:block;}
 
@@ -894,7 +899,7 @@
   .styleMsg{font-size:12px;color:#FFB23F;margin-top:8px;}
   #legend.noBar .bar{display:none;}
   #legend.noBar .ticks{display:none;}
-  #legend.noBar::after{content:'Djupkurvor var 1 m';font-size:10.5px;color:var(--text-muted);}
+  #legend.noBar::after{content:attr(data-contour);font-size:10.5px;color:var(--text-muted);}
   /* "Kartans färg" (saturation) slider */
   .satRow{display:flex;align-items:center;gap:12px;margin-top:10px;}
   .satSlider{flex:1 1 auto;min-width:0;-webkit-appearance:none;appearance:none;height:30px;margin:0;background:transparent;cursor:pointer;}
@@ -1010,6 +1015,7 @@
 <div id="app">
   <div id="stage">
     <div id="world"><img id="mapImg" alt="Djupkarta över sjön Regnaren" draggable="false"></div>
+    <div id="detailLayer" aria-hidden="true"></div>
     <div id="mapLoading">Laddar karta…</div>
   </div>
 
@@ -1281,14 +1287,14 @@
   </div>
 
   <header>
-    <div class="kicker">REGNAREN</div>
+    <div class="kicker" id="lakeTitle">REGNAREN</div>
     <div id="headerUser"></div>
     <button type="button" id="wxChip" aria-expanded="false" aria-controls="wxCard" aria-label="Väder och vind"></button>
     <div id="farAway"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11z"></path><circle cx="12" cy="10" r="2.2"></circle></svg><span class="farText" id="farText"></span></div>
     <div id="netBadge"><span class="netDot"></span><span class="netText" id="netText"></span></div>
   </header>
   <div id="wxCard" role="dialog" aria-label="Väder vid Regnaren">
-    <div class="wxHead"><span>Väder vid Regnaren</span><em id="wxSrc"></em><button id="wxClose" type="button" aria-label="Stäng">✕</button></div>
+    <div class="wxHead"><span id="wxTitle">Väder vid Regnaren</span><em id="wxSrc"></em><button id="wxClose" type="button" aria-label="Stäng">✕</button></div>
     <div id="wxBody"></div>
   </div>
   <div id="measurePanel" role="region" aria-label="Mätverktyg">
@@ -1307,9 +1313,9 @@
     <div id="dot"><span id="dotCenter"></span><svg id="dotArrow" viewBox="0 0 24 24"><path class="arrowHalo" d="M12 3.25l7 17.5-7-4.2-7 4.2z"></path><path class="arrowBody" d="M12 3.25l7 17.5-7-4.2-7 4.2z"></path></svg></div>
   </div>
 
-  <div id="legend">
+  <div id="legend" data-contour="Djupkurvor var 1 m">
     <div class="bar"></div>
-    <div class="ticks"><span>0 m</span><span>5 m</span><span>10 m+</span></div>
+    <div class="ticks" id="legendTicks"><span>0 m</span><span>5 m</span><span>10 m+</span></div>
   </div>
 
   <div id="scalebar">
@@ -1480,51 +1486,71 @@
 (function(){
   "use strict";
 
+  /* ---------- lakes ------------------------------------------------
+     Every lake has its own folder lakes/<id>/ (map pictures, depth data,
+     thumbnails, detail tiles) and a lake.json that the build embeds here.
+     One page serves all lakes: the chosen lake is remembered on the phone
+     (?lake=<id> in the address picks one directly); switching lakes in the
+     menu reloads the page with the new one. Waypoints, boats and settings
+     in Firestore are tagged with the lake id, so lakes never mix. */
+  var LAKES = __LAKES__;
+  var LAKE_KEY = 'ffmap_lake_v1';
+  var LAKE_ID = (function(){
+    function known(id){ return LAKES.some(function(l){ return l.id === id; }); }
+    var want = null;
+    try { var m = /[?&]lake=([a-z0-9_-]+)/.exec(location.search); if (m) want = m[1]; } catch(e){}
+    if (!known(want)){ try { want = localStorage.getItem(LAKE_KEY); } catch(e){} }
+    return known(want) ? want : LAKES[0].id;
+  })();
+  try { localStorage.setItem(LAKE_KEY, LAKE_ID); } catch(e){}
+  var LAKE = LAKES.filter(function(l){ return l.id === LAKE_ID; })[0];
+  var LAKE_DIR = 'lakes/' + LAKE_ID + '/';
+  // Per-lake storage key. Regnaren (the first lake) keeps its old key, so
+  // nothing already saved on anyone's phone is lost.
+  function lakeKey(legacy, name){ return LAKE_ID === 'regnaren' ? legacy : 'lake_' + LAKE_ID + '_' + name; }
+
   /* ---------- geo referencing --------------------------------------
-     The map image is a crop of a standard Web-Mercator slippy-tile
-     canvas (zoom 16, 256px tiles). Native full-resolution crop was
-     6507x3177 px, starting at tile (35618,19409) with pixel offset
-     (1853,4026) inside that tile grid. The web-served image below is
-     a uniformly downscaled copy of that same crop, so a single scale
-     factor (WEB_W / FULLRES_W) relates the two pixel spaces. ------- */
-  var ZOOM = 16, TILE = 256;
-  var X_START_TILES = 35618, Y_START_TILES = 19409;
-  var CROP_X0 = 1853, CROP_Y0 = 4026;
-  var FULLRES_W = 6507;
-  var IMG_W = 3600, IMG_H = 1758; // natural size of assets/map.jpg
+     A lake's map image is a crop of a standard Web-Mercator slippy-tile
+     canvas (256px tiles) at geo.zoom: the crop's top-left corner is at
+     global pixel (originX, originY) and it was geo.fullW px wide at full
+     resolution. The web-served image is a uniformly downscaled copy of
+     that same crop, so a single scale factor (IMG_W / fullW) relates the
+     two pixel spaces. ------- */
+  var TILE = 256;
+  var ZOOM = LAKE.geo.zoom;
+  var ORIGIN_X = LAKE.geo.originX, ORIGIN_Y = LAKE.geo.originY;
+  var FULLRES_W = LAKE.geo.fullW;
+  var IMG_W = LAKE.geo.imgW, IMG_H = LAKE.geo.imgH; // natural size of the map pictures
   var S = IMG_W / FULLRES_W;
   var N_TILES = Math.pow(2, ZOOM);
-  var ORIG_METERS_PER_PX = 1.2340603386578268; // at full native resolution
+  var ORIG_METERS_PER_PX = LAKE.geo.metersPerPx; // at full native resolution
   var WEB_METERS_PER_PX = ORIG_METERS_PER_PX / S;
-  var LAKE_CENTER_LAT = 58.88951, LAKE_CENTER_LON = 15.77759;
-
-  /* Which lake this particular page/file is for. All waypoints this page
-     creates are tagged with this id, and only waypoints tagged with it are
-     ever shown here — so every lake can share the same Firebase project /
-     Firestore collection without their pins mixing. To add a new lake:
-     build its page the same way this one was built (crop + geo-reference
-     the map, embed it), give it its own unique LAKE_ID below, and add an
-     entry for it to the LAKES list further down (menu section). */
-  var LAKE_ID = 'regnaren';
+  var LAKE_CENTER_LAT = LAKE.center[0], LAKE_CENTER_LON = LAKE.center[1];
 
   function latLonToImgPx(lat, lon){
     var xGlobal = (lon + 180) / 360 * N_TILES * TILE;
     var latRad = lat * Math.PI / 180;
     var yGlobal = (1 - Math.log(Math.tan(latRad) + 1/Math.cos(latRad)) / Math.PI) / 2 * N_TILES * TILE;
-    var xFull = xGlobal - X_START_TILES * TILE - CROP_X0;
-    var yFull = yGlobal - Y_START_TILES * TILE - CROP_Y0;
+    var xFull = xGlobal - ORIGIN_X;
+    var yFull = yGlobal - ORIGIN_Y;
     return { x: xFull * S, y: yFull * S };
   }
 
   function imgPxToLatLon(x, y){
     var xFull = x / S, yFull = y / S;
-    var xGlobal = xFull + X_START_TILES * TILE + CROP_X0;
-    var yGlobal = yFull + Y_START_TILES * TILE + CROP_Y0;
+    var xGlobal = xFull + ORIGIN_X;
+    var yGlobal = yFull + ORIGIN_Y;
     var lon = xGlobal / (N_TILES * TILE) * 360 - 180;
     var yr = yGlobal / (N_TILES * TILE);
     var lat = Math.atan(Math.sinh(Math.PI * (1 - 2 * yr))) * 180 / Math.PI;
     return { lat: lat, lon: lon };
   }
+
+  // the lake's name wherever the page shows it
+  document.getElementById('lakeTitle').textContent = LAKE.name.toUpperCase();
+  document.getElementById('mapImg').alt = 'Djupkarta över sjön ' + LAKE.name;
+  document.getElementById('wxTitle').textContent = 'Väder vid ' + LAKE.name;
+  document.getElementById('wxCard').setAttribute('aria-label', 'Väder vid ' + LAKE.name);
 
   function haversineKm(lat1, lon1, lat2, lon2){
     var R = 6371;
@@ -1617,8 +1643,55 @@
     probeEl.style.transform = 'translate(' + (originX + probe.x * scale).toFixed(1) + 'px,' + (originY + probe.y * scale).toFixed(1) + 'px)';
   }
 
+  /* ---- detail tiles ("skarpare när du zoomar in") ----
+     A lake can have its map styles also as full-resolution pieces
+     (lake.json "detail": tile size in full-resolution px, grid size, and
+     which pieces exist -- only those with water). Once you zoom in so far
+     that the ordinary map picture would get blurry, the pieces that are on
+     screen are laid on top of it (fetched then, kept by the service worker
+     afterwards). Without coverage the ordinary picture simply stays. */
+  var DETAIL = LAKE.detail || null;
+  var detailLayer = document.getElementById('detailLayer');
+  var detailEls = {};   // key -> img
+  function detailWanted(){
+    if (!DETAIL || DETAIL.styles.indexOf(mapStyle) === -1) return false;
+    return scale * (window.devicePixelRatio || 1) > 1.15; // map picture pixels now bigger than screen pixels
+  }
+  function renderDetail(){
+    var want = {}, T = DETAIL ? DETAIL.tile * S : 0;
+    if (detailWanted()){
+      var c0 = Math.max(0, Math.floor(-originX / scale / T)), c1 = Math.min(DETAIL.cols - 1, Math.floor((stageW - originX) / scale / T));
+      var r0 = Math.max(0, Math.floor(-originY / scale / T)), r1 = Math.min(DETAIL.rows - 1, Math.floor((stageH - originY) / scale / T));
+      var size = T * scale;
+      for (var r = r0; r <= r1; r++) for (var c = c0; c <= c1; c++){
+        if (DETAIL.have.charAt(r * DETAIL.cols + c) !== '1') continue;
+        var key = mapStyle + '/' + c + '_' + r;
+        want[key] = true;
+        var el = detailEls[key];
+        if (!el){
+          el = document.createElement('img');
+          el.alt = ''; el.draggable = false; el.decoding = 'async';
+          el.onload = function(){ this.classList.add('ok'); };
+          el.onerror = function(){ this.remove(); };
+          el.src = LAKE_DIR + DETAIL.file.replace('{style}', mapStyle).replace('{c}', c).replace('{r}', r);
+          detailLayer.appendChild(el);
+          detailEls[key] = el;
+        }
+        // whole pixels + 1 px overlap: no hairline gaps between the pieces
+        var x = Math.floor(originX + c * size), y = Math.floor(originY + r * size);
+        el.style.width = (Math.ceil(originX + (c + 1) * size) - x + 1) + 'px';
+        el.style.height = (Math.ceil(originY + (r + 1) * size) - y + 1) + 'px';
+        el.style.transform = 'translate(' + x + 'px,' + y + 'px)';
+      }
+    }
+    Object.keys(detailEls).forEach(function(k){
+      if (!want[k]){ detailEls[k].remove(); delete detailEls[k]; }
+    });
+  }
+
   function render(){
     world.style.transform = 'translate(' + originX + 'px,' + originY + 'px) scale(' + scale + ')';
+    renderDetail();
     renderTrack();
     renderProbe();
     updateMarker();
@@ -1674,7 +1747,7 @@
   // Where you were looking (image-space center + zoom) right before a
   // standalone-mode reload (see handleOrientationEvent below) -- restored
   // in initView() so rotating doesn't dump you back to the default view.
-  var VIEW_STATE_KEY = 'regnaren_rotation_view_v1';
+  var VIEW_STATE_KEY = lakeKey('regnaren_rotation_view_v1', 'rotation_view_v1');
   // Everything else that was going on right before a rotation reload (which
   // page was open, an open spot sheet with what you'd typed, speed history,
   // when your position was last shared ...) -- written by saveRotationState()
@@ -2155,23 +2228,17 @@
      Each style is its own image file next to index.html (same satellite
      land, only the water/depth drawing differs). Only the chosen one is
      downloaded, and the service worker keeps it on the phone afterwards. */
-  var MAP_STYLES = [
-    { id: 's1', name: 'Djupfärger', desc: 'Flygfoto + djupfärger med relief (som tidigare)', legend: 'linear-gradient(to right,#d62728 0%,#ff7f0e 18%,#ffdd00 36%,#2ca02c 55%,#17becf 72%,#1f4fd6 87%,#0a1a5c 100%)' },
-    { id: 's2', name: 'Förenklad', desc: 'Klara djupfärger och en linje per meter', legend: 'linear-gradient(to right,#7a0403 0%,#e4460a 15%,#fe9b2d 30%,#c7ef34 42%,#46f884 55%,#1bcfd4 68%,#3e9bfe 80%,#4454c4 92%,#30123b 100%)' },
-    { id: 's3', name: 'Sjökort', desc: 'Blå djupband som en papperskarta', legend: 'linear-gradient(to right,#dff3fb 0%,#c4e7f6 10%,#a9dbf2 20%,#8fcdec 30%,#74bde4 50%,#5aa9d8 70%,#4796cb 90%)' },
-    { id: 's4', name: 'Natt', desc: 'Mörkt vatten med ljusa djupkurvor', legend: 'linear-gradient(to right,#24475a,#153a55 33%,#0c2749 66%,#061532)' },
-    { id: 's5', name: 'Flygfoto + linjer', desc: 'Naturlig bild med vita djupkurvor', legend: null },
-    { id: 's6', name: 'Blå relief', desc: 'Blå toner med skuggad bottenform', legend: 'linear-gradient(to right,#cfeefa,#6fc3e8 25%,#2a86c9 50%,#12509a 75%,#0a2c63)' }
-  ];
-  var MAP_THUMBS = __MAP_THUMBS__;
-  var MAP_STYLE_KEY = 'ffmap_map_style_v1';
-  var mapStyle = 's1';
+  var MAP_STYLES = LAKE.styles; // (from lakes/<id>/lake.json)
+  var DEFAULT_STYLE = MAP_STYLES[0].id;
+  var MAP_STYLE_KEY = lakeKey('ffmap_map_style_v1', 'map_style_v1');
+  var mapStyle = DEFAULT_STYLE;
   try { var savedStyle = localStorage.getItem(MAP_STYLE_KEY); if (MAP_STYLES.some(function(st){ return st.id === savedStyle; })) mapStyle = savedStyle; } catch(e){}
-  function mapFile(id){ return 'map_v1_' + id + '.jpg'; }
+  function mapFile(id){ return LAKE_DIR + LAKE.mapFile.replace('{style}', id); }
+  function thumbFile(id){ return LAKE_DIR + LAKE.thumbFile.replace('{style}', id); }
   var mapStyleList = document.getElementById('mapStyleList');
   var mapStyleMsg = document.getElementById('mapStyleMsg');
   mapStyleList.innerHTML = MAP_STYLES.map(function(st){
-    return '<button type="button" class="styleOpt" role="radio" data-style="' + st.id + '"><img src="' + MAP_THUMBS[st.id] + '" alt="">' +
+    return '<button type="button" class="styleOpt" role="radio" data-style="' + st.id + '"><img src="' + thumbFile(st.id) + '" alt="">' +
       '<span class="soText"><span class="soName">' + st.name + '</span><span class="soDesc" style="display:block">' + st.desc + '</span></span><span class="soCheck"></span></button>';
   }).join('');
   function markStyle(id, loadingId){
@@ -2187,6 +2254,10 @@
     var lg = document.getElementById('legend'), bar = lg.querySelector('.bar');
     lg.classList.toggle('noBar', !st.legend);
     if (st.legend) bar.style.background = st.legend;
+    // a style can have its own scale (e.g. vegetation / bottom hardness)
+    var ticks = st.ticks || LAKE.legendTicks;
+    document.getElementById('legendTicks').innerHTML = ticks.map(function(t){ return '<span>' + t + '</span>'; }).join('');
+    lg.setAttribute('data-contour', st.note || LAKE.contourText);
   }
   var mapImgEl = document.getElementById('mapImg');
   var mapLoadingEl = document.getElementById('mapLoading');
@@ -2203,10 +2274,11 @@
       try { localStorage.setItem(MAP_STYLE_KEY, id); } catch(e){}
       applyLegend(id); markStyle(id, null);
       mapLoadingEl.classList.remove('show');
+      if (!isStart) scheduleRender(); // detail pieces of the new style
     };
     probe.onerror = function(){
       markStyle(mapStyle, null);
-      if (isStart && id !== 's1'){ loadMapStyle('s1', true); return; } // (the default is always kept on the phone)
+      if (isStart && id !== DEFAULT_STYLE){ loadMapStyle(DEFAULT_STYLE, true); return; } // (the default is always kept on the phone)
       mapLoadingEl.classList.remove('show');
       mapStyleMsg.textContent = 'Kunde inte ladda kartstilen – den behöver nät första gången.';
       mapStyleMsg.hidden = false;
@@ -2236,6 +2308,7 @@
   function applyMapSaturation(){
     var f = mapSat >= 100 ? '' : 'saturate(' + (mapSat / 100) + ')';
     document.getElementById('mapImg').style.filter = f;
+    document.getElementById('detailLayer').style.filter = f;
     var bar = document.querySelector('#legend .bar');
     if (bar) bar.style.filter = f;
     mapSatSlider.value = String(mapSat);
@@ -2556,7 +2629,7 @@
   // last known value is remembered on the phone for offline starts.
   var POS_INTERVAL_CHOICES = [10, 20, 30, 60];
   var POS_INTERVAL_DEFAULT_S = 20;
-  var POS_INTERVAL_KEY = 'ffmap_pos_interval_s_v1';
+  var POS_INTERVAL_KEY = lakeKey('ffmap_pos_interval_s_v1', 'pos_interval_s_v1'); // (per lake, like config/<lake>)
   var posIntervalS = POS_INTERVAL_DEFAULT_S;
   try {
     var savedPi = parseInt(localStorage.getItem(POS_INTERVAL_KEY), 10);
@@ -3029,7 +3102,7 @@
           cfgDoc.onSnapshot(function(snap){
             if (!(snap.metadata && snap.metadata.fromCache)) addUsage('r', 1);
             sharedCfgError = null;
-            applySharedConfig(snap.exists ? snap.data() : null);
+            applySharedConfig(snap.exists ? snap.data() : null, !!(snap.metadata && snap.metadata.fromCache));
           }, function(err){
             sharedCfgError = (err && err.code) || 'error';
             console.warn('config sync error', err);
@@ -3044,11 +3117,13 @@
 
   /* ---- shared settings (config/<lake>) ---- */
   var cfgDoc = null, sharedCfgError = null, posIntervalSaveMsg = '';
-  function applySharedConfig(d){
+  function applySharedConfig(d, fromCache){
     var v = d ? parseInt(d.posIntervalS, 10) : NaN;
-    if (POS_INTERVAL_CHOICES.indexOf(v) !== -1 && v !== posIntervalS){
+    // no setting saved for this lake (the server says so) -> the default, 20 s
+    if (!d && !fromCache) v = POS_INTERVAL_DEFAULT_S;
+    if (POS_INTERVAL_CHOICES.indexOf(v) !== -1){
       posIntervalS = v;
-      try { localStorage.setItem(POS_INTERVAL_KEY, String(v)); } catch(e){}
+      try { localStorage.setItem(POS_INTERVAL_KEY, String(v)); } catch(e){} // (for offline starts)
     }
     renderPosIntervalAdmin();
   }
@@ -3117,13 +3192,13 @@
   });
 
   /* ---------------- sjöar (lakes) ---------------- */
-  // Every lake gets its own page, built the same way this one was. "url"
-  // is where that page lives relative to this one — leave it null for the
-  // lake this particular page IS (so clicking it doesn't try to navigate
-  // anywhere). Add a new lake here once its page exists.
-  var LAKES = [
-    { id: 'regnaren', name: 'Regnaren', url: null }
-  ];
+  // The list comes from lakes/*/lake.json (LAKES, top of the script).
+  // Choosing another lake remembers it and reloads the page with that lake.
+  function switchLake(id){
+    try { localStorage.setItem(LAKE_KEY, id); } catch(e){}
+    var url = location.pathname + location.search.replace(/([?&])lake=[^&]*&?/, '$1').replace(/[?&]$/, '');
+    location.replace(url);
+  }
   var lakeListEl = document.getElementById('lakeList');
   var lakePinSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.7-7-11.5A7 7 0 0 1 19 9.5C19 14.3 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.4"></circle></svg>';
   var lakeCheckSvg = '<svg class="menuItemCheck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>';
@@ -3143,7 +3218,7 @@
     var lake = LAKES.filter(function(l){ return l.id === id; })[0];
     if (!lake) return;
     if (lake.id === LAKE_ID){ toggleMenu(false); return; }
-    if (lake.url) window.location.href = lake.url;
+    switchLake(lake.id);
   });
 
   /* ---------------- menu (Karta / Logg / Inställningar) ---------------- */
@@ -3588,7 +3663,7 @@
      are what actually decide who may read/write what. Only a SHA-256 hash
      of the code is stored here, never the code itself. */
   var ADMIN_NAME_SLUG = 'filip';
-  var ADMIN_PIN_HASH = 'e9d3315a243ca88a3fbffabe7dfee909a223c7d851a20dd940dbc17e75663b54';
+  var ADMIN_PIN_HASH = '08b9a012b423837c8dfa73b63ee55c2a3f2328e1657db955e7a4ca1ceee0eaf7';
   var ADMIN_UNLOCK_KEY = 'ffmap_admin_unlock_v1';
   var ADMIN_EDITALL_KEY = 'ffmap_admin_editall_v1';
 
@@ -4062,14 +4137,26 @@
     arrow.style.transform = 'rotate(' + arrowAngle.toFixed(1) + 'deg)';
   }
   /* ---- depth ("Djup"): under you, and at any spot ----
-     A 1200 x 586 grid over the map image (cells ~6-7 m), 0-10 m in 4 cm
-     steps (the map's own data stops at 10 m, so deeper = "10+"); land is
-     run-length packed. Unpacked once, the first time it's needed. */
-  var DEPTH_W = 1200, DEPTH_H = 586;
-  var DEPTH_B64 = '__DEPTH_GRID_B64__';
+     A grid over the map image (lakes/<id>/depth_*.txt, size in lake.json),
+     one byte per cell = depth / step (Regnaren: 0-10 m in 4 cm steps -- its
+     map's own data stops at 10 m, so deeper = "10+"); 255 = land, and runs
+     of land are packed (251, count lo, count hi), all base64. Fetched at
+     start (the service worker keeps it for offline starts), unpacked once. */
+  var DEPTH_W = LAKE.depth.w, DEPTH_H = LAKE.depth.h, DEPTH_STEP = LAKE.depth.step;
+  var DEPTH_B64 = null;
   var depthGrid = null;
+  function fetchDepthGrid(){
+    fetch(LAKE_DIR + LAKE.depth.file).then(function(r){ return r.ok ? r.text() : null; }).then(function(t){
+      if (!t) return;
+      DEPTH_B64 = t.trim();
+      if (typeof updateProbeText === 'function') updateProbeText();
+      if (typeof updateSpeedPill === 'function') updateSpeedPill();
+    }).catch(function(e){ console.warn('djupdata', e); });
+  }
+  fetchDepthGrid();
   function loadDepthGrid(){
     if (depthGrid) return depthGrid;
+    if (!DEPTH_B64) return null; // (still on its way)
     try {
       var bin = atob(DEPTH_B64), g = new Uint8Array(DEPTH_W * DEPTH_H), j = 0;
       for (var i = 0; i < bin.length; i++){
@@ -4096,10 +4183,14 @@
       sum += v * w; wsum += w;
     }
     if (wsum < 0.2) return null; // (on land / outside the map)
-    return sum / wsum * 0.04;
+    return sum / wsum * DEPTH_STEP;
   }
   function depthAtLatLon(lat, lon){ var p = latLonToImgPx(lat, lon); return depthAtImgPx(p.x, p.y); }
-  function fmtDepth(m){ return m == null ? '–' : (m >= 9.95 ? '10+' : m.toFixed(1).replace('.', ',')); }
+  function fmtDepth(m){
+    if (m == null) return '–';
+    if (LAKE.depth.capped && m >= LAKE.depth.max - 0.05) return LAKE.depth.max + '+';
+    return m.toFixed(1).replace('.', ',');
+  }
   var SHOW_DEPTH_KEY = 'ffmap_show_depth_v1';
   var showDepth = true;
   try { if (localStorage.getItem(SHOW_DEPTH_KEY) === '0') showDepth = false; } catch(e){}
@@ -4252,7 +4343,7 @@
 
   // kept on the phone until you close the tool with ✕ -- the home-screen app
   // reloads the page when you rotate the phone, which used to wipe it
-  var MEASURE_KEY = 'ffmap_measure_v1';
+  var MEASURE_KEY = lakeKey('ffmap_measure_v1', 'measure_v1');
   function saveMeasure(){
     try {
       if (measureMode) localStorage.setItem(MEASURE_KEY, JSON.stringify({ on: true, pts: measurePts }));
@@ -4477,7 +4568,7 @@
      track starts every morning at 06:00. A new segment starts after a jump (>250 m, e.g.
      a Demo reroll) or a long pause (>10 min), so no straight lines across
      the lake. Points closer than 8 m aren't stored (GPS jitter at anchor). */
-  var TRACK_KEY = 'ffmap_track_v1', SHOW_TRACK_KEY = 'ffmap_show_track_v1';
+  var TRACK_KEY = lakeKey('ffmap_track_v1', 'track_v1'), SHOW_TRACK_KEY = 'ffmap_show_track_v1';
   var TRACK_MAX_POINTS = 6000;
   var showTrack = true;
   try { if (localStorage.getItem(SHOW_TRACK_KEY) === '0') showTrack = false; } catch(e){}
@@ -4614,7 +4705,7 @@
     } else {
       var km = haversineKm(lat, lon, LAKE_CENTER_LAT, LAKE_CENTER_LON);
       var kmTxt = km < 10 ? km.toFixed(1).replace('.', ',') : String(Math.round(km));
-      showFarAway('<b>' + kmTxt + ' km</b> från Regnaren<br><span class="farSub">GPS aktiveras på plats</span>');
+      showFarAway('<b>' + kmTxt + ' km</b> från ' + LAKE.name + '<br><span class="farSub">GPS aktiveras på plats</span>');
       addHereBtn.disabled = true;
       locateBtn.disabled = true;
     }
@@ -4736,7 +4827,7 @@
      Fetched at most every 30 min while the app is open (and when it's opened
      again after that), kept on the phone so the last forecast still shows
      without coverage. Costs nothing in Firebase. */
-  var WX_KEY = 'ffmap_weather_v1', WX_MAX_AGE = 30 * 60 * 1000;
+  var WX_KEY = lakeKey('ffmap_weather_v1', 'weather_v1'), WX_MAX_AGE = 30 * 60 * 1000;
   var WX_URL = 'https://api.open-meteo.com/v1/forecast?latitude=' + LAKE_CENTER_LAT + '&longitude=' + LAKE_CENTER_LON +
     '&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m,pressure_msl,precipitation' +
     '&hourly=temperature_2m,wind_speed_10m,wind_direction_10m,wind_gusts_10m,pressure_msl,precipitation,precipitation_probability&daily=sunrise,sunset' +
@@ -5043,7 +5134,14 @@
   // index.html) keeps a copy of the app so it opens even without coverage.
   // If sw.js isn't there, this quietly does nothing.
   if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')){
-    var registerSw = function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); };
+    var registerSw = function(){
+      navigator.serviceWorker.register('sw.js').catch(function(){});
+      // keep this lake's start files on the phone (default map + chosen style + depth)
+      navigator.serviceWorker.ready.then(function(reg){
+        var urls = [mapFile(DEFAULT_STYLE), mapFile(mapStyle), LAKE_DIR + LAKE.depth.file];
+        if (reg.active) reg.active.postMessage({ type: 'precache', urls: urls });
+      }).catch(function(){});
+    };
     if (document.readyState === 'complete') registerSw(); else window.addEventListener('load', registerSw);
   }
 })();

@@ -15,7 +15,9 @@ Start-Sleep -Seconds 1
 $fail = 0
 try {
     foreach ($t in Get-ChildItem test_*.py | Sort-Object Name) {
-        $out = (& py -3 $t.Name 2>&1 | ForEach-Object { "$_" } | Select-Object -Last 1)
+        $lines = @(& py -3 $t.Name 2>&1 | ForEach-Object { "$_" })
+        $out = ($lines | Where-Object { $_ -match '^\d+/\d+ passed' } | Select-Object -Last 1)
+        if (-not $out) { $out = $lines | Select-Object -Last 1 }
         "{0,-24} {1}" -f $t.Name, $out
         if ($out -match '^(\d+)/(\d+) passed') {
             if ($Matches[1] -ne $Matches[2]) { $fail = 1 }

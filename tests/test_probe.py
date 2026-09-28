@@ -9,12 +9,12 @@ def full_to_latlon(col, row):
     xg = col + CX0 + XT * TILE; yg = row + CY0 + YT * TILE
     lon = xg / (N * TILE) * 360 - 180; n = math.pi - 2 * math.pi * yg / (N * TILE)
     return math.degrees(math.atan(math.sinh(n))), lon
-e = np.load('../data/raw/depth_raw.npz')['elevation_m'].astype('float32'); o = np.load('../data/raw/depth_raw.npz')['water']; dep = -e
-rows, cols = np.where(o & (np.abs(dep - 8.0) < 0.15))
+e = np.load('../lakes/regnaren/raw/depth_raw.npz')['elevation_m'].astype('float32'); o = np.load('../lakes/regnaren/raw/depth_raw.npz')['water']; dep = -e
+rows, cols = np.where(o & (np.abs(dep - 6.0) < 0.15))
 pt = None
 for r, c in zip(rows[::997], cols[::997]):
     win = dep[r-60:r+61, c-60:c+61]; ow = o[r-60:r+61, c-60:c+61]
-    if win.shape == (121, 121) and ow.all() and np.abs(win - 8).max() < 0.8: pt = (r, c); break
+    if win.shape == (121, 121) and ow.all() and np.abs(win - 6).max() < 0.8: pt = (r, c); break
 LA, LO = full_to_latlon(pt[1], pt[0])
 def state(pg):
     return pg.evaluate("""() => ({ show: document.getElementById('probe').classList.contains('show'),

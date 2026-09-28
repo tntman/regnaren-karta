@@ -14,22 +14,22 @@ def full_to_latlon(col, row):
     n = math.pi - 2 * math.pi * yg / (N * TILE)
     lat = math.degrees(math.atan(math.sinh(n)))
     return lat, lon
-e = np.load('../data/raw/depth_raw.npz')['elevation_m'].astype('float32'); o = np.load('../data/raw/depth_raw.npz')['water']
+e = np.load('../lakes/regnaren/raw/depth_raw.npz')['elevation_m'].astype('float32'); o = np.load('../lakes/regnaren/raw/depth_raw.npz')['water']
 dep = -e
-def pick(target):
-    # a water point well inside the lake whose surroundings (±40 px) are all close to target depth
+def pick(target, half=40, tol=0.6):
+    # a water point well inside the lake whose surroundings (±half px) are all close to target depth
     rows, cols = np.where(o & (np.abs(dep - target) < 0.15))
-    for r, c in zip(rows[::211], cols[::211]):
-        win = dep[r-40:r+41, c-40:c+41]; ow = o[r-40:r+41, c-40:c+41]
-        if win.shape == (81, 81) and ow.all() and np.abs(win - target).max() < 0.6:
+    for r, c in zip(rows[::97], cols[::97]):
+        win = dep[r-half:r+half+1, c-half:c+half+1]; ow = o[r-half:r+half+1, c-half:c+half+1]
+        if win.shape == (2*half+1, 2*half+1) and ow.all() and np.abs(win - target).max() < tol:
             return r, c
     return None
-deep = pick(8.0); shallow = pick(2.0)
+deep = pick(6.0); shallow = pick(2.0, 25, 0.5)
 print('points', deep, shallow)
 
 with sync_playwright() as p:
     la, lo = full_to_latlon(deep[1], deep[0])
-    b, ctx, pg, errs = new_page(p, geo=(la, lo), cfg={'waypoints':[{'lat':la,'lon':lo,'name':'Djupet','uid':'filip','by':'Filip','type':'gos'}]}, name='Filip')
+    b, ctx, pg, errs = new_page(p, geo=(la, lo), cfg={'waypoints':[{'lat':la,'lon':lo,'name':'Djupet','uid':'filip','by':'Filip','type':'gos'}]}, name='Filip', sw=True)
     pg.wait_for_timeout(1800)
     # ---- filter menu ----
     check('filter menu closed at start: only the Filter button', not pg.is_visible('#visMore') and not pg.is_visible('#toggleMine'))
@@ -41,11 +41,11 @@ with sync_playwright() as p:
     pg.click('#visMoreBtn'); pg.click('label:has(#toggleBoats) .toggle'); pg.click('#visMoreBtn'); pg.wait_for_timeout(150)
     # ---- depth ----
     dv = pg.inner_text('#depthVal')
-    check('depth under you ~8 m at a deep spot', abs(float(dv.replace(',', '.')) - 8.0) < 0.5, dv)
+    check('depth under you ~6 m at a deep spot', abs(float(dv.replace(',', '.')) - 6.0) < 0.5, dv)
     pg.screenshot(path='feat_depth.png')
     pg.evaluate("document.querySelector('#waypoints .wpPin').click()"); pg.wait_for_timeout(400)
     meta = pg.inner_text('#wpMeta')
-    check('spot sheet shows the depth there', 'Djup 8' in meta or 'Djup 7,9' in meta or 'Djup 7,8' in meta, meta)
+    check('spot sheet shows the depth there', any('Djup ' + v in meta for v in ('6,0', '6,1', '6,2', '6,3', '5,9', '5,8', '5,7')), meta)
     pg.click('#wpCancel'); pg.wait_for_timeout(300)
     la2, lo2 = full_to_latlon(shallow[1], shallow[0])
     ctx.set_geolocation({'latitude': la2, 'longitude': lo2, 'accuracy': 5}); pg.wait_for_timeout(1800)
@@ -86,6 +86,8 @@ with sync_playwright() as p:
     check('service worker installed', ok)
     check('app opens with NO network (from the saved copy)', pg.title() == 'FF Map' and pg.is_visible('#visMoreBtn') and pg.eval_on_selector('#mapImg', 'e=>e.naturalWidth') == 3600)
     ctx.set_offline(False)
-    check('no page errors', not [e for e in errs if 'firebase' not in e.lower()], errs)
+    # (errors from the real Firebase SDK, which the service worker may fetch and which
+    #  then fails against the locked fake -- see fakefb.py -- are expected here)
+    check('no page errors', not [e for e in errs if 'firebase' not in e.lower() and 'modularAPIs' not in e], errs)
     b.close()
 print('\n%d/%d passed' % (sum(results), len(results)))

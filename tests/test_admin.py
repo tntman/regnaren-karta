@@ -1,3 +1,4 @@
+import fakefb
 from playwright.sync_api import sync_playwright
 from fakefb import new_page, login
 import time
@@ -33,9 +34,9 @@ with sync_playwright() as p:
     check('PIN asked first', pg.eval_on_selector('#pinModal', 'e=>e.classList.contains("show")'))
     pg.fill('#pinInput', '123456'); pg.click('#pinOk'); pg.wait_for_timeout(300)
     check('wrong PIN rejected', pg.is_visible('#pinError') and not pg.eval_on_selector('#adminView','e=>e.classList.contains("show")'))
-    pg.fill('#pinInput', '851006'); pg.press('#pinInput', 'Enter'); pg.wait_for_timeout(400)
+    pg.fill('#pinInput', fakefb.TEST_PIN); pg.press('#pinInput', 'Enter'); pg.wait_for_timeout(400)
     check('right PIN opens admin', pg.eval_on_selector('#adminView','e=>e.classList.contains("show")'))
-    check('PIN itself not in page source', '851006' not in pg.content())
+    check('PIN itself not in page source', fakefb.TEST_PIN not in pg.content())
 
     stats = pg.eval_on_selector_all('.statTile', 'els => els.map(e => e.querySelector(".statLabel").textContent + "=" + e.querySelector(".statValue").textContent)')
     print('   stats:', stats)
@@ -60,7 +61,8 @@ with sync_playwright() as p:
     w = pg.evaluate('window.__posWrites')
     check('Dölj grå båtar hides Pia', any(x['id'] == 'pia' and x['updatedAtMs'] == 0 for x in w), w)
 
-    # export GPX / CSV
+    # export GPX / CSV (test the download path: no share sheet, which e.g. Edge on Windows has)
+    pg.evaluate("Object.defineProperty(navigator, 'canShare', { value: undefined, configurable: true })")
     with pg.expect_download() as dl:
         pg.click('#adminExportGpx')
     gpx = open(dl.value.path(), encoding='utf-8').read()
@@ -70,7 +72,6 @@ with sync_playwright() as p:
     csv = open(dl.value.path(), encoding='utf-8-sig').read()
     print('   csv:\n     ' + csv.strip().replace('\n', '\n     '))
     check('CSV export: header + 4 rows', csv.strip().count('\n') == 4 and csv.startswith('Namn;Typ;Latitud'))
-
     # edit-all switch -> can delete someone else's spot
     pg.click('#adminEditAllToggle'); pg.wait_for_timeout(100)
     pg.click('#adminBackBtn'); pg.click('#settingsBackBtn'); pg.wait_for_timeout(300)
@@ -102,6 +103,6 @@ with sync_playwright() as p:
     pg.click('#menuBtn'); pg.click('#menuItemSettings'); pg.wait_for_timeout(200)
     check('logged in as someone else -> no admin', not pg.is_visible('#adminRow'))
     check('no page errors', not errs, errs)
+    # result first: Playwright 1.35 + Edge can crash while closing after a download
+    print('\n%d/%d passed' % (sum(results), len(results)), flush=True)
     b.close()
-
-print('\n%d/%d passed' % (sum(results), len(results)))

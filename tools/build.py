@@ -1,26 +1,53 @@
 """Builds the site into docs/ (what GitHub Pages serves).
 
-    python3 tools/build.py
+    py -3 tools/build.py          (python3 tools/build.py elsewhere)
 
 src/app.html      the app (CSS + HTML + JS) -- edit this
 src/head.html     the <head> (title, icons, manifest, Firebase SDK)
 src/sw.js         service worker (offline start)
-data/             depth grid + map-style thumbnails, injected at build
-assets/           icons, manifest, the six map pictures (copied as is)
+lakes/<id>/       one folder per lake: lake.json (name, geo-reference, depth
+                  scale, map styles ...), map pictures, depth grid, thumbnails,
+                  detail tiles. lake.json is embedded in the page; the rest is
+                  copied to docs/lakes/<id>/ (except raw/ = source data only).
+assets/           icons + manifest (copied as is)
 """
-import os, shutil
+import os, shutil, json
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 def rd(*p): return open(os.path.join(ROOT, *p), encoding='utf-8').read()
+
+# ---- lakes: Regnaren first (the default), then by "order" / name
+lakes = []
+for d in sorted(os.listdir(os.path.join(ROOT, 'lakes'))):
+    f = os.path.join(ROOT, 'lakes', d, 'lake.json')
+    if os.path.exists(f):
+        lk = json.load(open(f, encoding='utf-8'))
+        assert lk['id'] == d, 'lake.json id must match its folder: ' + d
+        lakes.append(lk)
+lakes.sort(key=lambda l: (l.get('order', 0 if l['id'] == 'regnaren' else 100), l['name']))
+
 page = rd('src', 'app.html'); head = rd('src', 'head.html')
 i0 = page.index('<style>'); i1 = page.index('</style>') + len('</style>')
 style, rest = page[i0:i1], page[i1:]
-rest = rest.replace('__MAP_THUMBS__', rd('data', 'map_thumbs.js').strip())
-rest = rest.replace('__DEPTH_GRID_B64__', rd('data', 'depth_grid_b64.txt').strip())
+rest = rest.replace('__LAKES__', json.dumps(lakes, ensure_ascii=False, separators=(',', ':')))
 html = head.rstrip('\n') + '\n' + style + '\n</head>\n<body>\n' + rest + '\n</body>\n</html>\n'
+
 out = os.path.join(ROOT, 'docs'); os.makedirs(out, exist_ok=True)
 open(os.path.join(out, 'index.html'), 'w', encoding='utf-8').write(html)
 shutil.copy(os.path.join(ROOT, 'src', 'sw.js'), out)
 for f in os.listdir(os.path.join(ROOT, 'assets')):
     if f.endswith('.svg'): continue
     shutil.copy(os.path.join(ROOT, 'assets', f), out)
-print('docs/index.html', len(html) // 1024, 'kB')
+
+# ---- lake folders -> docs/lakes/<id>/ (a fresh copy, so removed files go too)
+shutil.rmtree(os.path.join(out, 'lakes'), ignore_errors=True)
+for lk in lakes:
+    src = os.path.join(ROOT, 'lakes', lk['id'])
+    shutil.copytree(src, os.path.join(out, 'lakes', lk['id']),
+                    ignore=shutil.ignore_patterns('raw', 'lake.json', '*.npy', '*.npz'))
+# old single-lake files from before lakes/ existed
+for f in os.listdir(out):
+    if f.startswith('map_v1_') and f.endswith('.jpg'):
+        os.remove(os.path.join(out, f))
+
+n = sum(len(fs) for _, _, fs in os.walk(os.path.join(out, 'lakes')))
+print('docs/index.html', len(html) // 1024, 'kB;', len(lakes), 'lakes:', ', '.join(l['id'] for l in lakes), '(%d files)' % n)

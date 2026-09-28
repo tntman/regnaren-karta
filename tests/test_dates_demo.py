@@ -1,8 +1,8 @@
 from playwright.sync_api import sync_playwright
 import fakefb, json, math, datetime, time
 fakefb.FAKE_FIREBASE_JS = fakefb.FAKE_FIREBASE_JS.replace(
-    "wpDocs['w'+i] = { lat:w.lat, lon:w.lon, name:w.name, uid:w.uid, by:w.by||w.uid, lake:'regnaren', createdAt: ts(now - 3600000) };",
-    "wpDocs['w'+i] = { lat:w.lat, lon:w.lon, name:w.name, type:w.type, uid:w.uid, by:w.by||w.uid, lake:'regnaren', createdAt: ts(w.at || (now - 3600000)) };")
+    "wpDocs['w'+i] = { lat:w.lat, lon:w.lon, name:w.name, uid:w.uid, by:w.by||w.uid, lake:w.lake||'regnaren', createdAt: ts(now - 3600000) };",
+    "wpDocs['w'+i] = { lat:w.lat, lon:w.lon, name:w.name, type:w.type, uid:w.uid, by:w.by||w.uid, lake:w.lake||'regnaren', createdAt: ts(w.at || (now - 3600000)) };")
 from fakefb import login
 import importlib, test_weather as _tw  # reuse the weather mock
 results = []

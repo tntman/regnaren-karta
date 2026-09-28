@@ -48,7 +48,7 @@ with sync_playwright() as p:
     pg.click('#menuBtn'); pg.click('#menuItemSettings'); pg.wait_for_timeout(200)
     pg.click('#wpSizeSeg button[data-size="1"]')
     pg.click('#demoModeToggle'); pg.wait_for_timeout(2500)
-    pg.click('#adminOpenBtn'); pg.wait_for_timeout(200); pg.fill('#pinInput', '851006'); pg.press('#pinInput', 'Enter'); pg.wait_for_timeout(300)
+    pg.click('#adminOpenBtn'); pg.wait_for_timeout(200); pg.fill('#pinInput', fakefb.TEST_PIN); pg.press('#pinInput', 'Enter'); pg.wait_for_timeout(300)
     pg.click('#adminEditAllToggle'); pg.click('#adminBackBtn'); pg.wait_for_timeout(200)
     pg.fill('#cruiseInput', '3,5')   # typed, NOT committed (still focused)
     pg.evaluate("document.getElementById('settingsBody').scrollTop = 180")

@@ -6,15 +6,18 @@
      from the saved copy (fetched and saved the first time).
    - Firebase's own traffic (the database, sign-in) is never touched here --
      the app's offline data is handled by Firebase itself. */
-var CACHE = 'ffmap-v2';
+var CACHE = 'ffmap-v4';
 var APP_KEY = './';   // the page is stored under one key, whatever URL it was opened with
 var FIREBASE_LIBS = [
   'https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js',
   'https://www.gstatic.com/firebasejs/12.19.0/firebase-auth-compat.js',
   'https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-compat.js'
 ];
-var STATIC = ['./manifest.webmanifest', './apple-touch-icon.png', './icon-192.png', './icon-512.png',
-  './map_v1_s1.jpg'];  // the default map; other map styles are saved the first time they're used
+var STATIC = ['./manifest.webmanifest', './apple-touch-icon.png', './icon-192.png', './icon-512.png'];
+// A lake's own files (its map picture, depth data) are saved when the page
+// asks for them (message 'precache' below, sent on every start with the
+// current lake's files) or the first time they're used; the same goes for
+// other map styles and the detail tiles you've zoomed in on.
 
 self.addEventListener('install', function(e){
   e.waitUntil(caches.open(CACHE).then(function(c){
@@ -31,6 +34,20 @@ self.addEventListener('activate', function(e){
   e.waitUntil(caches.keys().then(function(keys){
     return Promise.all(keys.filter(function(k){ return k !== CACHE; }).map(function(k){ return caches.delete(k); }));
   }).then(function(){ return self.clients.claim(); }));
+});
+
+self.addEventListener('message', function(e){
+  var d = e.data || {};
+  if (d.type !== 'precache' || !Array.isArray(d.urls)) return;
+  e.waitUntil(caches.open(CACHE).then(function(c){
+    return Promise.all(d.urls.map(function(u){
+      var abs = new URL(u, self.registration.scope).href;
+      return c.match(abs).then(function(hit){
+        if (hit) return;
+        return fetch(abs).then(function(r){ if (r.ok) return c.put(abs, r); }).catch(function(){});
+      });
+    }));
+  }));
 });
 
 function isAppPage(req, url){

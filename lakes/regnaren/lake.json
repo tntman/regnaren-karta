@@ -1,0 +1,119 @@
+{
+ "id": "regnaren",
+ "name": "Regnaren",
+ "center": [
+  58.88951,
+  15.77759
+ ],
+ "source": "C-MAP Genesis Social Map + Bing aerial (rebuilt 2026-09-28; before that: C-MAP colours, uncalibrated)",
+ "geo": {
+  "zoom": 16,
+  "originX": 9120061,
+  "originY": 4972730,
+  "fullW": 6507,
+  "metersPerPx": 1.2343575150547,
+  "imgW": 3600,
+  "imgH": 1758
+ },
+ "depth": {
+  "file": "depth_v2.txt",
+  "w": 1627,
+  "h": 794,
+  "step": 0.08,
+  "max": 12,
+  "capped": false
+ },
+ "legendTicks": [
+  "0 m",
+  "6 m",
+  "12 m"
+ ],
+ "contourText": "Djupkurvor var 1 m (2 m under 10 m)",
+ "mapFile": "map_v2_{style}.jpg",
+ "thumbFile": "thumbs_v2/{style}.jpg",
+ "styles": [
+  {
+   "id": "s1",
+   "name": "Djupfärger",
+   "desc": "Flygfoto + djupfärger med relief",
+   "legend": "linear-gradient(to right,#d62728 0%,#fc7810 17%,#ffcf02 33%,#61af21 50%,#1eb59c 67%,#1d69d4 83%,#0a1a5c 100%)"
+  },
+  {
+   "id": "s2",
+   "name": "Förenklad",
+   "desc": "Klara djupfärger och tydliga djupkurvor",
+   "legend": "linear-gradient(to right,#7a0403 0%,#d23105 12%,#fb8122 25%,#ecd13a 38%,#a1fd3d 50%,#2ff19b 62%,#2ab9ee 75%,#4669e0 88%,#30123b 100%)"
+  },
+  {
+   "id": "s3",
+   "name": "Sjökort",
+   "desc": "Blå djupband som en papperskarta",
+   "legend": "linear-gradient(to right,#dff3fb 0%,#c4e7f6 5%,#a9dbf2 12%,#8fcdec 25%,#74bde4 38%,#5aa9d8 50%,#4796cb 62%,#3a84bd 75%,#2f72ae 88%)"
+  },
+  {
+   "id": "s4",
+   "name": "Natt",
+   "desc": "Mörkt vatten med ljusa djupkurvor",
+   "legend": "linear-gradient(to right,#24475a 0%,#153a55 33%,#0c2749 67%,#061532 100%)"
+  },
+  {
+   "id": "s5",
+   "name": "Flygfoto + linjer",
+   "desc": "Naturlig bild med vita djupkurvor",
+   "legend": null
+  },
+  {
+   "id": "s6",
+   "name": "Blå relief",
+   "desc": "Blå toner med skuggad bottenform",
+   "legend": "linear-gradient(to right,#cfeefa 0%,#6fc3e8 25%,#2a86c9 50%,#125099 75%,#0a2c63 100%)"
+  },
+  {
+   "id": "g1",
+   "name": "C-MAP original",
+   "desc": "Som på Genesis-kartan – med djupsiffror",
+   "legend": null,
+   "note": "Siffror = djup i m (liten siffra = tiondelar)"
+  },
+  {
+   "id": "v1",
+   "name": "Vegetation",
+   "desc": "Grönt där ekolodet sett växtlighet",
+   "legend": "linear-gradient(to right,#6fc3e8 0%,#6fc3e8 50%,#46dc3c 50%,#46dc3c 100%)",
+   "ticks": [
+    "Ingen",
+    "",
+    "Växtlighet"
+   ]
+  },
+  {
+   "id": "c1",
+   "name": "Bottenhårdhet",
+   "desc": "Mjuk (ljus) till hård (röd) botten, där det finns mätt",
+   "legend": "linear-gradient(to right,#ffffcc 0%,#fec25d 33%,#fc8643 66%,#fa4a29 100%)",
+   "ticks": [
+    "Mjuk",
+    "",
+    "Hård"
+   ]
+  }
+ ],
+ "detail": {
+  "file": "tiles_v2/{style}/{c}_{r}.jpg",
+  "tile": 512,
+  "cols": 13,
+  "rows": 7,
+  "have": "1111111111110111111111111100000111110110000001111001000000011110000000001111100000000000110",
+  "styles": [
+   "s1",
+   "s2",
+   "s3",
+   "s4",
+   "s5",
+   "s6",
+   "g1",
+   "v1",
+   "c1"
+  ]
+ }
+}
