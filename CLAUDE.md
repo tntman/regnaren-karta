@@ -2,7 +2,7 @@
 
 ## Vad det är
 Webbapp (PWA, "Lägg till på hemskärmen" på iPhone) för fiskegruppen Fiskfiskarna,
-flera sjöar (Regnaren, Vågsfjärden – väljs i menyn). Djupkarta + GPS + delade fiskeplatser och båtpositioner via Firebase
+flera sjöar (Regnaren, Sjösjön, Vågsfjärden – väljs i menyn). Djupkarta + GPS + delade fiskeplatser och båtpositioner via Firebase
 (Firestore, anonym inloggning; identitet = valt namn). Användaren (Filip) är admin.
 All text i appen är på svenska. Svara Filip på svenska, kort och tydligt.
 
@@ -79,6 +79,15 @@ All text i appen är på svenska. Svara Filip på svenska, kort och tydligt.
   "5 cm-vågor" var för generöst), 30–400 m; < 1,5 m/s = hela sjön lä. Lä: ljus ton + tunn kant; öppet vatten: "kometer" (tunt huvud,
   tjockare svans) som driver med vinden, fler/längre/snabbare vid mer vind. ~30 fps bara
   när påslaget och synligt. `window.__ffWind()` för testerna.
+- **Blixtar** (Filter, av som standard, `ffmap_show_lightning_v1`): blixtnedslag i realtid från
+  FMI (Finlands meteorologiska institut, öppen data, täcker Sverige, ingen nyckel, CC BY 4.0,
+  några min fördröjning), WFS `fmi::observations::lightning::simple`, ~40 km runt sjön, senaste
+  30 min, hämtas var 2:a min när påslaget och synligt (inte via Firebase). Varning `#ltPill` under
+  väderchipet (närmaste inom 30 km, orange, röd < 10 km), radar `#ltRadar` under Filter (30 km,
+  norr upp), ⚡ på canvas `#ltLayer` (gul 0–5 min, orange 5–15, grå/bleknar till 30; nya blinkar),
+  markör vid skärmkanten mot närmaste när den är utanför bild. Avstånd från dig om du är vid sjön,
+  annars från sjöns mitt. Inget visas när det är lugnt. `window.__ffLightning()` för testerna;
+  fakefb blockerar opendata.fmi.fi i alla tester (test_lightning har egen låtsas-XML).
 - **Positionsintervall** per sjö (`config/<lake>`, localStorage via `lakeKey`); sjö utan
   inställning i databasen = 20 s.
 - **Ny sjö:** receptet steg för steg + Genesis egenheter + vad som testats och förkastats

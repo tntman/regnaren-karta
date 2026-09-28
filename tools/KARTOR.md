@@ -12,6 +12,12 @@ Alla kommandon körs från repots rot (`E:\github\regnaren-karta`), med `py -3`.
 
 1. **Hitta sjön** på https://www.genesismaps.com/SocialMap/ och bestäm utsnittet
    (lat/lon-gränser). Ta med lite land runt sjön, som på Genesis.
+   Från en länk `…/SocialMap/Index?mwID=<id>`: `POST https://www.genesismaps.com/api/SocialMap/GetTileBoundaries/<id>`
+   (tom kropp; GET ger fel) svarar med Genesis ruta (zoom 10) där sjön ligger. Hämta b_-rutorna
+   på zoom 12 i den rutan, sätt ihop dem och leta upp sjöns form → lat/lon. Filips skärmdump av
+   utsnittet är ungefär zoom 14 – räkna ut gränserna från var datat börjar/slutar i bilden.
+   OSM-id: Overpass `is_in(lat,lon)` + `natural=water` (skicka User-Agent, annars 406;
+   namnsökning med å/ä/ö via curl missade Sjösjön – sök på position i stället).
 2. **Ta reda på vilka zoomnivåer Genesis har** – se avsnitt 2. Gör det INNAN
    du laddar ner något.
 3. **Ladda ner rutor** för varje zoomnivå 14 … högsta:
@@ -62,7 +68,7 @@ Alla kommandon körs från repots rot (`E:\github\regnaren-karta`), med `py -3`.
   ger 403 på alla höga zoomnivåer och ser ut som "zoom saknas".
   *Misstag vi gjort:* vi testade Regnarens mittpunkt (land), fick 403 på zoom 17
   och trodde i onödan att Regnaren bara fanns till zoom 16. Den har 17 och 18.
-- Hittills: både Regnaren och Vågsfjärden har zoom 12–18 (19 = 403).
+- Hittills: Regnaren, Vågsfjärden och Sjösjön har alla zoom 12–18 (19 = 403).
 
 ---
 
@@ -263,3 +269,6 @@ djup = färgens rang (ej kalibrerat) × 10 m; utjämning σ 4,5 px; Sobel-lutnin
 - [x] Regnaren ombyggd med djupkarta på zoom 17 (53 avlästa siffror, 90 % inom
       0,11 m; tidigare zoom 16: 47 siffror, 0,14 m) och lager 14–18. Filer v4
       (Vågsfjärden v3). Regnaren 139 MB, Vågsfjärden 99 MB i docs/lakes/.
+- [x] Sjösjön (mwID 1270210, OSM relation 2375527, 62,5600–62,5808 N, 17,8037–17,8253 O):
+      21 avlästa siffror, 90 % inom 0,11 m, maxdjup 13,5 m, `grid_div` 4 (liten sjö), filer v1,
+      18 MB. Norra delen av sjön (OSM) saknar Genesis-data → okänt djup. Tog ~5 min totalt.

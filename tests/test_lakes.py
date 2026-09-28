@@ -12,6 +12,8 @@ REG = (58.88951, 15.77759)
 # Genesis depth labels on flat bottom (lakes/vagsfjarden/raw/depth_labels.json): lat, lon, depth
 VAGS_POINTS = [(62.918945, 18.266337, 18.0), (62.922594, 18.248602, 33.0), (62.921788, 18.259352, 37.0)]
 VAGS = VAGS_POINTS[0][:2]
+# ... and on Sjösjön (lakes/sjosjon/raw/depth_labels.json)
+SJO_POINTS = [(62.571371, 17.816885, 6.5), (62.575661, 17.817024, 10.3), (62.569854, 17.813666, 13.5)]
 cfg = {
   'waypoints': [
     {'lat': 58.8898, 'lon': 15.7784, 'name': 'Regnarplatsen', 'uid': 'kalle', 'by': 'Calle'},
@@ -35,7 +37,7 @@ with sync_playwright() as p:
     b, ctx, pg, errs = new_page(p, geo=REG, cfg=cfg, name='Filip')
     src = lambda: pg.get_attribute('#mapImg', 'src')
     lakes = pg.eval_on_selector_all('#lakeList .menuItem', 'e=>e.map(x=>x.textContent.trim())')
-    check('lake menu lists both lakes, Regnaren first', lakes == ['Regnaren', 'Vågsfjärden'], lakes)
+    check('lake menu lists all lakes, Regnaren first', lakes == ['Regnaren', 'Sjösjön', 'Vågsfjärden'], lakes)
     pg.wait_for_function("(document.getElementById('mapImg').getAttribute('src') || '').length > 0", timeout=15000)
     check('starts on Regnaren (as before)', src() == 'lakes/regnaren/map_v4_s1.jpg', src())
     check("Regnaren shows only Regnaren's spot", titles(pg) == ['Regnarplatsen'])
@@ -120,5 +122,17 @@ with sync_playwright() as p:
     check('?lake=vagsfjarden opens that lake', pg.get_attribute('#mapImg', 'src') == 'lakes/vagsfjarden/map_v3_s1.jpg')
     pg.goto('http://localhost:8899/index.html?lake=nonsense'); pg.wait_for_timeout(1200)
     check('an unknown lake falls back to the remembered one', pg.get_attribute('#mapImg', 'src') == 'lakes/vagsfjarden/map_v3_s1.jpg')
+    b.close()
+
+    # ---- Sjösjön: opens, and the depth matches Genesis' own labels
+    b, ctx, pg, errs = new_page(p, geo=SJO_POINTS[0][:2], cfg=cfg, name='Filip')
+    pg.goto('http://localhost:8899/index.html?lake=sjosjon'); pg.wait_for_timeout(1500)
+    check('?lake=sjosjon opens Sjösjön', pg.get_attribute('#mapImg', 'src') == 'lakes/sjosjon/map_v1_s1.jpg' and pg.inner_text('#lakeTitle') == 'SJÖSJÖN', pg.get_attribute('#mapImg', 'src'))
+    for la, lo, want in SJO_POINTS:
+        ctx.set_geolocation({'latitude': la, 'longitude': lo, 'accuracy': 5}); pg.wait_for_timeout(1500)
+        got = pg.inner_text('#depthVal')
+        v = float(got.replace(',', '.')) if re.match(r'^[0-9]+,?[0-9]*$', got) else None
+        check('Sjösjön: depth at a %g m label: %s m' % (want, got), v is not None and abs(v - want) <= 1.0, got)
+    check('Sjösjön: no page errors', not errs, errs)
     b.close()
 print('\n%d/%d passed' % (sum(results), len(results)))

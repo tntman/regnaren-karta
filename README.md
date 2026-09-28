@@ -2,7 +2,7 @@
 
 Djupkarta + GPS-app för Fiskfiskarna. En webbapp (läggs till på hemskärmen i
 iPhone) som visar sjökort, din position, gruppens båtar och fiskeplatser, med
-delning via Firebase. Stöder flera sjöar (just nu Regnaren och Vågsfjärden) –
+delning via Firebase. Stöder flera sjöar (just nu Regnaren, Sjösjön och Vågsfjärden) –
 sjön väljs i menyn.
 
 ## Mappar
@@ -58,7 +58,7 @@ blandas aldrig. Reglerna ligger i Firebase-konsolen (se CLAUDE.md).
 
 ## Obs
 
-Båda sjöarna är byggda med Genesis-verktygen och djupet är kalibrerat mot
+Alla sjöarna är byggda med Genesis-verktygen och djupet är kalibrerat mot
 Genesis egna djupsiffror. Regnaren har behållit sitt gamla utsnitt, så
-fiskeplatser hamnar rätt. Genesis har zoom 12–18 för båda sjöarna; i appen
+fiskeplatser hamnar rätt. Genesis har zoom 12–18 för alla sjöarna; i appen
 används 14 och uppåt (se tools/KARTOR.md).

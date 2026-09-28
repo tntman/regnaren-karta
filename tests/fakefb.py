@@ -17,6 +17,9 @@ def block_real_firebase(ctx):
     for pat in ('**/firebasejs/**', '**/*.googleapis.com/**', '**/*.firebaseio.com/**',
                 '**/*.firebaseapp.com/**'):
         ctx.route(pat, _block)
+    # lightning (FMI): never the real service -- a test that needs strikes routes it
+    # itself (a later route wins)
+    ctx.route('**/opendata.fmi.fi/**', lambda r: r.abort())
     return ctx
 # The real admin code is never written in the tests. Instead the test browser
 # treats TEST_PIN as correct: SHA-256 of it is answered with the hash that is in
