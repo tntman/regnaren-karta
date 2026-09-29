@@ -18,14 +18,16 @@ Exempel: platsens ruta `#wpSheet`, Kartanalys `#anPanel`.
   och en `transition` på ~0,25 s.
 - Ett litet grepp överst: `<div class="grab">` (38 × 5 px, ljus, rundad).
 - Bottenmarginal: `calc(env(safe-area-inset-bottom,0px) + 16px)`.
-- **Dra för att ändra storlek / stänga:** `sheetSwipe(panel, stäng)` (i skriptet).
-  Dra lugnt nedåt = panelen blir **mindre** och innehållet skrollar (klassen `.scrolls`);
-  dra uppåt = större igen (högst sin naturliga höjd). **Snärt** nedåt, eller dra den
-  nästan hela vägen ner (< 130 px kvar) = **stäng**. Greppet (`.grab`/`.sheetGrab`) drar
-  alltid; resten av panelen bara när inget i den behöver skrollas. Fält, knappar,
-  reglage och `.noSwipe` startar ingen dragning. `panel._resetSize()` = full storlek
-  igen (görs när den öppnas). CSS: `.dragging{transition:none}`, `touch-action:none`
-  (`pan-y` när `.scrolls`), greppet alltid `touch-action:none`.
+- **Greppremsa + storlek / stäng:** `sheetSwipe(panel, stäng)` (i skriptet). Överst en hel
+  **greppremsa** (`.grab` / `.sheetGrab`, ≥ 30 px hög, hela bredden, strecket i mitten,
+  `position:sticky` så den finns kvar när innehållet skrollas, `touch-action:none`).
+  **Bara remsan** flyttar panelen: dra ner = **mindre** (innehållet skrollar), dra upp = större
+  (upp till allt den rymmer, högst 88 % av skärmen). **Snärt** nedåt (> 1,1 px/ms de sista
+  0,1 s) eller nästan hela vägen ner (< 120 px kvar) = **stäng**. **Inne i panelen** skrollar
+  fingret bara (`touch-action:pan-y`). `panel._resetSize()` = normal storlek (när den öppnas).
+  *Lärt:* ett 5 px högt streck går inte att träffa med fingret, och dragning i hela panelen
+  krockar med skrollning – därför bara remsan. Testa med riktiga pekhändelser
+  (CDP `Input.dispatchTouchEvent`), inte bara musen.
   Används av Kartanalys `#anPanel`, platsens ruta `#wpSheet` och meddelanderutan `#msgCard`.
 - `pointerdown` på panelen ska `stopPropagation()` (annars tolkas det som ett tryck på kartan).
 - Liggande läge: panelen till höger, `width:420px`.

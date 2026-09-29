@@ -738,12 +738,12 @@
     box-shadow:0 -8px 24px rgba(0,0,0,.4);
   }
   #wpSheet.show{transform:translateY(0);}
-  #wpSheet{touch-action:none;} /* the sheet itself handles vertical drags (swipe down to close) */
+  /* (the sheet: only its grip strip at the top drags it -- the rest scrolls) */
   #wpSheet.dragging{transition:none;}
   #sheetBackdrop.dragging{transition:none;}
   /* bigger, invisible grab area around the little handle bar */
-  .sheetGrab{margin:-10px -18px 0;padding:10px 18px 0;cursor:grab;}
-  .sheetHandle{width:36px;height:4px;background:rgba(255,255,255,.25);border-radius:2px;margin:2px auto 14px;}
+  .sheetGrab{position:sticky;top:-10px;z-index:3;margin:-10px -18px 6px;height:30px;display:flex;align-items:center;justify-content:center;background:var(--navy);border-radius:16px 16px 0 0;cursor:grab;}
+  .sheetHandle{width:40px;height:5px;background:rgba(255,255,255,.3);border-radius:3px;}
   /* type picker in the spot sheet */
   .typeSeg{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:14px;}
   .typeSeg button{
@@ -1188,7 +1188,7 @@
     transform:translateY(105%);transition:transform .25s ease;max-height:62vh;overflow-y:auto;
   }
   #anPanel.show{transform:none;}
-  #anPanel .grab{width:38px;height:5px;border-radius:3px;background:rgba(255,255,255,.25);margin:0 auto 8px;}
+  #anPanel .grab{margin:-8px -14px 4px;top:-8px;}
   .anHead{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--text-muted);}
   .anHead span{flex:1;}
   .anHead button{border:none;background:rgba(255,255,255,.08);color:var(--offwhite);border-radius:14px;padding:5px 10px;font:inherit;font-size:12px;letter-spacing:0;cursor:pointer;}
@@ -1338,10 +1338,10 @@
   @property --rba{syntax:'<angle>';initial-value:0deg;inherits:false;}
   @keyframes rbSpin{to{--rba:360deg;}}
   #msgCard{position:absolute;left:0;right:0;bottom:0;z-index:27;background:var(--navy);border-top:1px solid rgba(255,255,255,.14);border-radius:18px 18px 0 0;
-    padding:8px 16px calc(env(safe-area-inset-bottom,0px) + 16px);box-shadow:0 -10px 30px rgba(0,0,0,.45);transform:translateY(105%);transition:transform .25s ease;overflow-y:auto;touch-action:none;}
+    padding:8px 16px calc(env(safe-area-inset-bottom,0px) + 16px);box-shadow:0 -10px 30px rgba(0,0,0,.45);transform:translateY(105%);transition:transform .25s ease;overflow-y:auto;}
   #msgCard.show{transform:none;}
   #msgCard.dragging{transition:none;}
-  #msgCard .grab{width:38px;height:5px;border-radius:3px;background:rgba(255,255,255,.25);margin:0 auto 10px;}
+  #msgCard .grab{margin:-8px -16px 4px;top:-8px;}
   #msgCardClose{position:absolute;right:10px;top:10px;width:30px;height:30px;border-radius:50%;border:none;background:rgba(255,255,255,.08);color:var(--offwhite);font-size:15px;cursor:pointer;}
   #msgCardWho{font-size:12px;letter-spacing:.06em;font-weight:700;color:var(--text-muted);}
   #msgCardTxt{font-size:23px;font-weight:700;margin:4px 0 8px;}
@@ -1354,8 +1354,10 @@
   .msgCardBtns button[hidden]{display:none;}
   @media (orientation:landscape) and (max-height:520px){ #msgCard{left:auto;width:420px;} }
   /* ---- panels that can be dragged smaller: the grip always drags; once smaller, the rest scrolls ---- */
-  #anPanel, #wpSheet{touch-action:none;}
-  #anPanel.scrolls, #wpSheet.scrolls, #msgCard.scrolls{touch-action:pan-y;}
+  #anPanel, #wpSheet, #msgCard{touch-action:pan-y;}
+  /* the grip strip (a bar in the middle): drag it = resize / flick it = close -- tools/UI.md */
+  #anPanel .grab, #msgCard .grab{position:sticky;z-index:3;height:30px;display:flex;align-items:center;justify-content:center;background:var(--navy);border-radius:18px 18px 0 0;cursor:grab;}
+  #anPanel .grab::before, #msgCard .grab::before{content:'';width:40px;height:5px;border-radius:3px;background:rgba(255,255,255,.3);}
   #anPanel .grab, #wpSheet .sheetGrab, #msgCard .grab{touch-action:none;}
   #wpSheet{overflow-y:auto;max-height:88vh;}
   /* ---- Liknande: the spot you start from (a pink ring spreading out), "Gå till", what "area" means ---- */
@@ -6654,37 +6656,40 @@
      follows the finger (down only); let go far enough down -- or with a quick flick --
      and it closes, otherwise it springs back. */
   function sheetSwipe(el, close){
-    // Drag the panel down: it gets smaller and what's in it scrolls; drag it back up: bigger again.
-    // A quick flick down -- or dragging it (almost) all the way down -- closes it.
-    // (From its grip anywhere; from the rest of it only while nothing in it needs scrolling.)
+    // Only the grip strip at the top (.grab / .sheetGrab, the bar in the middle) moves the panel:
+    // drag it down = smaller (what's inside scrolls), up = bigger again (to its full size);
+    // a quick flick down -- or dragging it almost all the way down -- closes it.
+    // Inside the panel a finger only scrolls. (tools/UI.md)
     var d = null;
-    el._resetSize = function(){ el.style.height = ''; el.style.maxHeight = ''; el.classList.remove('scrolls'); };
+    el._resetSize = function(){ el.style.height = ''; el.style.maxHeight = ''; };
     el.addEventListener('pointerdown', function(e){
       if (!el.classList.contains('show')) return;
-      var grip = e.target.closest && e.target.closest('.grab, .sheetGrab');
-      if (!grip && e.target.closest && e.target.closest('input, button, textarea, select, .anDual, .noSwipe')) return;
-      if (!grip && el.scrollHeight > el.clientHeight + 2) return;             // (it scrolls: that's scrolling)
+      if (!(e.target.closest && e.target.closest('.grab, .sheetGrab'))) return;
+      e.preventDefault();
       var h0 = el.getBoundingClientRect().height;
-      el.style.maxHeight = 'none';
-      var natural = Math.min(el.scrollHeight, window.innerHeight * 0.88);
-      d = { id: e.pointerId, y0: e.clientY, h0: h0, max: Math.max(h0, natural), dy: 0, lastY: e.clientY, lastT: performance.now(), v: 0 };
+      // its full size: all it holds (as far as the screen allows) -- measured without changing it
+      var full = Math.min(window.innerHeight * 0.88, el.scrollHeight + (el.offsetHeight - el.clientHeight));
+      d = { id: e.pointerId, y0: e.clientY, h0: h0, max: Math.max(h0, full), dy: 0, pts: [[performance.now(), e.clientY]] };
       try { el.setPointerCapture(e.pointerId); } catch(err){}
       el.classList.add('dragging');
     });
     el.addEventListener('pointermove', function(e){
       if (!d || e.pointerId !== d.id) return;
+      e.preventDefault();
       var now = performance.now();
-      if (now > d.lastT) d.v = (e.clientY - d.lastY) / (now - d.lastT);
-      d.lastY = e.clientY; d.lastT = now; d.dy = e.clientY - d.y0;
-      el.style.height = Math.max(40, Math.min(d.max, d.h0 - d.dy)) + 'px';
+      d.pts.push([now, e.clientY]); while (d.pts.length > 2 && now - d.pts[0][0] > 120) d.pts.shift();
+      d.dy = e.clientY - d.y0;
+      var h = Math.max(60, Math.min(d.max, d.h0 - d.dy));
+      el.style.maxHeight = h + 'px'; el.style.height = h + 'px';
     });
     function end(e){
       if (!d || e.pointerId !== d.id) return;
-      var h = el.getBoundingClientRect().height, dd = d;
-      d = null; el.classList.remove('dragging');
-      if ((dd.v > 0.7 && dd.dy > 25) || h < 130){ close(); setTimeout(el._resetSize, 320); return; }
-      if (h >= dd.max - 2){ el._resetSize(); return; }                      // (back to full size)
-      el.classList.toggle('scrolls', el.scrollHeight > el.clientHeight + 2);
+      var dd = d; d = null; el.classList.remove('dragging');
+      var now = performance.now(), a = dd.pts[0], b = dd.pts[dd.pts.length - 1];
+      var v = (b[0] - a[0]) > 10 ? (b[1] - a[1]) / (b[0] - a[0]) : 0;           // px/ms over the last ~0.1 s, + = down
+      var h = el.getBoundingClientRect().height;
+      if ((v > 1.1 && dd.dy > 40) || h < 120){ close(); setTimeout(el._resetSize, 320); return; }
+      if (h >= dd.max - 2) el._resetSize();                                   // (all the way up: its normal size)
     }
     el.addEventListener('pointerup', end);
     el.addEventListener('pointercancel', end);
@@ -7224,7 +7229,20 @@
   /* ================= "Åk hit" =================
      From a spot's sheet (or a place the analysis found): the lead line is dropped there --
      it shows the depth, the distance by water, the time, and the route is drawn. */
-  function startNav(name, x, y){ setProbe({ x: x, y: y }); }
+  function startNav(name, x, y){
+    setProbe({ x: x, y: y });
+    // show the whole way: you, the place and the route between (between the header and the buttons);
+    // not at the lake: just the place
+    var pts = [{ x: x, y: y }];
+    if (lastFix && lastFix.onMap){ pts.push({ x: lastFix.px, y: lastFix.py }); if (probeRoute && probeRoute.pts) pts = pts.concat(probeRoute.pts); }
+    var x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    pts.forEach(function(q){ x0 = Math.min(x0, q.x); y0 = Math.min(y0, q.y); x1 = Math.max(x1, q.x); y1 = Math.max(y1, q.y); });
+    var top = 150, bot = 230, side = 50;
+    var sc = Math.min((stageW - 2 * side) / Math.max(1, x1 - x0), (stageH - top - bot) / Math.max(1, y1 - y0));
+    sc = Math.max(minScale, Math.min(maxScale, Math.min(sc, pts.length > 1 ? sc : Math.max(scale, fitScale * 4.5))));
+    var cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+    animateTo(sc, stageW / 2 - cx * sc, top + (stageH - top - bot) / 2 - cy * sc, 600);
+  }
 
   /* ---- what's under a spot (its sheet): depth, slope, bottom, plants + the terrain ---- */
   function renderWpData(lat, lon){

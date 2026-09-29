@@ -57,6 +57,8 @@ Admin och Demo Mode står medvetet INTE i Hjälp (bara Filip använder dem).
 ## 3. Recept
 
 ### En ny funktion eller förbättring i appen
+**Gör det inte direkt:** skriv upp det i `tools/HJALP_TODO.md` och ta allt i en Hjälp-omgång när
+Filip väljer det (påminn honom när listan har ≥ 5 rader eller är > 1 vecka gammal). Vid omgången:
 1. **Lägg till en rad överst i `HELP_NEWS`** (nyast först):
    `{ d: 'ÅÅÅÅ-MM-DD', t: 'new' | 'better' | 'fixed', x: 'text (får ha <b>fetstil</b>)' }`
    → NYTT / BÄTTRE / FIXAT. Den som inte läst den får en orange prick på menyn.
