@@ -366,9 +366,13 @@ def s_analys(p):
     rec = Rec(pg); rec.hold(500)
     tap_el(pg, rec, '#anBtn', after=700)
     tap_el(pg, rec, '#anPanel button[data-m="depth"]', after=900)
-    for v in [6.5, 7, 7.5, 8, 8.5, 9]:
-        pg.evaluate("v => { var e = document.getElementById('anHi'); e.value = v; e.dispatchEvent(new Event('input', { bubbles: true })); }", v); rec.hold(180)
-    rec.hold(900)
+    r = pg.eval_on_selector('#anControls .anDual', 'e => { var r = e.getBoundingClientRect(); return [r.left, r.width]; }')
+    dmax = float(pg.inner_text('#anControls .anTicks span:last-child').replace(' m', '').replace(',', '.'))
+    k = pg.eval_on_selector_all('#anControls .anKnob', 'e => e.map(x => { var r = x.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; })')[1]
+    pg.mouse.move(k[0], k[1]); pg.mouse.down(); rec.hold(150)                     # drag the right handle to 9 m
+    for i in range(1, 9):
+        pg.mouse.move(k[0] + (r[0] + r[1] * 9 / dmax - k[0]) * i / 8, k[1]); rec.hold(110)
+    pg.mouse.up(); rec.hold(900)
     tap_el(pg, rec, '#anPanel button[data-m="tops"]', after=1400)
     lbl = pg.evaluate("""() => { var best = null; document.querySelectorAll('.anLbl').forEach(function(l){ var r = l.getBoundingClientRect();
         if (r.top > 110 && r.bottom < 480 && r.left > 10 && r.right < 380 && !best) best = [r.left + r.width / 2, r.top + r.height / 2]; }); return best; }""")

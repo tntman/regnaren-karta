@@ -107,13 +107,22 @@ All text i appen är på svenska. Svara Filip på svenska, kort och tydligt.
 - **Kartanalys** ("Hitta ställen", knappen nere till höger `#anBtn` – ersatte uppdatera-knappen;
   Filter "Kartanalys" visar/döljer, på som standard): en panel `#anPanel` med Djup, Branta kanter,
   Toppar & hålor, Växtkant, Hård botten, Vindkant, Liknande + förinställt Abborre/Gädda/Gös
-  (tumregler från vanliga fiskeråd, INTE data). Räknas i telefonen på djupnätet (`anBase`: lutning,
+  (tumregler från vanliga fiskeråd, INTE data). Djupreglage = stapel i djupfärgerna med två handtag
+  (`anDualRow`), "Mörkare" (standard 72 %) + gråtoning (`#anSat`, mix-blend-mode saturation),
+  reglage för toppar/hålor och hård botten (hårdhet + djup), "Växter" = var det finns växter.
+  Liknande: välj vad som jämförs (djup, lutning, botten, växter, topp/håla) och område (bara
+  platsen/25/50/100 m, `anSimFeatures`). Panelen dras ner för att stänga. Räknas i telefonen på djupnätet (`anBase`: lutning,
   "högre/lägre än runt om" ~28 m, avstånd till land) + `docs/lakes/<id>/bottom_v<V>.txt`
   (vegetation bit 3, hårdhet 1–4 bit 0–2, RLE 250 n n; görs av genesis_render, även `grid`) + vinden.
   Canvas `#anLayer` per skärmpunkt (som lä), etiketter i `#anLabels`. Val per sjö (`lakeKey`).
   `window.__ffGeo`, `__ffAnalysis()` för tester/verktyg.
-- **Åk hit** (knapp i platsens ruta `#wpGo`, och i Kartanalys-listan): lodet släpps på platsen +
-  kort `#navCard` (pil längs rutten, sträcka sjövägen, tid). ✕ eller bort med lodet = slut.
+- **Åk hit** (knapp i platsens ruta `#wpGo`, och i Kartanalys-listan): bara lodet släpps på platsen
+  (djup, sträcka sjövägen, tid, rutten). Inget extra kort (Filip: behövs inte).
+- **Platsens ruta**: namn, vem/när, faktarutor under platsen (`renderWpData`: djup, lutning, botten
+  = hårdhet närmast inom 15 m, växter = andel inom 25 m, topp/håla, avstånd till land), typ, knappar
+  (Åk hit, 🔎 Hitta liknande → Kartanalys "Liknande" för platsen).
+- **UI-byggstenar** (bottenpanel + dra-för-att-stänga `sheetSwipe`, chips, reglage med två handtag,
+  faktarutor, knapprutnätet nere till höger, notiser): **`tools/UI.md`** – följ den för nya delar.
 - **Snabbmeddelanden** (`#msgBtn` längst ner i mitten): skickas med din position
   (`positions/<du>.msg/msgAt`), bubbla vid båten 15 min; tryck egen = ta bort (för alla),
   andras = dölj för dig. Bara vid sjön.
@@ -121,7 +130,10 @@ All text i appen är på svenska. Svara Filip på svenska, kort och tydligt.
   < 5 min och inom avståndet → `#ltAlarm` + pip (WebAudio, låses upp vid första tryck) +
   vibration (finns inte på iPhone). Varje nedslag larmar en gång.
 - **Håll skärmen tänd** (Filter, av som standard, `ffmap_wakelock_v1`): Wake Lock, tas igen när
-  appen blir synlig.
+  appen blir synlig. På = gul sol `#wakeBadge` vid namnet; tryck = av + notis `#wakeNote` (✕, tonar
+  bort efter 20 s).
+- **Filter**: "Namn" är borttaget (namnen visas alltid). Knapparna nere till höger = 2 × 2-rutnät,
+  lika stora (`--bb`).
 - **Pushnotiser**: inte gjort (kräver server/Firebase-betalplan) – utforskas senare.
 - **Positionsintervall** per sjö (`config/<lake>`, localStorage via `lakeKey`); sjö utan
   inställning i databasen = 20 s.

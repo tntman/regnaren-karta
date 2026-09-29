@@ -35,7 +35,7 @@ with sync_playwright() as p:
     # ---- filter menu ----
     check('filter menu closed at start: only the Filter button', not pg.is_visible('#visMore') and not pg.is_visible('#toggleMine'))
     pg.click('#visMoreBtn'); pg.wait_for_timeout(200)
-    check('open: Mina/Andras/Båtar/Namn/Djup/Spår + types', all(pg.is_visible('label:has(#%s)' % i) for i in ['toggleMine','toggleOthers','toggleBoats','toggleNames','toggleDepth','toggleTrack']))
+    check('open: Mina/Andras/Båtar/Djup/Spår + types (no "Namn" any more: names always shown)', all(pg.is_visible('label:has(#%s)' % i) for i in ['toggleMine','toggleOthers','toggleBoats','toggleDepth','toggleTrack']) and not pg.is_visible('label:has(#toggleNames)'))
     pg.screenshot(path='feat_filter_open.png')
     pg.click('label:has(#toggleBoats) .toggle'); pg.click('#visMoreBtn'); pg.wait_for_timeout(200)
     check('Båtar off -> dot on the closed Filter button', pg.is_visible('.visMoreDot'))
@@ -45,8 +45,9 @@ with sync_playwright() as p:
     check('depth under you ~6 m at a deep spot', abs(float(dv.replace(',', '.')) - 6.0) < 0.5, dv)
     pg.screenshot(path='feat_depth.png')
     pg.evaluate("document.querySelector('#waypoints .wpPin').click()"); pg.wait_for_timeout(400)
-    meta = pg.inner_text('#wpMeta')
-    check('spot sheet shows the depth there', any('Djup ' + v in meta for v in ('6,0', '6,1', '6,2', '6,3', '5,9', '5,8', '5,7')), meta)
+    pg.wait_for_timeout(600)
+    meta = pg.inner_text('#wpData .wpTile b') if pg.query_selector('#wpData .wpTile b') else ''
+    check('spot sheet shows the depth there (first fact tile)', any(v + ' m' == meta for v in ('6,0', '6,1', '6,2', '6,3', '5,9', '5,8', '5,7')), meta)
     pg.click('#wpCancel'); pg.wait_for_timeout(300)
     la2, lo2 = full_to_latlon(shallow[1], shallow[0])
     ctx.set_geolocation({'latitude': la2, 'longitude': lo2, 'accuracy': 5}); pg.wait_for_timeout(1800)

@@ -48,10 +48,10 @@
   /* "Blixtar": strikes on the map + an arrow at the edge towards the nearest (screen canvas) */
   #ltLayer{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;display:none;}
   #ltLayer.on{display:block;}
-  /* iPhone home-screen app, upright: the status bar is solid black (see src/head.html), so the
-     fade at the top starts in that same black -- no hard line between the bar and the map */
+  /* iPhone home-screen app, upright: under the (black) status bar the fade starts solid in the
+     app's own blue-grey, like the one at the bottom -- no see-through line under the bar */
   @media (orientation:portrait){
-    html.iosApp header{background:linear-gradient(to bottom, #000 0%, rgba(0,0,0,.82) 16%, rgba(6,20,28,.45) 60%, rgba(6,20,28,0) 100%);}
+    html.iosApp header{background:linear-gradient(to bottom, rgb(6,20,28) 0%, rgba(6,20,28,.85) 20%, rgba(6,20,28,.4) 65%, rgba(6,20,28,0) 100%);}
   }
   #mapLoading{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:1;color:var(--text-muted);font-size:13px;pointer-events:none;display:none;}
   #mapLoading.show{display:block;}
@@ -1207,17 +1207,6 @@
   .anList button{margin-left:auto;border:none;background:none;color:var(--amber);font:inherit;font-weight:700;font-size:12.5px;cursor:pointer;}
   #anRefSel{width:100%;margin-top:8px;background:rgba(255,255,255,.08);color:var(--offwhite);border:1px solid rgba(255,255,255,.18);border-radius:9px;padding:7px 8px;font:inherit;font-size:14px;}
   #anRefSel option{color:#000;}
-  /* ---- "Åk hit": a card at the top with the arrow, distance and time by water ---- */
-  #navCard{position:absolute;left:14px;right:14px;top:calc(env(safe-area-inset-top,0px) + 108px);z-index:21;display:none;align-items:center;gap:12px;
-    background:rgba(11,42,58,.94);border:1px solid rgba(232,163,61,.6);border-radius:16px;padding:9px 12px;box-shadow:0 8px 24px rgba(0,0,0,.5);max-width:420px;}
-  #navCard.show{display:flex;}
-  #navArrow{width:46px;height:46px;border-radius:13px;background:var(--amber);display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
-  #navArrow svg{width:28px;height:28px;transition:transform .4s;}
-  #navText{flex:1;min-width:0;}
-  #navText b{display:block;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  #navText small{display:block;color:var(--text-muted);font-size:12.5px;margin-top:1px;}
-  #navClose{border:none;background:none;color:var(--text-muted);font-size:18px;width:32px;height:32px;cursor:pointer;}
-  #wpGo{margin-right:auto;}
   /* ---- lightning alarm ---- */
   #ltAlarm{position:absolute;left:18px;right:18px;top:calc(env(safe-area-inset-top,0px) + 120px);z-index:40;display:none;flex-direction:column;align-items:center;gap:4px;
     background:rgba(205,38,38,.97);border:2px solid #fff;border-radius:18px;padding:16px;text-align:center;color:#fff;box-shadow:0 10px 40px rgba(0,0,0,.6);max-width:420px;margin:0 auto;}
@@ -1251,6 +1240,89 @@
     #anPanel{left:auto;width:420px;right:0;max-height:88vh;}
     #msgBtn{width:38px;height:38px;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);}
   }
+
+  /* ---- Kartanalys: the greyed-out map (a 2nd canvas desaturates what's under it), the depth-range slider ---- */
+  #anSat{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;display:none;mix-blend-mode:saturation;}
+  #anSat.on{display:block;}
+  #anPanel.dragging{transition:none;}
+  .anDual{position:relative;height:34px;margin:12px 13px 0;touch-action:none;cursor:pointer;}
+  .anTrack{position:absolute;left:0;right:0;top:14px;height:6px;border-radius:3px;}
+  .anSel{position:absolute;top:9px;height:16px;border:2.5px solid #fff;border-radius:8px;box-sizing:border-box;margin-left:-3px;padding-right:6px;box-shadow:0 0 0 1px rgba(0,0,0,.35);}
+  .anKnob{position:absolute;top:4px;width:26px;height:26px;margin-left:-13px;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.55);}
+  .anTicks{display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin:2px 6px 0;}
+  .anRange{margin-top:10px;}
+  .anRange input[type=range]{height:26px;}
+  /* ---- spot sheet: "Åk hit" + "Hitta liknande" ---- */
+  .sheetRow--go{margin-top:10px;}
+  .sheetRow--go[hidden]{display:none;}
+  #wpLike[hidden]{display:none;}
+  .sheetRow--go .btnGhost{flex:1;}
+  /* ---- "Håll skärmen tänd" on: a yellow sun by your name; tap = off (+ a note) ---- */
+  #headerUserRow{display:flex;align-items:center;gap:7px;}
+  #wakeBadge{pointer-events:auto;width:22px;height:22px;padding:0;border-radius:50%;border:1.5px solid #FFD21A;background:rgba(255,210,26,.18);color:#FFD21A;
+    display:flex;align-items:center;justify-content:center;margin-top:1px;box-shadow:0 0 8px rgba(255,210,26,.5);-webkit-tap-highlight-color:transparent;cursor:pointer;}
+  #wakeBadge[hidden]{display:none;}
+  #wakeBadge svg{width:14px;height:14px;}
+  #wakeNote{position:absolute;left:14px;right:14px;top:calc(env(safe-area-inset-top,0px) + 96px);z-index:30;max-width:400px;display:none;
+    background:rgba(11,42,58,.96);border:1px solid rgba(255,210,26,.6);border-radius:14px;padding:11px 40px 11px 14px;color:var(--offwhite);
+    box-shadow:0 8px 24px rgba(0,0,0,.5);font-size:13px;line-height:1.4;transition:opacity .8s;}
+  #wakeNote.show{display:block;}
+  #wakeNote.fade{opacity:0;}
+  #wakeNote b{display:block;font-size:14px;margin-bottom:3px;color:#FFD21A;}
+  #wakeNote span b{display:inline;color:var(--offwhite);font-size:13px;}
+  #wakeNoteClose{position:absolute;right:6px;top:6px;width:30px;height:30px;border:none;background:none;color:var(--text-muted);font-size:16px;cursor:pointer;}
+  /* ---- the four buttons bottom right: one 2 x 2 grid, all the same size ---- */
+  :root{--bb:48px;--bgap:12px;--bb0:calc(env(safe-area-inset-bottom,0px) + 20px);}
+  #locateBtn, #anBtn, #measureBtn, #addHereBtn{width:var(--bb) !important;height:var(--bb) !important;}
+  #locateBtn{right:16px !important;bottom:var(--bb0) !important;}
+  #anBtn{right:calc(16px + var(--bb) + var(--bgap)) !important;bottom:var(--bb0) !important;}
+  #addHereBtn{right:16px !important;bottom:calc(var(--bb0) + var(--bb) + var(--bgap)) !important;}
+  #measureBtn{right:calc(16px + var(--bb) + var(--bgap)) !important;bottom:calc(var(--bb0) + var(--bb) + var(--bgap)) !important;}
+  #addHereBtn .addPin{left:calc(50% - (var(--bb) - 14px) / 2);top:2px;width:calc(var(--bb) - 14px);height:calc(var(--bb) - 14px);}
+  #locateBtn svg{width:24px;height:24px;}
+  #msgBtn{bottom:calc(var(--bb0) + 3px);}
+  @media (orientation:landscape) and (max-height:520px){
+    :root{--bb:42px;--bgap:10px;--bb0:calc(env(safe-area-inset-bottom,0px) + 8px);}
+  }
+
+  /* ---- the spot sheet: what's under the spot (4 tiles + a line about the terrain) ---- */
+  #wpName{font-size:17px;font-weight:700;margin-top:2px;}
+  .wpData{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:10px 0 2px;}
+  .wpData:empty{display:none;}
+  .wpTile{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:6px 7px 5px;min-width:0;}
+  .wpTile i{display:block;font-style:normal;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);}
+  .wpTile b{display:block;font-size:15px;color:var(--offwhite);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;}
+  .wpTile small{display:block;font-size:10.5px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .wpTerrain{grid-column:1 / -1;font-size:12px;color:#dbe4e7;padding:1px 2px;}
+  .wpTerrain b{color:var(--amber);}
+  /* ---- Liknande: what to compare + how big an area ---- */
+  .anFactors{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+  .anFactors button{font:inherit;font-size:12px;padding:5px 9px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.16);color:var(--text-muted);cursor:pointer;}
+  .anFactors button.on{border-color:#ff50a0;color:#fff;background:rgba(255,80,160,.22);}
+  .anFactors button.on::before{content:'✓ ';}
+  .anSeg{display:flex;gap:4px;margin-top:8px;background:rgba(255,255,255,.06);border-radius:10px;padding:3px;}
+  .anSeg button{flex:1;border:none;background:none;color:var(--text-muted);font:inherit;font-size:12px;padding:6px 2px;border-radius:8px;cursor:pointer;}
+  .anSeg button.on{background:var(--amber);color:var(--navy);font-weight:700;}
+  .anLbl2{font-size:11px;color:var(--text-muted);margin-top:9px;}
+
+  /* ---- Hjälp: search ---- */
+  .helpSearch{position:relative;}
+  #helpSearch{width:100%;box-sizing:border-box;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:12px;
+    padding:10px 12px 10px 36px;color:var(--offwhite);font:inherit;font-size:15px;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23B7C4C9' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='M15.5 15.5 21 21'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:11px 50%;background-size:17px;}
+  #helpSearch::placeholder{color:var(--text-muted);}
+  #helpResults{display:none;margin-top:6px;background:rgba(11,42,58,.97);border:1px solid rgba(255,255,255,.14);border-radius:12px;overflow:hidden;}
+  #helpResults.show{display:block;}
+  .hsRes{display:block;width:100%;text-align:left;border:none;border-bottom:1px solid rgba(255,255,255,.07);background:none;color:var(--offwhite);font:inherit;padding:8px 12px;cursor:pointer;}
+  .hsRes:last-child{border-bottom:none;}
+  .hsRes b{display:block;font-size:13.5px;color:var(--amber);}
+  .hsRes span{display:block;font-size:12.5px;color:#dbe4e7;margin-top:1px;line-height:1.35;}
+  .hsRes mark{background:rgba(232,163,61,.35);color:#fff;border-radius:3px;padding:0 1px;}
+  .hsNone{padding:9px 12px;font-size:13px;color:var(--text-muted);}
+  .helpCard li.hit{animation:helpHit 2.2s ease;}
+  @keyframes helpHit{0%,40%{background:rgba(232,163,61,.35);}100%{background:transparent;}}
+  .helpDefs li{margin:4px 0;}
 </style>
 
 <div id="app">
@@ -1258,6 +1330,7 @@
     <div id="world"><img id="mapImg" alt="Djupkarta över sjön Regnaren" draggable="false"></div>
     <div id="detailLayer" aria-hidden="true"></div>
     <canvas id="windLayer" aria-hidden="true"></canvas>
+    <canvas id="anSat" aria-hidden="true"></canvas>
     <canvas id="anLayer" aria-hidden="true"></canvas>
     <canvas id="ltLayer" aria-hidden="true"></canvas>
     <div id="mapLoading">Laddar karta…</div>
@@ -1559,7 +1632,7 @@
 
   <header>
     <div class="kicker" id="lakeTitle">REGNAREN</div>
-    <div id="headerUser"></div>
+    <div id="headerUserRow"><div id="headerUser"></div><button type="button" id="wakeBadge" hidden aria-label="Skärmen hålls tänd – tryck för att stänga av" title="Skärmen hålls tänd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg></button></div>
     <button type="button" id="wxChip" aria-expanded="false" aria-controls="wxCard" aria-label="Väder och vind"></button>
     <div id="ltPill" role="status" aria-live="polite"><svg viewBox="0 0 24 24"><path d="M13.5 2 5 13.5h5.5L9 22l9.5-12.5H13z" fill="#FFF08C" stroke="#3a1d00" stroke-width="1.4" stroke-linejoin="round"></path></svg><div><b id="ltPillMain"></b><small id="ltPillSub"></small></div></div>
     <div id="farAway"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11z"></path><circle cx="12" cy="10" r="2.2"></circle></svg><span class="farText" id="farText"></span></div>
@@ -1622,8 +1695,9 @@
     <div id="anControls"></div>
     <div id="anResult"></div>
   </div>
-  <div id="navCard" aria-live="polite"><div id="navArrow"><svg viewBox="0 0 24 24"><path d="M12 2l6 18-6-4-6 4z" fill="#0B2A3A"></path></svg></div>
-    <div id="navText"><b id="navName"></b><small id="navInfo"></small></div><button type="button" id="navClose" aria-label="Sluta navigera">✕</button></div>
+  <div id="wakeNote" role="status"><button type="button" id="wakeNoteClose" aria-label="Stäng">✕</button>
+    <b>☀ Håll skärmen tänd är avstängd</b>
+    <span>Den håller telefonen vaken medan appen är öppen (drar mer batteri). Du kan slå på den igen i <b>Filter</b>.</span></div>
   <div id="ltAlarm" role="alertdialog"><b id="ltAlarmMain"></b><small id="ltAlarmSub"></small><button type="button" id="ltAlarmOk">OK</button></div>
 
   <button id="measureBtn" aria-label="Mätverktyg" title="Mät sträcka och restid">
@@ -1675,7 +1749,7 @@
           <span class="toggleTrack"><span class="toggleThumb"></span></span>
         </span>
       </label>
-      <label class="visRow" id="visRowNames">
+      <label class="visRow" id="visRowNames" hidden>
         <span class="visSwatch visSwatch--name">Aa</span>
         <span class="visLabel">Namn</span>
         <span class="toggle">
@@ -1777,6 +1851,7 @@
         <h3><span>👋 Välkommen<span id="helpWelcomeName"></span>!</span></h3>
         <p>Djupkarta, GPS och gruppens fiskeplatser och båtar – i realtid. Börja gärna med att lägga till appen på hemskärmen ↓</p>
       </div>
+      <div class="helpSearch"><input type="search" id="helpSearch" placeholder="Sök i hjälpen, t.ex. &quot;filter djup&quot;" aria-label="Sök i hjälpen" autocomplete="off"><div id="helpResults"></div></div>
       <nav class="helpToc" id="helpToc">
         <a href="#help-nytt"><span>✨</span>Nytt i appen</a><a href="#help-installera"><span>📲</span>Installera appen</a>
         <a href="#help-kartan"><span>🗺️</span>Kartan</a><a href="#help-kartlagen"><span>🎨</span>Kartlägen</a>
@@ -1881,6 +1956,7 @@
         <div class="helpAnim"><img loading="lazy" width="432" height="935" src="help/andra.webp" alt="Ändra och ta bort en plats"></div>
         <ul>
           <li><b class="hA">Tryck</b> på en av dina platser: byt typ eller namn och tryck <b>Spara</b> – eller <b>Ta bort</b>.</li>
+          <li>Rutan visar vad som finns under platsen: <b>djup, lutning, botten (hårdhet), växter</b> och om det är en topp eller håla, och hur långt från land.</li>
           <li>Andras platser är mindre och bara färgade. Trycker du på dem ser du vem, när och hur långt bort.</li>
         </ul>
       </section>
@@ -1941,8 +2017,9 @@
         <ul>
           <li><b class="hA">Tryck</b> på förstoringsglaset nere till höger. Välj vad du vill hitta – det som matchar lyser, resten av kartan tonas ner.</li>
           <li><b>Djup</b> – ett djupintervall (dra i reglagen). <b>Branta kanter</b> – där botten sluttar mest, valfritt djup. <b>Toppar &amp; hålor</b> – grynnor mitt i sjön och gropar; tryck på en etikett för lodet.</li>
-          <li><b>Växtkant</b> – där vassen/växterna slutar. <b>Hård botten</b> – sten/grus där ekolodet mätt. <b>Vindkant</b> – stränder vinden blåser mot just nu.</li>
-          <li><b>Liknande</b> – välj en fiskeplats: appen letar upp ställen med samma djup, lutning och botten, med <b>Åk hit</b>.</li>
+          <li><b>Växter</b> – där ekolodet sett växtlighet. <b>Hård botten</b> – välj hur hård och på vilket djup. <b>Vindkant</b> – stränder vinden blåser mot just nu. Toppar &amp; hålor har reglage för hur mycket högre/lägre än runt om.</li>
+          <li><b>Liknande</b> – välj en fiskeplats (eller <b>🔎 Hitta liknande</b> i platsens ruta) och vad som jämförs: djup, lutning, botten, växter, topp/håla – bara platsen eller ett område runt den (25–100 m). Träffarna får <b>Åk hit</b>.</li>
+          <li><b>Mörkare</b> ställer hur mycket resten av kartan tonas ner. Dra ner panelen för att stänga den.</li>
           <li><b>Abborre, Gädda, Gös</b> – förinställda kombinationer. De bygger på vanliga fiskeråd (tumregler), inte på fångster – se dem som tips.</li>
           <li>Visa/dölj med <b>Kartanalys</b> i Filter. <b>Rensa</b> tar bort den.</li>
         </ul>
@@ -1953,8 +2030,8 @@
         <div class="helpAnim"><img loading="lazy" width="432" height="798" src="help/akhit.webp" alt="Åk hit"></div>
         <ul>
           <li><b class="hA">Tryck</b> på en fiskeplats och välj <b>➤ Åk hit</b> (eller Åk hit i Kartanalys).</li>
-          <li>Kortet högst upp visar pilen, sträckan sjövägen och restiden – rutten ritas runt uddar och öar.</li>
-          <li>✕ på kortet (eller tryck på lodet) avslutar.</li>
+          <li>Lodet släpps på platsen: djupet, sträckan sjövägen och restiden – rutten ritas runt uddar och öar och följer med när du åker.</li>
+          <li>Tryck på lodet för att ta bort det.</li>
         </ul>
       </section>
 
@@ -1973,6 +2050,7 @@
         <h3><span class="hIc">☀️</span>Håll skärmen tänd</h3>
         <ul>
           <li>Slå på <b>Håll skärmen tänd</b> i Filter – då somnar inte telefonen medan appen är öppen (drar mer batteri).</li>
+          <li>En gul sol vid ditt namn visar att den är på. Tryck på solen för att stänga av.</li>
           <li>iPhone: fungerar i hemskärmsappen från iOS 18.4.</li>
         </ul>
       </section>
@@ -1980,9 +2058,20 @@
       <section class="helpCard" id="help-filter">
         <h3><span class="hIc">🎚️</span>Filter</h3>
         <div class="helpAnim"><img loading="lazy" width="432" height="775" src="help/filter.webp" alt="Filter"></div>
-        <ul>
-          <li>Visa/dölj: Mina, Andras, Båtar, Namn, Djup, Spår, Väder, Vind och lä, Blixtar, Kartanalys – och varje typ av plats. Där finns också <b>Håll skärmen tänd</b>.</li>
-          <li>Andras platser på 50 % eller 100 %. En prick på Filter betyder att något är dolt.</li>
+        <ul class="helpDefs">
+          <li><b>Mina</b> – dina fiskeplatser på kartan.</li>
+          <li><b>Andras</b> – gruppens fiskeplatser (mindre, bara färgade).</li>
+          <li><b>Båtar</b> – de andras båtar med namn.</li>
+          <li><b>Djup</b> – djupet under båten, bredvid farten nere till vänster.</li>
+          <li><b>Spår</b> – linjen efter din båt.</li>
+          <li><b>Väder</b> – väderraden under sjöns namn.</li>
+          <li><b>Vind och lä</b> – vindens "kometer" och var det är lä.</li>
+          <li><b>Blixtar</b> – blixtnedslag i realtid, varning och radar.</li>
+          <li><b>Kartanalys</b> – visar/döljer det du valt i Kartanalys (inställningen finns kvar).</li>
+          <li><b>Håll skärmen tänd</b> – telefonen somnar inte medan appen är öppen.</li>
+          <li><b>Typer</b> – visa/dölj Markering, Abborre, Gädda, Gös, Träffpunkt (Fara syns alltid).</li>
+          <li><b>Andras 50 % / 100 %</b> – hur tydligt andras platser syns.</li>
+          <li>En orange prick på Filter betyder att något är dolt.</li>
         </ul>
       </section>
 
@@ -2025,6 +2114,9 @@
   <div id="sheetBackdrop"></div>
   <div id="wpSheet">
     <div class="sheetGrab"><div class="sheetHandle"></div></div>
+    <input id="wpName" type="text" maxlength="40" placeholder="Namn, t.ex. Gösvik" aria-label="Namn">
+    <div id="wpMeta" class="sheetMeta"></div>
+    <div id="wpData" class="wpData" aria-label="Under platsen"></div>
     <div class="sheetLabel">Typ</div>
     <div id="wpTypeSeg" class="typeSeg" role="radiogroup" aria-label="Typ av plats">
       <button type="button" data-type="mark" role="radio"><span class="typeDot"></span>Markering</button>
@@ -2034,11 +2126,11 @@
       <button type="button" data-type="fara" role="radio"><span class="typeDot"></span>Fara</button>
       <button type="button" data-type="meet" role="radio"><span class="typeDot"></span>Träffpunkt 1 h</button>
     </div>
-    <label class="sheetLabel" for="wpName">Namn</label>
-    <input id="wpName" type="text" maxlength="40" placeholder="T.ex. Gösvik">
-    <div id="wpMeta" class="sheetMeta"></div>
-    <div class="sheetRow">
+    <div class="sheetRow sheetRow--go">
       <button id="wpGo" class="btnGhost" type="button">➤ Åk hit</button>
+      <button id="wpLike" class="btnGhost" type="button">🔎 Hitta liknande</button>
+    </div>
+    <div class="sheetRow">
       <button id="wpDelete" class="btnGhost danger">Ta bort</button>
       <button id="wpCancel" class="btnGhost">Avbryt</button>
       <button id="wpSave" class="btnPrimary">Spara</button>
@@ -2211,8 +2303,7 @@
   function setProbe(pr){
     probe = pr;
     probeEl.classList.toggle('show', !!pr);
-    if (!pr){ probeRoute = null; renderRoute(); if (navTarget){ navTarget = null; } }
-    if (typeof updateNav === 'function') setTimeout(updateNav, 0);
+    if (!pr){ probeRoute = null; renderRoute(); }
     if (pr){
       probeEl.classList.remove('drop'); void probeEl.offsetWidth; probeEl.classList.add('drop');
       updateProbeText();
@@ -2251,7 +2342,6 @@
     }
     probeEl.classList.toggle('noTime', !timeOk);
     renderRoute();
-    if (navCard) updateNav();
   }
   function renderRoute(){
     var svg = document.getElementById('routeLayer');
@@ -2672,7 +2762,7 @@
     var sb = localStorage.getItem('regnaren_vis_boats_v1');
     var sn = localStorage.getItem('regnaren_vis_boatnames_v1');
     if (sb !== null) showBoats = sb === '1';
-    if (sn !== null) showBoatNames = sn === '1';
+    // ("Namn" is no longer in Filter -- the names are always shown)
   } catch(e){}
   var boatsLayer = document.getElementById('boatsLayer');
   var boatPositions = {}; // uid -> {lat, lon, name, uid, updatedAt}
@@ -3629,8 +3719,7 @@
     if (!editingWpInfo) return;
     var w = editingWpInfo;
     wpMetaEl.textContent = 'Sparad av ' + (w.mine ? 'dig' : (w.by || 'en lagkompis')) + ' · ' + fmtSheetDate(w.createdAt);
-    var dm = depthAtLatLon(w.lat, w.lon);
-    if (dm != null) wpMetaEl.textContent += (wpMetaEl.textContent ? ' · ' : '') + 'Djup ' + fmtDepth(dm) + ' m';
+    renderWpData(w.lat, w.lon);            // (the depth etc. are in the tiles under)
     if (editingType === 'meet') wpMetaEl.textContent += ' · Syns för alla i 1 h';
     if (lastOwnLatLon){
       var m = haversineKm(lastOwnLatLon.lat, lastOwnLatLon.lon, w.lat, w.lon) * 1000;
@@ -3674,6 +3763,9 @@
     wpSaveBtn.hidden = !canEdit;
     Array.from(wpTypeSeg.children).forEach(function(b){ b.disabled = !canEdit; });
     showEditingType();
+    // "Åk hit" / "Hitta liknande": for a spot that's already there (not one you're just adding)
+    document.querySelector('.sheetRow--go').hidden = !!isNew;
+    document.getElementById('wpLike').hidden = wpType(wp) === 'meet' || wpType(wp) === 'fara';
     if (!pinEls[wp.id]) renderWaypoints(); // draw it even if a filter (Mina / Andras / type) hides it
     editingWpInfo = { lat: wp.lat, lon: wp.lon, mine: mine, by: wp.by, createdAt: wp.createdAt };
     refreshSheetMeta();
@@ -4193,6 +4285,11 @@
      made by tools/help_anim.py (docs/help/*.webp; one that's missing is just left out). */
   // newest first. t: 'new' (NYTT), 'better' (BÄTTRE), 'fixed' (FIXAT)
   var HELP_NEWS = [
+    { d: '2026-09-29', t: 'new',    x: '<b>Sök</b> i hjälpen, och varje filter förklarat' },
+    { d: '2026-09-29', t: 'better', x: 'Platsens ruta visar vad som finns under: djup, lutning, botten, växter, topp/håla' },
+    { d: '2026-09-29', t: 'better', x: 'Kartanalys: djupreglage som skalan, mörkare/ljusare karta, reglage för toppar/hålor och hård botten, dra ner för att stänga' },
+    { d: '2026-09-29', t: 'better', x: '"Hitta liknande" direkt från en plats – välj vad som jämförs och hur stort område' },
+    { d: '2026-09-29', t: 'better', x: 'Knapparna nere till höger i ett jämnt rutnät; gul sol när skärmen hålls tänd; "Namn" borta ur Filter' },
     { d: '2026-09-29', t: 'new',    x: '<b>Kartanalys</b> – hitta ställen: djup, branta kanter, toppar &amp; hålor, växtkant, hård botten, vindkant, liknande ställen, Abborre/Gädda/Gös' },
     { d: '2026-09-29', t: 'new',    x: '<b>Åk hit</b> – pil, sträcka och tid sjövägen till en plats' },
     { d: '2026-09-29', t: 'new',    x: '<b>Snabbmeddelanden</b> vid båten (15 min)' },
@@ -4234,6 +4331,57 @@
       im.addEventListener('error', function(){ im.parentNode.classList.add('missing'); });
     });
   })();
+  /* search: every word must be in the same line (or its section's title) -- "filter djup" finds
+     the Djup line under Filter. The best (most words in the line itself) first; tap = go there */
+  var helpSearchEl = document.getElementById('helpSearch'), helpResEl = document.getElementById('helpResults'), helpIdx = null;
+  function helpNorm(t){ return (t || '').toLowerCase().replace(/[^a-zåäö0-9 %]+/g, ' ').replace(/\s+/g, ' '); }
+  function helpIndex(){
+    if (helpIdx) return helpIdx;
+    helpIdx = [];
+    Array.prototype.forEach.call(helpBody.querySelectorAll('section.helpCard'), function(sec){
+      var title = (sec.querySelector('h3') || {}).textContent || '';
+      title = title.replace(/^[^A-Za-zÅÄÖåäö0-9]+/, '').trim();
+      Array.prototype.forEach.call(sec.querySelectorAll('li, p:not(.helpSub):not(.helpVer), .helpStep'), function(li){
+        helpIdx.push({ sec: sec, el: li, title: title, t: li.textContent.replace(/\s+/g, ' ').trim(), n: helpNorm(li.textContent), nt: helpNorm(title) });
+      });
+    });
+    return helpIdx;
+  }
+  function helpMark(txt, words){
+    var h = escHtml(txt.length > 150 ? txt.slice(0, 147) + '…' : txt);
+    words.forEach(function(w){ if (w.length > 1) h = h.replace(new RegExp('(' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'ig'), '<mark>$1</mark>'); });
+    return h;
+  }
+  function helpSearch(){
+    var q = helpNorm(helpSearchEl.value).trim(), words = q ? q.split(' ') : [];
+    if (!words.length){ helpResEl.classList.remove('show'); helpResEl.innerHTML = ''; return; }
+    var hits = helpIndex().map(function(it){
+      // each word: in the section's title counts most, a whole word in the line more than part of one
+      var score = 0, all = true;
+      words.forEach(function(w){
+        var t = it.nt.indexOf(w) !== -1 ? 15 : 0, l = 0, k = it.n.indexOf(w);
+        if (k !== -1) l = ((' ' + it.n + ' ').indexOf(' ' + w + ' ') !== -1) ? 14 : 10;
+        if (!t && !l) all = false;
+        score += Math.max(t, l) + (t && l ? 3 : 0);
+      });
+      return all ? { it: it, score: score - it.t.length / 1000 } : null;
+    }).filter(Boolean).sort(function(a, b){ return b.score - a.score; }).slice(0, 8);
+    helpResEl.innerHTML = hits.length ? hits.map(function(h, k){
+      return '<button type="button" class="hsRes" data-k="' + k + '"><b>' + escHtml(h.it.title) + '</b><span>' + helpMark(h.it.t, words) + '</span></button>';
+    }).join('') : '<div class="hsNone">Inget hittades – prova ett annat ord.</div>';
+    helpResEl._hits = hits;
+    helpResEl.classList.add('show');
+  }
+  helpSearchEl.addEventListener('input', helpSearch);
+  helpResEl.addEventListener('click', function(e){
+    var b = e.target.closest ? e.target.closest('.hsRes') : null; if (!b) return;
+    var it = helpResEl._hits[+b.getAttribute('data-k')].it;
+    helpResEl.classList.remove('show'); helpSearchEl.blur();
+    // (the animations on the way load as it scrolls and can move things: set it again a couple of times)
+    var go = function(){ helpBody.scrollTop += it.el.getBoundingClientRect().top - helpBody.getBoundingClientRect().top - 90; };
+    go(); setTimeout(go, 250); setTimeout(go, 700);
+    it.el.classList.remove('hit'); void it.el.offsetWidth; it.el.classList.add('hit');
+  });
   document.getElementById('helpNewsMore').addEventListener('click', function(){ document.getElementById('help-nytt').classList.add('all'); });
   function helpSeen(){ var n = 0; try { n = parseInt(localStorage.getItem(HELP_SEEN_KEY), 10) || 0; } catch(e){} return n; }
   function updateHelpDot(){ document.body.classList.toggle('helpNew', helpSeen() < HELP_NEWS.length); }
@@ -4242,7 +4390,7 @@
     var a = e.target.closest ? e.target.closest('a') : null; if (!a) return;
     e.preventDefault();
     var t = document.getElementById(a.getAttribute('href').slice(1));
-    if (t) helpBody.scrollTop += t.getBoundingClientRect().top - helpBody.getBoundingClientRect().top - 10;
+    if (t){ var go = function(){ helpBody.scrollTop += t.getBoundingClientRect().top - helpBody.getBoundingClientRect().top - 10; }; go(); setTimeout(go, 250); setTimeout(go, 700); }
   });
   // installing: which phone/browser this is, and whether it's already the home-screen app
   var helpInstallEvt = null;
@@ -6467,6 +6615,38 @@
   };
   window.__ffLightningFetch = function(){ ltFetchedAt = 0; ltTick(); };   // (tests / tools/help_anim.py: fetch now)
 
+  /* ---- swipe a bottom panel down to close it (like a spot's sheet) -- see tools/UI.md ----
+     Drag from anywhere on the panel except its fields, buttons and sliders; the panel
+     follows the finger (down only); let go far enough down -- or with a quick flick --
+     and it closes, otherwise it springs back. */
+  function sheetSwipe(el, close){
+    var d = null;
+    el.addEventListener('pointerdown', function(e){
+      if (!el.classList.contains('show')) return;
+      if (e.target.closest && e.target.closest('input, button, textarea, select, .anDual, .noSwipe')) return;
+      if (el.scrollTop > 0) return;                                    // (scrolled inside: that's scrolling)
+      d = { id: e.pointerId, y0: e.clientY, dy: 0, lastY: e.clientY, lastT: performance.now(), v: 0 };
+      try { el.setPointerCapture(e.pointerId); } catch(err){}
+      el.classList.add('dragging');
+    });
+    el.addEventListener('pointermove', function(e){
+      if (!d || e.pointerId !== d.id) return;
+      var now = performance.now();
+      if (now > d.lastT) d.v = (e.clientY - d.lastY) / (now - d.lastT);
+      d.lastY = e.clientY; d.lastT = now;
+      d.dy = Math.max(0, e.clientY - d.y0);
+      el.style.transform = 'translateY(' + d.dy + 'px)';
+    });
+    function end(e){
+      if (!d || e.pointerId !== d.id) return;
+      var h = el.offsetHeight || 1, shut = d.dy > Math.min(110, h * 0.3) || (d.v > 0.6 && d.dy > 20);
+      d = null; el.classList.remove('dragging'); el.style.transform = '';
+      if (shut) close();
+    }
+    el.addEventListener('pointerup', end);
+    el.addEventListener('pointercancel', end);
+  }
+
   /* ================= Kartanalys ("Hitta ställen") =================
      One place for every "map analysis": the button bottom right opens a panel; one
      filter at a time (or a preset that combines them). What matches is lit up, the
@@ -6477,7 +6657,7 @@
   var AN_KEY = lakeKey('ffmap_analysis_v1', 'analysis_v1');
   var SHOW_AN_KEY = 'ffmap_show_analysis_v1';
   var AN_MODES = [
-    ['depth', 'Djup'], ['steep', 'Branta kanter'], ['tops', 'Toppar & hålor'], ['veg', 'Växtkant'],
+    ['depth', 'Djup'], ['steep', 'Branta kanter'], ['tops', 'Toppar & hålor'], ['veg', 'Växter'],
     ['hard', 'Hård botten'], ['wind', 'Vindkant'], ['similar', 'Liknande']
   ];
   var AN_PRESETS = [
@@ -6485,13 +6665,19 @@
     ['gadda', 'Gädda', 'växtkanten på 1–4 m och vindkanten'],
     ['gos', 'Gös', 'branta kanter på 4–10 m nära hård botten']
   ];
-  var AN_COLORS = { depth: null, steep: [255, 70, 200], tops: [255, 190, 40], veg: [200, 255, 120], hard: [240, 70, 10],
+  var AN_HARD = ['Mjuk', 'Medelhård', 'Hård', 'Mycket hård'];      // Genesis' 4 levels
+  var AN_COLORS = { depth: null, steep: [255, 70, 200], tops: [255, 190, 40], veg: [90, 235, 80], hard: [240, 70, 10],
                     wind: [255, 178, 63], similar: [255, 80, 160], abborre: [255, 210, 26], gadda: [120, 255, 120], gos: [255, 210, 26] };
-  var anSet = { mode: null, lo: 4, hi: 6, slope: 10, elo: 0, ehi: Math.ceil(LAKE.depth.max || 20), vlo: 1, vhi: 5, ref: null };
+  // the depth scale of the sliders = the legend's (0 .. the lake's max depth, same colours)
+  var AN_DMAX = parseFloat(String((LAKE.legendTicks || []).slice(-1)[0] || '').replace(',', '.')) || Math.ceil(LAKE.depth.max || 20);
+  var AN_SIMF = [['d', 'Djup'], ['s', 'Lutning'], ['h', 'Botten'], ['v', 'Växter'], ['t', 'Topp/håla']];
+  var AN_SIMR = [0, 25, 50, 100];                       // m round the spot (0 = right under it)
+  var anSet = { simF: { d: 1, s: 1, h: 1, v: 1, t: 1 }, simR: 0, mode: null, lo: 4, hi: 6, slope: 10, elo: 0, ehi: AN_DMAX, topH: 1.0, holeD: 1.3, hmin: 3, hlo: 0, hhi: AN_DMAX, dim: 0.72, ref: null };
   try { var sv = JSON.parse(localStorage.getItem(AN_KEY) || 'null'); if (sv) for (var k0 in sv) anSet[k0] = sv[k0]; } catch(e){}
   var anShow = true;
   try { anShow = localStorage.getItem(SHOW_AN_KEY) !== '0'; } catch(e){}
   var anCanvas = document.getElementById('anLayer'), anCtx = anCanvas.getContext('2d');
+  var anSatCanvas = document.getElementById('anSat'), anSatCtx = anSatCanvas.getContext('2d');
   var anPanel = document.getElementById('anPanel'), anBtn = document.getElementById('anBtn'), anLabelsEl = document.getElementById('anLabels');
   var AN = null, anBottom = null, anBottomLoading = false, anRes = null, anView = null, anVer = 0;
   function anSave(){ try { localStorage.setItem(AN_KEY, JSON.stringify(anSet)); } catch(e){} }
@@ -6559,6 +6745,7 @@
         else b[j++] = v;
       }
       anBottom = b; anCompute();
+      if (typeof editingWpInfo !== 'undefined' && editingWpInfo && wpSheet.classList.contains('show')) refreshSheetMeta();
     }).catch(function(){ anBottomLoading = false; });
   }
   function anNeedsBottom(m){ return m === 'veg' || m === 'hard' || m === 'similar' || m === 'abborre' || m === 'gadda' || m === 'gos'; }
@@ -6620,6 +6807,23 @@
     }
     return { mask: out, from: w.from, ms: w.ms };
   }
+  // the things "Liknande" compares, per cell -- right under (r = 0) or averaged over r m round each cell
+  var anSimCache = {};
+  function anSimFeatures(A, rm){
+    if (anSimCache[rm] && anSimCache[rm].A === A && anSimCache[rm].b === !!anBottom) return anSimCache[rm];
+    var N = A.N, veg = new Float32Array(N), hard = new Float32Array(N), hw = new Float32Array(N), sl = new Float32Array(N), i;
+    for (i = 0; i < N; i++){ var bt = anBottom ? anBottom[i] : 0; veg[i] = (bt & 8) ? 1 : 0; hard[i] = bt & 7; hw[i] = (bt & 7) ? 1 : 0; sl[i] = Math.min(40, A.slope[i]); }
+    var F;
+    if (!rm) F = { d: A.sm, s: sl, t: A.tpi, v: veg, h: hard };
+    else {
+      var r = Math.max(1, Math.round(rm / A.cell)), wt = new Float32Array(N);
+      for (i = 0; i < N; i++) wt[i] = A.wat[i];
+      var hm = anBlur(hard, hw, A.W, A.H, r);        // (hardness: only where it's measured)
+      F = { d: anBlur(A.sm, wt, A.W, A.H, r), s: anBlur(sl, wt, A.W, A.H, r), t: anBlur(A.tpi, wt, A.W, A.H, r), v: anBlur(veg, wt, A.W, A.H, r), h: hm };
+    }
+    F.A = A; F.b = !!anBottom; anSimCache[rm] = F;
+    return F;
+  }
   function anCellOfImg(x, y){ var A = AN; return Math.min(A.H - 1, Math.max(0, Math.floor(y / IMG_H * A.H))) * A.W + Math.min(A.W - 1, Math.max(0, Math.floor(x / IMG_W * A.W))); }
   function anImgOfCell(i){ var A = AN; return { x: ((i % A.W) + 0.5) / A.W * IMG_W, y: (Math.floor(i / A.W) + 0.5) / A.H * IMG_H }; }
   function anSpots(){
@@ -6636,15 +6840,15 @@
     var wat = A.wat, dep = A.dep;
     if (m === 'depth'){
       for (i = 0; i < N; i++) if (wat[i] && dep[i] >= anSet.lo && dep[i] <= anSet.hi){ M[i] = 1; n++; }
-      text = '<b>' + fmtDepth(anSet.lo) + '–' + fmtDepth(anSet.hi) + ' m</b> · ' + anPct(n) + ' av sjön';
+      text = '<b>' + fmtDepth(anSet.lo) + '–' + fmtDepth(anSet.hi) + ' m</b> · ' + anPct(n) + ' av sjön';   // (as the mock-up)
     } else if (m === 'steep'){
       for (i = 0; i < N; i++) if (wat[i] && A.slope[i] >= anSet.slope && dep[i] >= anSet.elo && dep[i] <= anSet.ehi){ M[i] = 1; n++; }
       text = 'Lutning över <b>' + anSet.slope + ' %</b> på ' + fmtDepth(anSet.elo) + '–' + fmtDepth(anSet.ehi) + ' m · ' + anPct(n) + ' av sjön';
     } else if (m === 'tops'){
       var top = new Uint8Array(N), hole = new Uint8Array(N);
       for (i = 0; i < N; i++){ if (!wat[i]) continue;
-        if (A.tpi[i] >= 1.0 && A.shore[i] >= 20 && dep[i] >= 0.5) top[i] = 1;
-        else if (A.tpi[i] <= -1.3) hole[i] = 1; }
+        if (A.tpi[i] >= anSet.topH && A.shore[i] >= 20 && dep[i] >= 0.5) top[i] = 1;
+        else if (A.tpi[i] <= -anSet.holeD) hole[i] = 1; }
       var minCells = Math.max(3, Math.round(150 / (A.cell * A.cell)));
       var tb = anBlobs(top, A.W, A.H).filter(function(c){ return c.length >= minCells; })
         .map(function(c){ var best = c[0], p = 0; c.forEach(function(j){ if (A.tpi[j] > p) p = A.tpi[j]; if (dep[j] < dep[best]) best = j; }); return { c: c, i: best, p: p }; })
@@ -6654,17 +6858,16 @@
         .sort(function(a, b){ return b.p - a.p; }).slice(0, 6);
       tb.forEach(function(b){ b.c.forEach(function(j){ M[j] = 1; }); labels.push({ i: b.i, cls: '', txt: 'Topp ' + fmtDepth(dep[b.i]) + ' m' }); });
       hb.forEach(function(b){ b.c.forEach(function(j){ M[j] = 2; }); labels.push({ i: b.i, cls: 'hole', txt: 'Håla ' + fmtDepth(dep[b.i]) + ' m' }); });
-      text = '<b>' + tb.length + '</b> toppar/grynnor (grundare än runt om) · <b>' + hb.length + '</b> hålor (djupare)';
+      text = '<b>' + tb.length + '</b> toppar/grynnor (minst ' + fmtDepth(anSet.topH) + ' m grundare än runt om) · <b>' + hb.length + '</b> hålor (minst ' + fmtDepth(anSet.holeD) + ' m djupare)';
       note = 'Tryck på en etikett för att släppa lodet där.';
     } else if (m === 'veg'){
-      var ve = anVegEdge(A, anSet.vlo, anSet.vhi);
-      for (i = 0; i < N; i++){ if (ve.edge[i]){ M[i] = 1; n++; } else if (ve.veg[i]) M[i] = 2; }
-      text = n ? 'Där växtligheten slutar, <b>' + fmtDepth(anSet.vlo) + '–' + fmtDepth(anSet.vhi) + ' m</b>' : 'Ingen växtlighet mätt här.';
-      note = 'Ljust grönt = kanten, mörkare = växtlighet (Genesis).';
+      for (i = 0; i < N; i++) if ((anBottom[i] & 8) && wat[i]){ M[i] = 1; n++; }
+      text = n ? '<b>Växter</b> (vass, näckrosor, bottenväxter) · ' + anPct(n) + ' av sjön' : 'Ingen växtlighet mätt här.';
+      note = 'Där ekolodet sett växtlighet (Genesis). Kanten mot öppet vatten är ofta bäst.';
     } else if (m === 'hard'){
       var meas = 0;
-      for (i = 0; i < N; i++){ var hv = anBottom[i] & 7; if (hv) meas++; if (hv >= 3 && wat[i]){ M[i] = 1; n++; } }
-      text = n ? '<b>Hård botten</b> (sten/grus) · ' + anPct(n) + ' av sjön' : 'Ingen hård botten mätt här.';
+      for (i = 0; i < N; i++){ var hv = anBottom[i] & 7; if (hv) meas++; if (hv >= anSet.hmin && wat[i] && dep[i] >= anSet.hlo && dep[i] <= anSet.hhi){ M[i] = 1; n++; } }
+      text = n ? '<b>' + AN_HARD[anSet.hmin - 1] + '</b> botten eller hårdare, ' + fmtDepth(anSet.hlo) + '–' + fmtDepth(anSet.hhi) + ' m · ' + anPct(n) + ' av sjön' : 'Ingen sådan botten mätt här.';
       note = 'Bara där ekolodet mätt hårdhet (' + anPct(meas) + ' av sjön).';
     } else if (m === 'wind'){
       var we = anWindEdge(A);
@@ -6677,10 +6880,11 @@
       else {
         anSet.ref = ref.id;
         var rp = latLonToImgPx(ref.lat, ref.lon), ri = anCellOfImg(rp.x, rp.y);
-        var f = function(j){ return [A.sm[j], Math.min(40, A.slope[j]), A.tpi[j], (anBottom[j] & 8) ? 3 : 0, (anBottom[j] & 7) >= 3 ? 3 : 0]; };
-        var sc = [1.5, 5, 1, 1, 1], r0 = f(ri);
+        var F = anSimFeatures(A, anSet.simR), use = AN_SIMF.filter(function(x){ return anSet.simF[x[0]]; }).map(function(x){ return x[0]; });
+        var SC = { d: 1.5, s: 5, h: 0.8, v: 0.3, t: 0.8 }, r0 = {};
+        use.forEach(function(k){ r0[k] = F[k][ri]; });
         var sim = new Float32Array(N), vals = [];
-        for (i = 0; i < N; i++){ if (!wat[i]) continue; var fi = f(i), d2 = 0; for (var q = 0; q < 5; q++){ var dd = (fi[q] - r0[q]) / sc[q]; d2 += dd * dd; } sim[i] = Math.exp(-d2); vals.push(sim[i]); }
+        for (i = 0; i < N; i++){ if (!wat[i]) continue; var d2 = 0; for (var q = 0; q < use.length; q++){ var kk = use[q], dd = (F[kk][i] - r0[kk]) / SC[kk]; d2 += dd * dd; } sim[i] = use.length ? Math.exp(-d2) : 0; vals.push(sim[i]); }
         vals.sort(function(a, b){ return b - a; });
         var th = Math.max(0.3, vals[Math.floor(vals.length * 0.04)] || 1);
         var rx = ri % A.W, ry = Math.floor(ri / A.W), away = 60 / A.cell;
@@ -6693,7 +6897,10 @@
           labels.push({ i: b.i, cls: 'sim', txt: String(k + 1) });
           return { n: k + 1, x: p.x, y: p.y, dep: dep[b.i], slope: A.slope[b.i], dm: dm };
         });
-        text = 'Som <b>' + escHtml(ref.name || 'platsen') + '</b>: ' + fmtDepth(r0[0]) + ' m, lutning ' + Math.round(r0[1]) + ' %' + (r0[3] ? ', växtlighet' : '') + (r0[4] ? ', hård botten' : '');
+        text = use.length ? 'Som <b>' + escHtml(ref.name || 'platsen') + '</b>' + (anSet.simR ? ' (inom ' + anSet.simR + ' m)' : '') + ': ' +
+          use.map(function(k){ return k === 'd' ? fmtDepth(r0.d) + ' m' : k === 's' ? 'lutning ' + Math.round(r0.s) + ' %' : k === 'h' ? (r0.h >= 0.5 ? AN_HARD[Math.min(3, Math.round(r0.h) - 1)] || 'mjuk' : 'botten ej mätt').toLowerCase() + ' botten'
+            : k === 'v' ? 'växter ' + Math.round(r0.v * 100) + ' %' : (r0.t >= 0.6 ? 'topp' : r0.t <= -0.8 ? 'håla' : 'jämn botten'); }).join(', ').replace('botten ej mätt botten', 'botten ej mätt')
+          : 'Välj minst en sak att jämföra.';
       }
     } else {                                             // presets (rules of thumb)
       var hn, e2;
@@ -6720,17 +6927,20 @@
   function anDraw(){
     var dpr = window.devicePixelRatio || 1, W = stage.clientWidth, H = stage.clientHeight;
     var on = anShow && anSet.mode && anRes && anRes.M;
-    anCanvas.classList.toggle('on', !!on);
+    anCanvas.classList.toggle('on', !!on); anSatCanvas.classList.toggle('on', !!on);
     anLabelsEl.style.display = on ? '' : 'none';
     if (!on) return;
-    if (anCanvas.width !== Math.round(W * dpr) || anCanvas.height !== Math.round(H * dpr)){ anCanvas.width = Math.round(W * dpr); anCanvas.height = Math.round(H * dpr); }
+    [anCanvas, anSatCanvas].forEach(function(c){ if (c.width !== Math.round(W * dpr) || c.height !== Math.round(H * dpr)){ c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); } });
     anCtx.setTransform(dpr, 0, 0, dpr, 0, 0); anCtx.clearRect(0, 0, W, H);
+    anSatCtx.setTransform(dpr, 0, 0, dpr, 0, 0); anSatCtx.clearRect(0, 0, W, H);
     var STEP = 2, vw = Math.ceil(W / STEP), vh = Math.ceil(H / STEP), A = AN, R = anRes;
-    var key = originX.toFixed(1) + ',' + originY.toFixed(1) + ',' + scale.toFixed(5) + ',' + W + 'x' + H + ',' + R.ver;
+    var key = originX.toFixed(1) + ',' + originY.toFixed(1) + ',' + scale.toFixed(5) + ',' + W + 'x' + H + ',' + R.ver + ',' + anSet.dim;
     if (!anView || anView.key !== key){
-      var cv = anView ? anView.cv : document.createElement('canvas');
-      if (cv.width !== vw || cv.height !== vh){ cv.width = vw; cv.height = vh; }
+      var cv = anView ? anView.cv : document.createElement('canvas'), sv = anView ? anView.sv : document.createElement('canvas');
+      [cv, sv].forEach(function(c){ if (c.width !== vw || c.height !== vh){ c.width = vw; c.height = vh; } });
       var c2 = cv.getContext('2d'), im = c2.createImageData(vw, vh), px = im.data, col = R.color;
+      var s2 = sv.getContext('2d'), sm = s2.createImageData(vw, vh), sp = sm.data;
+      var dimA = Math.round(255 * anSet.dim), satA = Math.round(255 * Math.min(1, anSet.dim + 0.2));
       var val = new Uint8Array(vw * vh);
       for (var y = 0; y < vh; y++) for (var x = 0; x < vw; x++){
         var ix = (x * STEP + 1 - originX) / scale, iy = (y * STEP + 1 - originY) / scale;
@@ -6746,17 +6956,19 @@
       }
       for (var y2 = 0; y2 < vh; y2++) for (var x2 = 0; x2 < vw; x2++){
         var i2 = y2 * vw + x2, v = val[i2], k = i2 * 4;
-        if (!v){ px[k] = 4; px[k + 1] = 10; px[k + 2] = 14; px[k + 3] = 165; continue; }       // toned down
+        if (!v){ px[k] = 6; px[k + 1] = 14; px[k + 2] = 20; px[k + 3] = dimA;                  // toned down ...
+                 sp[k] = 128; sp[k + 1] = 128; sp[k + 2] = 128; sp[k + 3] = satA; continue; }     // ... and greyed
         var edge = (x2 > 0 && val[i2 - 1] !== v) || (x2 < vw - 1 && val[i2 + 1] !== v) || (y2 > 0 && val[i2 - vw] !== v) || (y2 < vh - 1 && val[i2 + vw] !== v);
         var c = v === 2 ? (anSet.mode === 'tops' ? [60, 200, 255] : [70, 200, 60]) : col;
         if (edge){ px[k] = 255; px[k + 1] = 255; px[k + 2] = 255; px[k + 3] = 210; }
         else if (c){ px[k] = c[0]; px[k + 1] = c[1]; px[k + 2] = c[2]; px[k + 3] = v === 2 && anSet.mode !== 'tops' ? 60 : 105; }
       }
-      c2.putImageData(im, 0, 0);
-      anView = { key: key, cv: cv };
+      c2.putImageData(im, 0, 0); s2.putImageData(sm, 0, 0);
+      anView = { key: key, cv: cv, sv: sv };
     }
-    anCtx.imageSmoothingEnabled = true;
+    anCtx.imageSmoothingEnabled = true; anSatCtx.imageSmoothingEnabled = true;
     anCtx.drawImage(anView.cv, 0, 0, vw * STEP, vh * STEP);
+    anSatCtx.drawImage(anView.sv, 0, 0, vw * STEP, vh * STEP);
     // labels (tops/holes, similar places)
     Array.prototype.forEach.call(anLabelsEl.children, function(el){
       var p = anImgOfCell(+el.getAttribute('data-i'));
@@ -6785,42 +6997,85 @@
     anControls();
     anView = null; anDraw();
   }
+  // a slider with one handle: label, the bar, the value
   function anRangeRow(id, label, min, max, step, val, fmt){
     return '<div class="anRange"><label for="' + id + '">' + label + '</label><input type="range" id="' + id + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + val + '"><output>' + fmt(val) + '</output></div>';
+  }
+  // a depth range: one bar in the depth colours (like the legend) with two handles
+  function anDualRow(key){
+    var ticks = (LAKE.legendTicks || ['0 m', AN_DMAX + ' m']).map(function(t){ return '<span>' + t.replace(' m', '') + '</span>'; });
+    ticks[ticks.length - 1] = ticks[ticks.length - 1].replace('</span>', ' m</span>');
+    return '<div class="anDual" data-k="' + key + '"><div class="anTrack" style="background:' + ((MAP_STYLES[0] && MAP_STYLES[0].legend) || '#2a86c9') + '"></div>' +
+      '<div class="anSel"></div><div class="anKnob" data-h="0"></div><div class="anKnob" data-h="1"></div></div><div class="anTicks">' + ticks.join('') + '</div>';
+  }
+  var AN_DUAL = { depth: ['lo', 'hi'], steep: ['elo', 'ehi'], hard: ['hlo', 'hhi'] };
+  function anDualPlace(){
+    Array.prototype.forEach.call(document.querySelectorAll('#anControls .anDual'), function(d){
+      var k = AN_DUAL[d.getAttribute('data-k')], a = anSet[k[0]] / AN_DMAX * 100, z = anSet[k[1]] / AN_DMAX * 100;
+      d.children[1].style.left = a + '%'; d.children[1].style.width = Math.max(0, z - a) + '%';
+      d.children[2].style.left = a + '%'; d.children[3].style.left = z + '%';
+    });
   }
   var anCtlMode = '#';
   function anControls(){
     var m = anSet.mode, el = document.getElementById('anControls');
-    if (anCtlMode === m + (m === 'similar' ? anSpots().length : '')) return;      // (don't rebuild while dragging)
-    anCtlMode = m + (m === 'similar' ? anSpots().length : '');
-    var dmax = Math.max(2, Math.ceil(LAKE.depth.max || 20)), fm = function(v){ return fmtDepth(+v) + ' m'; };
-    var h = '';
-    if (m === 'depth') h = anRangeRow('anLo', 'Från', 0, dmax, 0.5, anSet.lo, fm) + anRangeRow('anHi', 'Till', 0, dmax, 0.5, anSet.hi, fm);
-    else if (m === 'steep') h = anRangeRow('anSlope', 'Lutning', 4, 30, 1, anSet.slope, function(v){ return v + ' %'; }) +
-      anRangeRow('anElo', 'Från', 0, dmax, 0.5, anSet.elo, fm) + anRangeRow('anEhi', 'Till', 0, dmax, 0.5, Math.min(anSet.ehi, dmax), fm);
-    else if (m === 'veg') h = anRangeRow('anVlo', 'Från', 0, dmax, 0.5, anSet.vlo, fm) + anRangeRow('anVhi', 'Till', 0, dmax, 0.5, anSet.vhi, fm);
+    var want = m + (m === 'similar' ? anSpots().length : '');
+    if (anCtlMode === want){ anDualPlace(); return; }            // (don't rebuild while dragging)
+    anCtlMode = want;
+    var fm = function(v){ return fmtDepth(+v) + ' m'; }, h = '';
+    if (m === 'depth') h = anDualRow('depth');
+    else if (m === 'steep') h = anRangeRow('anSlope', 'Lutning', 4, 30, 1, anSet.slope, function(v){ return v + ' %'; }) + anDualRow('steep');
+    else if (m === 'tops') h = anRangeRow('anTopH', 'Toppar', 0.4, 3, 0.1, anSet.topH, function(v){ return '≥ ' + fmtDepth(+v) + ' m'; }) +
+      anRangeRow('anHoleD', 'Hålor', 0.5, 4, 0.1, anSet.holeD, function(v){ return '≥ ' + fmtDepth(+v) + ' m'; });
+    else if (m === 'hard') h = anRangeRow('anHmin', 'Minst', 1, 4, 1, anSet.hmin, function(v){ return AN_HARD[v - 1]; }) + anDualRow('hard');
     else if (m === 'similar'){
       var sp = anSpots();
       h = sp.length ? '<select id="anRefSel" aria-label="Plats att jämföra med">' + sp.map(function(w){
-        return '<option value="' + escHtml(w.id) + '"' + (w.id === anSet.ref ? ' selected' : '') + '>' + escHtml(w.name || 'Plats') + (isMine(w) ? '' : ' (' + escHtml(w.by || '') + ')') + '</option>'; }).join('') + '</select>' : '';
+        return '<option value="' + escHtml(w.id) + '"' + (w.id === anSet.ref ? ' selected' : '') + '>' + escHtml(w.name || 'Plats') + (isMine(w) ? '' : ' (' + escHtml(w.by || '') + ')') + '</option>'; }).join('') + '</select>' +
+        '<div class="anLbl2">Jämför</div><div class="anFactors" id="anSimF">' + AN_SIMF.map(function(x){ return '<button type="button" data-f="' + x[0] + '" class="' + (anSet.simF[x[0]] ? 'on' : '') + '">' + x[1] + '</button>'; }).join('') + '</div>' +
+        '<div class="anLbl2">Område runt platsen</div><div class="anSeg" id="anSimR">' + AN_SIMR.map(function(r){ return '<button type="button" data-r="' + r + '" class="' + (anSet.simR === r ? 'on' : '') + '">' + (r ? r + ' m' : 'Bara platsen') + '</button>'; }).join('') + '</div>' : '';
     }
+    if (m) h += anRangeRow('anDim', 'Mörkare', 0.3, 0.92, 0.02, anSet.dim, function(v){ return Math.round(v * 100) + ' %'; });
     el.innerHTML = h;
+    anDualPlace();
   }
   var anTimer = null;
+  function anLater(){ anSave(); clearTimeout(anTimer); anTimer = setTimeout(anCompute, 60); }
   document.getElementById('anControls').addEventListener('input', function(e){
     var t = e.target, v = parseFloat(t.value);
-    var map = { anLo: 'lo', anHi: 'hi', anSlope: 'slope', anElo: 'elo', anEhi: 'ehi', anVlo: 'vlo', anVhi: 'vhi' };
-    if (map[t.id]){
-      anSet[map[t.id]] = v;
-      var pairs = [['lo', 'hi', 'anLo', 'anHi'], ['elo', 'ehi', 'anElo', 'anEhi'], ['vlo', 'vhi', 'anVlo', 'anVhi']];
-      pairs.forEach(function(pq){ if (anSet[pq[0]] > anSet[pq[1]]){
-        if (t.id === pq[2]) anSet[pq[1]] = anSet[pq[0]]; else anSet[pq[0]] = anSet[pq[1]];
-        var a = document.getElementById(pq[2]), b = document.getElementById(pq[3]);
-        if (a){ a.value = anSet[pq[0]]; a.nextSibling.textContent = fmtDepth(anSet[pq[0]]) + ' m'; }
-        if (b){ b.value = anSet[pq[1]]; b.nextSibling.textContent = fmtDepth(anSet[pq[1]]) + ' m'; } } });
-      t.nextSibling.textContent = t.id === 'anSlope' ? v + ' %' : fmtDepth(v) + ' m';
-      anSave(); clearTimeout(anTimer); anTimer = setTimeout(anCompute, 60);
-    }
+    var map = { anSlope: 'slope', anTopH: 'topH', anHoleD: 'holeD', anHmin: 'hmin', anDim: 'dim' };
+    if (!map[t.id]) return;
+    anSet[map[t.id]] = v;
+    t.nextSibling.textContent = t.id === 'anSlope' ? v + ' %' : t.id === 'anHmin' ? AN_HARD[v - 1] : t.id === 'anDim' ? Math.round(v * 100) + ' %' : '≥ ' + fmtDepth(v) + ' m';
+    if (t.id === 'anDim'){ anSave(); anView = null; anDraw(); return; }       // (just darker/lighter: nothing to work out)
+    anLater();
+  });
+  // dragging a handle of a depth range (either handle; they can't cross)
+  var anDrag = null;
+  document.getElementById('anControls').addEventListener('pointerdown', function(e){
+    var d = e.target.closest ? e.target.closest('.anDual') : null; if (!d) return;
+    e.preventDefault(); e.stopPropagation();
+    var r = d.getBoundingClientRect(), k = AN_DUAL[d.getAttribute('data-k')];
+    var v = Math.max(0, Math.min(AN_DMAX, (e.clientX - r.left) / r.width * AN_DMAX));
+    var h = e.target.classList.contains('anKnob') ? +e.target.getAttribute('data-h') : (Math.abs(v - anSet[k[0]]) <= Math.abs(v - anSet[k[1]]) ? 0 : 1);
+    anDrag = { d: d, k: k, h: h, id: e.pointerId };
+    try { d.setPointerCapture(e.pointerId); } catch(err){}
+    anDragTo(e.clientX);
+  });
+  function anDragTo(x){
+    var r = anDrag.d.getBoundingClientRect(), k = anDrag.k;
+    var v = Math.round(Math.max(0, Math.min(AN_DMAX, (x - r.left) / r.width * AN_DMAX)) * 2) / 2;
+    if (anDrag.h === 0) anSet[k[0]] = Math.min(v, anSet[k[1]]); else anSet[k[1]] = Math.max(v, anSet[k[0]]);
+    anDualPlace(); anLater();
+  }
+  document.getElementById('anControls').addEventListener('pointermove', function(e){ if (anDrag && e.pointerId === anDrag.id){ e.preventDefault(); anDragTo(e.clientX); } });
+  function anDragEnd(e){ if (anDrag && e.pointerId === anDrag.id) anDrag = null; }
+  document.getElementById('anControls').addEventListener('pointerup', anDragEnd);
+  document.getElementById('anControls').addEventListener('pointercancel', anDragEnd);
+  document.getElementById('anControls').addEventListener('click', function(e){
+    var f = e.target.closest ? e.target.closest('#anSimF button') : null, r = e.target.closest ? e.target.closest('#anSimR button') : null;
+    if (f){ var k = f.getAttribute('data-f'); anSet.simF[k] = anSet.simF[k] ? 0 : 1; f.classList.toggle('on', !!anSet.simF[k]); anLater(); }
+    if (r){ anSet.simR = +r.getAttribute('data-r'); Array.prototype.forEach.call(r.parentNode.children, function(b){ b.classList.toggle('on', b === r); }); anLater(); }
   });
   document.getElementById('anControls').addEventListener('change', function(e){
     if (e.target.id === 'anRefSel'){ anSet.ref = e.target.value; anSave(); anCompute(); }
@@ -6839,6 +7094,12 @@
     if (g && anRes && anRes.list){ var it = anRes.list[+g.getAttribute('data-go') - 1]; if (it){ showAnPanel(false); startNav('Liknande #' + it.n, it.x, it.y); } }
   });
   anPanel.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
+  sheetSwipe(anPanel, function(){ showAnPanel(false); });
+  function anLikeSpot(wp){
+    anSet.mode = 'similar'; anSet.ref = wp.id; anSave(); anCtlMode = '#';
+    if (!anShow){ anShow = true; toggleAnEl.checked = true; try { localStorage.setItem(SHOW_AN_KEY, '1'); } catch(e){} }
+    showAnPanel(true); anCompute();
+  }
   function showAnPanel(open){
     anPanel.classList.toggle('show', open);
     if (open){ if (typeof toggleMsgPop === 'function') toggleMsgPop(false); anCtlMode = '#'; if (!anRes) anCompute(); else anRender(); }
@@ -6866,48 +7127,54 @@
   window.__ffAnalysis = function(){ var R = anRes; return { mode: anSet.mode, show: anShow, ready: !!(R && R.M), n: R ? R.n : 0, labels: R && R.labels ? R.labels.length : 0,
     list: R && R.list ? R.list.length : 0, text: R ? (R.text || '').replace(/<[^>]+>/g, '') : '' }; };
 
-  /* ================= "Åk hit" -- navigate to a place =================
-     From a spot's sheet (or a place the analysis found): the lead line is dropped
-     there (its route by water, distance and time) and a card at the top shows the
-     name, an arrow along the route and the distance/time. ✕ or removing the lead
-     line ends it. */
-  var navTarget = null;
-  var navCard = document.getElementById('navCard');
-  function startNav(name, x, y){
-    navTarget = { name: name, x: x, y: y };
-    setProbe({ x: x, y: y });
-    updateNav();
-    // show both you and the place
-    if (lastFix && lastFix.onMap && typeof centerOnFix === 'function'){ /* keep the view: the arrow shows the way */ }
-  }
-  function updateNav(){
-    if (!navCard) return;
-    var on = !!(navTarget && probe && Math.abs(probe.x - navTarget.x) < 0.01 && Math.abs(probe.y - navTarget.y) < 0.01);
-    if (!on && navTarget && !probe) navTarget = null;
-    navCard.classList.toggle('show', on);
-    if (!on) return;
-    document.getElementById('navName').textContent = navTarget.name;
-    var have = !!(lastOwnLatLon && lastFix && lastFix.onMap), info;
-    if (!have) info = 'Du är inte vid sjön';
-    else {
-      var d = document.getElementById('probeDistTxt').textContent, t = probeEl.classList.contains('noTime') ? '' : document.getElementById('probeTime').textContent;
-      info = d === 'här' ? 'Du är framme!' : d + ' sjövägen' + (t ? ' · ' + t : '');
+  /* ================= "Åk hit" =================
+     From a spot's sheet (or a place the analysis found): the lead line is dropped there --
+     it shows the depth, the distance by water, the time, and the route is drawn. */
+  function startNav(name, x, y){ setProbe({ x: x, y: y }); }
+
+  /* ---- what's under a spot (its sheet): depth, slope, bottom, plants + the terrain ---- */
+  function renderWpData(lat, lon){
+    var el = document.getElementById('wpData'), A = anBase();
+    var p = latLonToImgPx(lat, lon), dm = depthAtImgPx(p.x, p.y);
+    if (!A || dm == null){ el.innerHTML = dm != null ? '' : (isLakeAtImgPx(p.x, p.y) ? '<div class="wpTerrain">Okänt djup här (ingen ekolodsdata).</div>' : ''); return; }
+    if (!anBottom) anLoadBottom();
+    var i = anCellOfImg(p.x, p.y), W = A.W, cx = i % W, cy = Math.floor(i / W);
+    var sl = A.slope[i], slTxt = sl < 3 ? 'plant' : sl < 10 ? 'sluttar' : 'brant';
+    var bot = '–', botSub = anBottom ? 'ej mätt' : '…', veg = '–', vegSub = anBottom ? '' : '…';
+    if (anBottom){
+      var best = 0, bd = 1e9, r = Math.max(1, Math.round(15 / A.cell));     // hardness: here, or the nearest measured within 15 m
+      for (var dy = -r; dy <= r; dy++) for (var dx = -r; dx <= r; dx++){
+        var x = cx + dx, y = cy + dy; if (x < 0 || y < 0 || x >= W || y >= A.H) continue;
+        var h = anBottom[y * W + x] & 7; if (h && dx * dx + dy * dy < bd){ bd = dx * dx + dy * dy; best = h; } }
+      if (best){ bot = ['Mjuk', 'Medel', 'Hård', 'Mkt hård'][best - 1]; botSub = bd ? 'strax intill' : 'hårdhet'; }
+      var rv = Math.max(1, Math.round(25 / A.cell)), nv = 0, nw = 0;           // plants: share of the water within 25 m
+      for (var dy2 = -rv; dy2 <= rv; dy2++) for (var dx2 = -rv; dx2 <= rv; dx2++){
+        if (dx2 * dx2 + dy2 * dy2 > rv * rv) continue;
+        var x2 = cx + dx2, y2 = cy + dy2; if (x2 < 0 || y2 < 0 || x2 >= W || y2 >= A.H) continue;
+        var j = y2 * W + x2; if (!A.wat[j]) continue; nw++; if (anBottom[j] & 8) nv++; }
+      var f = nw ? nv / nw : 0;
+      veg = f < 0.05 ? 'Inga' : f < 0.3 ? 'Lite' : f < 0.7 ? 'En del' : 'Mycket'; vegSub = Math.round(f * 100) + ' % inom 25 m';
     }
-    document.getElementById('navInfo').textContent = info;
-    // the arrow: towards the next bend of the route (map north up)
-    var to = navTarget, pts = probeRoute && probeRoute.pts;
-    if (have && pts && pts.length > 1){ for (var k = 1; k < pts.length; k++){ to = pts[k]; if (Math.hypot(pts[k].x - lastFix.px, pts[k].y - lastFix.py) * WEB_METERS_PER_PX > 25) break; } }
-    var a = have ? Math.atan2(to.x - lastFix.px, -(to.y - lastFix.py)) * 180 / Math.PI : 0;
-    document.querySelector('#navArrow svg').style.transform = 'rotate(' + Math.round(a) + 'deg)';
+    var t = A.tpi[i], terr = t >= 0.6 ? '⛰ <b>Topp/grynna</b> – ' + fmtDepth(t) + ' m grundare än runt om' : t <= -0.8 ? '🕳 <b>Håla</b> – ' + fmtDepth(-t) + ' m djupare än runt om' : 'Jämn botten runt om';
+    el.innerHTML =
+      '<div class="wpTile"><i>Djup</i><b>' + fmtDepth(dm) + ' m</b><small>' + (dm < 2 ? 'grunt' : dm < 6 ? 'medel' : 'djupt') + '</small></div>' +
+      '<div class="wpTile"><i>Lutning</i><b>' + Math.round(sl) + ' %</b><small>' + slTxt + '</small></div>' +
+      '<div class="wpTile"><i>Botten</i><b>' + bot + '</b><small>' + botSub + '</small></div>' +
+      '<div class="wpTile"><i>Växter</i><b>' + veg + '</b><small>' + vegSub + '</small></div>' +
+      '<div class="wpTerrain">' + terr + ' · ' + Math.round(A.shore[i]) + ' m från land</div>';
   }
-  document.getElementById('navClose').addEventListener('click', function(){ navTarget = null; setProbe(null); updateNav(); });
   document.getElementById('wpGo').addEventListener('click', function(){
     var wp = waypoints.filter(function(w){ return w.id === editingId; })[0];
     if (!wp) return;
-    var p = latLonToImgPx(wp.lat, wp.lon), name = wp.name || 'Platsen';
-    if (editingIsNew){ editingIsNew = false; }
-    closeSheet();
-    startNav(name, p.x, p.y);
+    var p = latLonToImgPx(wp.lat, wp.lon);
+    editingIsNew = false; closeSheet();
+    startNav(wp.name, p.x, p.y);
+  });
+  document.getElementById('wpLike').addEventListener('click', function(){
+    var wp = waypoints.filter(function(w){ return w.id === editingId; })[0];
+    if (!wp) return;
+    editingIsNew = false; closeSheet();
+    anLikeSpot(wp);
   });
 
   /* ================= Åskvarning (lightning alarm) =================
@@ -6987,6 +7254,20 @@
   });
   document.addEventListener('visibilitychange', applyWake);
   applyWake();
+  var wakeBadge = document.getElementById('wakeBadge'), wakeNote = document.getElementById('wakeNote'), wakeNoteT = null;
+  function wakeUi(){ wakeBadge.hidden = !wakeOn; }
+  wakeBadge.addEventListener('click', function(e){
+    e.stopPropagation();
+    wakeOn = false; toggleWakeEl.checked = false;
+    try { localStorage.setItem(WAKE_KEY, '0'); } catch(err){}
+    applyWake(); wakeUi();
+    wakeNote.classList.remove('fade'); wakeNote.classList.add('show');
+    clearTimeout(wakeNoteT);
+    wakeNoteT = setTimeout(function(){ wakeNote.classList.add('fade'); wakeNoteT = setTimeout(function(){ wakeNote.classList.remove('show', 'fade'); }, 900); }, 20000);
+  });
+  document.getElementById('wakeNoteClose').addEventListener('click', function(){ clearTimeout(wakeNoteT); wakeNote.classList.remove('show', 'fade'); });
+  toggleWakeEl.addEventListener('change', wakeUi);
+  wakeUi();
   window.__ffWake = function(){ return { on: wakeOn, held: !!wakeLock }; };
 
   /* ================= Snabbmeddelanden (quick messages) =================
@@ -7138,7 +7419,6 @@
       };
       st.menu = menuPanel.classList.contains('show');
       st.an = anPanel.classList.contains('show');
-      if (navTarget) st.nav = navTarget;
       if (helpView.classList.contains('show')) st.help = helpLastPlace || helpPlace();
       st.wx = wxCard.classList.contains('show');
       st.probe = probe;
@@ -7184,7 +7464,6 @@
       if (r.menu) toggleMenu(true);
       if (r.wx) setWxOpen(true);
       if (r.probe && typeof r.probe.x === 'number'){ setProbe(r.probe); probeEl.classList.remove('drop'); }
-      if (r.nav && r.probe){ navTarget = r.nav; updateNav(); }
       if (r.an) showAnPanel(true);
       if (r.sheet && r.sheet.id){
         pendingSheetRestore = { s: r.sheet, until: Date.now() + 10000 };

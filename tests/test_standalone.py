@@ -27,7 +27,7 @@ with sync_playwright() as p:
     ctx.add_init_script("Object.defineProperty(navigator, 'standalone', { value: true, configurable: true });")
     pg.reload(); pg.wait_for_timeout(800); fakefb.login(pg, 'Filip'); pg.wait_for_timeout(1200)
     bg = pg.evaluate("getComputedStyle(document.querySelector('header')).backgroundImage")
-    check('home-screen app, upright: the top fade starts in the status bar black (no hard line)', pg.evaluate("document.documentElement.classList.contains('iosApp')") and bg.startswith('linear-gradient(rgb(0, 0, 0) 0%'), bg)
+    check('home-screen app, upright: the top fade starts solid in the app blue-grey (like the bottom)', pg.evaluate("document.documentElement.classList.contains('iosApp')") and bg.startswith('linear-gradient(rgb(6, 20, 28) 0%'), bg)
     pg.screenshot(path='shot_standalone_top.png', clip={'x': 0, 'y': 0, 'width': 390, 'height': 260})
     pg.set_viewport_size({'width': 844, 'height': 390}); pg.wait_for_timeout(500)
     check('...on its side (no status bar): the usual fade', 'rgba(6, 20, 28, 0.85)' in pg.evaluate("getComputedStyle(document.querySelector('header')).backgroundImage"))

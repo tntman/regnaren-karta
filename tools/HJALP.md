@@ -145,5 +145,9 @@ särskilt att inget hamnat på land och att inget ligger i vägen.
   "vilket avsnitt + hur långt in" (`helpPlace()`/`helpGoTo()`), inte pixlar. Platsen mäts
   **när man skrollar** (`helpLastPlace`) – när vridningen märks har sidan redan ritats om i
   den nya bredden och mätningen skulle ge fel avsnitt.
+- **Sök** (`#helpSearch`, överst): varje ord måste finnas i samma rad eller i avsnittets rubrik;
+  rubrik väger mest, helt ord mer än del av ord. Tryck på en träff = dit, raden blinkar.
+  Ny text i Hjälp blir sökbar av sig själv (alla `li`, `p` och steg indexeras).
+- **Filter-avsnittet** förklarar varje filter i en lista (`.helpDefs`) – nytt filter = ny rad där.
 - Animeringarna laddas först när man skrollar fram till dem (`loading="lazy"`); en som
   saknas döljs.
