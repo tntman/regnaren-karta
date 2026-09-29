@@ -21,6 +21,9 @@ snabbmeddelanden, Hem-plats, Liknande förtydligad).
 ## Att göra
 
 - [ ] 2026-09-29 – Rutor nertill: en greppremsa överst (strecket) – dra den för att ändra storlek, snärta för att stänga; inne i rutan skrollar man. Hjälp: Kartanalys (sista punkten) + ev. Fiskeplatser. Nyhet: "Rutorna nertill: dra i strecket överst för att ändra storlek" (BÄTTRE)
+- [ ] 2026-09-29 – Rutornas överdel: ✕ i greppremsan (ingen Avbryt, ingen rubrik i Kartanalys), remsan lyser blått när man håller i den. Platsens ruta: typpiller, en knapprad Åk hit / Liknande / Ta bort / Spara; andras plats visar typen som mini-pill. Hjälp: Fiskeplatser (text) + animeringar `platser`, `andra`, `fara`, `analys`, `akhit`, `meddelanden` (spelas in igen). Nyhet: "Ny design på rutorna nertill" (BÄTTRE)
+- [ ] 2026-09-29 – Kartanalys: av när appen startas om (kvar vid vridning); "Rensa" efter en avskiljare. Hjälp: Kartanalys (text). Nyhet: "Kartanalys börjar avstängd" (BÄTTRE)
+- [ ] 2026-09-29 – Rättat: vägen sjövägen nådde inte hela sjön (Åk hit gav bara djup + avstånd). Om ingen väg hittas: prickad linje "fågelvägen". Hjälp: Lodet (text). Nyhet: "Åk hit och lodet hittar vägen till hela sjön" (FIXAT)
 - [ ] 2026-09-29 – Åk hit (från plats och Liknande) visar nu hela vägen – kartan zoomar så båten, rutten och målet syns. Hjälp: Åk hit + animering `akhit` (spelas in igen). Nyhet: "Åk hit visar hela vägen på kartan" (BÄTTRE)
 
 <!-- mall:

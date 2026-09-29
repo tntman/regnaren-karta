@@ -56,7 +56,7 @@ with sync_playwright() as p:
     # tapping one of the others' small circles opens it
     c = pg.eval_on_selector('#waypoints .wpPin--other.wpPin--gadda', 'e=>{var r=e.getBoundingClientRect();return [r.left+r.width/2,r.top+r.height/2,r.width]}')
     pg.mouse.click(c[0], c[1]); pg.wait_for_timeout(400)
-    check("tapping someone else's circle opens its sheet", pg.eval_on_selector('#wpSheet', 'e=>e.classList.contains("show")') and pg.inner_text('#wpTypeSeg .active') == 'Gädda', c)
+    check("tapping someone else's circle opens its sheet", pg.eval_on_selector('#wpSheet', 'e=>e.classList.contains("show")') and pg.eval_on_selector('#wpTypeSeg .active', 'e => e.textContent') == 'Gädda', c)
     pg.click('#wpCancel'); pg.wait_for_timeout(300)
     # circle is centred on the spot, about half the size of my pin
     sz = pg.evaluate("""() => { var o = document.querySelector('#waypoints .wpPin--other').getBoundingClientRect(); var m = document.querySelector('#waypoints .wpPin:not(.wpPin--other)').getBoundingClientRect(); return [o.width, m.width]; }""")

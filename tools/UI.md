@@ -32,6 +32,24 @@ Exempel: platsens ruta `#wpSheet`, Kartanalys `#anPanel`.
 - `pointerdown` på panelen ska `stopPropagation()` (annars tolkas det som ett tryck på kartan).
 - Liggande läge: panelen till höger, `width:420px`.
 
+**Överdelen (samma på alla rutor nertill):** greppremsan med strecket i mitten och ett ✕
+(`.gripX`, bara tecknet – ingen ram) i remsans högra hörn; tryckytan 46 × 30 px. Ingen rubrik,
+ingen Avbryt-knapp. ✕ startar ingen dragning (`sheetSwipe` hoppar över `.gripX`).
+**Håller man i remsan** (`.dragging`): överkanten lyser blå + en mjuk blå strålkastare i remsan,
+strecket vitt och lysande.
+
+## Knapprad i en ruta
+
+`.sheetActs`: alla knappar på en rad, lika breda (`flex:1`), ~36 px höga (`padding:8px`).
+Vanlig = ljus genomskinlig, **Spara** = amber, **Ta bort** = samma form fast röd (#D64545).
+Dolda knappar (`hidden`) tar ingen plats. Ikon + text (t.ex. förstoringsglaset för Liknande).
+
+## Typpiller
+
+Platsens typ (`.typeSeg button`): små piller med typfärgad kant och text, vald = ifylld.
+Någon annans plats: ingen väljare – typen som ett mini-pill (`.miniType`) sist på raden
+"Sparad av …", liksom `ADMIN` (`.adminTag`) när admin ändrar någon annans.
+
 ## Chips (val)
 
 `.anChips button` – rundade (`border-radius:14px`), ljus kant; vald = `.on` (amber

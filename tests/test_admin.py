@@ -80,7 +80,7 @@ with sync_playwright() as p:
     pg.evaluate("""() => { var els = document.querySelectorAll('.wpPin--other'); var best=null, bd=1e9;
        els.forEach(e => { var r=e.getBoundingClientRect(); var d=Math.hypot(r.left+r.width/2-195, r.top+r.height/2-422); if(d<bd){bd=d;best=e;} }); best.click(); }""")
     pg.wait_for_timeout(400)
-    check("admin can edit someone else's spot", pg.is_visible('#wpDelete') and pg.is_enabled('#wpName'), pg.input_value('#wpName'))
+    check("admin can edit someone else's spot (type buttons, Ta bort, Spara + an ADMIN tag)", pg.is_visible('#wpDelete') and pg.is_enabled('#wpName') and pg.is_visible('#wpTypeSeg') and pg.inner_text('#wpMeta .adminTag') == 'ADMIN', pg.inner_text('#wpMeta'))
     pg.click('#wpDelete'); pg.wait_for_timeout(300)
     pg.click('#menuBtn'); pg.click('#menuItemLog'); pg.wait_for_timeout(300)
     titles = pg.eval_on_selector_all('#logList .logTitle', 'e=>e.map(x=>x.textContent)')

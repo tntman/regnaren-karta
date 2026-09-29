@@ -116,7 +116,9 @@ All text i appen är på svenska. Svara Filip på svenska, kort och tydligt.
   prominens** (`anDome`: h-dome med morfologisk rekonstruktion, bucket-kö i cm; land räknas HÖGT
   för toppar och LÅGT för hålor så grunda hyllor längs land inte blir toppar): "kapsyler" ≥ 0,25 m
   vars topp reser sig ≥ reglaget (standard 0,6 m / hålor 0,8 m). Samma färger/etiketter som förut.
-  "Mörkare" ligger i Inställningar (`#anDimSet`), inte i panelen.
+  "Mörkare" ligger i Inställningar (`#anDimSet`), inte i panelen. **Av efter omstart** (kvar vid
+  vridning, `rotState`); inget att visa (t.ex. Liknande innan platserna laddats) = ingen gråtoning.
+  Panelen: ingen rubrik, ✕ i greppremsan, "Rensa" efter en avskiljare, aktiv bara med något valt.
   Liknande: välj vad som jämförs (djup, lutning, botten, växter, topp/håla) och område (bara
   platsen/25/50/100 m = snittet inom radien, `anSimFeatures`), med förklaring. Platsen själv lyser
   och får en rosa ring (`.anLbl.simRef`), men står inte i listan (inget inom 60 m); listan = de 5
@@ -128,9 +130,13 @@ All text i appen är på svenska. Svara Filip på svenska, kort och tydligt.
   `window.__ffGeo`, `__ffAnalysis()` för tester/verktyg.
 - **Åk hit** (knapp i platsens ruta `#wpGo`, och i Kartanalys-listan): bara lodet släpps på platsen
   (djup, sträcka sjövägen, tid, rutten). Inget extra kort (Filip: behövs inte).
-- **Platsens ruta**: namn, vem/när, faktarutor under platsen (`renderWpData`: djup, lutning, botten
+- **Platsens ruta**: ✕ i greppremsan (ingen Avbryt – `#wpCancel` är krysset), namn, vem/när (+ typen som
+  mini-pill för andras, `ADMIN` när admin ändrar andras), faktarutor under platsen (`renderWpData`: djup, lutning, botten
   = hårdhet närmast inom 15 m, växter = andel inom 25 m, topp/håla, avstånd till land), typ, knappar
-  (Åk hit, 🔎 Hitta liknande → Kartanalys "Liknande" för platsen).
+  (typpiller – dolda för andras; en rad: Åk hit, Liknande → Kartanalys "Liknande", Ta bort (röd), Spara).
+- **Lodets väg sjövägen** (`routeFieldTo`, Dijkstra): köa det SPARADE float32-värdet – float64 i kön
+  gjorde att sökningen stannade (bara djup + avstånd, ingen linje/tid; hände 2026-09-29). Hittas ingen
+  väg: vit prickad linje rakt dit och "… fågelvägen" (`probeCrow`, `#routeLayer.crow`).
 - **UI-byggstenar** (bottenpanel + dra-för-att-stänga `sheetSwipe`, chips, reglage med två handtag,
   faktarutor, knapprutnätet nere till höger, notiser): **`tools/UI.md`** – följ den för nya delar.
 - **Snabbmeddelanden** (`#msgBtn` längst ner i mitten): Fisk!!!, Kommer, Åker in, Mat?, Allt är

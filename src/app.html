@@ -744,13 +744,20 @@
   /* bigger, invisible grab area around the little handle bar */
   .sheetGrab{position:sticky;top:-10px;z-index:3;margin:-10px -18px 6px;height:30px;display:flex;align-items:center;justify-content:center;background:var(--navy);border-radius:16px 16px 0 0;cursor:grab;}
   .sheetHandle{width:40px;height:5px;background:rgba(255,255,255,.3);border-radius:3px;}
+  .gripX{position:absolute;right:4px;top:0;width:46px;height:30px;padding:0;border:none;background:none;color:var(--text-muted);
+    font-size:16px;line-height:30px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+  .gripX:active{color:#fff;}
+  /* holding the grip: the top edge lights up blue + a soft blue spotlight, the bar white and glowing */
+  #wpSheet.dragging, #anPanel.dragging, #msgCard.dragging{border-top-color:#58b4ff;box-shadow:0 -10px 30px rgba(0,0,0,.45),0 -2px 14px rgba(88,180,255,.9);}
+  #wpSheet.dragging .sheetGrab, #anPanel.dragging .grab, #msgCard.dragging .grab{background:radial-gradient(ellipse 60% 140% at 50% 0%,rgba(80,170,255,.45),rgba(80,170,255,0) 70%),var(--navy);}
+  #wpSheet.dragging .sheetHandle, #anPanel.dragging .grab::before, #msgCard.dragging .grab::before{background:#fff;box-shadow:0 0 12px 2px #4aa3ff;}
   /* type picker in the spot sheet */
-  .typeSeg{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:14px;}
+  .typeSeg{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 12px;}
+  .typeSeg[hidden]{display:none;}
   .typeSeg button{
-    display:flex;align-items:center;justify-content:center;gap:5px;min-width:0;
-    padding:9px 2px;border-radius:9px;border:1px solid rgba(255,255,255,.16);
-    background:rgba(255,255,255,.06);color:var(--offwhite);
-    font-family:inherit;font-size:12.5px;font-weight:600;white-space:nowrap;
+    display:inline-flex;align-items:center;padding:6px 12px;border-radius:14px;
+    border:1.5px solid var(--tc);background:transparent;color:var(--tc);
+    font-family:inherit;font-size:13.5px;font-weight:700;white-space:nowrap;
     -webkit-tap-highlight-color:transparent;cursor:pointer;
   }
   .typeSeg button[data-type="mark"]{--tc:var(--t-mark);}
@@ -758,14 +765,26 @@
   .typeSeg button[data-type="gadda"]{--tc:var(--t-gadda);}
   .typeSeg button[data-type="gos"]{--tc:var(--t-gos);}
   .typeSeg button[data-type="fara"]{--tc:var(--t-fara);}
-  .typeSeg button[data-type="fara"].active{color:#fff;}
   .typeSeg button[data-type="meet"]{--tc:var(--t-meet);}
   .typeSeg button[data-type="hem"]{--tc:var(--t-hem);}
-  .typeSeg button[data-type="hem"].active{color:#fff;}
-  .typeSeg button.active{background:var(--tc);border-color:var(--tc);color:var(--ink);}
+  .typeSeg button.active{background:var(--tc);color:var(--ink);}
+  .typeSeg button[data-type="fara"].active, .typeSeg button[data-type="hem"].active{color:#fff;}
   .typeSeg button:disabled{opacity:.45;cursor:default;}
   .typeSeg button.active:disabled{opacity:1;}
-  .typeDot{width:10px;height:10px;border-radius:50%;flex:0 0 auto;background:var(--tc);border:1.5px solid rgba(0,0,0,.4);}
+  /* the actions on one row: Åk hit, Liknande, Ta bort (red), Spara */
+  .sheetActs{display:flex;gap:7px;}
+  .sheetActs button{flex:1 1 0;min-width:0;display:flex;align-items:center;justify-content:center;gap:5px;border:none;border-radius:10px;
+    padding:8px 2px;font-family:inherit;font-size:13.5px;font-weight:700;background:rgba(255,255,255,.08);color:var(--offwhite);white-space:nowrap;
+    -webkit-tap-highlight-color:transparent;cursor:pointer;}
+  .sheetActs button[hidden]{display:none;}
+  .sheetActs button svg{width:15px;height:15px;flex:0 0 auto;}
+  .sheetActs .del{background:#D64545;color:#fff;}
+  .sheetActs .save{background:var(--amber);color:var(--navy);}
+  .sheetActs button:active{transform:scale(.97);}
+  /* the type of someone else's spot / "ADMIN": small pills at the end of the "Sparad av" line */
+  .miniType, .adminTag{display:inline-block;font-size:10.5px;font-weight:700;border-radius:6px;padding:1px 7px;margin-left:6px;vertical-align:1px;color:#14181C;}
+  .miniType.light{color:#fff;}
+  .adminTag{background:rgba(232,163,61,.2);color:var(--amber);letter-spacing:.06em;}
   .sheetLabel{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:6px;}
   .sheetMeta{font-size:11.5px;color:var(--text-muted);margin:-6px 0 12px;}
   #wpName:disabled{opacity:.75;}
@@ -1189,10 +1208,6 @@
   }
   #anPanel.show{transform:none;}
   #anPanel .grab{margin:-8px -14px 4px;top:-8px;}
-  .anHead{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--text-muted);}
-  .anHead span{flex:1;}
-  .anHead button{border:none;background:rgba(255,255,255,.08);color:var(--offwhite);border-radius:14px;padding:5px 10px;font:inherit;font-size:12px;letter-spacing:0;cursor:pointer;}
-  #anClose{width:30px;height:30px;padding:0;border-radius:50%;font-size:15px;}
   .anChips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;}
   .anChips button{font:inherit;font-size:12.5px;padding:6px 10px;border-radius:14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:var(--offwhite);cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent;}
   .anChips button.on{background:var(--amber);color:var(--navy);font-weight:700;border-color:var(--amber);}
@@ -1258,10 +1273,6 @@
   .anRange{margin-top:10px;}
   .anRange input[type=range]{height:26px;}
   /* ---- spot sheet: "Åk hit" + "Hitta liknande" ---- */
-  .sheetRow--go{margin-top:10px;}
-  .sheetRow--go[hidden]{display:none;}
-  #wpLike[hidden]{display:none;}
-  .sheetRow--go .btnGhost{flex:1;}
   /* ---- "Håll skärmen tänd" on: a yellow sun by your name; tap = off (+ a note) ---- */
   #headerUserRow{display:flex;align-items:center;gap:7px;}
   #wakeBadge{pointer-events:auto;width:17px;height:17px;padding:0;border-radius:50%;border:1.5px solid #FFD21A;background:rgba(255,210,26,.18);color:#FFD21A;
@@ -1342,7 +1353,6 @@
   #msgCard.show{transform:none;}
   #msgCard.dragging{transition:none;}
   #msgCard .grab{margin:-8px -16px 4px;top:-8px;}
-  #msgCardClose{position:absolute;right:10px;top:10px;width:30px;height:30px;border-radius:50%;border:none;background:rgba(255,255,255,.08);color:var(--offwhite);font-size:15px;cursor:pointer;}
   #msgCardWho{font-size:12px;letter-spacing:.06em;font-weight:700;color:var(--text-muted);}
   #msgCardTxt{font-size:23px;font-weight:700;margin:4px 0 8px;}
   .msgCardMeta{display:flex;justify-content:space-between;gap:8px;font-size:13.5px;color:#dbe4e7;}
@@ -1371,6 +1381,12 @@
     animation:simRing 2s ease-out infinite;box-sizing:border-box;}
   .anLbl.simRef::after{animation-delay:1s;}
   @keyframes simRing{0%{transform:scale(.25);opacity:1;}100%{transform:scale(1.6);opacity:0;}}
+  .anSep{width:1.5px;align-self:stretch;background:rgba(255,255,255,.3);border-radius:1px;margin:3px 3px;}
+  .anChips .anClr{border-color:var(--amber);color:var(--amber);background:none;}
+  .anChips .anClr:disabled{border-color:rgba(255,255,255,.12);color:rgba(183,196,201,.45);cursor:default;}
+  #anPanel .grab, #msgCard .grab{position:sticky;}
+  #routeLayer.crow .rtLine{stroke:#fff;stroke-width:2;stroke-dasharray:2 7;stroke-linecap:round;}
+  #routeLayer.crow .rtUnder{stroke-width:5;}
 </style>
 
 <div id="app">
@@ -1741,16 +1757,14 @@
   </button>
   <div id="msgPop" role="menu" aria-label="Skicka snabbmeddelande"></div>
   <div id="msgToast" role="status"></div>
-  <div id="msgCard" role="dialog" aria-label="Meddelande"><div class="grab"></div>
-    <button type="button" id="msgCardClose" aria-label="Stäng">✕</button>
+  <div id="msgCard" role="dialog" aria-label="Meddelande"><div class="grab"><button type="button" id="msgCardClose" class="gripX" aria-label="Stäng">✕</button></div>
     <div id="msgCardWho"></div><div id="msgCardTxt"></div>
     <div class="msgCardMeta"><span id="msgCardWhen"></span><span id="msgCardLeft"></span></div>
     <div class="msgCardBar"><i id="msgCardBar"></i></div>
     <div class="msgCardBtns"><button type="button" id="msgCardGo" class="a">➤ Åk hit</button><button type="button" id="msgCardDrop">Dölj för mig</button></div>
   </div>
   <div id="anPanel" role="dialog" aria-label="Kartanalys">
-    <div class="grab"></div>
-    <div class="anHead"><span>KARTANALYS – HITTA STÄLLEN</span><button type="button" id="anClear">Rensa</button><button type="button" id="anClose" aria-label="Stäng">✕</button></div>
+    <div class="grab"><button type="button" id="anClose" class="gripX" aria-label="Stäng">✕</button></div>
     <div class="anChips" id="anChips"></div>
     <div class="anSub">Förinställt (tumregler)</div>
     <div class="anChips pre" id="anPresets"></div>
@@ -2175,29 +2189,26 @@
 
   <div id="sheetBackdrop"></div>
   <div id="wpSheet">
-    <div class="sheetGrab"><div class="sheetHandle"></div></div>
+    <div class="sheetGrab"><div class="sheetHandle"></div><button type="button" id="wpCancel" class="gripX" aria-label="Stäng">✕</button></div>
     <input id="wpName" type="text" maxlength="40" placeholder="Namn, t.ex. Gösvik" aria-label="Namn">
     <div id="wpMeta" class="sheetMeta"></div>
     <div id="wpData" class="wpData" aria-label="Under platsen"></div>
-    <div class="sheetLabel">Typ</div>
     <div id="wpTypeSeg" class="typeSeg" role="radiogroup" aria-label="Typ av plats">
-      <button type="button" data-type="mark" role="radio"><span class="typeDot"></span>Markering</button>
-      <button type="button" data-type="abborre" role="radio"><span class="typeDot"></span>Abborre</button>
-      <button type="button" data-type="gadda" role="radio"><span class="typeDot"></span>Gädda</button>
-      <button type="button" data-type="gos" role="radio"><span class="typeDot"></span>Gös</button>
-      <button type="button" data-type="fara" role="radio"><span class="typeDot"></span>Fara</button>
-      <button type="button" data-type="meet" role="radio"><span class="typeDot"></span>Träffpunkt 1 h</button>
-      <button type="button" data-type="hem" role="radio"><span class="typeDot"></span>Hem</button>
+      <button type="button" data-type="mark" role="radio">Markering</button>
+      <button type="button" data-type="abborre" role="radio">Abborre</button>
+      <button type="button" data-type="gadda" role="radio">Gädda</button>
+      <button type="button" data-type="gos" role="radio">Gös</button>
+      <button type="button" data-type="fara" role="radio">Fara</button>
+      <button type="button" data-type="meet" role="radio">Träffpunkt 1 h</button>
+      <button type="button" data-type="hem" role="radio">Hem</button>
     </div>
-    <div class="sheetRow sheetRow--go">
-      <button id="wpGo" class="btnGhost" type="button">➤ Åk hit</button>
-      <button id="wpLike" class="btnGhost" type="button">🔎 Hitta liknande</button>
+    <div class="sheetActs">
+      <button id="wpGo" type="button">➤ Åk hit</button>
+      <button id="wpLike" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="M15.5 15.5 21 21"></path><path d="M7.5 11.5c1-2 2-2 3-1s2 1 3-1"></path></svg>Liknande</button>
+      <button id="wpDelete" class="del" type="button">Ta bort</button>
+      <button id="wpSave" class="save" type="button">Spara</button>
     </div>
-    <div class="sheetRow">
-      <button id="wpDelete" class="btnGhost danger">Ta bort</button>
-      <button id="wpCancel" class="btnGhost">Avbryt</button>
-      <button id="wpSave" class="btnPrimary">Spara</button>
-    </div>
+  </div>
   </div>
 
   <div id="nameBackdrop"></div>
@@ -2381,8 +2392,9 @@
     if (min < 60) return min + ' min';
     return Math.floor(min / 60) + ' h ' + (min % 60 < 10 ? '0' : '') + (min % 60) + ' min';
   }
+  var probeCrow = false;
   function updateProbeText(){
-    probeRoute = null;
+    probeRoute = null; probeCrow = false;
     if (!probe){ renderRoute(); return; }
     var dm = depthAtImgPx(probe.x, probe.y), dEl = document.getElementById('probeDepth');
     var lake = isLakeAtImgPx(probe.x, probe.y);
@@ -2400,15 +2412,18 @@
         // your speed right now when you're moving, otherwise your average / cruising speed (as the measuring tool)
         var kn = currentSpeedKn(); if (!(kn >= 1.5)) kn = effectiveSpeed().kn;
         if (r && kn > 0){ document.getElementById('probeTime').textContent = fmtEtaShort(m / (kn * 1852 / 3600)); timeOk = true; }
+        if (!r && lake) probeCrow = true;                 // no way by water: a straight dotted line, "fågelvägen"
       }
-      document.getElementById('probeDistTxt').textContent = m < 10 ? 'här' : fmtMeters(m);
+      document.getElementById('probeDistTxt').textContent = m < 10 ? 'här' : fmtMeters(m) + (probeCrow ? ' fågelvägen' : '');
     }
     probeEl.classList.toggle('noTime', !timeOk);
     renderRoute();
   }
   function renderRoute(){
     var svg = document.getElementById('routeLayer');
-    var pts = (probe && probeRoute) ? probeRoute.pts.map(function(p){ return (originX + p.x * scale).toFixed(1) + ',' + (originY + p.y * scale).toFixed(1); }).join(' ') : '';
+    var line = (probe && probeRoute) ? probeRoute.pts : (probe && probeCrow && lastFix) ? [{ x: lastFix.px, y: lastFix.py }, probe] : null;
+    svg.classList.toggle('crow', !!(probe && !probeRoute && probeCrow));
+    var pts = line ? line.map(function(p){ return (originX + p.x * scale).toFixed(1) + ',' + (originY + p.y * scale).toFixed(1); }).join(' ') : '';
     svg.querySelector('.rtUnder').setAttribute('points', pts);
     svg.querySelector('.rtLine').setAttribute('points', pts);
   }
@@ -3794,6 +3809,13 @@
       distEl.textContent = m < 10 ? 'Du är här' : fmtMeters(m) + ' bort';
       wpMetaEl.appendChild(distEl);
     }
+    if (!w.mine && !w.admin){                              // someone else's: its type as a small pill
+      var tp = document.createElement('span'), t = editingType;
+      tp.className = 'miniType' + (t === 'fara' || t === 'hem' ? ' light' : '');
+      tp.style.background = 'var(--t-' + t + ')'; tp.textContent = WP_TYPES[t].label;
+      wpMetaEl.appendChild(tp);
+    }
+    if (w.admin){ var ad = document.createElement('span'); ad.className = 'adminTag'; ad.textContent = 'ADMIN'; wpMetaEl.appendChild(ad); }
   }
 
   var wpTypeSeg = document.getElementById('wpTypeSeg');
@@ -3828,12 +3850,13 @@
     wpDeleteBtn.hidden = !canEdit;
     wpSaveBtn.hidden = !canEdit;
     Array.from(wpTypeSeg.children).forEach(function(b){ b.disabled = !canEdit; });
+    wpTypeSeg.hidden = !canEdit;                      // (someone else's: the type is a small pill on the "Sparad av" line)
     showEditingType();
-    // "Åk hit" / "Hitta liknande": for a spot that's already there (not one you're just adding)
-    document.querySelector('.sheetRow--go').hidden = !!isNew;
-    document.getElementById('wpLike').hidden = wpType(wp) === 'meet' || wpType(wp) === 'fara' || wpType(wp) === 'hem';
+    // "Åk hit" / "Liknande": for a spot that's already there (not one you're just adding)
+    document.getElementById('wpGo').hidden = !!isNew;
+    document.getElementById('wpLike').hidden = !!isNew || wpType(wp) === 'meet' || wpType(wp) === 'fara' || wpType(wp) === 'hem';
     if (!pinEls[wp.id]) renderWaypoints(); // draw it even if a filter (Mina / Andras / type) hides it
-    editingWpInfo = { lat: wp.lat, lon: wp.lon, mine: mine, by: wp.by, createdAt: wp.createdAt };
+    editingWpInfo = { lat: wp.lat, lon: wp.lon, mine: mine, by: wp.by, createdAt: wp.createdAt, admin: !mine && canEdit };
     refreshSheetMeta();
     sheetBackdrop.classList.add('show');
     wpSheet.classList.add('show');
@@ -3904,6 +3927,7 @@
   sheetSwipe(wpSheet, function(){ cancelSheet(); });   // (drag = smaller, flick / all the way = close -- tools/UI.md)
 
   function applySnapshotDocs(snap){
+    setTimeout(function(){ if (typeof anSet !== 'undefined' && anSet && anSet.mode === 'similar' && anRes && !anRes.M) anCompute(); }, 0);   // (the spot to compare with has arrived)
     waypoints = [];
     snap.forEach(function(doc){
       var d = doc.data();
@@ -5423,7 +5447,8 @@
         if (x2 < 0 || y2 < 0 || x2 >= R.w || y2 >= R.h) continue;
         var j = y2 * R.w + x2; if (!R.water[j]) continue;
         var nd = di + DL[k] * R.cellM * (R.cost[i] + R.cost[j]) / 2;
-        if (nd < dist[j]){ dist[j] = nd; push(j, nd); }
+        if (nd < dist[j]){ dist[j] = nd; push(j, dist[j]); }   // (queue the stored float32 value: queueing the float64 made
+                                                                // "stale?" true when it rounded down -- the search stopped)
       }
     }
     rtField = { key: key, dist: dist, tx: t.cx, ty: t.cy };
@@ -5472,7 +5497,9 @@
     depthAt: depthAtLatLon,
     lake: function(lat, lon){ var p = latLonToImgPx(lat, lon); return isLakeAtImgPx(p.x, p.y); },
     screenOf: function(lat, lon){ var p = latLonToImgPx(lat, lon); return [originX + p.x * scale, originY + p.y * scale]; },
-    at: function(x, y){ return imgPxToLatLon((x - originX) / scale, (y - originY) / scale); }
+    at: function(x, y){ return imgPxToLatLon((x - originX) / scale, (y - originY) / scale); },
+    // by water from one place to another: { m: metres, n: corners } or null (tests)
+    route: function(lat1, lon1, lat2, lon2){ var a = latLonToImgPx(lat1, lon1), b = latLonToImgPx(lat2, lon2), r = routeFrom(a.x, a.y, b.x, b.y); return r ? { m: Math.round(r.meters), n: r.pts.length } : null; }
   };
   function fmtDepth(m){
     if (m == null) return '–';
@@ -6664,7 +6691,7 @@
     el._resetSize = function(){ el.style.height = ''; el.style.maxHeight = ''; };
     el.addEventListener('pointerdown', function(e){
       if (!el.classList.contains('show')) return;
-      if (!(e.target.closest && e.target.closest('.grab, .sheetGrab'))) return;
+      if (!(e.target.closest && e.target.closest('.grab, .sheetGrab')) || e.target.closest('.gripX')) return;
       e.preventDefault();
       var h0 = el.getBoundingClientRect().height;
       // its full size: all it holds (as far as the screen allows) -- measured without changing it
@@ -6758,6 +6785,7 @@
   }
   var anSet = { simF: { d: 1, s: 1, h: 1, v: 1, t: 1 }, simR: 0, mode: null, lo: 4, hi: 6, slope: 10, elo: 0, ehi: AN_DMAX, topP: 0.6, holeP: 0.8, hmin: 3, hlo: 0, hhi: AN_DMAX, dim: 0.72, ref: null };
   try { var sv = JSON.parse(localStorage.getItem(AN_KEY) || 'null'); if (sv) for (var k0 in sv) anSet[k0] = sv[k0]; } catch(e){}
+  if (!rotState) anSet.mode = null;          // a new start of the app: off (turning the phone keeps it)
   var anShow = true;
   try { anShow = localStorage.getItem(SHOW_AN_KEY) !== '0'; } catch(e){}
   var anCanvas = document.getElementById('anLayer'), anCtx = anCanvas.getContext('2d');
@@ -7005,7 +7033,8 @@
       text = '<b>' + pr[1] + ':</b> ' + pr[2] + ' · ' + anPct(n) + ' av sjön';
       note = 'Tumregler från vanliga fiskeråd – inte fångstdata. Fisken läser inte kartan 🙂';
     }
-    anRes = { M: M, n: n, labels: labels, list: list, text: text, note: note, color: AN_COLORS[m], ver: anVer };
+    var empty = (m === 'similar' && !list) || (m === 'wind' && !n && !note);
+    anRes = { M: empty ? null : M, n: n, labels: labels, list: list, text: text, note: note, color: AN_COLORS[m], ver: anVer };
     anRender();
   }
   function anPct(n){ var w = 0, A = AN; for (var i = 0; i < A.N; i++) w += A.wat[i]; var p = 100 * n / Math.max(1, w); return (p < 1 && p > 0 ? '<1' : Math.round(p)) + ' %'; }
@@ -7066,6 +7095,7 @@
     // chips + controls + result, labels; then draw
     var m = anSet.mode;
     anBtn.classList.toggle('on', !!m);
+    document.getElementById('anClear').disabled = !m;      // (only when there's something to clear)
     Array.prototype.forEach.call(document.querySelectorAll('#anChips button, #anPresets button'), function(b){ b.classList.toggle('on', b.getAttribute('data-m') === m); });
     var R = anRes, res = document.getElementById('anResult');
     if (!m) res.innerHTML = 'Välj vad du vill hitta. Det som matchar lyser, resten av kartan tonas ner.';
@@ -7184,7 +7214,8 @@
     anCompute();
   }
   document.getElementById('anChips').innerHTML = AN_MODES.map(function(x){ return '<button type="button" data-m="' + x[0] + '">' + x[1] + '</button>'; }).join('');
-  document.getElementById('anPresets').innerHTML = AN_PRESETS.map(function(x){ return '<button type="button" data-m="' + x[0] + '">' + x[1] + '</button>'; }).join('');
+  document.getElementById('anPresets').innerHTML = AN_PRESETS.map(function(x){ return '<button type="button" data-m="' + x[0] + '">' + x[1] + '</button>'; }).join('') +
+    '<span class="anSep"></span><button type="button" id="anClear" class="anClr" disabled>✕ Rensa</button>';
   anPanel.addEventListener('click', function(e){
     var b = e.target.closest ? e.target.closest('button[data-m]') : null;
     if (b){ anSetMode(b.getAttribute('data-m')); return; }

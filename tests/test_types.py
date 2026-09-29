@@ -66,7 +66,8 @@ with sync_playwright() as p:
     # someone else's spot: type shown, not changeable
     pg.evaluate("""() => { var e = document.querySelector('#waypoints .wpPin--other'); e.click(); }"""); pg.wait_for_timeout(400)
     dis = pg.eval_on_selector_all('#wpTypeSeg button', 'els => els.every(b => b.disabled)')
-    check("someone else's spot: type shown, buttons locked", dis and pg.eval_on_selector('#wpTypeSeg .active', 'e=>e.textContent') == 'Gädda')
+    check("someone else's spot: no type buttons, the type as a small pill on the 'Sparad av' line", dis and not pg.is_visible('#wpTypeSeg') and pg.inner_text('#wpMeta .miniType') == 'Gädda', pg.inner_text('#wpMeta'))
+    check("...only Åk hit and Liknande (no Ta bort / Spara)", pg.is_visible('#wpGo') and pg.is_visible('#wpLike') and not pg.is_visible('#wpDelete') and not pg.is_visible('#wpSave'))
     pg.click('#wpCancel'); pg.wait_for_timeout(300)
 
     # log icons

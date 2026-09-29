@@ -63,6 +63,12 @@ with sync_playwright() as p:
     # land
     pg.mouse.click(40, 250); pg.wait_for_timeout(600)
     print('   land probe:', state(pg)['depth'])
+    # the way by water reaches every part of the lake (a float32/float64 mix-up once stopped the search
+    # after a few cells: "Åk hit" to some places gave only depth + distance, no line, no time)
+    ME2 = (58.887269, 15.772629)
+    far = [(58.89509, 15.74791), (58.89762, 15.75976), (58.87496, 15.77418), (58.89172, 15.76216), (58.8956, 15.7814)]
+    rs = [pg.evaluate('a => __ffGeo.route(a[0], a[1], a[2], a[3])', [ME2[0], ME2[1], la, lo]) for la, lo in far]
+    check('a way by water to places all over Regnaren', all(r and r['m'] > 300 for r in rs), rs)
     check('no page errors', not errs, errs)
     b.close()
 print('\n%d/%d passed' % (sum(results), len(results)))
