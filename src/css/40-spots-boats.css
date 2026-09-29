@@ -273,3 +273,18 @@
     border-radius:12px;padding:4px 10px 4px 8px;width:max-content;
     max-width:min(300px, calc(100vw - 28px));
   }
+
+  /* ---- the spot sheet: what's under the spot (4 tiles + a line about the terrain) ---- */
+  #wpName{font-size:17px;font-weight:700;margin-top:2px;}
+  .wpData{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:10px 0 2px;}
+  .wpData:empty{display:none;}
+  .wpTile{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:5px 8px 6px;min-width:0;}
+  .wpTile i{display:block;font-style:normal;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);}
+  .wpTile b{display:block;font-size:15px;color:var(--offwhite);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;}
+  .wpTile small{display:block;font-size:10.5px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .wpTerrain{grid-column:1 / -1;font-size:12px;color:#dbe4e7;padding:1px 2px;}
+  .wpTerrain b{color:var(--amber);}
+  .sheetMeta b.who{color:#fff;font-weight:700;}
+  .wpData{margin-bottom:12px !important;}
+  /* a finger on these may also pan the map */
+  .wpPin, .wpFara, .wpBeacon, .boatPip, .msgBub, .anLbl{touch-action:none;}

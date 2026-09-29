@@ -1,0 +1,88 @@
+  /* ================= Kartanalys ("Hitta ställen") + Liknande ================= */
+  /* ---- Kartanalys ("Hitta ställen"): filter the map's data; button bottom right ---- */
+  #anLayer{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;display:none;}
+  #anLayer.on{display:block;}
+  #anLabels{position:absolute;inset:0;z-index:15;pointer-events:none;}
+  .anLbl{position:absolute;left:0;top:0;transform:translate(-50%,-50%);pointer-events:auto;cursor:pointer;white-space:nowrap;
+    background:rgba(11,42,58,.9);border:1.5px solid #FFBE28;border-radius:11px;padding:2px 8px;font-size:11.5px;font-weight:700;color:#fff;
+    box-shadow:0 2px 8px rgba(0,0,0,.5);-webkit-tap-highlight-color:transparent;}
+  .anLbl.hole{border-color:#6fd6ff;}
+  .anLbl.sim{border-color:#ff50a0;width:24px;height:24px;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#ff50a0;}
+  #anBtn{
+    position:absolute;right:76px;bottom:calc(env(safe-area-inset-bottom,0px) + 25px);z-index:22;
+    width:44px;height:44px;border-radius:50%;
+    background:var(--navy-glass);backdrop-filter:blur(6px);color:var(--offwhite);border:1px solid rgba(255,255,255,.16);
+    display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.35);-webkit-tap-highlight-color:transparent;padding:0;
+  }
+  #anBtn:active{transform:scale(.92);}
+  #anBtn svg{width:21px;height:21px;}
+  #anBtn.on{border-color:var(--amber);color:var(--amber);}
+  #anPanel{
+    position:absolute;left:0;right:0;bottom:0;z-index:26;background:var(--navy);
+    border-top:1px solid rgba(255,255,255,.14);border-radius:18px 18px 0 0;
+    padding:8px 14px calc(env(safe-area-inset-bottom,0px) + 16px);box-shadow:0 -10px 30px rgba(0,0,0,.45);
+    transform:translateY(105%);transition:transform .25s ease;max-height:62vh;overflow-y:auto;
+  }
+  #anPanel.show{transform:none;}
+  #anPanel .grab{margin:-8px -14px 4px;top:-8px;}
+  .anChips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;}
+  .anChips button{font:inherit;font-size:12.5px;padding:6px 10px;border-radius:14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:var(--offwhite);cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent;}
+  .anChips button.on{background:var(--amber);color:var(--navy);font-weight:700;border-color:var(--amber);}
+  .anChips.pre button{border-color:rgba(232,163,61,.45);}
+  .anSub{margin-top:11px;font-size:10.5px;font-weight:700;letter-spacing:.08em;color:var(--text-muted);text-transform:uppercase;}
+  #anControls{margin-top:6px;}
+  .anRange{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12.5px;color:#dbe4e7;}
+  .anRange label{flex:0 0 58px;}
+  .anRange input[type=range]{flex:1;accent-color:var(--amber);}
+  .anRange output{flex:0 0 48px;text-align:right;font-weight:700;color:var(--amber);}
+  #anResult{margin-top:9px;font-size:13px;color:#dbe4e7;line-height:1.4;}
+  #anResult b{color:var(--amber);}
+  #anResult .note{display:block;color:var(--text-muted);font-size:11.5px;margin-top:3px;}
+  .anList{margin-top:7px;display:flex;flex-direction:column;gap:5px;}
+  .anList .li{display:flex;align-items:center;gap:9px;background:rgba(255,255,255,.05);border-radius:10px;padding:6px 9px;font-size:13px;color:#dbe4e7;}
+  .anList .n{width:20px;height:20px;border-radius:50%;background:#ff50a0;color:#fff;font-weight:700;font-size:11.5px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
+  .anList button{margin-left:auto;border:none;background:none;color:var(--amber);font:inherit;font-weight:700;font-size:12.5px;cursor:pointer;}
+  #anRefSel{width:100%;margin-top:8px;background:rgba(255,255,255,.08);color:var(--offwhite);border:1px solid rgba(255,255,255,.18);border-radius:9px;padding:7px 8px;font:inherit;font-size:14px;}
+  #anRefSel option{color:#000;}
+  @media (orientation:landscape) and (max-height:520px){
+    #anBtn{width:40px;height:40px;right:72px;}
+    #anPanel{left:auto;width:420px;right:0;max-height:88vh;}
+  }
+  /* ---- Kartanalys: the greyed-out map (a 2nd canvas desaturates what's under it), the depth-range slider ---- */
+  #anSat{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;display:none;mix-blend-mode:saturation;}
+  #anSat.on{display:block;}
+  #anPanel.dragging{transition:none;}
+  .anDual{position:relative;height:34px;margin:12px 13px 0;touch-action:none;cursor:pointer;}
+  .anTrack{position:absolute;left:0;right:0;top:14px;height:6px;border-radius:3px;}
+  .anSel{position:absolute;top:9px;height:16px;border:2.5px solid #fff;border-radius:8px;box-sizing:border-box;margin-left:-3px;padding-right:6px;box-shadow:0 0 0 1px rgba(0,0,0,.35);}
+  .anKnob{position:absolute;top:4px;width:26px;height:26px;margin-left:-13px;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.55);}
+  .anTicks{display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin:2px 6px 0;}
+  .anRange{margin-top:10px;}
+  .anRange input[type=range]{height:26px;}
+  /* ---- Liknande: what to compare + how big an area ---- */
+  .anFactors{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+  .anFactors button{font:inherit;font-size:12px;padding:5px 9px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.16);color:var(--text-muted);cursor:pointer;}
+  .anFactors button.on{border-color:#ff50a0;color:#fff;background:rgba(255,80,160,.22);}
+  .anFactors button.on::before{content:'✓ ';}
+  .anSeg{display:flex;gap:4px;margin-top:8px;background:rgba(255,255,255,.06);border-radius:10px;padding:3px;}
+  .anSeg button{flex:1;border:none;background:none;color:var(--text-muted);font:inherit;font-size:12px;padding:6px 2px;border-radius:8px;cursor:pointer;}
+  .anSeg button.on{background:var(--amber);color:var(--navy);font-weight:700;}
+  .anLbl2{font-size:11px;color:var(--text-muted);margin-top:9px;}
+  /* ---- Liknande: the spot you start from (a pink ring spreading out), "Gå till", what "area" means ---- */
+  .anRefRow{display:flex;gap:8px;align-items:center;margin-top:8px;}
+  .anRefRow #anRefSel{margin-top:0;flex:1;min-width:0;}
+  #anRefGo{flex:0 0 auto;border:1px solid rgba(255,80,160,.7);background:rgba(255,80,160,.18);color:#fff;border-radius:9px;padding:8px 12px;font:inherit;font-weight:700;font-size:13px;cursor:pointer;}
+  .anNote{font-size:11.5px;color:var(--text-muted);line-height:1.4;margin-top:8px;}
+  .anNote b{color:#dbe4e7;} .anNote i{font-style:italic;}
+  .anLbl.simRef{width:0;height:0;padding:0;border:none;background:none;box-shadow:none;pointer-events:none;}
+  .anLbl.simRef::before, .anLbl.simRef::after{content:'';position:absolute;left:-26px;top:-26px;width:52px;height:52px;border-radius:50%;border:3px solid #ff50a0;
+    animation:simRing 2s ease-out infinite;box-sizing:border-box;}
+  .anLbl.simRef::after{animation-delay:1s;}
+  @keyframes simRing{0%{transform:scale(.25);opacity:1;}100%{transform:scale(1.6);opacity:0;}}
+  .anSep{width:1.5px;align-self:stretch;background:rgba(255,255,255,.3);border-radius:1px;margin:3px 3px;}
+  .anChips .anClr{position:relative;overflow:hidden;background:rgba(232,163,61,.16);border:1.5px solid var(--amber);color:#fff;font-weight:700;}
+  .anChips .anClr::after{content:'';position:absolute;top:0;bottom:0;left:-60%;width:50%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.45),transparent);animation:clrSweep 2.6s ease-in-out infinite;}
+  @keyframes clrSweep{0%{left:-60%;}55%,100%{left:120%;}}
+  .anChips .anClr:disabled{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);color:rgba(183,196,201,.4);font-weight:400;cursor:default;}
+  .anChips .anClr:disabled::after{display:none;}
+  @media (prefers-reduced-motion:reduce){ .anChips .anClr::after{animation:none;display:none;} }

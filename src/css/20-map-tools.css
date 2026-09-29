@@ -130,3 +130,6 @@
   #addHereBtn .addBadge svg{width:11px;height:11px;display:block;}
   #addHereBtn:disabled{opacity:.4;}
 
+  /* no way found by water: a dotted line straight there ("fågelvägen") */
+  #routeLayer.crow .rtLine{stroke:#fff;stroke-width:2;stroke-dasharray:2 7;stroke-linecap:round;}
+  #routeLayer.crow .rtUnder{stroke-width:5;}

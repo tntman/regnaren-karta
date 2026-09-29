@@ -1,0 +1,9 @@
+  /* ================= bottom panels (Kartanalys, a message, a spot): see tools/UI.md ================= */
+  /* ---- panels that can be dragged smaller: the grip always drags; once smaller, the rest scrolls ---- */
+  #anPanel, #wpSheet, #msgCard{touch-action:pan-y;}
+  /* the grip strip (a bar in the middle): drag it = resize / flick it = close -- tools/UI.md */
+  #anPanel .grab, #msgCard .grab{position:sticky;z-index:3;height:30px;display:flex;align-items:center;justify-content:center;background:var(--navy);border-radius:18px 18px 0 0;cursor:grab;}
+  #anPanel .grab::before, #msgCard .grab::before{content:'';width:40px;height:5px;border-radius:3px;background:rgba(255,255,255,.3);}
+  #anPanel .grab, #wpSheet .sheetGrab, #msgCard .grab{touch-action:none;}
+  #wpSheet{overflow-y:auto;max-height:88vh;}
+  #anPanel .grab, #msgCard .grab{position:sticky;}

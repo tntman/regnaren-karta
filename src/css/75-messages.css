@@ -1,0 +1,64 @@
+  /* ================= Snabbmeddelanden (quick messages) ================= */
+  /* ---- quick messages: a small button at the bottom, bubbles at the boats (15 min) ---- */
+  #msgBtn{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 20px);transform:translateX(-50%);z-index:22;
+    width:42px;height:42px;border-radius:50%;background:var(--navy-glass);backdrop-filter:blur(6px);color:var(--offwhite);
+    border:1px solid rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.35);padding:0;-webkit-tap-highlight-color:transparent;}
+  #msgBtn svg{width:20px;height:20px;}
+  #msgBtn.open{border-color:var(--amber);color:var(--amber);}
+  #msgPop{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 72px);transform:translateX(-50%);z-index:24;display:none;
+    flex-wrap:wrap;justify-content:center;gap:6px;width:min(340px, calc(100vw - 28px));}
+  #msgPop.show{display:flex;}
+  #msgPop button{background:rgba(11,42,58,.95);border:1px solid rgba(255,255,255,.22);color:#fff;border-radius:18px;padding:8px 13px;font:inherit;font-weight:700;font-size:14px;box-shadow:0 4px 12px rgba(0,0,0,.4);cursor:pointer;}
+  #msgPop button:active{background:var(--amber);color:var(--navy);}
+  #msgToast{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 72px);transform:translateX(-50%);z-index:24;max-width:calc(100vw - 40px);
+    background:rgba(11,42,58,.95);border:1px solid rgba(232,163,61,.6);color:#fff;border-radius:14px;padding:8px 14px;font-size:13.5px;opacity:0;pointer-events:none;transition:opacity .2s;text-align:center;}
+  #msgToast.show{opacity:1;}
+  #msgLayer{position:absolute;inset:0;z-index:17;pointer-events:none;}
+  .msgBub{position:absolute;left:0;top:0;pointer-events:auto;cursor:pointer;background:#fff;color:#0B2A3A;border-radius:14px;padding:4px 10px;
+    font-weight:700;font-size:13.5px;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,.5);transform:translate(-14px,calc(-100% - 20px));-webkit-tap-highlight-color:transparent;}
+  .msgBub::after{content:'';position:absolute;left:12px;bottom:-7px;border:7px solid transparent;border-top-color:#fff;border-bottom:0;}
+  .msgBub small{font-weight:400;color:#557;margin-left:4px;}
+  .msgBub.mine{background:#FFE7B8;} .msgBub.mine::after{border-top-color:#FFE7B8;}
+  @media (orientation:landscape) and (max-height:520px){
+    #msgBtn{width:38px;height:38px;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);}
+  }
+  /* ---- quick messages: fading, the rainbow edge while new, the panel when tapped ---- */
+  .msgBub{transition:opacity 1s;}
+  .msgRb{position:absolute;left:-3px;top:-3px;pointer-events:none;
+    background:conic-gradient(from var(--rba, 0deg),#ff004c,#ff9f00,#ffee00,#27e23f,#00c8ff,#6a5cff,#ff00c8,#ff004c);
+    -webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;animation:rbSpin 2.2s linear infinite;}
+  @property --rba{syntax:'<angle>';initial-value:0deg;inherits:false;}
+  @keyframes rbSpin{to{--rba:360deg;}}
+  #msgCard{position:absolute;left:0;right:0;bottom:0;z-index:27;background:var(--navy);border-top:1px solid rgba(255,255,255,.14);border-radius:18px 18px 0 0;
+    padding:8px 16px calc(env(safe-area-inset-bottom,0px) + 16px);box-shadow:0 -10px 30px rgba(0,0,0,.45);transform:translateY(105%);transition:transform .25s ease;overflow-y:auto;}
+  #msgCard.show{transform:none;}
+  #msgCard.dragging{transition:none;}
+  #msgCard .grab{margin:-8px -16px 4px;top:-8px;}
+  #msgCardWho{font-size:12px;letter-spacing:.06em;font-weight:700;color:var(--text-muted);}
+  #msgCardTxt{font-size:23px;font-weight:700;margin:4px 0 8px;}
+  .msgCardMeta{display:flex;justify-content:space-between;gap:8px;font-size:13.5px;color:#dbe4e7;}
+  .msgCardBar{height:5px;border-radius:3px;background:rgba(255,255,255,.12);margin:7px 0 12px;overflow:hidden;}
+  .msgCardBar i{display:block;height:100%;background:var(--amber);}
+  .msgCardBtns{display:flex;gap:8px;}
+  .msgCardBtns button{flex:1;padding:10px;border-radius:11px;border:none;font:inherit;font-weight:700;font-size:14px;background:rgba(255,255,255,.08);color:var(--offwhite);cursor:pointer;}
+  .msgCardBtns button.a{background:var(--amber);color:var(--navy);}
+  .msgCardBtns button[hidden]{display:none;}
+  @media (orientation:landscape) and (max-height:520px){ #msgCard{left:auto;width:420px;} }
+  /* "Egen text": a rainbow sliding slowly through the words, the pen after them */
+  .rbText{background:linear-gradient(90deg,#ff5f6d,#ffc371,#fff36b,#6bff95,#5ee7ff,#8f7bff,#ff6bd6,#ff5f6d);background-size:300% 100%;
+    -webkit-background-clip:text;background-clip:text;color:transparent;animation:rbSlide 6s linear infinite;}
+  @keyframes rbSlide{from{background-position:0% 50%;}to{background-position:300% 50%;}}
+  #msgPop .msgOwnBtn{display:inline-flex;align-items:center;gap:6px;border-color:rgba(255,195,113,.6);}
+  #msgPop .msgOwnBtn svg{width:15px;height:15px;color:#ffc371;flex:0 0 auto;}
+  @media (prefers-reduced-motion:reduce){.rbText{animation:none;}}
+  /* the small box for your own text (15 characters) */
+  #msgOwn{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 76px);transform:translateX(-50%);z-index:28;width:min(300px, calc(100vw - 28px));display:none;
+    align-items:center;gap:8px;background:rgba(11,42,58,.97);border:1.5px solid rgba(255,195,113,.7);border-radius:18px;padding:5px 5px 5px 14px;box-shadow:0 6px 18px rgba(0,0,0,.5);}
+  #msgOwn.show{display:flex;}
+  #msgOwnIn{flex:1;min-width:0;background:none;border:none;outline:none;color:#fff;font:inherit;font-size:16px;font-weight:700;caret-color:#ffc371;padding:6px 0;}
+  #msgOwnN{font-size:11px;color:var(--text-muted);min-width:32px;text-align:right;font-variant-numeric:tabular-nums;}
+  #msgOwnN.full{color:#ff8a80;}
+  #msgOwnGo{width:34px;height:34px;border-radius:50%;border:none;background:var(--amber);color:var(--navy);font-size:15px;font-weight:900;cursor:pointer;flex:0 0 auto;}
+  .msgBub .mLine{white-space:nowrap;line-height:1.45;}
+  .msgBub.multi{padding:5px 11px;}
+  .msgBub:not(.mine) .mLine.mine{background:#FFE7B8;border-radius:7px;margin:0 -6px;padding:0 6px;}

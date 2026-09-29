@@ -1,6 +1,6 @@
 # Kartanalys, lodet, rutten, Åk hit och platsens ruta
 
-Kod: `src/js/56-analysis.js` (Kartanalys), `12-map.js` (lodet), `40-route.js` (rutten),
+Kod: `src/js/56-analysis.js` + `src/css/70-analysis.css` (Kartanalys), `12-map.js` (lodet), `40-route.js` (rutten),
 `58-akhit-spotdata.js` (Åk hit, faktarutorna), `24-boats.js` (platsens ruta öppna/spara).
 Tester: `test_analysis.py`, `test_probe.py`, `test_newfeatures.py`, `test_types.py`.
 

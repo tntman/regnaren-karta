@@ -22,12 +22,15 @@ specificitet.
 | `sw.js` | service worker (kopieras som den är) |
 | **css/** | |
 | `10-base.css` | färger (`:root`), layout, kartan, rubriken, din pil, skala/zoom |
-| `20-map-tools.css` | knopmätare, mätverktyg, lodet, rutten, spår |
+| `20-map-tools.css` | knopmätare, mätverktyg, lodet, rutten (+ "fågelvägen"), spår |
 | `30-controls.css` | Filter, kartlägesknapp, knappar, meny, Inställningar, GPS-rad, liggande läge |
-| `40-spots-boats.css` | platstyper (Fara, Träffpunkt, Hem …), andras platser, båtar, platsens ruta |
-| `50-weather-settings.css` | väder, blixtvarning/radar, kartstil, offline, admin, fart |
-| `60-help.css` | Hjälp |
-| `70-features.css` | senare tillägg: Kartanalys, meddelanden, åsklarm, sol, 2×2-knappar, Liknande, hjälpsök, greppremsan |
+| `40-spots-boats.css` | platstyper (Fara, Träffpunkt, Hem …), andras platser, båtar, platsens ruta (+ faktarutorna) |
+| `50-weather-settings.css` | väder, blixtvarning/radar, kartstil, offline, admin, fart, åsklarm, håll skärmen tänd (solen, notisen) |
+| `60-help.css` | Hjälp (+ sökrutan) |
+| `70-analysis.css` | Kartanalys och Liknande |
+| `75-messages.css` | snabbmeddelanden (knappen, valen, egen text, bubblorna, rutan) |
+| `80-panels.css` | bottenpanelerna: greppremsan, dra mindre / skrolla (Kartanalys, meddelande, plats) |
+| `90-buttons.css` | de fyra knapparna nere till höger i 2 × 2 (sist: bestämmer storlek/plats över allt ovan) |
 | **html/** | |
 | `10-map.html` | `#app`, kartan och lagren (`#stage`, platser, båtar, bubblor, lodet) |
 | `20-menu-settings.html` | menyknapp, meny, Logg, Inställningar, Admin, PIN |

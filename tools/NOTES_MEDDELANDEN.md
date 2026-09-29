@@ -1,6 +1,6 @@
 # Snabbmeddelanden
 
-Kod: `src/js/64-messages.js`, CSS i `src/css/70-features.css`. Test: `tests/test_extras.py`.
+Kod: `src/js/64-messages.js`, CSS i `src/css/75-messages.css`. Test: `tests/test_extras.py`.
 
 - `#msgBtn` längst ner i mitten: Fisk!!!, Kommer, Åker in, Mat?, Bajs + **Egen text**
   (regnbåge som glider genom texten `.rbText`, pennan efter; liten ruta `#msgOwn`, max 15 tecken

@@ -1,0 +1,14 @@
+  /* ================= the four buttons bottom right: one 2 x 2 grid, all the same size =================
+     (last: it sets their size/place over everything above -- also the message button's height) */
+  :root{--bb:48px;--bgap:12px;--bb0:calc(env(safe-area-inset-bottom,0px) + 20px);}
+  #locateBtn, #anBtn, #measureBtn, #addHereBtn{width:var(--bb) !important;height:var(--bb) !important;}
+  #locateBtn{right:16px !important;bottom:var(--bb0) !important;}
+  #anBtn{right:calc(16px + var(--bb) + var(--bgap)) !important;bottom:var(--bb0) !important;}
+  #addHereBtn{right:16px !important;bottom:calc(var(--bb0) + var(--bb) + var(--bgap)) !important;}
+  #measureBtn{right:calc(16px + var(--bb) + var(--bgap)) !important;bottom:calc(var(--bb0) + var(--bb) + var(--bgap)) !important;}
+  #addHereBtn .addPin{left:calc(50% - (var(--bb) - 14px) / 2);top:2px;width:calc(var(--bb) - 14px);height:calc(var(--bb) - 14px);}
+  #locateBtn svg{width:24px;height:24px;}
+  #msgBtn{bottom:calc(var(--bb0) + 3px);}
+  @media (orientation:landscape) and (max-height:520px){
+    :root{--bb:42px;--bgap:10px;--bb0:calc(env(safe-area-inset-bottom,0px) + 8px);}
+  }

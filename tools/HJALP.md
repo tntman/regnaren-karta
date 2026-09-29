@@ -14,7 +14,7 @@ animeringarna igen.
 | Vad | Var |
 |---|---|
 | Sidans text och avsnitt (HTML) | `src/html/40-help.html`, `<div id="helpView">` (sök `id="help-`) |
-| Utseende (CSS) | `src/css/60-help.css` (+ sökrutan i `70-features.css`) |
+| Utseende (CSS) | `src/css/60-help.css` |
 | Logik (öppna/stänga, nyheter, installera-flikar, prick) | `src/js/30-help.js` |
 | "Nytt i appen" | `HELP_NEWS` i `src/js/30-help.js` |
 | Animeringarna | `docs/help/<namn>.webp` (görs av verktyget, redigeras inte för hand) |
