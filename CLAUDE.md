@@ -115,7 +115,9 @@ All text i appen är på svenska. Svara Filip på svenska, kort och tydligt.
   reglage för hård botten (hårdhet + djup), "Växter" = var det finns växter. **Grynnor & hålor (heter aldrig "toppar") =
   prominens** (`anDome`: h-dome med morfologisk rekonstruktion, bucket-kö i cm; land räknas HÖGT
   för toppar och LÅGT för hålor så grunda hyllor längs land inte blir toppar): "kapsyler" ≥ 0,25 m
-  vars topp reser sig ≥ reglaget (standard 0,6 m / hålor 0,8 m). Samma färger/etiketter som förut.
+  vars topp reser sig ≥ reglaget (standard 0,6 m / hålor 0,8 m). Hålor ritas bara med sin djupaste
+  del (`AN_HOLE_CORE` 0,6 m) – annars blev en hel djupbassäng en jättehåla (upp till 28 ha). Sjöns
+  kontur ritas streckad vit 50 % i Kartanalys. Samma färger/etiketter som förut.
   "Mörkare" ligger i Inställningar (`#anDimSet`), inte i panelen. **Av efter omstart** (kvar vid
   vridning, `rotState`); inget att visa (t.ex. Liknande innan platserna laddats) = ingen gråtoning.
   Panelen: ingen rubrik, ✕ i greppremsan, "Rensa" efter en avskiljare, aktiv bara med något valt.

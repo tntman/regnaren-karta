@@ -1306,12 +1306,14 @@
   #wpName{font-size:17px;font-weight:700;margin-top:2px;}
   .wpData{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:10px 0 2px;}
   .wpData:empty{display:none;}
-  .wpTile{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:6px 7px 5px;min-width:0;}
+  .wpTile{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:5px 8px 6px;min-width:0;}
   .wpTile i{display:block;font-style:normal;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);}
   .wpTile b{display:block;font-size:15px;color:var(--offwhite);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;}
   .wpTile small{display:block;font-size:10.5px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .wpTerrain{grid-column:1 / -1;font-size:12px;color:#dbe4e7;padding:1px 2px;}
   .wpTerrain b{color:var(--amber);}
+  .sheetMeta b.who{color:#fff;font-weight:700;}
+  .wpData{margin-bottom:12px !important;}
   /* ---- Liknande: what to compare + how big an area ---- */
   .anFactors{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
   .anFactors button{font:inherit;font-size:12px;padding:5px 9px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.16);color:var(--text-muted);cursor:pointer;}
@@ -1382,8 +1384,12 @@
   .anLbl.simRef::after{animation-delay:1s;}
   @keyframes simRing{0%{transform:scale(.25);opacity:1;}100%{transform:scale(1.6);opacity:0;}}
   .anSep{width:1.5px;align-self:stretch;background:rgba(255,255,255,.3);border-radius:1px;margin:3px 3px;}
-  .anChips .anClr{border-color:var(--amber);color:var(--amber);background:none;}
-  .anChips .anClr:disabled{border-color:rgba(255,255,255,.12);color:rgba(183,196,201,.45);cursor:default;}
+  .anChips .anClr{position:relative;overflow:hidden;background:rgba(232,163,61,.16);border:1.5px solid var(--amber);color:#fff;font-weight:700;}
+  .anChips .anClr::after{content:'';position:absolute;top:0;bottom:0;left:-60%;width:50%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.45),transparent);animation:clrSweep 2.6s ease-in-out infinite;}
+  @keyframes clrSweep{0%{left:-60%;}55%,100%{left:120%;}}
+  .anChips .anClr:disabled{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);color:rgba(183,196,201,.4);font-weight:400;cursor:default;}
+  .anChips .anClr:disabled::after{display:none;}
+  @media (prefers-reduced-motion:reduce){ .anChips .anClr::after{animation:none;display:none;} }
   #anPanel .grab, #msgCard .grab{position:sticky;}
   #routeLayer.crow .rtLine{stroke:#fff;stroke-width:2;stroke-dasharray:2 7;stroke-linecap:round;}
   #routeLayer.crow .rtUnder{stroke-width:5;}
@@ -3814,9 +3820,11 @@
   function refreshSheetMeta(){
     if (!editingWpInfo) return;
     var w = editingWpInfo;
-    wpMetaEl.textContent = 'Sparad av ' + (w.mine ? 'dig' : (w.by || 'en lagkompis')) + ' · ' + fmtSheetDate(w.createdAt);
+    wpMetaEl.textContent = 'Sparad av ';
+    var who = document.createElement('b'); who.className = 'who'; who.textContent = w.mine ? 'dig' : (w.by || 'en lagkompis');
+    wpMetaEl.appendChild(who); wpMetaEl.appendChild(document.createTextNode(' · ' + fmtSheetDate(w.createdAt)));
     renderWpData(w.lat, w.lon);            // (the depth etc. are in the tiles under)
-    if (editingType === 'meet') wpMetaEl.textContent += ' · Syns för alla i 1 h';
+    if (editingType === 'meet') wpMetaEl.appendChild(document.createTextNode(' · Syns för alla i 1 h'));
     if (lastOwnLatLon){
       var m = haversineKm(lastOwnLatLon.lat, lastOwnLatLon.lon, w.lat, w.lon) * 1000;
       if (wpMetaEl.textContent) wpMetaEl.appendChild(document.createTextNode(' · '));
@@ -6788,6 +6796,7 @@
     var d = new Float32Array(N); for (i = 0; i < N; i++) d[i] = (f[i] - rec[i]) / 100;
     return d;
   }
+  var AN_HOLE_CORE = 0.6;            // a hole is drawn by its deepest 0.6 m (else a deep basin = one huge "hole")
   function anDomes(A){
     if (A.domeTop) return A;
     var N = A.N, ft = new Int32Array(N), fh = new Int32Array(N);
@@ -6984,9 +6993,10 @@
       var hb = anBlobs(capH, A.W, A.H).map(function(c){ var best = c[0], p = 0; c.forEach(function(j){ if (A.domeHole[j] > p) p = A.domeHole[j]; if (dep[j] > dep[best]) best = j; }); return { c: c, i: best, p: p }; })
         .filter(function(b){ return b.p >= anSet.holeP; }).sort(function(a, b){ return b.p - a.p; });
       tb.forEach(function(b, k){ b.c.forEach(function(j){ M[j] = 1; }); if (k < 14) labels.push({ i: b.i, cls: '', txt: 'Grynna ' + fmtDepth(dep[b.i]) + ' m' }); });
-      hb.forEach(function(b, k){ b.c.forEach(function(j){ M[j] = 2; }); if (k < 8) labels.push({ i: b.i, cls: 'hole', txt: 'Håla ' + fmtDepth(dep[b.i]) + ' m' }); });
+      hb.forEach(function(b, k){ b.c.forEach(function(j){ if (A.domeHole[j] >= Math.max(0.25, b.p - AN_HOLE_CORE)) M[j] = 2; }); if (k < 8) labels.push({ i: b.i, cls: 'hole', txt: 'Håla ' + fmtDepth(dep[b.i]) + ' m' }); });
       text = '<b>' + tb.length + '</b> grynnor (reser sig minst ' + fmtDepth(anSet.topP) + ' m) · <b>' + hb.length + '</b> hålor (minst ' + fmtDepth(anSet.holeP) + ' m djupa)';
-      note = 'Hur mycket en grynna reser sig över den lägsta "sadeln" runt den – grunda hyllor längs land räknas inte. Tryck på en etikett för lodet.';
+      note = '<b>Grynna</b> = ett grundare ställe ute i sjön som reser sig minst ' + fmtDepth(anSet.topP) + ' m över den lägsta "sadeln" runt den – där det sluttar ner åt alla håll. Grunda hyllor längs land räknas inte. ' +
+        '<b>Håla</b> = en grop som går minst ' + fmtDepth(anSet.holeP) + ' m under kanten runt den; bara gropens djupaste del (0,6 m) visas. Siffran = djupet där grynnan är grundast / hålan djupast. Tryck på en etikett för lodet.';
     } else if (m === 'veg'){
       for (i = 0; i < N; i++) if ((anBottom[i] & 8) && wat[i]){ M[i] = 1; n++; }
       text = n ? '<b>Växter</b> (vass, näckrosor, bottenväxter) · ' + anPct(n) + ' av sjön' : 'Ingen växtlighet mätt här.';
@@ -7073,9 +7083,11 @@
       var c2 = cv.getContext('2d'), im = c2.createImageData(vw, vh), px = im.data, col = R.color;
       var s2 = sv.getContext('2d'), sm = s2.createImageData(vw, vh), sp = sm.data;
       var dimA = Math.round(255 * anSet.dim), satA = Math.round(255 * Math.min(1, anSet.dim + 0.2));
-      var val = new Uint8Array(vw * vh);
+      var val = new Uint8Array(vw * vh), lkv = new Uint8Array(vw * vh);
       for (var y = 0; y < vh; y++) for (var x = 0; x < vw; x++){
         var ix = (x * STEP + 1 - originX) / scale, iy = (y * STEP + 1 - originY) / scale;
+        var lgx = Math.floor(ix / IMG_W * A.W), lgy = Math.floor(iy / IMG_H * A.H);
+        lkv[y * vw + x] = (lgx >= 0 && lgy >= 0 && lgx < A.W && lgy < A.H && A.lake[lgy * A.W + lgx]) ? 1 : 0;
         // the 4 nearest cells, weighted (smooth outlines instead of 5 m steps): the class with most weight
         var fx = ix / IMG_W * A.W - 0.5, fy = iy / IMG_H * A.H - 0.5, x0 = Math.floor(fx), y0 = Math.floor(fy), tx = fx - x0, ty = fy - y0;
         var w0 = 0, w1 = 0, w2 = 0;
@@ -7088,6 +7100,9 @@
       }
       for (var y2 = 0; y2 < vh; y2++) for (var x2 = 0; x2 < vw; x2++){
         var i2 = y2 * vw + x2, v = val[i2], k = i2 * 4;
+        // the shore (lake next to land): a thin dashed white line, 50 % (easier to see the lake on the dark map)
+        if (lkv[i2] && ((x2 > 0 && !lkv[i2 - 1]) || (x2 < vw - 1 && !lkv[i2 + 1]) || (y2 > 0 && !lkv[i2 - vw]) || (y2 < vh - 1 && !lkv[i2 + vw])) &&
+            Math.floor((x2 + y2) / 3) % 2 === 0){ px[k] = 255; px[k + 1] = 255; px[k + 2] = 255; px[k + 3] = 128; continue; }
         if (!v){ px[k] = 6; px[k + 1] = 14; px[k + 2] = 20; px[k + 3] = dimA;                  // toned down ...
                  sp[k] = 128; sp[k + 1] = 128; sp[k + 2] = 128; sp[k + 3] = satA; continue; }     // ... and greyed
         var edge = (x2 > 0 && val[i2 - 1] !== v) || (x2 < vw - 1 && val[i2 + 1] !== v) || (y2 > 0 && val[i2 - vw] !== v) || (y2 < vh - 1 && val[i2 + vw] !== v);
@@ -7112,7 +7127,7 @@
     var m = anSet.mode;
     anBtn.classList.toggle('on', !!m);
     document.getElementById('anClear').disabled = !m;      // (only when there's something to clear)
-    Array.prototype.forEach.call(document.querySelectorAll('#anChips button, #anPresets button'), function(b){ b.classList.toggle('on', b.getAttribute('data-m') === m); });
+    Array.prototype.forEach.call(document.querySelectorAll('#anChips button[data-m], #anPresets button[data-m]'), function(b){ b.classList.toggle('on', b.getAttribute('data-m') === m); });
     var R = anRes, res = document.getElementById('anResult');
     if (!m) res.innerHTML = 'Välj vad du vill hitta. Det som matchar lyser, resten av kartan tonas ner.';
     else if (!R) res.innerHTML = 'Djupdatan laddas…';
@@ -7316,11 +7331,10 @@
     }
     var t = A.tpi[i], terr = t >= 0.6 ? '⛰ <b>Grynna</b> – ' + fmtDepth(t) + ' m grundare än runt om' : t <= -0.8 ? '🕳 <b>Håla</b> – ' + fmtDepth(-t) + ' m djupare än runt om' : 'Jämn botten runt om';
     el.innerHTML =
-      '<div class="wpTile"><i>Djup</i><b>' + fmtDepth(dm) + ' m</b><small>' + (dm < 2 ? 'grunt' : dm < 6 ? 'medel' : 'djupt') + '</small></div>' +
-      '<div class="wpTile"><i>Lutning</i><b>' + Math.round(sl) + ' %</b><small>' + slTxt + '</small></div>' +
-      '<div class="wpTile"><i>Botten</i><b>' + bot + '</b><small>' + botSub + '</small></div>' +
-      '<div class="wpTile"><i>Växter</i><b>' + veg + '</b><small>' + vegSub + '</small></div>' +
-      '<div class="wpTerrain">' + terr + ' · ' + Math.round(A.shore[i]) + ' m från land</div>';
+      '<div class="wpTile"><i>Djup</i><b>' + fmtDepth(dm) + ' m</b></div>' +
+      '<div class="wpTile"><i>Lutning</i><b>' + Math.round(sl) + ' %</b></div>' +
+      '<div class="wpTile"><i>Botten</i><b>' + bot + '</b></div>' +
+      '<div class="wpTile"><i>Växter</i><b>' + veg + '</b></div>';
   }
   document.getElementById('wpGo').addEventListener('click', function(){
     var wp = waypoints.filter(function(w){ return w.id === editingId; })[0];

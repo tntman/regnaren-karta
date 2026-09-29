@@ -56,7 +56,8 @@ with sync_playwright() as p:
     pg.wait_for_timeout(1200)
     tiles = pg.eval_on_selector_all('#wpData .wpTile i', 'e => e.map(x => x.textContent)')
     vals = pg.eval_on_selector_all('#wpData .wpTile b', 'e => e.map(x => x.textContent)')
-    check('the sheet shows what is under the spot: depth, slope, bottom, plants + terrain', tiles == ['Djup', 'Lutning', 'Botten', 'Växter'] and vals[0].endswith(' m') and vals[1].endswith('%') and vals[2] != '–' and 'från land' in pg.inner_text('#wpData .wpTerrain'), (tiles, vals, pg.inner_text('#wpData')))
+    check('the sheet shows what is under the spot: depth, slope, bottom, plants (just heading + value)', tiles == ['Djup', 'Lutning', 'Botten', 'Växter'] and vals[0].endswith(' m') and vals[1].endswith('%') and vals[2] != '–' and not pg.query_selector('#wpData small') and not pg.query_selector('#wpData .wpTerrain'), (tiles, vals, pg.inner_text('#wpData')))
+    check('"Sparad av" + the name in bold', pg.inner_text('#wpMeta b.who') == 'dig')
     cdp = ctx.new_cdp_session(pg)
     def touch(x, y0, y1, steps, ms):
         cdp.send('Input.dispatchTouchEvent', {'type': 'touchStart', 'touchPoints': [{'x': x, 'y': y0}]})
