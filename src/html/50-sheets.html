@@ -1,0 +1,49 @@
+  <div id="sheetBackdrop"></div>
+  <div id="wpSheet">
+    <div class="sheetGrab"><div class="sheetHandle"></div><button type="button" id="wpCancel" class="gripX" aria-label="Stäng">✕</button></div>
+    <input id="wpName" type="text" maxlength="40" placeholder="Namn, t.ex. Gösvik" aria-label="Namn">
+    <div id="wpMeta" class="sheetMeta"></div>
+    <div id="wpData" class="wpData" aria-label="Under platsen"></div>
+    <div id="wpTypeSeg" class="typeSeg" role="radiogroup" aria-label="Typ av plats">
+      <button type="button" data-type="mark" role="radio">Markering</button>
+      <button type="button" data-type="abborre" role="radio">Abborre</button>
+      <button type="button" data-type="gadda" role="radio">Gädda</button>
+      <button type="button" data-type="gos" role="radio">Gös</button>
+      <button type="button" data-type="fara" role="radio">Fara</button>
+      <button type="button" data-type="meet" role="radio">Träffpunkt 1 h</button>
+      <button type="button" data-type="hem" role="radio">Hem</button>
+    </div>
+    <div class="sheetActs">
+      <button id="wpGo" type="button">➤ Åk hit</button>
+      <button id="wpLike" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="M15.5 15.5 21 21"></path><path d="M7.5 11.5c1-2 2-2 3-1s2 1 3-1"></path></svg>Liknande</button>
+      <button id="wpDelete" class="del" type="button">Ta bort</button>
+      <button id="wpSave" class="save" type="button">Spara</button>
+    </div>
+  </div>
+  </div>
+
+  <div id="nameBackdrop"></div>
+  <div id="nameModal">
+    <div class="modalTitle">Vem är du?</div>
+    <div class="modalDesc">Välj ditt namn. Det kopplas till dig och dina fiskeplatser — loggar du in med samma namn på en annan enhet ser du dem som dina.</div>
+    <div id="nameList" class="nameList" aria-label="Välj ditt namn"></div>
+    <div id="otherNameWrap" hidden>
+      <input id="nameInput" type="text" maxlength="24" placeholder="Skriv ditt namn" autocomplete="off">
+    </div>
+    <div id="nameError" class="modalError" hidden>Välj ditt namn i listan för att fortsätta.</div>
+    <div class="sheetRow">
+      <button id="nameSave" class="btnPrimary">Fortsätt</button>
+    </div>
+  </div>
+
+  <div id="boatInfoBackdrop"></div>
+  <div id="boatInfoModal">
+    <div class="modalTitle" id="boatInfoName">—</div>
+    <div class="boatInfoNamesList" id="boatInfoNamesList"></div>
+    <div class="modalDesc" id="boatInfoMeta">—</div>
+    <div class="sheetRow">
+      <button id="boatInfoClose" class="btnPrimary" type="button">Stäng</button>
+    </div>
+  </div>
+</div>
+

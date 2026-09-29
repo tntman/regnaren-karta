@@ -1,0 +1,281 @@
+  <!-- ---- Hjälp: how to use the app, what's new (menu -> Hjälp; opens by itself the first time) ---- -->
+  <div id="helpView" aria-label="Hjälp">
+    <div id="helpHeader">
+      <button id="helpBackBtn" aria-label="Tillbaka" title="Tillbaka">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+      </button>
+      <div style="flex:1 1 auto;">
+        <div class="kicker">HJÄLP</div>
+        <div class="sub">Så använder du FF Map</div>
+      </div>
+    </div>
+    <div id="helpBody">
+      <div class="helpCard helpWelcome" id="helpWelcome">
+        <h3><span>👋 Välkommen<span id="helpWelcomeName"></span>!</span></h3>
+        <p>Djupkarta, GPS och gruppens fiskeplatser och båtar – i realtid. Börja gärna med att lägga till appen på hemskärmen ↓</p>
+      </div>
+      <div class="helpSearch"><input type="search" id="helpSearch" placeholder="Sök i hjälpen, t.ex. &quot;filter djup&quot;" aria-label="Sök i hjälpen" autocomplete="off"><div id="helpResults"></div></div>
+      <nav class="helpToc" id="helpToc">
+        <a href="#help-nytt"><span>✨</span>Nytt i appen</a><a href="#help-installera"><span>📲</span>Installera appen</a>
+        <a href="#help-kartan"><span>🗺️</span>Kartan</a><a href="#help-kartlagen"><span>🎨</span>Kartlägen</a>
+        <a href="#help-position"><span>📍</span>Din position</a><a href="#help-lodet"><span>⚓</span>Lodet</a>
+        <a href="#help-platser"><span>🐟</span>Fiskeplatser</a><a href="#help-fara"><span>⛔</span>Fara &amp; Träffpunkt</a>
+        <a href="#help-batar"><span>🚤</span>Båtarna</a><a href="#help-mat"><span>📏</span>Mätverktyget</a>
+        <a href="#help-vader"><span>🌬️</span>Väder, vind &amp; lä</a><a href="#help-blixtar"><span>⚡</span>Blixtar</a>
+        <a href="#help-filter"><span>🎚️</span>Filter</a><a href="#help-logg"><span>📖</span>Loggen &amp; spår</a>
+        <a href="#help-analys"><span>🔎</span>Kartanalys</a><a href="#help-akhit"><span>➤</span>Åk hit</a>
+        <a href="#help-meddelanden"><span>💬</span>Snabbmeddelanden</a><a href="#help-skarm"><span>☀️</span>Skärmen tänd</a>
+        <a href="#help-installningar"><span>⚙️</span>Inställningar</a><a href="#help-tips"><span>🛟</span>Tips &amp; felsökning</a>
+      </nav>
+
+      <section class="helpCard helpNews" id="help-nytt">
+        <h3><span class="hIc">✨</span>Nytt i appen</h3>
+        <div id="helpNewsList"></div>
+        <button type="button" class="helpMore" id="helpNewsMore">Visa äldre ▾</button>
+      </section>
+
+      <section class="helpCard" id="help-installera">
+        <h3><span class="hIc">📲</span>Installera appen</h3>
+        <p>På hemskärmen öppnas kartan i helskärm, utan adressfält, och startar snabbare.</p>
+        <div class="helpOk" id="helpInstalled" hidden>✓ Du använder redan hemskärmsappen – allt klart!</div>
+        <div id="helpInstallHow">
+          <div class="helpSeg" id="helpInstallSeg" role="tablist">
+            <button type="button" data-os="ios">iPhone Safari</button><button type="button" data-os="ioschrome">iPhone Chrome</button><button type="button" data-os="android">Android</button>
+          </div>
+          <div class="helpSteps" data-os="ios">
+            <div class="helpStep"><span class="num">1</span><span>Tryck på <b>Dela</b> <svg class="shareIc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 8l5-5 5 5M5 13v7h14v-7"></path></svg> i Safari (längst ner, eller vid adressfältet).</span></div>
+            <div class="helpStep"><span class="num">2</span><span>Välj <b>Lägg till på hemskärmen</b> (scrolla ner i listan om den inte syns).</span></div>
+            <div class="helpStep"><span class="num">3</span><span>Tryck <b>Lägg till</b> – öppna sedan FF Map från hemskärmen.</span></div>
+          </div>
+          <div class="helpSteps" data-os="ioschrome">
+            <div class="helpStep"><span class="num">1</span><span>Tryck på <b>Dela</b> <svg class="shareIc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 8l5-5 5 5M5 13v7h14v-7"></path></svg> uppe vid adressfältet i Chrome.</span></div>
+            <div class="helpStep"><span class="num">2</span><span>Välj <b>Lägg till på hemskärmen</b>.</span></div>
+            <div class="helpStep"><span class="num">3</span><span>Tryck <b>Lägg till</b> – öppna sedan FF Map från hemskärmen.</span></div>
+          </div>
+          <div class="helpSteps" data-os="android">
+            <button type="button" class="helpInstallBtn" id="helpInstallBtn" hidden>Installera FF Map</button>
+            <div class="helpStep"><span class="num">1</span><span>Tryck på menyn <b>⋮</b> uppe till höger i Chrome.</span></div>
+            <div class="helpStep"><span class="num">2</span><span>Välj <b>Installera app</b> (eller <b>Lägg till på startskärmen</b>).</span></div>
+          </div>
+        </div>
+        <div class="helpAnim"><img loading="lazy" width="432" height="935" src="help/installera.webp" alt="Så lägger du till appen på hemskärmen"></div>
+        <ul>
+          <li>Din position delas med gruppen bara medan appen är öppen.</li>
+        </ul>
+      </section>
+
+      <section class="helpCard" id="help-kartan">
+        <h3><span class="hIc">🗺️</span>Kartan</h3>
+        <div class="helpAnim"><img loading="lazy" width="432" height="713" src="help/kartan.webp" alt="Zooma och flytta kartan"></div>
+        <ul>
+          <li><b class="hA">Dra</b> för att flytta, <b class="hA">nyp</b> eller <b class="hA">dubbeltryck</b> för att zooma.</li>
+          <li>Det går att dra kartan även om fingret börjar på en plats, båt eller pratbubbla – bara ett tryck (utan att dra) öppnar den.</li>
+          <li>Ju närmare du zoomar, desto fler djupkurvor och djupsiffror (från C-MAP Genesis). Nere till vänster: t.ex. "Zoom 15,3 lager 15".</li>
+          <li>Färgskalan nere till vänster går från 0 m till sjöns maxdjup. Samma färg = samma djup i alla sjöar.</li>
+          <li>Byt sjö i menyn ☰ (Regnaren, Sjösjön, Vågsfjärden).</li>
+        </ul>
+      </section>
+
+      <section class="helpCard" id="help-kartlagen">
+        <h3><span class="hIc">🎨</span>Kartlägen</h3>
+        <div class="helpAnim"><img loading="lazy" width="432" height="620" src="help/kartlagen.webp" alt="Byt kartläge med snabbknappen"></div>
+        <ul>
+          <li><b class="hA">Tryck</b> på lagerknappen (bredvid Filter): Djupfärger → Förenklad → Bottenhårdhet → Vegetation.</li>
+          <li><b class="hA">Håll inne</b> knappen för alla kartlägen.</li>
+          <li><b>Djupfärger</b> med skuggad botten · <b>Förenklad</b> utan skuggor · <b>Sjökort</b> blå band · <b>Flygfoto + linjer</b> · <b>Blå relief</b> · <b>C-MAP original</b> med djupsiffror · <b>Vegetation</b> (grönt = växtlighet) · <b>Bottenhårdhet</b> (ljust mjukt → rött hårt).</li>
+        </ul>
+      </section>
+
+      <section class="helpCard" id="help-position">
+        <h3><span class="hIc">📍</span>Din position</h3>
+        <div class="helpAnim"><img loading="lazy" width="432" height="658" src="help/position.webp" alt="Din position på sjön"></div>
+        <ul>
+          <li>Pilen är du – den pekar åt det håll du åker.</li>
+          <li><b class="hA">Sikteknappen</b> nere till höger centrerar kartan på dig.</li>
+          <li>Nere till vänster: farten i knop och djupet under båten.</li>
+          <li>Är du inte vid sjön står det hur långt bort du är – GPS:en startar när du kommer dit.</li>
+        </ul>
+      </section>
+
+      <section class="helpCard" id="help-lodet">
+        <h3><span class="hIc">⚓</span>Lodet – djup, sträcka och restid</h3>
+        <div class="helpAnim"><img loading="lazy" width="432" height="665" src="help/lodet.webp" alt="Lodet visar djup, sträcka och restid"></div>
+        <ul>
+          <li><b class="hA">Tryck på kartan</b> – lodet visar djupet där.</li>
+          <li>Sträckan dit <b>sjövägen</b> (rutten ritas runt uddar och öar) och restiden – med din fart, eller marschfarten när du står still (Inställningar).</li>
+          <li>Hittas ingen väg sjövägen visas en prickad linje rakt dit och sträckan "fågelvägen".</li>
+          <li>Tryck på lodet igen för att ta bort det.</li>
+        </ul>
+      </section>
+
+      <section class="helpCard" id="help-platser">
+        <h3><span class="hIc">🐟</span>Fiskeplatser och markeringar</h3>
+        <p class="helpSub">Lägg till</p>
+        <div class="helpAnim"><img loading="lazy" width="432" height="935" src="help/platser.webp" alt="Lägg till en markering och en fiskeplats"></div>
+        <ul>
+          <li><b class="hA">Håll fingret</b> på kartan där platsen ska vara.</li>
+          <li>Eller tryck <b class="hA">＋</b> (nere till höger) – platsen hamnar där du är.</li>
+          <li>Välj typ: <b>Markering</b> (neutral prick), <b>Abborre</b>, <b>Gädda</b>, <b>Gös</b> eller <b>Hem</b> (blått hus – hemmet eller bryggan) – eller Fara/Träffpunkt (se nedan). Skriv ett namn och tryck <b>Spara</b>.</li>
+        </ul>
+        <p class="helpSub">Ändra och ta bort</p>
+        <div class="helpAnim"><img loading="lazy" width="432" height="935" src="help/andra.webp" alt="Ändra och ta bort en plats"></div>
+        <ul>
+          <li><b class="hA">Tryck</b> på en av dina platser: byt typ eller namn och tryck <b>Spara</b> – eller <b>Ta bort</b>.</li>
+          <li>Rutan visar vem som sparat platsen, när och hur långt bort, och vad som finns under den: <b>djup, lutning, botten (hårdhet)</b> och <b>växter</b>.</li>
+          <li>Knapparna längst ner: <b>➤ Åk hit</b>, <b>🔎 Liknande</b> (liknande ställen i Kartanalys), <b>Ta bort</b> och <b>Spara</b>.</li>
+          <li>Rutorna nertill: <b class="hA">dra i strecket</b> överst för att göra dem större eller mindre, <b class="hA">snärta ner</b> eller tryck <b>✕</b> för att stänga.</li>
+          <li>Andras platser är mindre och bara färgade. Trycker du på dem ser du vem, typen, när och hur långt bort.</li>
+        </ul>
+      </section>
+
+      <section class="helpCard" id="help-fara">
+        <h3><span class="hIc">⛔</span>Fara &amp; Träffpunkt</h3>
+        <div class="helpAnim"><img loading="lazy" width="432" height="935" src="help/fara.webp" alt="Fara och Träffpunkt"></div>
+        <ul>
+          <li><b>Fara</b> – röd stoppskylt för grund, stenar och annat att se upp för. Syns alltid för alla, döljs aldrig av filter.</li>
+          <li><b>Träffpunkt</b> – en fyr med ringar som alla ser (lunch på en ö …). Försvinner efter 1 timme, en per person.</li>
+          <li>Välj typen när du sparar en plats.</li>
+        </ul>
+      </section>
+
+      <section class="helpCard" id="help-batar">
+        <h3><span class="hIc">🚤</span>Båtarna i gruppen</h3>
+        <div class="helpAnim"><img loading="lazy" width="432" height="665" src="help/batar.webp" alt="Gruppens båtar på kartan"></div>
+        <ul>
+          <li>Allas båtar syns med namn och rör sig på kartan.</li>
+          <li>En båt blir grå när dess position är gammal, och försvinner efter ett tag.</li>
+          <li><b class="hA">Tryck</b> på en båt: när den senast syntes och hur långt bort den är.</li>
+        </ul>
+      </section>
+
+      <section class="helpCard" id="help-mat">
+        <h3><span class="hIc">📏</span>Mätverktyget</h3>
+        <div class="helpAnim"><img loading="lazy" width="432" height="935" src="help/mat.webp" alt="Mät en sträcka"></div>
+        <ul>
+          <li>Tryck på <b class="hA">linjalen</b>, sedan på kartan för varje punkt – sträcka och tid visas.</li>
+          <li>Ångra senaste punkten eller rensa. Tryck på linjalen igen för att sluta.</li>
+        </ul>
+      </section>
+
+      <section class="helpCard" id="help-vader">
+        <h3><span class="hIc">🌬️</span>Väder, vind &amp; lä</h3>
+        <div class="helpAnim"><img loading="lazy" width="432" height="720" src="help/vader.webp" alt="Väder, vind och lä"></div>
+        <ul>
+          <li>Väderraden: vind (byar) och riktning, lufttryck med trend, temperatur, regn snart. <b class="hA">Tryck</b> för timprognos och sol.</li>
+          <li><b>Vind och lä</b> (Filter): "kometerna" visar vinden över öppet vatten, den ljusa ytan är lä. Svag vind = stort lä.</li>
+        </ul>
+      </section>
+
+      <section class="helpCard" id="help-blixtar">
+        <h3><span class="hIc">⚡</span>Blixtar</h3>
+        <div class="helpAnim"><img loading="lazy" width="432" height="687" src="help/blixtar.webp" alt="Blixtnedslag på kartan"></div>
+        <ul>
+          <li>Blixtnedslag i realtid inom 30 km: varning med avstånd och riktning – <b style="color:#ff8a80">röd</b> under 10 km, <b style="color:#ffc27a">orange</b> inom 30 km.</li>
+          <li>Radar uppe till höger, ⚡ på kartan (gul = nyss, bleknar på 30 min), pil vid kanten mot närmaste.</li>
+          <li><b>Åskvarning:</b> ett stort rött larm med ljud (och vibration på Android) när en blixt slår ner närmare än 10 km – ändra avståndet eller stäng av i Inställningar.</li>
+          <li>Data från FMI, några minuters fördröjning. Kan stängas av i Filter.</li>
+        </ul>
+        <div class="helpWarn">Ersätter inte sunt förnuft – åk in vid åska.</div>
+      </section>
+
+      <section class="helpCard" id="help-analys">
+        <h3><span class="hIc">🔎</span>Kartanalys – hitta ställen</h3>
+        <div class="helpAnim"><img loading="lazy" width="432" height="935" src="help/analys.webp" alt="Kartanalys"></div>
+        <ul>
+          <li><b class="hA">Tryck</b> på förstoringsglaset nere till höger. Välj vad du vill hitta – det som matchar lyser, resten av kartan tonas ner.</li>
+          <li><b>Djup</b> – ett djupintervall (dra i reglagen). <b>Branta kanter</b> – där botten sluttar mest, valfritt djup. <b>Grynnor &amp; hålor</b> – grynnor mitt i sjön och gropar: hur mycket en grynna reser sig över den lägsta "sadeln" runt den (grunda hyllor längs land räknas inte); reglagen ställer hur många meter. För en håla markeras bara själva gropen. Etiketten visar djupet – tryck på den för lodet.</li>
+          <li><b>Växter</b> – där ekolodet sett växtlighet. <b>Hård botten</b> – välj hur hård och på vilket djup. <b>Vindkant</b> – stränder vinden blåser mot just nu. Sjöns kant syns som en tunn vit linje.</li>
+          <li><b>Liknande</b> – välj en fiskeplats (eller <b>🔎 Liknande</b> i platsens ruta) och vad som jämförs: djup, lutning, botten, växter, grynna/håla. <b>Bara platsen</b> = det som finns under pinnen; <b>25–100 m</b> = snittet inom den radien (liknande omgivningar). Platsen själv får en rosa ring (<b>Gå till</b> visar den), listan visar de mest lika områdena, bäst först – med <b>Åk hit</b>.</li>
+          <li>Hur mycket resten av kartan tonas ner ställer du i <b>Inställningar</b>. Dra i strecket överst för att göra panelen mindre (inne i den skrollar du), snärta ner eller tryck <b>✕</b> för att stänga.</li>
+          <li><b>Abborre, Gädda, Gös</b> – förinställda kombinationer. De bygger på vanliga fiskeråd (tumregler), inte på fångster – se dem som tips.</li>
+          <li>Visa/dölj med <b>Kartanalys</b> i Filter. <b>Rensa</b> tar bort valen (grå när inget är valt). Kartanalys är avstängd när appen startas.</li>
+        </ul>
+      </section>
+
+      <section class="helpCard" id="help-akhit">
+        <h3><span class="hIc">➤</span>Åk hit</h3>
+        <div class="helpAnim"><img loading="lazy" width="432" height="798" src="help/akhit.webp" alt="Åk hit"></div>
+        <ul>
+          <li><b class="hA">Tryck</b> på en fiskeplats och välj <b>➤ Åk hit</b> (eller Åk hit i Kartanalys och Liknande-listan).</li>
+          <li>Lodet släpps på platsen: djupet, sträckan sjövägen och restiden – rutten ritas runt uddar och öar och följer med när du åker.</li>
+          <li>Kartan zoomar så att du ser hela vägen: båten, rutten och målet.</li>
+          <li>Tryck på lodet för att ta bort det.</li>
+        </ul>
+      </section>
+
+      <section class="helpCard" id="help-meddelanden">
+        <h3><span class="hIc">💬</span>Snabbmeddelanden</h3>
+        <div class="helpAnim"><img loading="lazy" width="432" height="935" src="help/meddelanden.webp" alt="Snabbmeddelanden"></div>
+        <ul>
+          <li><b class="hA">Tryck</b> på pratbubblan längst ner och välj: Fisk!!!, Kommer, Åker in, Mat?, Bajs – eller <b>Egen text</b> (högst 15 tecken, Enter skickar).</li>
+          <li>Meddelandet syns vid din båt för alla i 15 minuter och tonas sakta bort. De första 5 minuterna snurrar en tunn regnbågskant runt det – då är det nytt.</li>
+          <li>Skriver flera i samma båt samlas det i en bubbla – en rad per person, nyast överst.</li>
+          <li><b class="hA">Tryck</b> på ett meddelande (eller en rad): när det skrevs och när det försvinner, <b>➤ Åk hit</b> (lodet på båten) och <b>Dölj för mig</b> – eller <b>Ta bort</b> om det är ditt.</li>
+          <li>Fungerar när du är vid sjön.</li>
+        </ul>
+      </section>
+
+      <section class="helpCard" id="help-skarm">
+        <h3><span class="hIc">☀️</span>Håll skärmen tänd</h3>
+        <ul>
+          <li>Slå på <b>Håll skärmen tänd</b> i Filter – då somnar inte telefonen medan appen är öppen (drar mer batteri).</li>
+          <li>En gul sol vid ditt namn visar att den är på. Tryck på solen för att stänga av.</li>
+          <li>iPhone: fungerar i hemskärmsappen från iOS 18.4.</li>
+        </ul>
+      </section>
+
+      <section class="helpCard" id="help-filter">
+        <h3><span class="hIc">🎚️</span>Filter</h3>
+        <div class="helpAnim"><img loading="lazy" width="432" height="775" src="help/filter.webp" alt="Filter"></div>
+        <ul class="helpDefs">
+          <li><b>Mina</b> – dina fiskeplatser på kartan.</li>
+          <li><b>Andras</b> – gruppens fiskeplatser (mindre, bara färgade).</li>
+          <li><b>Båtar</b> – de andras båtar med namn.</li>
+          <li><b>Spår</b> – linjen efter din båt.</li>
+          <li><b>Väder</b> – väderraden under sjöns namn.</li>
+          <li><b>Vind och lä</b> – vindens "kometer" och var det är lä.</li>
+          <li><b>Blixtar</b> – blixtnedslag i realtid, varning och radar.</li>
+          <li><b>Kartanalys</b> – visar/döljer det du valt i Kartanalys (inställningen finns kvar).</li>
+          <li><b>Håll skärmen tänd</b> – telefonen somnar inte medan appen är öppen.</li>
+          <li><b>Typer</b> – visa/dölj Markering, Abborre, Gädda, Gös, Träffpunkt, Hem (Fara syns alltid).</li>
+          <li><b>Djup</b> under båten och <b>Andras 50 % / 100 %</b> finns i Inställningar.</li>
+          <li>En orange prick på Filter betyder att något är dolt.</li>
+        </ul>
+      </section>
+
+      <section class="helpCard" id="help-logg">
+        <h3><span class="hIc">📖</span>Loggen &amp; spår</h3>
+        <div class="helpAnim"><img loading="lazy" width="432" height="935" src="help/logg.webp" alt="Loggen"></div>
+        <ul>
+          <li><b>Logg</b> i menyn: alla fiskeplatser, nyast först. <b class="hA">Tryck</b> för att hoppa dit på kartan.</li>
+          <li><b>Spår</b>: linjen efter din båt (av/på i Filter, hur länge den syns i Inställningar).</li>
+        </ul>
+      </section>
+
+      <section class="helpCard" id="help-installningar">
+        <h3><span class="hIc">⚙️</span>Inställningar</h3>
+        <div class="helpAnim"><img loading="lazy" width="432" height="935" src="help/installningar.webp" alt="Inställningar"></div>
+        <ul>
+          <li>Namn, storlek på fiskeplatser, <b>hur tydligt andras platser syns</b> (50/100 %), <b>djupet under båten</b> (av/på), kartstil och kartans färg, spår, pulserande ring, marschfart, <b>åskvarning</b> (avstånd, ljud, vibration), hur mörk kartan blir i <b>Kartanalys</b>.</li>
+          <li><b>Ladda ner sjön för offline</b> – gör det hemma innan en tur med dålig täckning.</li>
+        </ul>
+      </section>
+
+      <section class="helpCard" id="help-tips">
+        <h3><span class="hIc">🛟</span>Tips &amp; felsökning</h3>
+        <ul>
+          <li><b>Ingen GPS?</b> Tillåt plats för Safari/Chrome/appen i telefonens inställningar.</li>
+          <li><b>Ser något gammalt ut?</b> Stäng appen helt och öppna igen.</li>
+          <li><b>Utan nät</b> fungerar kartan om sjön är nedladdad. Platser du sparar skickas när nätet är tillbaka.</li>
+          <li>Appen måste vara öppen för att din båt ska synas för de andra.</li>
+        </ul>
+      </section>
+
+      <section class="helpCard" id="help-om">
+        <h3><span class="hIc">ℹ️</span>Om appen</h3>
+        <p>Djup och kurvor: C-MAP Genesis Social Map. Stränder: OpenStreetMap. Flygfoto: Bing. Väder: Open-Meteo. Blixtar: FMI (CC BY 4.0).</p>
+        <p class="helpVer" id="helpVer"></p>
+      </section>
+    </div>
+  </div>
+

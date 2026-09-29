@@ -8,7 +8,7 @@ made-up spots, boats, weather and lightning -- never the real Firebase or FMI (t
 blocks them). Everything happens ON THE LAKE (Regnaren's south basin, points checked
 against the depth data before recording), never up on land. A white dot shows the finger.
 "Installera" is a drawn Safari (tools/help_install_anim.html) -- Safari's own menus
-can't be recorded. Writes each animation's size into src/app.html -- build afterwards.
+can't be recorded. Writes each animation's size into src/html/40-help.html -- build afterwards.
 """
 import sys, os, io, json, time, math, subprocess
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -111,9 +111,9 @@ class Rec:
 
 def set_size_in_page(name, w, h):
     """the Hjälp page reserves each animation's space (no jumping while they load):
-    write the new size into src/app.html (then build)"""
+    write the new size into src/html/40-help.html (then build)"""
     import re
-    p = os.path.join(ROOT, 'src', 'app.html'); s = open(p, encoding='utf-8').read()
+    p = os.path.join(ROOT, 'src', 'html', '40-help.html'); s = open(p, encoding='utf-8').read()
     s2 = re.sub(r'<img loading="lazy"( width="\d+" height="\d+")? src="help/%s\.webp"' % name,
                 '<img loading="lazy" width="%d" height="%d" src="help/%s.webp"' % (w, h, name), s)
     if s2 != s:

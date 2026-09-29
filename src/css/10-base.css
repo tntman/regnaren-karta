@@ -1,0 +1,178 @@
+  :root{
+    --navy:#0B2A3A;
+    --navy-glass:rgba(11,42,58,.72);
+    --deep-blue:#065A82;
+    --teal:#1C7293;
+    --amber:#E8A33D;
+    --forest:#2C5F2D;
+    --offwhite:#F4F7F8;
+    --text-muted:#B7C4C9;
+    --danger:#D64545;
+    --ink:#14181C;
+    display-name:regnaren-gps;
+  }
+  *{box-sizing:border-box;}
+  [hidden]{display:none !important;}
+  html,body{height:100%;}
+  body{
+    background:var(--navy);
+    color:var(--offwhite);
+    overflow:hidden;
+    overscroll-behavior:none;
+    font-family:Calibri,"Segoe UI",system-ui,-apple-system,sans-serif;
+  }
+  #app{position:fixed;inset:0;overflow:hidden;}
+
+  #stage{
+    position:absolute;inset:0;
+    touch-action:none;
+    -webkit-user-select:none;user-select:none;
+    -webkit-touch-callout:none;
+    background:#050f15;
+    cursor:grab;
+  }
+  #stage.dragging{cursor:grabbing;}
+  #world{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform;}
+  #mapImg{display:block;max-width:none;-webkit-user-drag:none;pointer-events:none;}
+  /* sharper map pieces when zoomed in (lakes with detail tiles): screen-positioned,
+     so each piece is drawn at full sharpness instead of as a scaled layer */
+  #detailLayer{position:absolute;left:0;top:0;width:0;height:0;pointer-events:none;}
+  #detailLayer img{position:absolute;left:0;top:0;display:block;max-width:none;opacity:0;transition:opacity .25s;-webkit-user-drag:none;transform-origin:0 0;}
+  #detailLayer img.ok{opacity:1;}
+  #detailLayer img.bad{display:none;}
+  /* "Vind och lä": lee lighter + thin edge, wind comets over open water (screen canvas) */
+  #windLayer{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;display:none;}
+  #windLayer.on{display:block;}
+  /* "Blixtar": strikes on the map + an arrow at the edge towards the nearest (screen canvas) */
+  #ltLayer{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;display:none;}
+  #ltLayer.on{display:block;}
+  /* iPhone home-screen app, upright: under the (black) status bar the fade starts solid in the
+     app's own blue-grey, like the one at the bottom -- no see-through line under the bar */
+  @media (orientation:portrait){
+    html.iosApp header{background:linear-gradient(to bottom, rgba(6,20,28,.85) 0%, rgba(6,20,28,.4) 45%, rgba(6,20,28,0) 100%);}
+  }
+  #mapLoading{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:1;color:var(--text-muted);font-size:13px;pointer-events:none;display:none;}
+  #mapLoading.show{display:block;}
+
+  header{
+    position:absolute;top:0;left:0;right:0;z-index:20;
+    padding:calc(env(safe-area-inset-top,0px) + 24px) 18px 24px 64px;
+    background:linear-gradient(to bottom, rgba(6,20,28,.85) 0%, rgba(6,20,28,.4) 65%, rgba(6,20,28,0) 100%);
+    pointer-events:none;
+  }
+  #bottomFade{
+    position:absolute;left:0;right:0;bottom:0;z-index:19;
+    height:calc(env(safe-area-inset-bottom,0px) + 130px);
+    background:linear-gradient(to top, rgba(6,20,28,.85) 0%, rgba(6,20,28,.4) 45%, rgba(6,20,28,0) 100%);
+    pointer-events:none;
+  }
+  .kicker{
+    font-family:Cambria,Georgia,"Times New Roman",serif;
+    font-weight:700;font-size:22px;letter-spacing:.02em;color:var(--offwhite);
+    text-shadow:0 1px 6px rgba(0,0,0,.5);
+  }
+  .sub{font-size:12.5px;color:var(--text-muted);margin-top:2px;letter-spacing:.01em;}
+  /* logged-in name, small and discreet under the lake name */
+  #headerUser{
+    display:flex;align-items:center;gap:4px;margin-top:1px;
+    font-size:11.5px;color:var(--text-muted);letter-spacing:.02em;
+    text-shadow:0 1px 4px rgba(0,0,0,.6);
+    max-width:170px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  #headerUser:empty{display:none;}
+  #headerUser svg{width:11px;height:11px;flex:0 0 auto;opacity:.85;}
+
+  #marker{position:absolute;left:0;top:0;z-index:17;pointer-events:none;display:none;} /* own GPS dot: above boats and fishing spots (never blocks taps -- pointer-events:none) */
+  #accRing{
+    position:absolute;left:0;top:0;border-radius:50%;
+    background:radial-gradient(circle, rgba(232,163,61,.22) 0%, rgba(232,163,61,.12) 60%, rgba(232,163,61,0) 100%);
+    border:1px solid rgba(232,163,61,.45);
+    transform:translate(-50%,-50%);
+  }
+  /* your own position: just an amber arrow pointing the way you're going
+     (it keeps the last direction when you stop), with one amber ring
+     expanding from its centre. */
+  #dot{
+    position:absolute;left:0;top:0;width:24px;height:24px;
+    transform:translate(-50%,-50%);
+  }
+  #dotCenter{display:none;}
+  #dotArrow{
+    position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;
+    transition:transform .5s ease-out;
+    filter:drop-shadow(0 1px 3px rgba(0,0,0,.7));
+    animation:gpsArrowGlow 2.4s ease-out infinite;   /* in step with the ring */
+  }
+  #dotArrow .arrowHalo{fill:none;stroke:#fff;stroke-width:4.4;stroke-linejoin:round;}
+  #dotArrow .arrowBody{fill:#FF7A00;stroke:#0B2A3A;stroke-width:1.3;stroke-linejoin:round;animation:gpsArrowFill 2.4s ease-out infinite;}
+  /* one bright orange ring expanding from the arrow; the arrow lights up at the
+     start of every pulse and fades back to its normal strong orange */
+  #dotGlow{
+    position:absolute;left:0;top:0;width:20px;height:20px;
+    transform:translate(-50%,-50%);border-radius:50%;
+    border:3px solid #FFB23F;
+    box-shadow:0 0 10px 3px rgba(255,150,30,.9), inset 0 0 5px 1px rgba(255,190,90,.7);
+    animation:gpsRadar 2.4s cubic-bezier(.2,.6,.4,1) infinite;
+  }
+  @keyframes gpsArrowFill{0%{fill:#FFE39A;}40%,100%{fill:#FF7A00;}}
+  @keyframes gpsArrowGlow{
+    0%{filter:drop-shadow(0 1px 3px rgba(0,0,0,.7)) drop-shadow(0 0 8px rgba(255,150,30,1));}
+    40%,100%{filter:drop-shadow(0 1px 3px rgba(0,0,0,.7)) drop-shadow(0 0 2px rgba(255,150,30,.35));}
+  }
+  #dotGlow2{display:none;}
+  #marker.noPulse #dotGlow{display:none;} /* Settings: "Pulserande ring vid din position" off */
+  #accRing{display:none !important;} /* just the arrow + one expanding ring -- no static accuracy circle */
+  @media (prefers-reduced-motion:reduce){#dotGlow{animation:none;opacity:0;} #dotArrow, #dotArrow .arrowBody{animation:none;}}
+  @keyframes gpsRadar{0%{transform:translate(-50%,-50%) scale(.5);opacity:1;}55%{opacity:.75;}100%{transform:translate(-50%,-50%) scale(3);opacity:0;}}
+
+  #legend{
+    position:absolute;left:14px;
+    bottom:calc(env(safe-area-inset-bottom,0px) + 16px);
+    z-index:20;
+    background:var(--navy-glass);backdrop-filter:blur(6px);
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:10px;padding:5px 8px 4px;
+    box-shadow:0 4px 14px rgba(0,0,0,.35);
+    width:126px; /* compact: 25 % shorter than before (168px) */
+  }
+  #legend .ttl{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:6px;}
+  #legend .bar{
+    height:7px;border-radius:4px;
+    background:linear-gradient(to right,#d62728 0%,#ff7f0e 18%,#ffdd00 36%,#2ca02c 55%,#17becf 72%,#1f4fd6 87%,#0a1a5c 100%);
+  }
+  #legend .ticks{display:flex;justify-content:space-between;font-size:9.5px;line-height:1.2;color:var(--text-muted);margin-top:3px;}
+
+  #scalebar{
+    position:absolute;left:14px;
+    bottom:calc(env(safe-area-inset-bottom,0px) + 94px);
+    z-index:20;color:var(--offwhite);font-size:11px;
+    text-shadow:0 1px 4px rgba(0,0,0,.6);
+    display:flex;flex-direction:column;align-items:flex-start;gap:2px;
+    pointer-events:none;
+  }
+  #scalebar .line{height:3px;background:var(--offwhite);border-radius:2px;box-shadow:0 0 0 1px rgba(0,0,0,.5);}
+  /* zoom level (same numbers as web maps / Genesis), after the scale; "HD" = sharper pieces on screen */
+  #scalebar .scaleRow{display:flex;align-items:baseline;gap:6px;}
+  #zoomLabel{font-size:10px;opacity:.85;font-variant-numeric:tabular-nums;}
+  #zoomLabel b{font-weight:700;color:#fff;margin-left:3px;}
+
+  #locateBtn{
+    position:absolute;right:16px;
+    bottom:calc(env(safe-area-inset-bottom,0px) + 20px);
+    z-index:22;
+    width:54px;height:54px;border-radius:50%;
+    background:var(--amber);color:var(--navy);
+    border:none;display:flex;align-items:center;justify-content:center;
+    box-shadow:0 5px 16px rgba(0,0,0,.45);
+    -webkit-tap-highlight-color:transparent;
+  }
+  #locateBtn:active{transform:scale(.93);}
+  #locateBtn svg{width:26px;height:26px;}
+  #locateBtn.tracking{background:var(--offwhite);}
+  #locateBtn:disabled{opacity:.4;}
+
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  /* "add a fishing spot here" button, shaped exactly like a fishing-spot
+     pin (same teardrop, colours and fish as your own pins) with a small
+     amber "+" badge, so it's obvious what it creates */

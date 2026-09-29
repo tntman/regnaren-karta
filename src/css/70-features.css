@@ -1,0 +1,231 @@
+  /* ---- Kartanalys ("Hitta ställen"): filter the map's data; button bottom right ---- */
+  #anLayer{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;display:none;}
+  #anLayer.on{display:block;}
+  #anLabels{position:absolute;inset:0;z-index:15;pointer-events:none;}
+  .anLbl{position:absolute;left:0;top:0;transform:translate(-50%,-50%);pointer-events:auto;cursor:pointer;white-space:nowrap;
+    background:rgba(11,42,58,.9);border:1.5px solid #FFBE28;border-radius:11px;padding:2px 8px;font-size:11.5px;font-weight:700;color:#fff;
+    box-shadow:0 2px 8px rgba(0,0,0,.5);-webkit-tap-highlight-color:transparent;}
+  .anLbl.hole{border-color:#6fd6ff;}
+  .anLbl.sim{border-color:#ff50a0;width:24px;height:24px;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#ff50a0;}
+  #anBtn{
+    position:absolute;right:76px;bottom:calc(env(safe-area-inset-bottom,0px) + 25px);z-index:22;
+    width:44px;height:44px;border-radius:50%;
+    background:var(--navy-glass);backdrop-filter:blur(6px);color:var(--offwhite);border:1px solid rgba(255,255,255,.16);
+    display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.35);-webkit-tap-highlight-color:transparent;padding:0;
+  }
+  #anBtn:active{transform:scale(.92);}
+  #anBtn svg{width:21px;height:21px;}
+  #anBtn.on{border-color:var(--amber);color:var(--amber);}
+  #anPanel{
+    position:absolute;left:0;right:0;bottom:0;z-index:26;background:var(--navy);
+    border-top:1px solid rgba(255,255,255,.14);border-radius:18px 18px 0 0;
+    padding:8px 14px calc(env(safe-area-inset-bottom,0px) + 16px);box-shadow:0 -10px 30px rgba(0,0,0,.45);
+    transform:translateY(105%);transition:transform .25s ease;max-height:62vh;overflow-y:auto;
+  }
+  #anPanel.show{transform:none;}
+  #anPanel .grab{margin:-8px -14px 4px;top:-8px;}
+  .anChips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;}
+  .anChips button{font:inherit;font-size:12.5px;padding:6px 10px;border-radius:14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:var(--offwhite);cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent;}
+  .anChips button.on{background:var(--amber);color:var(--navy);font-weight:700;border-color:var(--amber);}
+  .anChips.pre button{border-color:rgba(232,163,61,.45);}
+  .anSub{margin-top:11px;font-size:10.5px;font-weight:700;letter-spacing:.08em;color:var(--text-muted);text-transform:uppercase;}
+  #anControls{margin-top:6px;}
+  .anRange{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12.5px;color:#dbe4e7;}
+  .anRange label{flex:0 0 58px;}
+  .anRange input[type=range]{flex:1;accent-color:var(--amber);}
+  .anRange output{flex:0 0 48px;text-align:right;font-weight:700;color:var(--amber);}
+  #anResult{margin-top:9px;font-size:13px;color:#dbe4e7;line-height:1.4;}
+  #anResult b{color:var(--amber);}
+  #anResult .note{display:block;color:var(--text-muted);font-size:11.5px;margin-top:3px;}
+  .anList{margin-top:7px;display:flex;flex-direction:column;gap:5px;}
+  .anList .li{display:flex;align-items:center;gap:9px;background:rgba(255,255,255,.05);border-radius:10px;padding:6px 9px;font-size:13px;color:#dbe4e7;}
+  .anList .n{width:20px;height:20px;border-radius:50%;background:#ff50a0;color:#fff;font-weight:700;font-size:11.5px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
+  .anList button{margin-left:auto;border:none;background:none;color:var(--amber);font:inherit;font-weight:700;font-size:12.5px;cursor:pointer;}
+  #anRefSel{width:100%;margin-top:8px;background:rgba(255,255,255,.08);color:var(--offwhite);border:1px solid rgba(255,255,255,.18);border-radius:9px;padding:7px 8px;font:inherit;font-size:14px;}
+  #anRefSel option{color:#000;}
+  /* ---- lightning alarm ---- */
+  #ltAlarm{position:absolute;left:18px;right:18px;top:calc(env(safe-area-inset-top,0px) + 120px);z-index:40;display:none;flex-direction:column;align-items:center;gap:4px;
+    background:rgba(205,38,38,.97);border:2px solid #fff;border-radius:18px;padding:16px;text-align:center;color:#fff;box-shadow:0 10px 40px rgba(0,0,0,.6);max-width:420px;margin:0 auto;}
+  #ltAlarm.show{display:flex;animation:ltAlarmIn .3s ease;}
+  @keyframes ltAlarmIn{from{transform:scale(.9);opacity:0;}to{transform:none;opacity:1;}}
+  #ltAlarm b{font-size:22px;}
+  #ltAlarm small{font-size:14px;opacity:.95;}
+  #ltAlarmOk{margin-top:8px;border:none;border-radius:11px;background:rgba(255,255,255,.22);color:#fff;font:inherit;font-weight:700;font-size:15px;padding:8px 26px;cursor:pointer;}
+  /* ---- quick messages: a small button at the bottom, bubbles at the boats (15 min) ---- */
+  #msgBtn{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 20px);transform:translateX(-50%);z-index:22;
+    width:42px;height:42px;border-radius:50%;background:var(--navy-glass);backdrop-filter:blur(6px);color:var(--offwhite);
+    border:1px solid rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.35);padding:0;-webkit-tap-highlight-color:transparent;}
+  #msgBtn svg{width:20px;height:20px;}
+  #msgBtn.open{border-color:var(--amber);color:var(--amber);}
+  #msgPop{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 72px);transform:translateX(-50%);z-index:24;display:none;
+    flex-wrap:wrap;justify-content:center;gap:6px;width:min(340px, calc(100vw - 28px));}
+  #msgPop.show{display:flex;}
+  #msgPop button{background:rgba(11,42,58,.95);border:1px solid rgba(255,255,255,.22);color:#fff;border-radius:18px;padding:8px 13px;font:inherit;font-weight:700;font-size:14px;box-shadow:0 4px 12px rgba(0,0,0,.4);cursor:pointer;}
+  #msgPop button:active{background:var(--amber);color:var(--navy);}
+  #msgToast{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 72px);transform:translateX(-50%);z-index:24;max-width:calc(100vw - 40px);
+    background:rgba(11,42,58,.95);border:1px solid rgba(232,163,61,.6);color:#fff;border-radius:14px;padding:8px 14px;font-size:13.5px;opacity:0;pointer-events:none;transition:opacity .2s;text-align:center;}
+  #msgToast.show{opacity:1;}
+  #msgLayer{position:absolute;inset:0;z-index:17;pointer-events:none;}
+  .msgBub{position:absolute;left:0;top:0;pointer-events:auto;cursor:pointer;background:#fff;color:#0B2A3A;border-radius:14px;padding:4px 10px;
+    font-weight:700;font-size:13.5px;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,.5);transform:translate(-14px,calc(-100% - 20px));-webkit-tap-highlight-color:transparent;}
+  .msgBub::after{content:'';position:absolute;left:12px;bottom:-7px;border:7px solid transparent;border-top-color:#fff;border-bottom:0;}
+  .msgBub small{font-weight:400;color:#557;margin-left:4px;}
+  .msgBub.mine{background:#FFE7B8;} .msgBub.mine::after{border-top-color:#FFE7B8;}
+  @media (orientation:landscape) and (max-height:520px){
+    #anBtn{width:40px;height:40px;right:72px;}
+    #anPanel{left:auto;width:420px;right:0;max-height:88vh;}
+    #msgBtn{width:38px;height:38px;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);}
+  }
+
+  /* ---- Kartanalys: the greyed-out map (a 2nd canvas desaturates what's under it), the depth-range slider ---- */
+  #anSat{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;display:none;mix-blend-mode:saturation;}
+  #anSat.on{display:block;}
+  #anPanel.dragging{transition:none;}
+  .anDual{position:relative;height:34px;margin:12px 13px 0;touch-action:none;cursor:pointer;}
+  .anTrack{position:absolute;left:0;right:0;top:14px;height:6px;border-radius:3px;}
+  .anSel{position:absolute;top:9px;height:16px;border:2.5px solid #fff;border-radius:8px;box-sizing:border-box;margin-left:-3px;padding-right:6px;box-shadow:0 0 0 1px rgba(0,0,0,.35);}
+  .anKnob{position:absolute;top:4px;width:26px;height:26px;margin-left:-13px;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.55);}
+  .anTicks{display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin:2px 6px 0;}
+  .anRange{margin-top:10px;}
+  .anRange input[type=range]{height:26px;}
+  /* ---- spot sheet: "Åk hit" + "Hitta liknande" ---- */
+  /* ---- "Håll skärmen tänd" on: a yellow sun by your name; tap = off (+ a note) ---- */
+  #headerUserRow{display:flex;align-items:center;gap:7px;}
+  #wakeBadge{pointer-events:auto;width:17px;height:17px;padding:0;border-radius:50%;border:1.5px solid #FFD21A;background:rgba(255,210,26,.18);color:#FFD21A;
+    display:flex;align-items:center;justify-content:center;margin-top:1px;box-shadow:0 0 8px rgba(255,210,26,.5);-webkit-tap-highlight-color:transparent;cursor:pointer;}
+  #wakeBadge[hidden]{display:none;}
+  #wakeBadge svg{width:11px;height:11px;}
+  @media (orientation:landscape) and (max-height:520px){ #wakeNote{top:calc(env(safe-area-inset-top,0px) + 110px);} }
+  #wakeNote{position:absolute;left:14px;right:14px;top:calc(env(safe-area-inset-top,0px) + 96px);z-index:30;max-width:400px;display:none;
+    background:rgba(11,42,58,.96);border:1px solid rgba(255,210,26,.6);border-radius:14px;padding:11px 40px 11px 14px;color:var(--offwhite);
+    box-shadow:0 8px 24px rgba(0,0,0,.5);font-size:13px;line-height:1.4;transition:opacity .8s;}
+  #wakeNote.show{display:block;}
+  #wakeNote.fade{opacity:0;}
+  #wakeNote b{display:block;font-size:14px;margin-bottom:3px;color:#FFD21A;}
+  #wakeNote span b{display:inline;color:var(--offwhite);font-size:13px;}
+  #wakeNoteClose{position:absolute;right:6px;top:6px;width:30px;height:30px;border:none;background:none;color:var(--text-muted);font-size:16px;cursor:pointer;}
+  /* ---- the four buttons bottom right: one 2 x 2 grid, all the same size ---- */
+  :root{--bb:48px;--bgap:12px;--bb0:calc(env(safe-area-inset-bottom,0px) + 20px);}
+  #locateBtn, #anBtn, #measureBtn, #addHereBtn{width:var(--bb) !important;height:var(--bb) !important;}
+  #locateBtn{right:16px !important;bottom:var(--bb0) !important;}
+  #anBtn{right:calc(16px + var(--bb) + var(--bgap)) !important;bottom:var(--bb0) !important;}
+  #addHereBtn{right:16px !important;bottom:calc(var(--bb0) + var(--bb) + var(--bgap)) !important;}
+  #measureBtn{right:calc(16px + var(--bb) + var(--bgap)) !important;bottom:calc(var(--bb0) + var(--bb) + var(--bgap)) !important;}
+  #addHereBtn .addPin{left:calc(50% - (var(--bb) - 14px) / 2);top:2px;width:calc(var(--bb) - 14px);height:calc(var(--bb) - 14px);}
+  #locateBtn svg{width:24px;height:24px;}
+  #msgBtn{bottom:calc(var(--bb0) + 3px);}
+  @media (orientation:landscape) and (max-height:520px){
+    :root{--bb:42px;--bgap:10px;--bb0:calc(env(safe-area-inset-bottom,0px) + 8px);}
+  }
+
+  /* ---- the spot sheet: what's under the spot (4 tiles + a line about the terrain) ---- */
+  #wpName{font-size:17px;font-weight:700;margin-top:2px;}
+  .wpData{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:10px 0 2px;}
+  .wpData:empty{display:none;}
+  .wpTile{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:5px 8px 6px;min-width:0;}
+  .wpTile i{display:block;font-style:normal;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);}
+  .wpTile b{display:block;font-size:15px;color:var(--offwhite);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;}
+  .wpTile small{display:block;font-size:10.5px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .wpTerrain{grid-column:1 / -1;font-size:12px;color:#dbe4e7;padding:1px 2px;}
+  .wpTerrain b{color:var(--amber);}
+  .sheetMeta b.who{color:#fff;font-weight:700;}
+  .wpData{margin-bottom:12px !important;}
+  /* ---- Liknande: what to compare + how big an area ---- */
+  .anFactors{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+  .anFactors button{font:inherit;font-size:12px;padding:5px 9px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.16);color:var(--text-muted);cursor:pointer;}
+  .anFactors button.on{border-color:#ff50a0;color:#fff;background:rgba(255,80,160,.22);}
+  .anFactors button.on::before{content:'✓ ';}
+  .anSeg{display:flex;gap:4px;margin-top:8px;background:rgba(255,255,255,.06);border-radius:10px;padding:3px;}
+  .anSeg button{flex:1;border:none;background:none;color:var(--text-muted);font:inherit;font-size:12px;padding:6px 2px;border-radius:8px;cursor:pointer;}
+  .anSeg button.on{background:var(--amber);color:var(--navy);font-weight:700;}
+  .anLbl2{font-size:11px;color:var(--text-muted);margin-top:9px;}
+
+  /* ---- Hjälp: search ---- */
+  .helpSearch{position:relative;}
+  #helpSearch{width:100%;box-sizing:border-box;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:12px;
+    padding:10px 12px 10px 36px;color:var(--offwhite);font:inherit;font-size:15px;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23B7C4C9' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='M15.5 15.5 21 21'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:11px 50%;background-size:17px;}
+  #helpSearch::placeholder{color:var(--text-muted);}
+  #helpResults{display:none;margin-top:6px;background:rgba(11,42,58,.97);border:1px solid rgba(255,255,255,.14);border-radius:12px;overflow:hidden;}
+  #helpResults.show{display:block;}
+  .hsRes{display:block;width:100%;text-align:left;border:none;border-bottom:1px solid rgba(255,255,255,.07);background:none;color:var(--offwhite);font:inherit;padding:8px 12px;cursor:pointer;}
+  .hsRes:last-child{border-bottom:none;}
+  .hsRes b{display:block;font-size:13.5px;color:var(--amber);}
+  .hsRes span{display:block;font-size:12.5px;color:#dbe4e7;margin-top:1px;line-height:1.35;}
+  .hsRes mark{background:rgba(232,163,61,.35);color:#fff;border-radius:3px;padding:0 1px;}
+  .hsNone{padding:9px 12px;font-size:13px;color:var(--text-muted);}
+  .helpCard li.hit{animation:helpHit 2.2s ease;}
+  @keyframes helpHit{0%,40%{background:rgba(232,163,61,.35);}100%{background:transparent;}}
+  .helpDefs li{margin:4px 0;}
+
+  /* ---- quick messages: fading, the rainbow edge while new, the panel when tapped ---- */
+  .msgBub{transition:opacity 1s;}
+  .msgRb{position:absolute;left:-3px;top:-3px;pointer-events:none;
+    background:conic-gradient(from var(--rba, 0deg),#ff004c,#ff9f00,#ffee00,#27e23f,#00c8ff,#6a5cff,#ff00c8,#ff004c);
+    -webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;animation:rbSpin 2.2s linear infinite;}
+  @property --rba{syntax:'<angle>';initial-value:0deg;inherits:false;}
+  @keyframes rbSpin{to{--rba:360deg;}}
+  #msgCard{position:absolute;left:0;right:0;bottom:0;z-index:27;background:var(--navy);border-top:1px solid rgba(255,255,255,.14);border-radius:18px 18px 0 0;
+    padding:8px 16px calc(env(safe-area-inset-bottom,0px) + 16px);box-shadow:0 -10px 30px rgba(0,0,0,.45);transform:translateY(105%);transition:transform .25s ease;overflow-y:auto;}
+  #msgCard.show{transform:none;}
+  #msgCard.dragging{transition:none;}
+  #msgCard .grab{margin:-8px -16px 4px;top:-8px;}
+  #msgCardWho{font-size:12px;letter-spacing:.06em;font-weight:700;color:var(--text-muted);}
+  #msgCardTxt{font-size:23px;font-weight:700;margin:4px 0 8px;}
+  .msgCardMeta{display:flex;justify-content:space-between;gap:8px;font-size:13.5px;color:#dbe4e7;}
+  .msgCardBar{height:5px;border-radius:3px;background:rgba(255,255,255,.12);margin:7px 0 12px;overflow:hidden;}
+  .msgCardBar i{display:block;height:100%;background:var(--amber);}
+  .msgCardBtns{display:flex;gap:8px;}
+  .msgCardBtns button{flex:1;padding:10px;border-radius:11px;border:none;font:inherit;font-weight:700;font-size:14px;background:rgba(255,255,255,.08);color:var(--offwhite);cursor:pointer;}
+  .msgCardBtns button.a{background:var(--amber);color:var(--navy);}
+  .msgCardBtns button[hidden]{display:none;}
+  @media (orientation:landscape) and (max-height:520px){ #msgCard{left:auto;width:420px;} }
+  /* ---- panels that can be dragged smaller: the grip always drags; once smaller, the rest scrolls ---- */
+  #anPanel, #wpSheet, #msgCard{touch-action:pan-y;}
+  /* the grip strip (a bar in the middle): drag it = resize / flick it = close -- tools/UI.md */
+  #anPanel .grab, #msgCard .grab{position:sticky;z-index:3;height:30px;display:flex;align-items:center;justify-content:center;background:var(--navy);border-radius:18px 18px 0 0;cursor:grab;}
+  #anPanel .grab::before, #msgCard .grab::before{content:'';width:40px;height:5px;border-radius:3px;background:rgba(255,255,255,.3);}
+  #anPanel .grab, #wpSheet .sheetGrab, #msgCard .grab{touch-action:none;}
+  #wpSheet{overflow-y:auto;max-height:88vh;}
+  /* ---- Liknande: the spot you start from (a pink ring spreading out), "Gå till", what "area" means ---- */
+  .anRefRow{display:flex;gap:8px;align-items:center;margin-top:8px;}
+  .anRefRow #anRefSel{margin-top:0;flex:1;min-width:0;}
+  #anRefGo{flex:0 0 auto;border:1px solid rgba(255,80,160,.7);background:rgba(255,80,160,.18);color:#fff;border-radius:9px;padding:8px 12px;font:inherit;font-weight:700;font-size:13px;cursor:pointer;}
+  .anNote{font-size:11.5px;color:var(--text-muted);line-height:1.4;margin-top:8px;}
+  .anNote b{color:#dbe4e7;} .anNote i{font-style:italic;}
+  .anLbl.simRef{width:0;height:0;padding:0;border:none;background:none;box-shadow:none;pointer-events:none;}
+  .anLbl.simRef::before, .anLbl.simRef::after{content:'';position:absolute;left:-26px;top:-26px;width:52px;height:52px;border-radius:50%;border:3px solid #ff50a0;
+    animation:simRing 2s ease-out infinite;box-sizing:border-box;}
+  .anLbl.simRef::after{animation-delay:1s;}
+  @keyframes simRing{0%{transform:scale(.25);opacity:1;}100%{transform:scale(1.6);opacity:0;}}
+  .anSep{width:1.5px;align-self:stretch;background:rgba(255,255,255,.3);border-radius:1px;margin:3px 3px;}
+  .anChips .anClr{position:relative;overflow:hidden;background:rgba(232,163,61,.16);border:1.5px solid var(--amber);color:#fff;font-weight:700;}
+  .anChips .anClr::after{content:'';position:absolute;top:0;bottom:0;left:-60%;width:50%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.45),transparent);animation:clrSweep 2.6s ease-in-out infinite;}
+  @keyframes clrSweep{0%{left:-60%;}55%,100%{left:120%;}}
+  .anChips .anClr:disabled{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);color:rgba(183,196,201,.4);font-weight:400;cursor:default;}
+  .anChips .anClr:disabled::after{display:none;}
+  @media (prefers-reduced-motion:reduce){ .anChips .anClr::after{animation:none;display:none;} }
+  #anPanel .grab, #msgCard .grab{position:sticky;}
+  #routeLayer.crow .rtLine{stroke:#fff;stroke-width:2;stroke-dasharray:2 7;stroke-linecap:round;}
+  #routeLayer.crow .rtUnder{stroke-width:5;}
+  /* "Egen text": a rainbow sliding slowly through the words, the pen after them */
+  .rbText{background:linear-gradient(90deg,#ff5f6d,#ffc371,#fff36b,#6bff95,#5ee7ff,#8f7bff,#ff6bd6,#ff5f6d);background-size:300% 100%;
+    -webkit-background-clip:text;background-clip:text;color:transparent;animation:rbSlide 6s linear infinite;}
+  @keyframes rbSlide{from{background-position:0% 50%;}to{background-position:300% 50%;}}
+  #msgPop .msgOwnBtn{display:inline-flex;align-items:center;gap:6px;border-color:rgba(255,195,113,.6);}
+  #msgPop .msgOwnBtn svg{width:15px;height:15px;color:#ffc371;flex:0 0 auto;}
+  @media (prefers-reduced-motion:reduce){.rbText{animation:none;}}
+  /* the small box for your own text (15 characters) */
+  #msgOwn{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 76px);transform:translateX(-50%);z-index:28;width:min(300px, calc(100vw - 28px));display:none;
+    align-items:center;gap:8px;background:rgba(11,42,58,.97);border:1.5px solid rgba(255,195,113,.7);border-radius:18px;padding:5px 5px 5px 14px;box-shadow:0 6px 18px rgba(0,0,0,.5);}
+  #msgOwn.show{display:flex;}
+  #msgOwnIn{flex:1;min-width:0;background:none;border:none;outline:none;color:#fff;font:inherit;font-size:16px;font-weight:700;caret-color:#ffc371;padding:6px 0;}
+  #msgOwnN{font-size:11px;color:var(--text-muted);min-width:32px;text-align:right;font-variant-numeric:tabular-nums;}
+  #msgOwnN.full{color:#ff8a80;}
+  #msgOwnGo{width:34px;height:34px;border-radius:50%;border:none;background:var(--amber);color:var(--navy);font-size:15px;font-weight:900;cursor:pointer;flex:0 0 auto;}
+  .msgBub .mLine{white-space:nowrap;line-height:1.45;}
+  .msgBub.multi{padding:5px 11px;}
+  .msgBub:not(.mine) .mLine.mine{background:#FFE7B8;border-radius:7px;margin:0 -6px;padding:0 6px;}
+  /* a finger on these may also pan the map */
+  .wpPin, .wpFara, .wpBeacon, .boatPip, .msgBub, .anLbl{touch-action:none;}

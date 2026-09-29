@@ -1,6 +1,6 @@
 # UI-delar i FF Map – så byggs de
 
-Alla delar finns i `src/app.html` (en fil: CSS överst, HTML i mitten, skript sist).
+Koden finns i `src/css/`, `src/html/` och `src/js/` (en fil per del – se `src/README.md`).
 Använd de här byggstenarna när något nytt ska in, så att allt ser ut och beter sig
 likadant. Färger: `--navy` (#0B2A3A, bakgrund), `--navy-glass` (halvgenomskinlig),
 `--amber` (#E8A33D, det man ska trycka på / valt), `--offwhite`, `--text-muted`.

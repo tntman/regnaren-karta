@@ -1,0 +1,555 @@
+  /* ================= Kartanalys ("Hitta ställen") =================
+     One place for every "map analysis": the button bottom right opens a panel; one
+     filter at a time (or a preset that combines them). What matches is lit up, the
+     rest of the map is toned down. Everything is worked out on the phone from the
+     lake's depth grid (+ Genesis vegetation/hardness in bottom_v<V>.txt, + the wind
+     from the weather). Shown/hidden with "Kartanalys" in Filter; the choice is
+     remembered per lake. The presets are common fishing rules of thumb, not data. */
+  var AN_KEY = lakeKey('ffmap_analysis_v1', 'analysis_v1');
+  var SHOW_AN_KEY = 'ffmap_show_analysis_v1';
+  var AN_MODES = [
+    ['depth', 'Djup'], ['steep', 'Branta kanter'], ['tops', 'Grynnor & hålor'], ['veg', 'Växter'],
+    ['hard', 'Hård botten'], ['wind', 'Vindkant'], ['similar', 'Liknande']
+  ];
+  var AN_PRESETS = [
+    ['abborre', 'Abborre', 'grynnor och kanter på 2–6 m, gärna nära hård botten'],
+    ['gadda', 'Gädda', 'växtkanten på 1–4 m och vindkanten'],
+    ['gos', 'Gös', 'branta kanter på 4–10 m nära hård botten']
+  ];
+  var AN_HARD = ['Mjuk', 'Medelhård', 'Hård', 'Mycket hård'];      // Genesis' 4 levels
+  var AN_COLORS = { depth: null, steep: [255, 70, 200], tops: [255, 190, 40], veg: [90, 235, 80], hard: [240, 70, 10],
+                    wind: [255, 178, 63], similar: [255, 80, 160], abborre: [255, 210, 26], gadda: [120, 255, 120], gos: [255, 210, 26] };
+  // the depth scale of the sliders = the legend's (0 .. the lake's max depth, same colours)
+  var AN_DMAX = parseFloat(String((LAKE.legendTicks || []).slice(-1)[0] || '').replace(',', '.')) || Math.ceil(LAKE.depth.max || 20);
+  var AN_SIMF = [['d', 'Djup'], ['s', 'Lutning'], ['h', 'Botten'], ['v', 'Växter'], ['t', 'Grynna/håla']];
+  var AN_SIMR = [0, 25, 50, 100];                       // m round the spot (0 = right under it)
+  // how far a top rises above the lowest "saddle" towards anything higher (the h-dome, by
+  // morphological reconstruction): f in cm, marker = f - H grown back under f; dome = f - rec.
+  // Tops: f = -depth, land counts as HIGH (shore shelves belong to the shore, not tops).
+  // Holes: f = depth, land counts as LOW. Bucket queue (whole cm): fast enough on the phone.
+  function anDome(f, W, H, hcm){
+    var N = W * H, rec = new Int32Array(N), lo = 1e9, hi = -1e9, i, p, q, v, x;
+    for (i = 0; i < N; i++){ v = rec[i] = f[i] - hcm; if (v < lo) lo = v; if (v > hi) hi = v; }
+    var bk = new Array(hi - lo + 1);
+    for (i = 0; i < N; i++){ v = rec[i] - lo; (bk[v] || (bk[v] = [])).push(i); }
+    for (var lv = hi - lo; lv >= 0; lv--){
+      var qu = bk[lv]; if (!qu) continue; bk[lv] = null;
+      for (var k = 0; k < qu.length; k++){
+        p = qu[k]; if (rec[p] - lo !== lv) continue;
+        x = p % W;
+        for (var t = 0; t < 4; t++){
+          q = t === 0 ? (x > 0 ? p - 1 : -1) : t === 1 ? (x < W - 1 ? p + 1 : -1) : t === 2 ? p - W : p + W;
+          if (q < 0 || q >= N) continue;
+          v = rec[p] < f[q] ? rec[p] : f[q];
+          if (v > rec[q]){ rec[q] = v; if (v - lo === lv) qu.push(q); else (bk[v - lo] || (bk[v - lo] = [])).push(q); }
+        }
+      }
+    }
+    var d = new Float32Array(N); for (i = 0; i < N; i++) d[i] = (f[i] - rec[i]) / 100;
+    return d;
+  }
+  var AN_HOLE_CORE = 0.6;            // a hole is drawn by its deepest 0.6 m (else a deep basin = one huge "hole")
+  function anDomes(A){
+    if (A.domeTop) return A;
+    var N = A.N, ft = new Int32Array(N), fh = new Int32Array(N);
+    for (var i = 0; i < N; i++){
+      if (A.wat[i]){ ft[i] = -Math.round(A.sm[i] * 100); fh[i] = Math.round(A.sm[i] * 100); }
+      else if (A.lake[i]){ ft[i] = -50; fh[i] = 50; }            // (lake without depth data: shallow)
+      else { ft[i] = 500; fh[i] = -500; }                          // land: high for tops, low for holes
+    }
+    A.domeTop = anDome(ft, A.W, A.H, 300); A.domeHole = anDome(fh, A.W, A.H, 300);
+    return A;
+  }
+  var anSet = { simF: { d: 1, s: 1, h: 1, v: 1, t: 1 }, simR: 0, mode: null, lo: 4, hi: 6, slope: 10, elo: 0, ehi: AN_DMAX, topP: 0.6, holeP: 0.8, hmin: 3, hlo: 0, hhi: AN_DMAX, dim: 0.72, ref: null };
+  try { var sv = JSON.parse(localStorage.getItem(AN_KEY) || 'null'); if (sv) for (var k0 in sv) anSet[k0] = sv[k0]; } catch(e){}
+  if (!rotState) anSet.mode = null;          // a new start of the app: off (turning the phone keeps it)
+  var anShow = true;
+  try { anShow = localStorage.getItem(SHOW_AN_KEY) !== '0'; } catch(e){}
+  var anCanvas = document.getElementById('anLayer'), anCtx = anCanvas.getContext('2d');
+  var anSatCanvas = document.getElementById('anSat'), anSatCtx = anSatCanvas.getContext('2d');
+  var anPanel = document.getElementById('anPanel'), anBtn = document.getElementById('anBtn'), anLabelsEl = document.getElementById('anLabels');
+  var AN = null, anBottom = null, anBottomLoading = false, anRes = null, anView = null, anVer = 0;
+  function anSave(){ try { localStorage.setItem(AN_KEY, JSON.stringify(anSet)); } catch(e){} }
+
+  // weighted box blur (only water counts), radius r cells, twice ~ gaussian
+  function anBlur(val, wt, W, H, r){
+    var a = new Float32Array(W * H), w = new Float32Array(W * H), i;
+    for (i = 0; i < W * H; i++){ a[i] = val[i] * wt[i]; w[i] = wt[i]; }
+    function pass(src, horiz){
+      var out = new Float32Array(W * H), L1 = horiz ? W : H, L2 = horiz ? H : W;
+      for (var b = 0; b < L2; b++){
+        var s = 0;
+        for (var q = -r; q < L1 + r; q++){
+          var qi = q + r; if (qi < L1) s += src[horiz ? b * W + qi : qi * W + b];
+          var qo = q - r - 1; if (qo >= 0 && qo < L1) s -= src[horiz ? b * W + qo : qo * W + b];
+          if (q >= 0 && q < L1) out[horiz ? b * W + q : q * W + b] = s;
+        }
+      }
+      return out;
+    }
+    for (var t = 0; t < 2; t++){ a = pass(pass(a, true), false); w = pass(pass(w, true), false); }
+    var o = new Float32Array(W * H);
+    for (i = 0; i < W * H; i++) o[i] = w[i] > 1e-6 ? a[i] / w[i] : 0;
+    return o;
+  }
+  // the lake's grids: depth, water, slope (%), "higher/lower than around" (m), distance from land (m)
+  function anBase(){
+    if (AN) return AN;
+    var g = loadDepthGrid(); if (!g) return null;
+    var W = DEPTH_W, H = DEPTH_H, N = W * H, cell = WEB_METERS_PER_PX * IMG_W / W;
+    var dep = new Float32Array(N), wat = new Uint8Array(N), lake = new Uint8Array(N), i, x, y;
+    for (i = 0; i < N; i++){ var v = g[i]; lake[i] = v !== 255 ? 1 : 0; if (v <= 250){ wat[i] = 1; dep[i] = v * DEPTH_STEP; } }
+    var sm = anBlur(dep, wat, W, H, Math.max(1, Math.round(4 / cell)));
+    var slope = new Float32Array(N);
+    for (y = 1; y < H - 1; y++) for (x = 1; x < W - 1; x++){
+      i = y * W + x; if (!wat[i]) continue;
+      var gx = (sm[i + 1] - sm[i - 1]) / (2 * cell), gy = (sm[i + W] - sm[i - W]) / (2 * cell);
+      if (!wat[i + 1] || !wat[i - 1]) gx = 0;
+      if (!wat[i + W] || !wat[i - W]) gy = 0;
+      slope[i] = Math.sqrt(gx * gx + gy * gy) * 100;
+    }
+    var big = anBlur(dep, wat, W, H, Math.max(2, Math.round(28 / cell)));
+    var tpi = new Float32Array(N);
+    for (i = 0; i < N; i++) if (wat[i]) tpi[i] = big[i] - sm[i];       // + shallower than around, - deeper
+    // distance from land (m): two-pass chamfer
+    var dist = new Float32Array(N), INF = 1e9, D1 = cell, D2 = cell * 1.414;
+    for (i = 0; i < N; i++) dist[i] = lake[i] ? INF : 0;
+    for (y = 0; y < H; y++) for (x = 0; x < W; x++){ i = y * W + x; if (!dist[i]) continue; var m = dist[i];
+      if (x > 0) m = Math.min(m, dist[i - 1] + D1); if (y > 0){ m = Math.min(m, dist[i - W] + D1); if (x > 0) m = Math.min(m, dist[i - W - 1] + D2); if (x < W - 1) m = Math.min(m, dist[i - W + 1] + D2); } dist[i] = m; }
+    for (y = H - 1; y >= 0; y--) for (x = W - 1; x >= 0; x--){ i = y * W + x; if (!dist[i]) continue; var m2 = dist[i];
+      if (x < W - 1) m2 = Math.min(m2, dist[i + 1] + D1); if (y < H - 1){ m2 = Math.min(m2, dist[i + W] + D1); if (x < W - 1) m2 = Math.min(m2, dist[i + W + 1] + D2); if (x > 0) m2 = Math.min(m2, dist[i + W - 1] + D2); } dist[i] = m2; }
+    AN = { W: W, H: H, N: N, cell: cell, dep: dep, wat: wat, lake: lake, sm: sm, slope: slope, tpi: tpi, shore: dist };
+    return AN;
+  }
+  // vegetation (bit 3) + hardness 1..4 (bits 0-2) per depth cell, from Genesis (fetched when first needed)
+  function anLoadBottom(){
+    if (anBottom || anBottomLoading || !LAKE.bottom || typeof fetch !== 'function') return;
+    anBottomLoading = true;
+    fetch(LAKE_DIR + LAKE.bottom.file).then(function(r){ return r.ok ? r.text() : null; }).then(function(t){
+      anBottomLoading = false; if (!t) return;
+      var bin = atob(t.trim()), b = new Uint8Array(DEPTH_W * DEPTH_H), j = 0;
+      for (var i = 0; i < bin.length && j < b.length; i++){
+        var v = bin.charCodeAt(i);
+        if (v === 250){ j += bin.charCodeAt(i + 1) | (bin.charCodeAt(i + 2) << 8); i += 2; }
+        else b[j++] = v;
+      }
+      anBottom = b; anCompute();
+      if (typeof editingWpInfo !== 'undefined' && editingWpInfo && wpSheet.classList.contains('show')) refreshSheetMeta();
+    }).catch(function(){ anBottomLoading = false; });
+  }
+  function anNeedsBottom(m){ return m === 'veg' || m === 'hard' || m === 'similar' || m === 'abborre' || m === 'gadda' || m === 'gos'; }
+  // connected groups of cells (4-neighbours) of a mask
+  function anBlobs(mask, W, H){
+    var lab = new Int32Array(W * H), out = [], st = [];
+    for (var s = 0; s < W * H; s++){
+      if (!mask[s] || lab[s]) continue;
+      var id = out.length + 1, cells = []; lab[s] = id; st.push(s);
+      while (st.length){ var c = st.pop(); cells.push(c); var cx = c % W;
+        if (cx > 0 && mask[c - 1] && !lab[c - 1]){ lab[c - 1] = id; st.push(c - 1); }
+        if (cx < W - 1 && mask[c + 1] && !lab[c + 1]){ lab[c + 1] = id; st.push(c + 1); }
+        if (c >= W && mask[c - W] && !lab[c - W]){ lab[c - W] = id; st.push(c - W); }
+        if (c < W * (H - 1) && mask[c + W] && !lab[c + W]){ lab[c + W] = id; st.push(c + W); } }
+      out.push(cells);
+    }
+    return out;
+  }
+  function anNear(mask, W, H, r){       // cells within r cells of the mask (square)
+    var o = new Uint8Array(W * H), rows = new Uint8Array(W * H), x, y, k;
+    for (y = 0; y < H; y++){ var last = -1e9;
+      for (x = 0; x < W; x++){ if (mask[y * W + x]) last = x; if (x - last <= r) rows[y * W + x] = 1; }
+      last = 1e9; for (x = W - 1; x >= 0; x--){ if (mask[y * W + x]) last = x; if (last - x <= r) rows[y * W + x] = 1; } }
+    for (x = 0; x < W; x++){ var l2 = -1e9;
+      for (y = 0; y < H; y++){ if (rows[y * W + x]) l2 = y; if (y - l2 <= r) o[y * W + x] = 1; }
+      l2 = 1e9; for (y = H - 1; y >= 0; y--){ if (rows[y * W + x]) l2 = y; if (l2 - y <= r) o[y * W + x] = 1; } }
+    return o;
+  }
+  function anVegEdge(A, lo, hi){
+    var W = A.W, N = A.N, veg = new Uint8Array(N), e = new Uint8Array(N), i;
+    for (i = 0; i < N; i++) veg[i] = (anBottom[i] & 8) && A.wat[i] ? 1 : 0;
+    var open = new Uint8Array(N); for (i = 0; i < N; i++) open[i] = A.wat[i] && !veg[i] ? 1 : 0;
+    var nearOpen = anNear(open, W, A.H, Math.max(1, Math.round(6 / A.cell)));
+    for (i = 0; i < N; i++) e[i] = veg[i] && nearOpen[i] && A.dep[i] >= lo && A.dep[i] <= hi ? 1 : 0;
+    return { edge: e, veg: veg };
+  }
+  function anHardNear(A, m){
+    var hard = new Uint8Array(A.N), any = false;
+    for (var i = 0; i < A.N; i++) if ((anBottom[i] & 7) >= 3 && A.wat[i]){ hard[i] = 1; any = true; }
+    return any ? anNear(hard, A.W, A.H, Math.max(1, Math.round(m / A.cell))) : null;
+  }
+  function anWindEdge(A){
+    var w = windNow(), R = routeGrid && routeGrid() ? RT : null;
+    if (!w || !R) return null;
+    var a = w.from * Math.PI / 180, dx = Math.sin(a), dy = -Math.cos(a), up = new Float32Array(R.w * R.h), dn = new Float32Array(R.w * R.h);
+    [[dx, dy, up], [-dx, -dy, dn]].forEach(function(t){
+      for (var cy = 0; cy < R.h; cy++) for (var cx = 0; cx < R.w; cx++){
+        var i = cy * R.w + cx; if (!R.water[i]) continue;
+        var s = 1;
+        for (; s < 120; s++){ var x = Math.round(cx + t[0] * s), y = Math.round(cy + t[1] * s); if (x < 0 || y < 0 || x >= R.w || y >= R.h || !R.water[y * R.w + x]) break; }
+        t[2][i] = s * R.cellM;
+      }
+    });
+    var out = new Uint8Array(A.N);
+    for (var y = 0; y < A.H; y++) for (var x = 0; x < A.W; x++){
+      var i2 = y * A.W + x; if (!A.wat[i2]) continue;
+      var rx = Math.min(R.w - 1, Math.floor(x / R.rf)), ry = Math.min(R.h - 1, Math.floor(y / R.rf)), ri = ry * R.w + rx;
+      if (R.water[ri] && up[ri] > 300 && dn[ri] < 60) out[i2] = 1;
+    }
+    return { mask: out, from: w.from, ms: w.ms };
+  }
+  // the things "Liknande" compares, per cell -- right under (r = 0) or averaged over r m round each cell
+  var anSimCache = {};
+  function anSimFeatures(A, rm){
+    if (anSimCache[rm] && anSimCache[rm].A === A && anSimCache[rm].b === !!anBottom) return anSimCache[rm];
+    var N = A.N, veg = new Float32Array(N), hard = new Float32Array(N), hw = new Float32Array(N), sl = new Float32Array(N), i;
+    for (i = 0; i < N; i++){ var bt = anBottom ? anBottom[i] : 0; veg[i] = (bt & 8) ? 1 : 0; hard[i] = bt & 7; hw[i] = (bt & 7) ? 1 : 0; sl[i] = Math.min(40, A.slope[i]); }
+    var F;
+    if (!rm) F = { d: A.sm, s: sl, t: A.tpi, v: veg, h: hard };
+    else {
+      var r = Math.max(1, Math.round(rm / A.cell)), wt = new Float32Array(N);
+      for (i = 0; i < N; i++) wt[i] = A.wat[i];
+      var hm = anBlur(hard, hw, A.W, A.H, r);        // (hardness: only where it's measured)
+      F = { d: anBlur(A.sm, wt, A.W, A.H, r), s: anBlur(sl, wt, A.W, A.H, r), t: anBlur(A.tpi, wt, A.W, A.H, r), v: anBlur(veg, wt, A.W, A.H, r), h: hm };
+    }
+    F.A = A; F.b = !!anBottom; anSimCache[rm] = F;
+    return F;
+  }
+  function anCellOfImg(x, y){ var A = AN; return Math.min(A.H - 1, Math.max(0, Math.floor(y / IMG_H * A.H))) * A.W + Math.min(A.W - 1, Math.max(0, Math.floor(x / IMG_W * A.W))); }
+  function anImgOfCell(i){ var A = AN; return { x: ((i % A.W) + 0.5) / A.W * IMG_W, y: (Math.floor(i / A.W) + 0.5) / A.H * IMG_H }; }
+  function anSpots(){
+    return waypoints.filter(function(w){ var t = wpType(w); return t !== 'meet' && t !== 'fara' && t !== 'hem' && !isExpired(w); })
+      .sort(function(a, b){ return (isMine(b) ? 1 : 0) - (isMine(a) ? 1 : 0); });
+  }
+  // the chosen filter -> a mask (1 = main colour, 2 = second colour), labels and a result text
+  function anCompute(){
+    anRes = null; anVer++;
+    var m = anSet.mode, A = anBase();
+    if (m && A && anNeedsBottom(m) && !anBottom){ anLoadBottom(); if (!anBottom){ anRes = { wait: true }; anRender(); return; } }
+    if (!m || !A){ anRender(); return; }
+    var N = A.N, M = new Uint8Array(N), i, n = 0, labels = [], list = null, text = '', note = '';
+    var wat = A.wat, dep = A.dep;
+    if (m === 'depth'){
+      for (i = 0; i < N; i++) if (wat[i] && dep[i] >= anSet.lo && dep[i] <= anSet.hi){ M[i] = 1; n++; }
+      text = '<b>' + fmtDepth(anSet.lo) + '–' + fmtDepth(anSet.hi) + ' m</b> · ' + anPct(n) + ' av sjön';   // (as the mock-up)
+    } else if (m === 'steep'){
+      for (i = 0; i < N; i++) if (wat[i] && A.slope[i] >= anSet.slope && dep[i] >= anSet.elo && dep[i] <= anSet.ehi){ M[i] = 1; n++; }
+      text = 'Lutning över <b>' + anSet.slope + ' %</b> på ' + fmtDepth(anSet.elo) + '–' + fmtDepth(anSet.ehi) + ' m · ' + anPct(n) + ' av sjön';
+    } else if (m === 'tops'){
+      anDomes(A);
+      // the "caps" of the tops (and the bottoms of the holes), then only those that rise (sink)
+      // at least the chosen number of metres above (below) their saddle
+      var capT = new Uint8Array(N), capH = new Uint8Array(N);
+      for (i = 0; i < N; i++){ if (!wat[i] || A.shore[i] < 10) continue;
+        if (A.domeTop[i] >= 0.25) capT[i] = 1; else if (A.domeHole[i] >= 0.25) capH[i] = 1; }
+      var tb = anBlobs(capT, A.W, A.H).map(function(c){ var best = c[0], p = 0; c.forEach(function(j){ if (A.domeTop[j] > p) p = A.domeTop[j]; if (dep[j] < dep[best]) best = j; }); return { c: c, i: best, p: p }; })
+        .filter(function(b){ return b.p >= anSet.topP; }).sort(function(a, b){ return b.p - a.p; });
+      var hb = anBlobs(capH, A.W, A.H).map(function(c){ var best = c[0], p = 0; c.forEach(function(j){ if (A.domeHole[j] > p) p = A.domeHole[j]; if (dep[j] > dep[best]) best = j; }); return { c: c, i: best, p: p }; })
+        .filter(function(b){ return b.p >= anSet.holeP; }).sort(function(a, b){ return b.p - a.p; });
+      tb.forEach(function(b, k){ b.c.forEach(function(j){ M[j] = 1; }); if (k < 14) labels.push({ i: b.i, cls: '', txt: fmtDepth(dep[b.i]) + ' m' }); });
+      hb.forEach(function(b, k){ b.c.forEach(function(j){ if (A.domeHole[j] >= Math.max(0.25, b.p - AN_HOLE_CORE)) M[j] = 2; }); if (k < 8) labels.push({ i: b.i, cls: 'hole', txt: fmtDepth(dep[b.i]) + ' m' }); });
+      text = '<b>' + tb.length + '</b> grynnor (reser sig minst ' + fmtDepth(anSet.topP) + ' m) · <b>' + hb.length + '</b> hålor (minst ' + fmtDepth(anSet.holeP) + ' m djupa)';
+      note = '<b>Grynna</b> = ett grundare ställe ute i sjön som reser sig minst ' + fmtDepth(anSet.topP) + ' m över den lägsta "sadeln" runt den – där det sluttar ner åt alla håll. Grunda hyllor längs land räknas inte. ' +
+        '<b>Håla</b> = en grop som går minst ' + fmtDepth(anSet.holeP) + ' m under kanten runt den; bara gropens djupaste del (0,6 m) visas. Siffran = djupet där grynnan är grundast / hålan djupast. Tryck på en etikett för lodet.';
+    } else if (m === 'veg'){
+      for (i = 0; i < N; i++) if ((anBottom[i] & 8) && wat[i]){ M[i] = 1; n++; }
+      text = n ? '<b>Växter</b> (vass, näckrosor, bottenväxter) · ' + anPct(n) + ' av sjön' : 'Ingen växtlighet mätt här.';
+      note = 'Där ekolodet sett växtlighet (Genesis). Kanten mot öppet vatten är ofta bäst.';
+    } else if (m === 'hard'){
+      var meas = 0;
+      for (i = 0; i < N; i++){ var hv = anBottom[i] & 7; if (hv) meas++; if (hv >= anSet.hmin && wat[i] && dep[i] >= anSet.hlo && dep[i] <= anSet.hhi){ M[i] = 1; n++; } }
+      text = n ? '<b>' + AN_HARD[anSet.hmin - 1] + '</b> botten eller hårdare, ' + fmtDepth(anSet.hlo) + '–' + fmtDepth(anSet.hhi) + ' m · ' + anPct(n) + ' av sjön' : 'Ingen sådan botten mätt här.';
+      note = 'Bara där ekolodet mätt hårdhet (' + anPct(meas) + ' av sjön).';
+    } else if (m === 'wind'){
+      var we = anWindEdge(A);
+      if (!we){ text = 'Väntar på vinden (väder)…'; }
+      else { for (i = 0; i < N; i++) if (we.mask[i]){ M[i] = 1; n++; }
+        text = 'Vinden <b>' + wxNum(we.ms) + ' m/s från ' + wxCompass(we.from) + '</b> – där vågorna trycker in mot stranden'; note = 'Motsatsen till lä: maten driver dit.'; }
+    } else if (m === 'similar'){
+      var spots = anSpots(), ref = spots.filter(function(w){ return w.id === anSet.ref; })[0] || spots[0];
+      if (!ref){ text = 'Spara en fiskeplats först – sedan letar appen upp liknande ställen.'; }
+      else {
+        anSet.ref = ref.id;
+        var rp = latLonToImgPx(ref.lat, ref.lon), ri = anCellOfImg(rp.x, rp.y);
+        var F = anSimFeatures(A, anSet.simR), use = AN_SIMF.filter(function(x){ return anSet.simF[x[0]]; }).map(function(x){ return x[0]; });
+        var SC = { d: 1.5, s: 5, h: 0.8, v: 0.3, t: 0.8 }, r0 = {};
+        use.forEach(function(k){ r0[k] = F[k][ri]; });
+        var sim = new Float32Array(N), vals = [];
+        for (i = 0; i < N; i++){ if (!wat[i]) continue; var d2 = 0; for (var q = 0; q < use.length; q++){ var kk = use[q], dd = (F[kk][i] - r0[kk]) / SC[kk]; d2 += dd * dd; } sim[i] = use.length ? Math.exp(-d2) : 0; vals.push(sim[i]); }
+        vals.sort(function(a, b){ return b - a; });
+        var th = Math.max(0.3, vals[Math.floor(vals.length * 0.04)] || 1);
+        var rx = ri % A.W, ry = Math.floor(ri / A.W), away = 60 / A.cell;
+        for (i = 0; i < N; i++) if (sim[i] >= th){ M[i] = 1; n++; }          // (the spot's own surroundings lit too)
+        // the list: the areas ranked by their most similar place (tiny ones count a bit less),
+        // not the spot itself (anything within 60 m of it)
+        var blobs = anBlobs(M, A.W, A.H).filter(function(c){ return !c.some(function(j){ var xx = j % A.W - rx, yy = Math.floor(j / A.W) - ry; return xx * xx + yy * yy <= away * away; }); })
+          .map(function(c){ var best = c[0]; c.forEach(function(j){ if (sim[j] > sim[best]) best = j; }); return { c: c, i: best, s: sim[best] * Math.min(1, c.length / 6) }; })
+          .sort(function(a, b){ return b.s - a.s; }).slice(0, 5);
+        labels.push({ i: ri, cls: 'simRef', txt: '' });
+        list = blobs.map(function(b, k){
+          var p = anImgOfCell(b.i), ll = imgPxToLatLon(p.x, p.y), dm = null;
+          if (lastOwnLatLon && lastFix && lastFix.onMap) dm = haversineKm(lastOwnLatLon.lat, lastOwnLatLon.lon, ll.lat, ll.lon) * 1000;
+          labels.push({ i: b.i, cls: 'sim', txt: String(k + 1) });
+          return { n: k + 1, x: p.x, y: p.y, dep: dep[b.i], slope: A.slope[b.i], dm: dm };
+        });
+        text = use.length ? 'Som <b>' + escHtml(ref.name || 'platsen') + '</b>' + (anSet.simR ? ' (inom ' + anSet.simR + ' m)' : '') + ': ' +
+          use.map(function(k){ return k === 'd' ? fmtDepth(r0.d) + ' m' : k === 's' ? 'lutning ' + Math.round(r0.s) + ' %' : k === 'h' ? (r0.h >= 0.5 ? AN_HARD[Math.min(3, Math.round(r0.h) - 1)] || 'mjuk' : 'botten ej mätt').toLowerCase() + ' botten'
+            : k === 'v' ? 'växter ' + Math.round(r0.v * 100) + ' %' : (r0.t >= 0.6 ? 'grynna' : r0.t <= -0.8 ? 'håla' : 'jämn botten'); }).join(', ').replace('botten ej mätt botten', 'botten ej mätt')
+          : 'Välj minst en sak att jämföra.';
+      }
+    } else {                                             // presets (rules of thumb)
+      var hn, e2;
+      if (m === 'abborre'){
+        hn = anHardNear(A, 20);
+        for (i = 0; i < N; i++) if (wat[i] && dep[i] >= 2 && dep[i] <= 6 && (A.slope[i] >= 8 || (A.tpi[i] >= 0.6 && A.shore[i] >= 15)) && (!hn || hn[i])){ M[i] = 1; n++; }
+      } else if (m === 'gadda'){
+        e2 = anVegEdge(A, 1, 4); var wd = anWindEdge(A);
+        for (i = 0; i < N; i++) if (e2.edge[i] || (wd && wd.mask[i])){ M[i] = 1; n++; }
+      } else if (m === 'gos'){
+        hn = anHardNear(A, 15);
+        for (i = 0; i < N; i++) if (wat[i] && dep[i] >= 4 && dep[i] <= 10 && A.slope[i] >= 8 && (!hn || hn[i])){ M[i] = 1; n++; }
+      }
+      var pr = AN_PRESETS.filter(function(x){ return x[0] === m; })[0];
+      text = '<b>' + pr[1] + ':</b> ' + pr[2] + ' · ' + anPct(n) + ' av sjön';
+      note = 'Tumregler från vanliga fiskeråd – inte fångstdata. Fisken läser inte kartan 🙂';
+    }
+    var empty = (m === 'similar' && !list) || (m === 'wind' && !n && !note);
+    anRes = { M: empty ? null : M, n: n, labels: labels, list: list, text: text, note: note, color: AN_COLORS[m], ver: anVer };
+    anRender();
+  }
+  function anPct(n){ var w = 0, A = AN; for (var i = 0; i < A.N; i++) w += A.wat[i]; var p = 100 * n / Math.max(1, w); return (p < 1 && p > 0 ? '<1' : Math.round(p)) + ' %'; }
+  function escHtml(t){ return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  // draw: toned down outside, lit (+ a light edge) inside; per screen point like the lee
+  function anDraw(){
+    var dpr = window.devicePixelRatio || 1, W = stage.clientWidth, H = stage.clientHeight;
+    var on = anShow && anSet.mode && anRes && anRes.M;
+    anCanvas.classList.toggle('on', !!on); anSatCanvas.classList.toggle('on', !!on);
+    anLabelsEl.style.display = on ? '' : 'none';
+    if (!on) return;
+    [anCanvas, anSatCanvas].forEach(function(c){ if (c.width !== Math.round(W * dpr) || c.height !== Math.round(H * dpr)){ c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); } });
+    anCtx.setTransform(dpr, 0, 0, dpr, 0, 0); anCtx.clearRect(0, 0, W, H);
+    anSatCtx.setTransform(dpr, 0, 0, dpr, 0, 0); anSatCtx.clearRect(0, 0, W, H);
+    var STEP = viewStep(W, H), vw = Math.ceil(W / STEP), vh = Math.ceil(H / STEP), A = AN, R = anRes;
+    var key = originX.toFixed(1) + ',' + originY.toFixed(1) + ',' + scale.toFixed(5) + ',' + W + 'x' + H + ',' + R.ver + ',' + anSet.dim + ',' + STEP;
+    if (!anView || anView.key !== key){
+      var cv = anView ? anView.cv : document.createElement('canvas'), sv = anView ? anView.sv : document.createElement('canvas');
+      [cv, sv].forEach(function(c){ if (c.width !== vw || c.height !== vh){ c.width = vw; c.height = vh; } });
+      var c2 = cv.getContext('2d'), im = c2.createImageData(vw, vh), px = im.data, col = R.color;
+      var s2 = sv.getContext('2d'), sm = s2.createImageData(vw, vh), sp = sm.data;
+      var dimA = Math.round(255 * anSet.dim), satA = Math.round(255 * Math.min(1, anSet.dim + 0.2));
+      var N2 = vw * vh, f1 = new Float32Array(N2), f2 = new Float32Array(N2), fl = new Float32Array(N2);
+      for (var y = 0; y < vh; y++) for (var x = 0; x < vw; x++){
+        var ix = (x * STEP + 1 - originX) / scale, iy = (y * STEP + 1 - originY) / scale;
+        var fx = ix / IMG_W * A.W - 0.5, fy = iy / IMG_H * A.H - 0.5, x0 = Math.floor(fx), y0 = Math.floor(fy), tx = fx - x0, ty = fy - y0;
+        var a1 = 0, a2 = 0, al = 0, q = y * vw + x;
+        for (var dy = 0; dy <= 1; dy++) for (var dx = 0; dx <= 1; dx++){
+          var cx = x0 + dx, cy = y0 + dy, wt = (dx ? tx : 1 - tx) * (dy ? ty : 1 - ty);
+          if (cx < 0 || cy < 0 || cx >= A.W || cy >= A.H) continue;
+          var ci = cy * A.W + cx, cval = R.M[ci];
+          if (cval === 1) a1 += wt; else if (cval === 2) a2 += wt;
+          if (A.lake[ci]) al += wt;
+        }
+        f1[q] = a1; f2[q] = a2; fl[q] = al;
+      }
+      // signed distance (in steps) from the 0,5 edge of a field: value / slope
+      function sd(f, q, x, y){
+        var gx = (f[x < vw - 1 ? q + 1 : q] - f[x > 0 ? q - 1 : q]) / 2, gy = (f[y < vh - 1 ? q + vw : q] - f[y > 0 ? q - vw : q]) / 2;
+        return (f[q] - 0.5) / (Math.sqrt(gx * gx + gy * gy) + 1e-3);
+      }
+      function cl(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
+      var c1col = col, c2col = anSet.mode === 'tops' ? [60, 200, 255] : [70, 200, 60], c2a = anSet.mode !== 'tops' ? 60 : 105;
+      for (var y2 = 0; y2 < vh; y2++) for (var x2 = 0; x2 < vw; x2++){
+        var q2 = y2 * vw + x2, k = q2 * 4;
+        var d1 = sd(f1, q2, x2, y2), d2 = sd(f2, q2, x2, y2), dl = sd(fl, q2, x2, y2);
+        var k1 = cl(0.5 + d1), k2 = cl(0.5 + d2), k0 = cl(1 - k1 - k2);
+        // "over" in order: toned down, the found area(s), their white edge, the dashed shore
+        var r = 0, g = 0, b = 0, a = 0;
+        function over(cr, cg, cb, ca){ ca /= 255; r = cr * ca + r * (1 - ca); g = cg * ca + g * (1 - ca); b = cb * ca + b * (1 - ca); a = ca + a * (1 - ca); }
+        over(6, 14, 20, dimA * k0);
+        if (c1col) over(c1col[0], c1col[1], c1col[2], 105 * k1);
+        over(c2col[0], c2col[1], c2col[2], c2a * k2);
+        var LW = edgeW(STEP);
+        var e = Math.max(cl(1 - Math.abs(d1) / LW), cl(1 - Math.abs(d2) / LW));
+        if (e > 0) over(255, 255, 255, 180 * e);        // (as thin and soft as the lee's edge)
+        var es = cl(1 - Math.abs(dl) / (LW * 0.8));
+        if (es > 0) over(255, 255, 255, 128 * es);      // the shore: a solid line, 50 %
+        if (a > 0){ px[k] = r / a; px[k + 1] = g / a; px[k + 2] = b / a; px[k + 3] = a * 255; }
+        sp[k] = 128; sp[k + 1] = 128; sp[k + 2] = 128; sp[k + 3] = satA * k0;
+      }
+      c2.putImageData(im, 0, 0); s2.putImageData(sm, 0, 0);
+      anView = { key: key, cv: cv, sv: sv };
+    }
+    anCtx.imageSmoothingEnabled = true; anSatCtx.imageSmoothingEnabled = true;
+    anCtx.drawImage(anView.cv, 0, 0, vw * STEP, vh * STEP);
+    anSatCtx.drawImage(anView.sv, 0, 0, vw * STEP, vh * STEP);
+    // labels (tops/holes, similar places)
+    Array.prototype.forEach.call(anLabelsEl.children, function(el){
+      var p = anImgOfCell(+el.getAttribute('data-i'));
+      el.style.left = (originX + p.x * scale) + 'px'; el.style.top = (originY + p.y * scale) + 'px';
+    });
+  }
+  function anRender(){
+    // chips + controls + result, labels; then draw
+    var m = anSet.mode;
+    anBtn.classList.toggle('on', !!m);
+    document.getElementById('anClear').disabled = !m;      // (only when there's something to clear)
+    Array.prototype.forEach.call(document.querySelectorAll('#anChips button[data-m], #anPresets button[data-m]'), function(b){ b.classList.toggle('on', b.getAttribute('data-m') === m); });
+    var R = anRes, res = document.getElementById('anResult');
+    if (!m) res.innerHTML = 'Välj vad du vill hitta. Det som matchar lyser, resten av kartan tonas ner.';
+    else if (!R) res.innerHTML = 'Djupdatan laddas…';
+    else if (R.wait) res.innerHTML = 'Hämtar bottendata…';
+    else {
+      res.innerHTML = R.text + (R.note ? '<span class="note">' + R.note + '</span>' : '') + (!anShow ? '<span class="note">(Dold – slå på Kartanalys i Filter.)</span>' : '') +
+        (R.list ? '<div class="anList">' + (R.list.length ? R.list.map(function(it){
+          return '<div class="li"><span class="n">' + it.n + '</span>' + fmtDepth(it.dep) + ' m · lutning ' + Math.round(it.slope) + ' %' +
+            '<button type="button" data-go="' + it.n + '">' + (it.dm != null ? fmtMeters(it.dm) + ' · ' : '') + 'Åk hit ›</button></div>';
+        }).join('') : '<div class="li">Inga tydliga träffar.</div>') + '</div>' : '');
+    }
+    anLabelsEl.innerHTML = (R && R.labels ? R.labels : []).map(function(l){
+      return '<div class="anLbl ' + l.cls + '" data-i="' + l.i + '">' + escHtml(l.txt) + '</div>';
+    }).join('');
+    anControls();
+    anView = null; anDraw();
+  }
+  // a slider with one handle: label, the bar, the value
+  function anRangeRow(id, label, min, max, step, val, fmt){
+    return '<div class="anRange"><label for="' + id + '">' + label + '</label><input type="range" id="' + id + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + val + '"><output>' + fmt(val) + '</output></div>';
+  }
+  // a depth range: one bar in the depth colours (like the legend) with two handles
+  function anDualRow(key){
+    var ticks = (LAKE.legendTicks || ['0 m', AN_DMAX + ' m']).map(function(t){ return '<span>' + t.replace(' m', '') + '</span>'; });
+    ticks[ticks.length - 1] = ticks[ticks.length - 1].replace('</span>', ' m</span>');
+    return '<div class="anDual" data-k="' + key + '"><div class="anTrack" style="background:' + ((MAP_STYLES[0] && MAP_STYLES[0].legend) || '#2a86c9') + '"></div>' +
+      '<div class="anSel"></div><div class="anKnob" data-h="0"></div><div class="anKnob" data-h="1"></div></div><div class="anTicks">' + ticks.join('') + '</div>';
+  }
+  var AN_DUAL = { depth: ['lo', 'hi'], steep: ['elo', 'ehi'], hard: ['hlo', 'hhi'] };
+  function anDualPlace(){
+    Array.prototype.forEach.call(document.querySelectorAll('#anControls .anDual'), function(d){
+      var k = AN_DUAL[d.getAttribute('data-k')], a = anSet[k[0]] / AN_DMAX * 100, z = anSet[k[1]] / AN_DMAX * 100;
+      d.children[1].style.left = a + '%'; d.children[1].style.width = Math.max(0, z - a) + '%';
+      d.children[2].style.left = a + '%'; d.children[3].style.left = z + '%';
+    });
+  }
+  var anCtlMode = '#';
+  function anControls(){
+    var m = anSet.mode, el = document.getElementById('anControls');
+    var want = m + (m === 'similar' ? anSpots().length : '');
+    if (anCtlMode === want){ anDualPlace(); return; }            // (don't rebuild while dragging)
+    anCtlMode = want;
+    var fm = function(v){ return fmtDepth(+v) + ' m'; }, h = '';
+    if (m === 'depth') h = anDualRow('depth');
+    else if (m === 'steep') h = anRangeRow('anSlope', 'Lutning', 4, 30, 1, anSet.slope, function(v){ return v + ' %'; }) + anDualRow('steep');
+    else if (m === 'tops') h = anRangeRow('anTopP', 'Grynnor', 0.3, 2.5, 0.1, anSet.topP, function(v){ return '≥ ' + fmtDepth(+v) + ' m'; }) +
+      anRangeRow('anHoleP', 'Hålor', 0.3, 2.5, 0.1, anSet.holeP, function(v){ return '≥ ' + fmtDepth(+v) + ' m'; });
+    else if (m === 'hard') h = anRangeRow('anHmin', 'Minst', 1, 4, 1, anSet.hmin, function(v){ return AN_HARD[v - 1]; }) + anDualRow('hard');
+    else if (m === 'similar'){
+      var sp = anSpots();
+      h = sp.length ? '<div class="anRefRow"><select id="anRefSel" aria-label="Plats att jämföra med">' + sp.map(function(w){
+        return '<option value="' + escHtml(w.id) + '"' + (w.id === anSet.ref ? ' selected' : '') + '>' + escHtml(w.name || 'Plats') + (isMine(w) ? '' : ' (' + escHtml(w.by || '') + ')') + '</option>'; }).join('') + '</select>' +
+        '<button type="button" id="anRefGo" title="Visa platsen på kartan">Gå till</button></div>' +
+        '<div class="anLbl2">Jämför</div><div class="anFactors" id="anSimF">' + AN_SIMF.map(function(x){ return '<button type="button" data-f="' + x[0] + '" class="' + (anSet.simF[x[0]] ? 'on' : '') + '">' + x[1] + '</button>'; }).join('') + '</div>' +
+        '<div class="anLbl2">Område runt platsen</div><div class="anSeg" id="anSimR">' + AN_SIMR.map(function(r){ return '<button type="button" data-r="' + r + '" class="' + (anSet.simR === r ? 'on' : '') + '">' + (r ? r + ' m' : 'Bara platsen') + '</button>'; }).join('') + '</div>' +
+        '<div class="anNote"><b>Bara platsen</b> jämför det som finns precis under pinnen (en ruta på ca 5 × 5 m). <b>25–100 m</b> jämför i stället <b>snittet</b> inom den radien – både runt din plats och runt varje ställe i sjön. Då hittar du liknande <i>omgivningar</i> (t.ex. en kant med växter), inte bara en likadan punkt.<br>Listan: områdena som är mest lika, bäst först (inte slump). Platsen själv lyser men står inte i listan.</div>' : '';
+    }
+    el.innerHTML = h;
+    anDualPlace();
+  }
+  var anDimSet = document.getElementById('anDimSet');
+  anDimSet.value = anSet.dim; document.getElementById('anDimOut').textContent = Math.round(anSet.dim * 100) + ' %';
+  anDimSet.addEventListener('input', function(){
+    anSet.dim = parseFloat(anDimSet.value); document.getElementById('anDimOut').textContent = Math.round(anSet.dim * 100) + ' %';
+    anSave(); anView = null; anDraw();
+  });
+  var anTimer = null;
+  function anLater(){ anSave(); clearTimeout(anTimer); anTimer = setTimeout(anCompute, 60); }
+  document.getElementById('anControls').addEventListener('input', function(e){
+    var t = e.target, v = parseFloat(t.value);
+    var map = { anSlope: 'slope', anTopP: 'topP', anHoleP: 'holeP', anHmin: 'hmin' };
+    if (!map[t.id]) return;
+    anSet[map[t.id]] = v;
+    t.nextSibling.textContent = t.id === 'anSlope' ? v + ' %' : t.id === 'anHmin' ? AN_HARD[v - 1] : '≥ ' + fmtDepth(v) + ' m';
+    anLater();
+  });
+  // dragging a handle of a depth range (either handle; they can't cross)
+  var anDrag = null;
+  document.getElementById('anControls').addEventListener('pointerdown', function(e){
+    var d = e.target.closest ? e.target.closest('.anDual') : null; if (!d) return;
+    e.preventDefault(); e.stopPropagation();
+    var r = d.getBoundingClientRect(), k = AN_DUAL[d.getAttribute('data-k')];
+    var v = Math.max(0, Math.min(AN_DMAX, (e.clientX - r.left) / r.width * AN_DMAX));
+    var h = e.target.classList.contains('anKnob') ? +e.target.getAttribute('data-h') : (Math.abs(v - anSet[k[0]]) <= Math.abs(v - anSet[k[1]]) ? 0 : 1);
+    anDrag = { d: d, k: k, h: h, id: e.pointerId };
+    try { d.setPointerCapture(e.pointerId); } catch(err){}
+    anDragTo(e.clientX);
+  });
+  function anDragTo(x){
+    var r = anDrag.d.getBoundingClientRect(), k = anDrag.k;
+    var v = Math.round(Math.max(0, Math.min(AN_DMAX, (x - r.left) / r.width * AN_DMAX)) * 2) / 2;
+    if (anDrag.h === 0) anSet[k[0]] = Math.min(v, anSet[k[1]]); else anSet[k[1]] = Math.max(v, anSet[k[0]]);
+    anDualPlace(); anLater();
+  }
+  document.getElementById('anControls').addEventListener('pointermove', function(e){ if (anDrag && e.pointerId === anDrag.id){ e.preventDefault(); anDragTo(e.clientX); } });
+  function anDragEnd(e){ if (anDrag && e.pointerId === anDrag.id) anDrag = null; }
+  document.getElementById('anControls').addEventListener('pointerup', anDragEnd);
+  document.getElementById('anControls').addEventListener('pointercancel', anDragEnd);
+  document.getElementById('anControls').addEventListener('click', function(e){
+    if (e.target.id === 'anRefGo'){
+      var wp = anSpots().filter(function(w){ return w.id === anSet.ref; })[0];
+      if (wp){ showAnPanel(false); centerOnWaypoint(wp); }
+      return;
+    }
+    var f = e.target.closest ? e.target.closest('#anSimF button') : null, r = e.target.closest ? e.target.closest('#anSimR button') : null;
+    if (f){ var k = f.getAttribute('data-f'); anSet.simF[k] = anSet.simF[k] ? 0 : 1; f.classList.toggle('on', !!anSet.simF[k]); anLater(); }
+    if (r){ anSet.simR = +r.getAttribute('data-r'); Array.prototype.forEach.call(r.parentNode.children, function(b){ b.classList.toggle('on', b === r); }); anLater(); }
+  });
+  document.getElementById('anControls').addEventListener('change', function(e){
+    if (e.target.id === 'anRefSel'){ anSet.ref = e.target.value; anSave(); anCompute(); }
+  });
+  function anSetMode(m){
+    anSet.mode = anSet.mode === m ? null : m; anSave(); anCtlMode = '#';
+    if (anSet.mode && !anShow){ anShow = true; toggleAnEl.checked = true; try { localStorage.setItem(SHOW_AN_KEY, '1'); } catch(e){} }
+    anCompute();
+  }
+  document.getElementById('anChips').innerHTML = AN_MODES.map(function(x){ return '<button type="button" data-m="' + x[0] + '">' + x[1] + '</button>'; }).join('');
+  document.getElementById('anPresets').innerHTML = AN_PRESETS.map(function(x){ return '<button type="button" data-m="' + x[0] + '">' + x[1] + '</button>'; }).join('') +
+    '<span class="anSep"></span><button type="button" id="anClear" class="anClr" disabled>✕ Rensa</button>';
+  anPanel.addEventListener('click', function(e){
+    var b = e.target.closest ? e.target.closest('button[data-m]') : null;
+    if (b){ anSetMode(b.getAttribute('data-m')); return; }
+    var g = e.target.closest ? e.target.closest('button[data-go]') : null;
+    if (g && anRes && anRes.list){ var it = anRes.list[+g.getAttribute('data-go') - 1]; if (it){ showAnPanel(false); startNav('Liknande #' + it.n, it.x, it.y); } }
+  });
+  anPanel.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
+  sheetSwipe(anPanel, function(){ showAnPanel(false); });
+  function anLikeSpot(wp){
+    anSet.mode = 'similar'; anSet.ref = wp.id; anSave(); anCtlMode = '#';
+    if (!anShow){ anShow = true; toggleAnEl.checked = true; try { localStorage.setItem(SHOW_AN_KEY, '1'); } catch(e){} }
+    showAnPanel(true); anCompute();
+  }
+  function showAnPanel(open){
+    if (open && !anPanel.classList.contains('show') && anPanel._resetSize) anPanel._resetSize();
+    anPanel.classList.toggle('show', open);
+    if (open){ if (typeof toggleMsgPop === 'function') toggleMsgPop(false); anCtlMode = '#'; if (!anRes) anCompute(); else anRender(); }
+  }
+  anBtn.addEventListener('click', function(e){ e.stopPropagation(); showAnPanel(!anPanel.classList.contains('show')); });
+  document.getElementById('anClose').addEventListener('click', function(){ showAnPanel(false); });
+  document.getElementById('anClear').addEventListener('click', function(){ anSet.mode = null; anSave(); anCtlMode = '#'; anCompute(); });
+  anLabelsEl.addEventListener('pointerdown', function(e){ e.stopPropagation(); if (e.target.closest && e.target.closest('.anLbl')) mapPointerDown(e, true); });
+  anLabelsEl.addEventListener('click', function(e){
+    var l = e.target.closest ? e.target.closest('.anLbl') : null; if (!l) return;
+    e.stopPropagation();
+    if (mapDraggedJustNow()) return;
+    var p = anImgOfCell(+l.getAttribute('data-i'));
+    if (l.classList.contains('sim') && anRes && anRes.list){ var it = anRes.list[+l.textContent - 1]; if (it){ startNav('Liknande #' + it.n, it.x, it.y); return; } }
+    showAnPanel(false); setProbe({ x: p.x, y: p.y });
+  });
+  var toggleAnEl = document.getElementById('toggleAnalysis');
+  toggleAnEl.checked = anShow;
+  toggleAnEl.addEventListener('change', function(){
+    anShow = toggleAnEl.checked;
+    try { localStorage.setItem(SHOW_AN_KEY, anShow ? '1' : '0'); } catch(e){}
+    anRender();
+  });
+  // (the depth grid arrives a moment after start: work it out then)
+  var anWaitGrid = setInterval(function(){ if (loadDepthGrid()){ clearInterval(anWaitGrid); if (anSet.mode) anCompute(); else anRender(); } }, 400);
+  window.__ffAnalysis = function(){ var R = anRes; return { mode: anSet.mode, show: anShow, ready: !!(R && R.M), n: R ? R.n : 0, labels: R && R.labels ? R.labels.length : 0,
+    list: R && R.list ? R.list.length : 0, text: R ? (R.text || '').replace(/<[^>]+>/g, '') : '' }; };
+

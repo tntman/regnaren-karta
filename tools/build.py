@@ -2,7 +2,9 @@
 
     py -3 tools/build.py          (python3 tools/build.py elsewhere)
 
-src/app.html      the app (CSS + HTML + JS) -- edit this
+src/css/*.css     the app's styles     | edit these; each folder is glued together
+src/html/*.html   the page's parts     | in name order into ONE page, as before
+src/js/*.js       the script           | (see src/README.md)
 src/head.html     the <head> (title, icons, manifest, Firebase SDK)
 src/sw.js         service worker (offline start)
 lakes/<id>/       one folder per lake: lake.json (name, geo-reference, depth
@@ -26,7 +28,13 @@ for d in sorted(os.listdir(os.path.join(ROOT, 'lakes'))):
         lakes.append(lk)
 lakes.sort(key=lambda l: (l.get('order', 0 if l['id'] == 'regnaren' else 100), l['name']))
 
-page = rd('src', 'app.html'); head = rd('src', 'head.html')
+def parts(sub, ext):
+    d = os.path.join(ROOT, 'src', sub)
+    return ''.join(rd('src', sub, f) for f in sorted(os.listdir(d)) if f.endswith(ext))
+# one page, as before: <style> all css </style>, the html, <script> all js (ONE function scope) </script>
+page = ('<style>\n' + parts('css', '.css') + '</style>\n\n' + parts('html', '.html')
+        + '<script>\n' + parts('js', '.js') + '</script>\n')
+head = rd('src', 'head.html')
 i0 = page.index('<style>'); i1 = page.index('</style>') + len('</style>')
 style, rest = page[i0:i1], page[i1:]
 rest = rest.replace('__LAKES__', json.dumps(lakes, ensure_ascii=False, separators=(',', ':')))

@@ -1,0 +1,198 @@
+  <header>
+    <div class="kicker" id="lakeTitle">REGNAREN</div>
+    <div id="headerUserRow"><div id="headerUser"></div><button type="button" id="wakeBadge" hidden aria-label="Skärmen hålls tänd – tryck för att stänga av" title="Skärmen hålls tänd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg></button></div>
+    <button type="button" id="wxChip" aria-expanded="false" aria-controls="wxCard" aria-label="Väder och vind"></button>
+    <div id="ltPill" role="status" aria-live="polite"><svg viewBox="0 0 24 24"><path d="M13.5 2 5 13.5h5.5L9 22l9.5-12.5H13z" fill="#FFF08C" stroke="#3a1d00" stroke-width="1.4" stroke-linejoin="round"></path></svg><div><b id="ltPillMain"></b><small id="ltPillSub"></small></div></div>
+    <div id="farAway"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11z"></path><circle cx="12" cy="10" r="2.2"></circle></svg><span class="farText" id="farText"></span></div>
+    <div id="netBadge"><span class="netDot"></span><span class="netText" id="netText"></span></div>
+  </header>
+  <div id="wxCard" role="dialog" aria-label="Väder vid Regnaren">
+    <div class="wxHead"><span id="wxTitle">Väder vid Regnaren</span><em id="wxSrc"></em><button id="wxClose" type="button" aria-label="Stäng">✕</button></div>
+    <div id="wxBody"></div>
+  </div>
+  <div id="measurePanel" role="region" aria-label="Mätverktyg">
+    <div class="mpText"><div class="mpMain" id="mpMain">Tryck på kartan</div><div class="mpSub" id="mpSub"></div></div>
+    <button id="mpUndo" class="mpBtn" type="button" aria-label="Ångra senaste punkten"><svg class="mpIco" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"></path><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"></path></svg><span class="mpLbl">Ångra</span></button>
+    <button id="mpClear" class="mpBtn" type="button" aria-label="Rensa alla punkter"><svg class="mpIco" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M6 6l1 14h10l1-14"></path></svg><span class="mpLbl">Rensa</span></button>
+    <button id="mpClose" class="mpBtn mpClose" type="button" aria-label="Stäng mätverktyget" title="Stäng">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"></path></svg>
+    </button>
+  </div>
+
+  <div id="marker">
+    <div id="accRing"></div>
+    <div id="dotGlow"></div>
+    <div id="dotGlow2"></div>
+    <div id="dot"><span id="dotCenter"></span><svg id="dotArrow" viewBox="0 0 24 24"><path class="arrowHalo" d="M12 3.25l7 17.5-7-4.2-7 4.2z"></path><path class="arrowBody" d="M12 3.25l7 17.5-7-4.2-7 4.2z"></path></svg></div>
+  </div>
+
+  <div id="legend" data-contour="Djupkurvor var 1 m">
+    <div class="bar"></div>
+    <div class="ticks" id="legendTicks"><span>0 m</span><span>5 m</span><span>10 m+</span></div>
+  </div>
+
+  <div id="scalebar">
+    <div class="line" id="scaleLine" style="width:80px;"></div>
+    <span class="scaleRow"><span id="scaleLabel">100 m</span><span id="zoomLabel"></span></span>
+  </div>
+
+  <div id="speedPill" aria-live="off"><span class="spV" id="speedVal">0,0</span><span class="spU">kn</span><span class="spDepth"><span class="spSep"></span><span class="spV" id="depthVal">–</span><span class="spU">m</span></span></div>
+
+  <button id="locateBtn" aria-label="Centrera på min position" title="Centrera på min position" disabled>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="3"></circle>
+      <path d="M12 2v3M12 19v3M2 12h3M19 12h3"></path>
+      <circle cx="12" cy="12" r="8"></circle>
+    </svg>
+  </button>
+
+  <button id="anBtn" aria-label="Kartanalys – hitta ställen" title="Kartanalys – hitta ställen">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="M15.5 15.5 21 21"></path><path d="M7.5 11.5c1-2 2-2 3-1s2 1 3-1"></path></svg>
+  </button>
+  <button id="msgBtn" aria-label="Snabbmeddelande" title="Snabbmeddelande">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"></path></svg>
+  </button>
+  <div id="msgPop" role="menu" aria-label="Skicka snabbmeddelande"></div>
+  <div id="msgOwn"><input id="msgOwnIn" type="text" autocomplete="off" enterkeyhint="send" aria-label="Egen text (högst 15 tecken)"><span id="msgOwnN">0/15</span><button type="button" id="msgOwnGo" aria-label="Skicka">➤</button></div>
+  <div id="msgToast" role="status"></div>
+  <div id="msgCard" role="dialog" aria-label="Meddelande"><div class="grab"><button type="button" id="msgCardClose" class="gripX" aria-label="Stäng">✕</button></div>
+    <div id="msgCardWho"></div><div id="msgCardTxt"></div>
+    <div class="msgCardMeta"><span id="msgCardWhen"></span><span id="msgCardLeft"></span></div>
+    <div class="msgCardBar"><i id="msgCardBar"></i></div>
+    <div class="msgCardBtns"><button type="button" id="msgCardGo" class="a">➤ Åk hit</button><button type="button" id="msgCardDrop">Dölj för mig</button></div>
+  </div>
+  <div id="anPanel" role="dialog" aria-label="Kartanalys">
+    <div class="grab"><button type="button" id="anClose" class="gripX" aria-label="Stäng">✕</button></div>
+    <div class="anChips" id="anChips"></div>
+    <div class="anSub">Förinställt (tumregler)</div>
+    <div class="anChips pre" id="anPresets"></div>
+    <div id="anControls"></div>
+    <div id="anResult"></div>
+  </div>
+  <div id="wakeNote" role="status"><button type="button" id="wakeNoteClose" aria-label="Stäng">✕</button>
+    <b>☀ Håll skärmen tänd är avstängd</b>
+    <span>Den håller telefonen vaken medan appen är öppen (drar mer batteri). Du kan slå på den igen i <b>Filter</b>.</span></div>
+  <div id="ltAlarm" role="alertdialog"><b id="ltAlarmMain"></b><small id="ltAlarmSub"></small><button type="button" id="ltAlarmOk">OK</button></div>
+
+  <button id="measureBtn" aria-label="Mätverktyg" title="Mät sträcka och restid">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17 17 3l4 4L7 21z"></path><path d="M7 13l2 2M10 10l2 2M13 7l2 2"></path></svg>
+  </button>
+
+  <button id="addHereBtn" aria-label="Lägg till fiskeplats på min position" title="Lägg till fiskeplats på min position" disabled>
+    <span class="addPin"><span class="addPinHead"></span></span>
+    <span class="addBadge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg></span>
+  </button>
+
+  <div id="topRight">
+  <button type="button" id="mapTypeBtn" aria-label="Byt kartläge (håll inne för alla)" title="Tryck: byt kartläge · Håll inne: alla kartlägen">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M12 3 2.5 8 12 13l9.5-5z"></path><path d="M2.5 12.5 12 17.5l9.5-5"></path><path d="M2.5 17 12 22l9.5-5"></path></svg>
+  </button>
+  <div id="mapTypeToast" aria-live="polite"></div>
+  <div id="mapTypePop" role="dialog" aria-label="Välj kartläge"></div>
+  <div id="visPanel">
+    <button type="button" class="visMoreBtn" id="visMoreBtn" aria-expanded="false" aria-controls="visMore">
+      <span class="visMoreIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"></path><circle cx="15" cy="7" r="2.2"></circle><circle cx="9" cy="17" r="2.2"></circle></svg><span class="visMoreDot"></span></span>
+      <span class="visLabel">Filter</span>
+      <span class="visChevronBox"><svg class="visChevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg></span>
+    </button>
+    <div id="visMore" hidden>
+     <div class="visCol">
+      <div class="visHead">Visa markeringar</div>
+      <label class="visRow">
+        <span class="visSwatch visSwatch--person" id="swatchMine"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"></path></svg></span>
+        <span class="visLabel">Mina</span>
+        <span class="toggle">
+          <input type="checkbox" id="toggleMine" checked>
+          <span class="toggleTrack"><span class="toggleThumb"></span></span>
+        </span>
+      </label>
+      <label class="visRow">
+        <span class="visSwatch visSwatch--person" id="swatchOthers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.4"></circle><path d="M2.5 20c0-3.6 2.9-6.2 6.5-6.2s6.5 2.6 6.5 6.2"></path><circle cx="17" cy="9" r="2.8"></circle><path d="M16 13.9c3.3 0 5.5 2.4 5.5 5.6"></path></svg></span>
+        <span class="visLabel">Andras</span>
+        <span class="toggle">
+          <input type="checkbox" id="toggleOthers" checked>
+          <span class="toggleTrack"><span class="toggleThumb"></span></span>
+        </span>
+      </label>
+      <div class="visSeparator"></div>
+      <label class="visRow">
+        <span class="visSwatch visSwatch--boat"><span class="boatSwatchDot"></span></span>
+        <span class="visLabel">Båtar</span>
+        <span class="toggle">
+          <input type="checkbox" id="toggleBoats" checked>
+          <span class="toggleTrack"><span class="toggleThumb"></span></span>
+        </span>
+      </label>
+      <label class="visRow" id="visRowNames" hidden>
+        <span class="visSwatch visSwatch--name">Aa</span>
+        <span class="visLabel">Namn</span>
+        <span class="toggle">
+          <input type="checkbox" id="toggleNames" checked>
+          <span class="toggleTrack"><span class="toggleThumb"></span></span>
+        </span>
+      </label>
+      <div class="visSeparator"></div>
+      <label class="visRow">
+        <span class="visSwatch visSwatch--track"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="18" r="2"></circle><path d="M7 18h5a3.5 3.5 0 0 0 0-7H9.5a3.5 3.5 0 0 1 0-7H19"></path></svg></span>
+        <span class="visLabel">Spår</span>
+        <span class="toggle">
+          <input type="checkbox" id="toggleTrack" checked>
+          <span class="toggleTrack"><span class="toggleThumb"></span></span>
+        </span>
+      </label>
+      <label class="visRow">
+        <span class="visSwatch visSwatch--wx"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h11a3 3 0 1 0-3-3"></path><path d="M3 14h15a3 3 0 1 1-3 3"></path></svg></span>
+        <span class="visLabel">Väder</span>
+        <span class="toggle">
+          <input type="checkbox" id="toggleWeather" checked>
+          <span class="toggleTrack"><span class="toggleThumb"></span></span>
+        </span>
+      </label>
+      <label class="visRow">
+        <span class="visSwatch visSwatch--wx"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h9"></path><path d="M3 12h14"></path><path d="M6 16h8"></path><path d="M17 8l3 4-3 4"></path></svg></span>
+        <span class="visLabel">Vind och lä</span>
+        <span class="toggle">
+          <input type="checkbox" id="toggleWind">
+          <span class="toggleTrack"><span class="toggleThumb"></span></span>
+        </span>
+      </label>
+      <label class="visRow">
+        <span class="visSwatch visSwatch--wx"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 2 5 13.5h5.5L9 22l9.5-12.5H13z"></path></svg></span>
+        <span class="visLabel">Blixtar</span>
+        <span class="toggle">
+          <input type="checkbox" id="toggleLightning">
+          <span class="toggleTrack"><span class="toggleThumb"></span></span>
+        </span>
+      </label>
+      <label class="visRow">
+        <span class="visSwatch visSwatch--wx"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="M15.5 15.5 21 21"></path></svg></span>
+        <span class="visLabel">Kartanalys</span>
+        <span class="toggle">
+          <input type="checkbox" id="toggleAnalysis">
+          <span class="toggleTrack"><span class="toggleThumb"></span></span>
+        </span>
+      </label>
+      <label class="visRow">
+        <span class="visSwatch visSwatch--wx"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg></span>
+        <span class="visLabel">Håll skärmen tänd</span>
+        <span class="toggle">
+          <input type="checkbox" id="toggleWake">
+          <span class="toggleTrack"><span class="toggleThumb"></span></span>
+        </span>
+      </label>
+     </div>
+     <div class="visCol">
+      <div class="visHead">Typer</div>
+      <div id="visTypes"></div>
+     </div>
+    </div>
+  </div>
+  <div id="demoBanner">
+    <button id="demoBannerClose" type="button" aria-label="Stäng av Demo Mode" title="Stäng av Demo Mode"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
+    <div class="demoBannerTitle">DEMO MODE</div>
+    <div class="demoBannerSub">Använd ej<br>på vattnet!</div>
+    <div class="demoBannerTimer" id="demoBannerTimer"></div>
+  </div>
+  <div id="ltRadar" aria-hidden="true"><canvas id="ltRadarCv" width="200" height="200"></canvas><span>30 km runt · FMI</span></div>
+  </div>
+

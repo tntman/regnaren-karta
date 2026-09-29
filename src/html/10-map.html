@@ -1,0 +1,22 @@
+<div id="app">
+  <div id="stage">
+    <div id="world"><img id="mapImg" alt="Djupkarta över sjön Regnaren" draggable="false"></div>
+    <div id="detailLayer" aria-hidden="true"></div>
+    <canvas id="windLayer" aria-hidden="true"></canvas>
+    <canvas id="anSat" aria-hidden="true"></canvas>
+    <canvas id="anLayer" aria-hidden="true"></canvas>
+    <canvas id="ltLayer" aria-hidden="true"></canvas>
+    <div id="mapLoading">Laddar karta…</div>
+  </div>
+
+  <svg id="trackLayer" aria-hidden="true"><path class="trkUnder"></path><path class="trkLine"></path></svg>
+  <svg id="routeLayer" aria-hidden="true"><polyline class="rtUnder"></polyline><polyline class="rtLine"></polyline></svg>
+  <div id="waypoints"></div>
+  <svg id="measureLayer" aria-hidden="true"><polyline class="mlUnder"></polyline><polyline class="mlLine"></polyline><g class="mlPts"></g><text class="mlLabel"></text></svg>
+  <div id="anLabels"></div>
+  <div id="boatsLayer"></div>
+  <div id="msgLayer"></div>
+  <div id="probe" aria-live="polite"><div class="pbRip pbRip2"></div><div class="pbRip"></div><div class="pbLine"></div><div class="pbWt"><svg viewBox="0 0 16 22" width="9" height="12"><path d="M8 1.5c1 0 1.6.8 1.6 1.7v1.6c3 1.4 4.9 5.2 4.9 9.2 0 3.9-2.9 6.5-6.5 6.5S1.5 17.9 1.5 14c0-4 1.9-7.8 4.9-9.2V3.2c0-.9.6-1.7 1.6-1.7z" fill="#FFB23F" stroke="#0B2A3A" stroke-width="2"></path></svg></div><div class="pbTag"><span class="pbD" id="probeDepth"></span><span class="pbDiv"></span><span class="pbK" id="probeDist"><svg viewBox="0 0 24 24" width="9" height="9"><path d="M12 3l7 17-7-4-7 4z" fill="#FFB23F"></path></svg><span id="probeDistTxt"></span></span><span class="pbDiv pbDivT"></span><span class="pbT" id="probeTime"></span></div></div>
+  <div id="longPressRing"></div>
+  <div id="bottomFade"></div>
+

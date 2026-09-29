@@ -1,0 +1,132 @@
+  /* ---- knot meter (under the scale bar) ---- */
+  #speedPill{
+    position:absolute;left:14px;bottom:calc(env(safe-area-inset-bottom,0px) + 56px);z-index:20;
+    display:none;align-items:baseline;gap:4px;pointer-events:none;
+    background:var(--navy-glass);backdrop-filter:blur(6px);
+    border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:4px 10px;
+    box-shadow:0 4px 14px rgba(0,0,0,.35);font-variant-numeric:tabular-nums;
+  }
+  #speedPill.show{display:inline-flex;}
+  #speedPill .spDepth{display:inline-flex;align-items:baseline;gap:4px;}
+  #speedPill .spSep{align-self:center;width:1px;height:14px;background:rgba(255,255,255,.22);margin:0 4px;}
+  #speedPill.noDepth .spDepth{display:none;}
+  #speedPill .spV{font-size:16px;font-weight:700;color:var(--offwhite);}
+  #speedPill .spU{font-size:11px;color:var(--text-muted);}
+
+  /* ---- measuring tool ---- */
+  #measureBtn{
+    position:absolute;right:76px;bottom:calc(env(safe-area-inset-bottom,0px) + 86px);
+    z-index:22;width:44px;height:44px;border-radius:50%;
+    background:var(--navy-glass);backdrop-filter:blur(6px);
+    color:var(--offwhite);border:1px solid rgba(255,255,255,.16);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 4px 14px rgba(0,0,0,.35);-webkit-tap-highlight-color:transparent;
+  }
+  #measureBtn:active{transform:scale(.92);}
+  #measureBtn svg{width:21px;height:21px;}
+  #measureBtn.active{background:var(--amber);color:var(--navy);border-color:var(--amber);}
+  #measureLayer{position:absolute;left:0;top:0;width:100%;height:100%;z-index:15;pointer-events:none;overflow:visible;}
+  /* depth probe ("lodlina"): tap the map -> depth + distance there; tap again -> gone */
+  #probe{position:absolute;left:0;top:0;z-index:18;pointer-events:none;display:none;font-family:inherit;}
+  #probe.show{display:block;}
+  #probe .pbRip{position:absolute;left:0;top:0;width:18px;height:6px;border:1.2px solid rgba(255,255,255,.9);border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 0 .8px rgba(0,0,0,.35);}
+  #probe .pbRip2{width:28px;height:10px;border-color:rgba(255,255,255,.45);}
+  #probe .pbLine{position:absolute;left:0;bottom:0;width:1.5px;height:34px;transform:translateX(-50%);transform-origin:50% 0;background:repeating-linear-gradient(to bottom,#fff 0 3px,transparent 3px 5.5px);filter:drop-shadow(0 0 1px rgba(0,0,0,.85));}
+  #probe .pbWt{position:absolute;left:0;top:-3px;transform:translate(-50%,-50%);}
+  #probe .pbWt svg{display:block;}
+  #probe .pbTag{position:absolute;left:0;bottom:34px;transform:translateX(-50%);white-space:nowrap;display:flex;align-items:center;gap:7px;padding:3px 8px;
+    background:rgba(11,42,58,.96);color:#F4F7F8;border:1.2px solid rgba(255,255,255,.25);border-radius:9px;box-shadow:0 4px 12px rgba(0,0,0,.5);}
+  #probe .pbD{font-weight:800;font-size:15px;line-height:1.05;}
+  #probe .pbD small{font-size:10px;font-weight:700;color:#FFB23F;}
+  #probe .pbDiv{width:1px;height:16px;background:rgba(255,255,255,.22);}
+  #probe .pbK{display:flex;align-items:center;gap:3px;font-size:9.5px;color:#B7C4C9;font-weight:600;}
+  #probe.noDist .pbDiv, #probe.noDist .pbK{display:none;}
+  /* time to get there (by water, at your speed) */
+  #probe .pbT{font-size:10.5px;font-weight:800;color:#FFB23F;}
+  #probe.noDist .pbT, #probe.noTime .pbT, #probe.noDist .pbDivT, #probe.noTime .pbDivT{display:none;}
+  #probe .pbD.unk{font-size:12px;}
+  /* the route there by water (from your boat to the lead line) */
+  #routeLayer{position:absolute;left:0;top:0;width:100%;height:100%;z-index:14;pointer-events:none;overflow:visible;}
+  #routeLayer polyline{fill:none;stroke-linecap:round;stroke-linejoin:round;}
+  #routeLayer .rtUnder{stroke:rgba(0,0,0,.55);stroke-width:6;}
+  #routeLayer .rtLine{stroke:#FFB23F;stroke-width:3;stroke-dasharray:9 7;}
+  /* the lead drops in */
+  #probe.drop .pbLine{animation:pbLine .28s ease-out;}
+  #probe.drop .pbWt{animation:pbWt .28s ease-out;}
+  #probe.drop .pbTag{animation:pbTag .22s ease-out;}
+  #probe.drop .pbRip{animation:pbRip .45s ease-out;}
+  @keyframes pbLine{from{transform:translateX(-50%) scaleY(0);}to{transform:translateX(-50%) scaleY(1);}}
+  @keyframes pbWt{from{transform:translate(-50%,calc(-50% - 34px));}to{transform:translate(-50%,-50%);}}
+  @keyframes pbTag{from{opacity:0;transform:translateX(-50%) translateY(4px);}to{opacity:1;transform:translateX(-50%);}}
+  @keyframes pbRip{0%,55%{opacity:0;transform:translate(-50%,-50%) scale(.4);}100%{opacity:1;transform:translate(-50%,-50%) scale(1);}}
+  @media (prefers-reduced-motion:reduce){#probe.drop .pbLine,#probe.drop .pbWt,#probe.drop .pbTag,#probe.drop .pbRip{animation:none;}}
+  /* your route today ("Spår"): under the fishing spots and boats */
+  #trackLayer{position:absolute;left:0;top:0;width:100%;height:100%;z-index:13;pointer-events:none;overflow:visible;}
+  #trackLayer path{fill:none;stroke-linecap:round;stroke-linejoin:round;}
+  #trackLayer{opacity:.6;} /* "Spårets synlighet" in Settings (default 60 %) */
+  .satSlider.trkSlider::-webkit-slider-runnable-track{background:linear-gradient(to right, rgba(255,138,31,.15), #FF8A1F);}
+  .satSlider.trkSlider::-moz-range-track{background:linear-gradient(to right, rgba(255,138,31,.15), #FF8A1F);}
+  #trackLayer path{stroke-dasharray:7 5;}
+  #trackLayer .trkUnder{stroke:rgba(10,20,26,.8);stroke-width:3.4;}
+  #trackLayer .trkLine{stroke:#FF8A1F;stroke-width:1.8;}
+  #trackLayer.off{display:none;}
+  #measureLayer .mlUnder{fill:none;stroke:rgba(0,0,0,.55);stroke-width:6;stroke-linecap:round;stroke-linejoin:round;}
+  #measureLayer .mlLine{fill:none;stroke:var(--amber);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:9 6;}
+  #measureLayer .mlPt{fill:#fff;stroke:#14181C;stroke-width:2;}
+  #measureLayer .mlPt.start{fill:var(--amber);}
+  #measureLayer .mlLabel{font:700 12px Calibri,"Segoe UI",system-ui,sans-serif;fill:#fff;stroke:rgba(4,12,17,.85);stroke-width:3.5px;paint-order:stroke;}
+  #measurePanel{
+    position:absolute;left:50%;transform:translateX(-50%);
+    bottom:calc(env(safe-area-inset-bottom,0px) + 146px);z-index:24;
+    width:min(calc(100vw - 28px), 420px);
+    display:none;align-items:center;gap:8px;
+    background:var(--navy);border:1px solid rgba(232,163,61,.5);border-radius:14px;
+    padding:9px 9px 9px 14px;box-shadow:0 6px 20px rgba(0,0,0,.45);
+  }
+  #measurePanel.show{display:flex;}
+  .mpText{flex:1 1 auto;min-width:0;}
+  .mpMain{font-size:16px;font-weight:700;color:var(--offwhite);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .mpSub{font-size:11.5px;color:var(--text-muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .mpBtn{
+    flex:0 0 auto;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.07);color:var(--offwhite);
+    border-radius:9px;padding:8px 10px;font-size:13px;font-weight:600;font-family:inherit;
+    -webkit-tap-highlight-color:transparent;cursor:pointer;
+  }
+  .mpBtn:disabled{opacity:.35;}
+  .mpIco{display:none;width:16px;height:16px;}
+  .mpBtn:active{transform:scale(.95);}
+  .mpClose{width:34px;height:34px;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+  .mpClose svg{width:15px;height:15px;}
+
+  #addHereBtn{
+    position:absolute;right:18px;
+    bottom:calc(env(safe-area-inset-bottom,0px) + 84px);
+    z-index:22;width:50px;height:54px;padding:0;
+    background:transparent;border:none;
+    -webkit-tap-highlight-color:transparent;
+  }
+  #addHereBtn .addPin{
+    position:absolute;left:7px;top:4px;width:36px;height:36px;
+    transform:rotate(-45deg);
+    border-radius:50% 50% 50% 0;
+    background:var(--t-mark);border:3px solid #fff;
+    box-shadow:inset 0 0 0 1.5px rgba(0,0,0,.85), 0 0 0 1.5px rgba(0,0,0,.8), 0 4px 14px rgba(0,0,0,.5);
+    transition:transform .12s ease;
+  }
+  #addHereBtn:active .addPin{transform:rotate(-45deg) scale(.9);}
+  #addHereBtn .addPinHead{
+    position:absolute;left:50%;top:46%;width:26px;height:26px;
+    transform:translate(-50%,-50%) rotate(45deg);
+    display:flex;align-items:center;justify-content:center;
+  }
+  #addHereBtn .addPinHead svg{width:16px;height:16px;display:block;color:var(--ink);}
+  #addHereBtn .addPinHead .fishEye{fill:var(--offwhite);}
+  #addHereBtn .addBadge{
+    position:absolute;right:0;top:0;width:20px;height:20px;border-radius:50%;
+    background:var(--amber);color:var(--navy);border:2px solid var(--navy);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 2px 6px rgba(0,0,0,.4);
+  }
+  #addHereBtn .addBadge svg{width:11px;height:11px;display:block;}
+  #addHereBtn:disabled{opacity:.4;}
+

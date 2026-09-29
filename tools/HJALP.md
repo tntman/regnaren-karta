@@ -13,10 +13,10 @@ animeringarna igen.
 
 | Vad | Var |
 |---|---|
-| Sidans text och avsnitt (HTML) | `src/app.html`, `<div id="helpView">` (sök `id="help-`) |
-| Utseende (CSS) | `src/app.html`, `/* ---- Hjälp` i `<style>` |
-| Logik (öppna/stänga, nyheter, installera-flikar, prick) | `src/app.html`, `/* ---- Hjälp ----` i skriptet |
-| "Nytt i appen" | `HELP_NEWS` i `src/app.html` |
+| Sidans text och avsnitt (HTML) | `src/html/40-help.html`, `<div id="helpView">` (sök `id="help-`) |
+| Utseende (CSS) | `src/css/60-help.css` (+ sökrutan i `70-features.css`) |
+| Logik (öppna/stänga, nyheter, installera-flikar, prick) | `src/js/30-help.js` |
+| "Nytt i appen" | `HELP_NEWS` i `src/js/30-help.js` |
 | Animeringarna | `docs/help/<namn>.webp` (görs av verktyget, redigeras inte för hand) |
 | Verktyget som spelar in animeringarna | `tools/help_anim.py` |
 | Den ritade Safari-telefonen (Installera) | `tools/help_install_anim.html` |
@@ -70,7 +70,7 @@ Filip väljer det (påminn honom när listan har ≥ 5 rader eller är > 1 vecka
 4. Bygg + kör testerna.
 
 ### Ett nytt avsnitt
-1. I `src/app.html`, inne i `#helpBody`, kopiera ett `<section class="helpCard" id="help-…">`.
+1. I `src/html/40-help.html`, inne i `#helpBody`, kopiera ett `<section class="helpCard" id="help-…">`.
    Rubrik `<h3><span class="hIc">EMOJI</span>Titel</h3>`, sedan animering och `<ul>` med
    korta punkter. `<b class="hA">…</b>` = orange (det man ska göra, t.ex. "Tryck").
    Flera animeringar i ett avsnitt: rubrik över varje med `<p class="helpSub">…</p>`.
@@ -84,7 +84,7 @@ Filip väljer det (påminn honom när listan har ≥ 5 rader eller är > 1 vecka
 ```
 py -3 tools/help_anim.py              (alla, ~5 min)
 py -3 tools/help_anim.py lodet fara   (bara de namngivna)
-py -3 tools/build.py                  (efteråt – storleken skrivs i src/app.html)
+py -3 tools/build.py                  (efteråt – storleken skrivs i src/html/40-help.html)
 ```
 Titta alltid på resultatet innan det publiceras (t.ex. några bilder ur varje fil) –
 särskilt att inget hamnat på land och att inget ligger i vägen.

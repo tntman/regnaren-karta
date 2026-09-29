@@ -267,7 +267,7 @@ djup = färgens rang (ej kalibrerat) × 10 m; utjämning σ 4,5 px; Sobel-lutnin
 - [x] Max zoom 18,6 för alla sjöar (beslutat).
 - [x] Zoom 18 bara för Djupfärger + C-MAP original (`top_styles`) för ALLA sjöar;
       övriga kartlägen förstoras från zoom 17 (beslutat – storlek ~150 MB per sjö annars).
-- [x] Samma max zoom för alla sjöar (18,6) – byggt (`MAX_ZOOM` i app.html).
+- [x] Samma max zoom för alla sjöar (18,6) – byggt (`MAX_ZOOM` i src/js/10-core.js).
 - [x] Regnaren ombyggd med djupkarta på zoom 17 (53 avlästa siffror, 90 % inom
       0,11 m; tidigare zoom 16: 47 siffror, 0,14 m) och lager 14–18. Filer v4
       (Vågsfjärden v3). Regnaren 139 MB, Vågsfjärden 99 MB i docs/lakes/.
