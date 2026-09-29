@@ -44,6 +44,10 @@
     font-family:Calibri,"Segoe UI",system-ui,-apple-system,sans-serif;
   }
   #app{position:fixed;inset:0;overflow:hidden;}
+  /* iOS home-screen app, upright: the page comes out ~a status bar too short (an empty
+     band at the bottom, the buttons too high) -- stretch the app down over it (fixIosGap) */
+  html.iosGap #app, html.iosGap #sheetBackdrop, html.iosGap #wpSheet, html.iosGap #nameBackdrop,
+  html.iosGap #boatInfoBackdrop, html.iosGap #pinBackdrop{bottom:calc(-1 * var(--ios-gap, 0px));}
 
   #stage{
     position:absolute;inset:0;
@@ -1706,6 +1710,25 @@
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   }
 
+  /* iOS home-screen app ("Lägg till på hemskärmen"), upright: iOS gives the page a
+     window about a status bar shorter than the screen (black-translucent status bar +
+     viewport-fit=cover), so an empty band is left at the bottom and everything placed
+     from the bottom sits too high. Measured, not guessed: the gap = screen height minus
+     the window height; the app is stretched down by that much. Only in the home-screen
+     app and upright -- Safari/Chrome and landscape are left alone (they look right),
+     and if iOS stops doing it the gap is 0 and nothing changes. */
+  function fixIosGap(){
+    var de = document.documentElement, gap = 0;
+    if (window.navigator.standalone && window.innerHeight > window.innerWidth && window.screen){
+      gap = Math.round(Math.max(window.screen.height, window.screen.width) - window.innerHeight);
+      if (gap < 8 || gap > 120) gap = 0;          // (nothing to fix / not that bug)
+    }
+    de.classList.toggle('iosGap', gap > 0);
+    de.style.setProperty('--ios-gap', gap + 'px');
+    return gap;
+  }
+  fixIosGap();
+
   /* ---------- pan / zoom viewer -------------------------------------- */
   var appEl = document.getElementById('app');
   var stage = document.getElementById('stage');
@@ -1990,6 +2013,7 @@
   }
 
   function refreshLayout(){
+    fixIosGap();
     var cx = (stageW/2 - originX) / scale, cy = (stageH/2 - originY) / scale;
     computeBounds();
     scale = Math.max(minScale, Math.min(maxScale, scale));

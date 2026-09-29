@@ -35,6 +35,10 @@ All text i appen är på svenska. Svara Filip på svenska, kort och tydligt.
 - **iOS hemskärmsapp laddar om sidan vid rotation.** Allt tillstånd måste överleva:
   inställningar i localStorage, öppna vyer/halvgjort i `saveRotationState()`/
   `restoreRotationUi()` (sessionStorage). Nya UI-tillstånd ska läggas till där.
+- **iOS hemskärmsapp, stående:** fönstret blir ~en statusrad kortare än skärmen (tom rand
+  längst ner, knappar för högt). `fixIosGap()` mäter glappet (skärmhöjd − innerHeight) och
+  sträcker `#app` + sheet/backdrops nedåt (`html.iosGap`, `--ios-gap`). Bara `navigator.standalone`
+  + stående – webbläsare och liggande orörda (ser rätt ut där, Filips krav). test_standalone.
 - **Ordning/hoisting:** många `var` deklareras långt ner i skriptet. Sätt checkbox-
   tillstånd som beror på sådana variabler i `boot()` (se toggleDepth/toggleTrack).
 - **Firebase-kvot** (gratis: 50k reads/dygn). Positioner delas var 20:e s vid rörelse
