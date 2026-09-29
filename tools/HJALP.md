@@ -42,7 +42,7 @@ animeringarna igen.
 | Blixtar (`help-blixtar`) | `blixtar` | `s_blixtar` |
 | Kartanalys (`help-analys`) | `analys` | `s_analys` |
 | Åk hit (`help-akhit`) | `akhit` | `s_akhit` |
-| Snabbmeddelanden (`help-meddelanden`) | `meddelanden` (skicka + tryck på Calles → rutan → Åk hit) | `s_meddelanden` |
+| Snabbmeddelanden (`help-meddelanden`) | `meddelanden` (skicka + Calle och Pia i samma båt = en bubbla → tryck på Calles rad → rutan → Åk hit) | `s_meddelanden` |
 | Håll skärmen tänd (`help-skarm`) | – (bara text) | – |
 | Filter (`help-filter`) | `filter` | `s_filter` |
 | Loggen & spår (`help-logg`) | `logg` | `s_logg` |

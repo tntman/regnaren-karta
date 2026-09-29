@@ -2020,6 +2020,7 @@
         <div class="helpAnim"><img loading="lazy" width="432" height="713" src="help/kartan.webp" alt="Zooma och flytta kartan"></div>
         <ul>
           <li><b class="hA">Dra</b> för att flytta, <b class="hA">nyp</b> eller <b class="hA">dubbeltryck</b> för att zooma.</li>
+          <li>Det går att dra kartan även om fingret börjar på en plats, båt eller pratbubbla – bara ett tryck (utan att dra) öppnar den.</li>
           <li>Ju närmare du zoomar, desto fler djupkurvor och djupsiffror (från C-MAP Genesis). Nere till vänster: t.ex. "Zoom 15,3 lager 15".</li>
           <li>Färgskalan nere till vänster går från 0 m till sjöns maxdjup. Samma färg = samma djup i alla sjöar.</li>
           <li>Byt sjö i menyn ☰ (Regnaren, Sjösjön, Vågsfjärden).</li>
@@ -2053,6 +2054,7 @@
         <ul>
           <li><b class="hA">Tryck på kartan</b> – lodet visar djupet där.</li>
           <li>Sträckan dit <b>sjövägen</b> (rutten ritas runt uddar och öar) och restiden – med din fart, eller marschfarten när du står still (Inställningar).</li>
+          <li>Hittas ingen väg sjövägen visas en prickad linje rakt dit och sträckan "fågelvägen".</li>
           <li>Tryck på lodet igen för att ta bort det.</li>
         </ul>
       </section>
@@ -2070,8 +2072,10 @@
         <div class="helpAnim"><img loading="lazy" width="432" height="935" src="help/andra.webp" alt="Ändra och ta bort en plats"></div>
         <ul>
           <li><b class="hA">Tryck</b> på en av dina platser: byt typ eller namn och tryck <b>Spara</b> – eller <b>Ta bort</b>.</li>
-          <li>Rutan visar vad som finns under platsen: <b>djup, lutning, botten (hårdhet), växter</b> och om det är en topp eller håla, och hur långt från land.</li>
-          <li>Andras platser är mindre och bara färgade. Trycker du på dem ser du vem, när och hur långt bort.</li>
+          <li>Rutan visar vem som sparat platsen, när och hur långt bort, och vad som finns under den: <b>djup, lutning, botten (hårdhet)</b> och <b>växter</b>.</li>
+          <li>Knapparna längst ner: <b>➤ Åk hit</b>, <b>🔎 Liknande</b> (liknande ställen i Kartanalys), <b>Ta bort</b> och <b>Spara</b>.</li>
+          <li>Rutorna nertill: <b class="hA">dra i strecket</b> överst för att göra dem större eller mindre, <b class="hA">snärta ner</b> eller tryck <b>✕</b> för att stänga.</li>
+          <li>Andras platser är mindre och bara färgade. Trycker du på dem ser du vem, typen, när och hur långt bort.</li>
         </ul>
       </section>
 
@@ -2130,12 +2134,12 @@
         <div class="helpAnim"><img loading="lazy" width="432" height="935" src="help/analys.webp" alt="Kartanalys"></div>
         <ul>
           <li><b class="hA">Tryck</b> på förstoringsglaset nere till höger. Välj vad du vill hitta – det som matchar lyser, resten av kartan tonas ner.</li>
-          <li><b>Djup</b> – ett djupintervall (dra i reglagen). <b>Branta kanter</b> – där botten sluttar mest, valfritt djup. <b>Toppar &amp; hålor</b> – grynnor mitt i sjön och gropar: hur mycket en topp reser sig över den lägsta "sadeln" runt den (grunda hyllor längs land räknas inte); reglagen ställer hur många meter. Tryck på en etikett för lodet.</li>
-          <li><b>Växter</b> – där ekolodet sett växtlighet. <b>Hård botten</b> – välj hur hård och på vilket djup. <b>Vindkant</b> – stränder vinden blåser mot just nu. Toppar &amp; hålor har reglage för hur mycket högre/lägre än runt om.</li>
-          <li><b>Liknande</b> – välj en fiskeplats (eller <b>🔎 Hitta liknande</b> i platsens ruta) och vad som jämförs: djup, lutning, botten, växter, topp/håla. <b>Bara platsen</b> = det som finns under pinnen; <b>25–100 m</b> = snittet inom den radien (liknande omgivningar). Platsen själv får en rosa ring (<b>Gå till</b> visar den), listan visar de mest lika områdena, bäst först – med <b>Åk hit</b>.</li>
-          <li>Hur mycket resten av kartan tonas ner ställer du i <b>Inställningar</b>. Dra panelen nedåt för att göra den mindre (resten skrollar), snärta eller dra hela vägen ner för att stänga.</li>
+          <li><b>Djup</b> – ett djupintervall (dra i reglagen). <b>Branta kanter</b> – där botten sluttar mest, valfritt djup. <b>Grynnor &amp; hålor</b> – grynnor mitt i sjön och gropar: hur mycket en grynna reser sig över den lägsta "sadeln" runt den (grunda hyllor längs land räknas inte); reglagen ställer hur många meter. För en håla markeras bara själva gropen. Etiketten visar djupet – tryck på den för lodet.</li>
+          <li><b>Växter</b> – där ekolodet sett växtlighet. <b>Hård botten</b> – välj hur hård och på vilket djup. <b>Vindkant</b> – stränder vinden blåser mot just nu. Sjöns kant syns som en tunn vit linje.</li>
+          <li><b>Liknande</b> – välj en fiskeplats (eller <b>🔎 Liknande</b> i platsens ruta) och vad som jämförs: djup, lutning, botten, växter, grynna/håla. <b>Bara platsen</b> = det som finns under pinnen; <b>25–100 m</b> = snittet inom den radien (liknande omgivningar). Platsen själv får en rosa ring (<b>Gå till</b> visar den), listan visar de mest lika områdena, bäst först – med <b>Åk hit</b>.</li>
+          <li>Hur mycket resten av kartan tonas ner ställer du i <b>Inställningar</b>. Dra i strecket överst för att göra panelen mindre (inne i den skrollar du), snärta ner eller tryck <b>✕</b> för att stänga.</li>
           <li><b>Abborre, Gädda, Gös</b> – förinställda kombinationer. De bygger på vanliga fiskeråd (tumregler), inte på fångster – se dem som tips.</li>
-          <li>Visa/dölj med <b>Kartanalys</b> i Filter. <b>Rensa</b> tar bort den.</li>
+          <li>Visa/dölj med <b>Kartanalys</b> i Filter. <b>Rensa</b> tar bort valen (grå när inget är valt). Kartanalys är avstängd när appen startas.</li>
         </ul>
       </section>
 
@@ -2143,8 +2147,9 @@
         <h3><span class="hIc">➤</span>Åk hit</h3>
         <div class="helpAnim"><img loading="lazy" width="432" height="798" src="help/akhit.webp" alt="Åk hit"></div>
         <ul>
-          <li><b class="hA">Tryck</b> på en fiskeplats och välj <b>➤ Åk hit</b> (eller Åk hit i Kartanalys).</li>
+          <li><b class="hA">Tryck</b> på en fiskeplats och välj <b>➤ Åk hit</b> (eller Åk hit i Kartanalys och Liknande-listan).</li>
           <li>Lodet släpps på platsen: djupet, sträckan sjövägen och restiden – rutten ritas runt uddar och öar och följer med när du åker.</li>
+          <li>Kartan zoomar så att du ser hela vägen: båten, rutten och målet.</li>
           <li>Tryck på lodet för att ta bort det.</li>
         </ul>
       </section>
@@ -2153,9 +2158,10 @@
         <h3><span class="hIc">💬</span>Snabbmeddelanden</h3>
         <div class="helpAnim"><img loading="lazy" width="432" height="935" src="help/meddelanden.webp" alt="Snabbmeddelanden"></div>
         <ul>
-          <li><b class="hA">Tryck</b> på pratbubblan längst ner och välj: Fisk!!!, Kommer, Åker in, Mat?, Allt är problem eller Bajs.</li>
+          <li><b class="hA">Tryck</b> på pratbubblan längst ner och välj: Fisk!!!, Kommer, Åker in, Mat?, Bajs – eller <b>Egen text</b> (högst 15 tecken, Enter skickar).</li>
           <li>Meddelandet syns vid din båt för alla i 15 minuter och tonas sakta bort. De första 5 minuterna snurrar en tunn regnbågskant runt det – då är det nytt.</li>
-          <li><b class="hA">Tryck</b> på ett meddelande: när det skrevs och när det försvinner, <b>➤ Åk hit</b> (lodet på båten) och <b>Dölj för mig</b> – eller <b>Ta bort</b> om det är ditt.</li>
+          <li>Skriver flera i samma båt samlas det i en bubbla – en rad per person, nyast överst.</li>
+          <li><b class="hA">Tryck</b> på ett meddelande (eller en rad): när det skrevs och när det försvinner, <b>➤ Åk hit</b> (lodet på båten) och <b>Dölj för mig</b> – eller <b>Ta bort</b> om det är ditt.</li>
           <li>Fungerar när du är vid sjön.</li>
         </ul>
       </section>
@@ -2176,7 +2182,6 @@
           <li><b>Mina</b> – dina fiskeplatser på kartan.</li>
           <li><b>Andras</b> – gruppens fiskeplatser (mindre, bara färgade).</li>
           <li><b>Båtar</b> – de andras båtar med namn.</li>
-          <li><b>Djup</b> – djupet under båten, bredvid farten nere till vänster.</li>
           <li><b>Spår</b> – linjen efter din båt.</li>
           <li><b>Väder</b> – väderraden under sjöns namn.</li>
           <li><b>Vind och lä</b> – vindens "kometer" och var det är lä.</li>
@@ -2184,7 +2189,7 @@
           <li><b>Kartanalys</b> – visar/döljer det du valt i Kartanalys (inställningen finns kvar).</li>
           <li><b>Håll skärmen tänd</b> – telefonen somnar inte medan appen är öppen.</li>
           <li><b>Typer</b> – visa/dölj Markering, Abborre, Gädda, Gös, Träffpunkt, Hem (Fara syns alltid).</li>
-          <li><b>Andras 50 % / 100 %</b> – hur tydligt andras platser syns.</li>
+          <li><b>Djup</b> under båten och <b>Andras 50 % / 100 %</b> finns i Inställningar.</li>
           <li>En orange prick på Filter betyder att något är dolt.</li>
         </ul>
       </section>
@@ -2202,7 +2207,7 @@
         <h3><span class="hIc">⚙️</span>Inställningar</h3>
         <div class="helpAnim"><img loading="lazy" width="432" height="935" src="help/installningar.webp" alt="Inställningar"></div>
         <ul>
-          <li>Namn, storlek på fiskeplatser, kartstil och kartans färg, spår, pulserande ring, marschfart, <b>åskvarning</b> (avstånd, ljud, vibration), hur mörk kartan blir i <b>Kartanalys</b>.</li>
+          <li>Namn, storlek på fiskeplatser, <b>hur tydligt andras platser syns</b> (50/100 %), <b>djupet under båten</b> (av/på), kartstil och kartans färg, spår, pulserande ring, marschfart, <b>åskvarning</b> (avstånd, ljud, vibration), hur mörk kartan blir i <b>Kartanalys</b>.</li>
           <li><b>Ladda ner sjön för offline</b> – gör det hemma innan en tur med dålig täckning.</li>
         </ul>
       </section>
@@ -4390,17 +4395,25 @@
      made by tools/help_anim.py (docs/help/*.webp; one that's missing is just left out). */
   // newest first. t: 'new' (NYTT), 'better' (BÄTTRE), 'fixed' (FIXAT)
   var HELP_NEWS = [
-    { d: '2026-09-29', t: 'better', x: 'Snabbmeddelanden: Fisk!!!, Mat?, Allt är problem, Bajs; tryck för tid och <b>Åk hit</b>; tonas bort, regnbågskant när de är nya' },
+    { d: '2026-09-29', t: 'better', x: 'Lättare att dra kartan – även när fingret börjar på en plats, båt eller bubbla' },
+    { d: '2026-09-29', t: 'better', x: '<b>Djup</b> under båten och <b>Andras 50/100 %</b> finns nu i Inställningar' },
+    { d: '2026-09-29', t: 'better', x: 'Flera meddelanden från samma båt samlas i en bubbla' },
+    { d: '2026-09-29', t: 'new',    x: 'Snabbmeddelanden: skriv en <b>egen text</b> (15 tecken)' },
+    { d: '2026-09-29', t: 'better', x: 'Kartanalys: "grynnor", hålor visar bara själva gropen, sjöns kant syns, mjukare kanter (även lä); börjar avstängd' },
+    { d: '2026-09-29', t: 'better', x: '<b>Åk hit</b> visar hela vägen på kartan' },
+    { d: '2026-09-29', t: 'fixed',  x: 'Lodet och Åk hit hittar vägen sjövägen till hela sjön' },
+    { d: '2026-09-29', t: 'better', x: 'Ny design på rutorna nertill: dra i strecket för storlek, ✕ i hörnet, knapparna <b>Åk hit · Liknande · Ta bort · Spara</b>' },
+    { d: '2026-09-29', t: 'better', x: 'Snabbmeddelanden: Fisk!!!, Mat?, Bajs; tryck för tid och <b>Åk hit</b>; tonas bort, regnbågskant när de är nya' },
     { d: '2026-09-29', t: 'new',    x: 'Ny typ av plats: <b>Hem</b> (hemmet eller bryggan)' },
-    { d: '2026-09-29', t: 'better', x: 'Toppar &amp; hålor räknas som hur mycket de reser sig över omgivningen – hittar grynnorna mitt i sjön' },
+    { d: '2026-09-29', t: 'better', x: 'Grynnor &amp; hålor räknas som hur mycket de reser sig över omgivningen – hittar grynnorna mitt i sjön' },
     { d: '2026-09-29', t: 'better', x: 'Liknande: platsen själv markerad med rosa ring, "Gå till", förklaring av område' },
     { d: '2026-09-29', t: 'better', x: 'Rutor nertill: dra = mindre, snärta = stäng. "Mörkare" för Kartanalys i Inställningar' },
     { d: '2026-09-29', t: 'new',    x: '<b>Sök</b> i hjälpen, och varje filter förklarat' },
-    { d: '2026-09-29', t: 'better', x: 'Platsens ruta visar vad som finns under: djup, lutning, botten, växter, topp/håla' },
-    { d: '2026-09-29', t: 'better', x: 'Kartanalys: djupreglage som skalan, mörkare/ljusare karta, reglage för toppar/hålor och hård botten, dra ner för att stänga' },
+    { d: '2026-09-29', t: 'better', x: 'Platsens ruta visar vad som finns under: djup, lutning, botten, växter' },
+    { d: '2026-09-29', t: 'better', x: 'Kartanalys: djupreglage som skalan, mörkare/ljusare karta, reglage för grynnor/hålor och hård botten, dra ner för att stänga' },
     { d: '2026-09-29', t: 'better', x: '"Hitta liknande" direkt från en plats – välj vad som jämförs och hur stort område' },
     { d: '2026-09-29', t: 'better', x: 'Knapparna nere till höger i ett jämnt rutnät; gul sol när skärmen hålls tänd; "Namn" borta ur Filter' },
-    { d: '2026-09-29', t: 'new',    x: '<b>Kartanalys</b> – hitta ställen: djup, branta kanter, toppar &amp; hålor, växtkant, hård botten, vindkant, liknande ställen, Abborre/Gädda/Gös' },
+    { d: '2026-09-29', t: 'new',    x: '<b>Kartanalys</b> – hitta ställen: djup, branta kanter, grynnor &amp; hålor, växtkant, hård botten, vindkant, liknande ställen, Abborre/Gädda/Gös' },
     { d: '2026-09-29', t: 'new',    x: '<b>Åk hit</b> – pil, sträcka och tid sjövägen till en plats' },
     { d: '2026-09-29', t: 'new',    x: '<b>Snabbmeddelanden</b> vid båten (15 min)' },
     { d: '2026-09-29', t: 'new',    x: '<b>Åskvarning</b> med ljud när blixten är nära' },

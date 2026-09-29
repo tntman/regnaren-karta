@@ -353,10 +353,12 @@ def s_installningar(p):
     tap_el(pg, rec, '#menuItemSettings', after=1000)
     tap_el(pg, rec, '#wpSizeSeg button[data-size="1"]', after=900)
     tap_el(pg, rec, '#wpSizeSeg button[data-size="0.7"]', after=700)
-    goal = pg.evaluate("(() => { var b = document.getElementById('settingsBody'), r = document.getElementById('offlineRow'); return r.getBoundingClientRect().top - b.getBoundingClientRect().top + b.scrollTop - 120; })()")
-    for i in range(1, 15):
-        pg.evaluate("t => document.getElementById('settingsBody').scrollTop = t", goal * i / 14); rec.snap()
-    rec.hold(2200)
+    goal = pg.evaluate("(() => { var b = document.getElementById('settingsBody'), r = document.getElementById('othersOpacitySeg'); return r.getBoundingClientRect().top - b.getBoundingClientRect().top + b.scrollTop - 330; })()")
+    for i in range(1, 19):                                          # past the offline download to Andras / Djup
+        pg.evaluate("t => document.getElementById('settingsBody').scrollTop = t", goal * i / 18); rec.snap()
+    rec.hold(900)
+    tap_el(pg, rec, '#othersOpacitySeg button[data-op="0.5"]', after=900)
+    tap_el(pg, rec, '#othersOpacitySeg button[data-op="1"]', after=1600)
     rec.save('installningar'); b.close()
 
 def s_analys(p):
@@ -393,16 +395,18 @@ def s_akhit(p):
     rec.save('akhit'); b.close()
 
 def s_meddelanden(p):
-    """the message button -> Hugg! -> a bubble at your boat; Calle answers; tap yours away"""
+    """the message button -> Fisk!!! -> a bubble at your boat; Calle and Pia (same boat) answer = one
+    bubble with a row each; tap Calle's row -> the panel -> Åk hit"""
     c = mix(P['B1'], P['B4'], 0.5)
-    b, ctx, pg = open_app(p, boats=[{'uid': 'kalle', 'name': 'Calle', 'lat': c[0], 'lon': c[1], 'ageMin': 0}])
+    b, ctx, pg = open_app(p, boats=[{'uid': 'kalle', 'name': 'Calle', 'lat': c[0], 'lon': c[1], 'ageMin': 0},
+                                    {'uid': 'pia', 'name': 'Pia', 'lat': c[0] + 0.00005, 'lon': c[1], 'ageMin': 0, 'msg': 'Kommer 🚤', 'msgAgeMin': 8}])
     check_water(pg, c)
     bring(pg, mix(ME, c, 0.5), (195, 470))
     rec = Rec(pg); rec.hold(600)
     tap_el(pg, rec, '#msgBtn', after=900)
     tap_el(pg, rec, '#msgPop button:has-text("Fisk")', after=1600)
     pg.evaluate("c => __addPos({ uid: 'kalle', name: 'Calle', lat: c[0], lon: c[1], msg: 'Mat? 🍔', msgAgeMin: 6 })", list(c)); rec.hold(2000)
-    tap_el(pg, rec, '.msgBub:not(.mine)', after=2000)                 # Calle's: when, how long left, Åk hit
+    tap_el(pg, rec, '.mLine:has-text("Calle")', after=2000)          # Calle's row: when, how long left, Åk hit
     tap_el(pg, rec, '#msgCardGo', after=2000)
     rec.save('meddelanden'); b.close()
 
