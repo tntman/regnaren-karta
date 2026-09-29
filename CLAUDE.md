@@ -112,7 +112,7 @@ All text i appen är på svenska. Svara Filip på svenska, kort och tydligt.
   Toppar & hålor, Växtkant, Hård botten, Vindkant, Liknande + förinställt Abborre/Gädda/Gös
   (tumregler från vanliga fiskeråd, INTE data). Djupreglage = stapel i djupfärgerna med två handtag
   (`anDualRow`), "Mörkare" (standard 72 %) + gråtoning (`#anSat`, mix-blend-mode saturation),
-  reglage för hård botten (hårdhet + djup), "Växter" = var det finns växter. **Toppar & hålor =
+  reglage för hård botten (hårdhet + djup), "Växter" = var det finns växter. **Grynnor & hålor (heter aldrig "toppar") =
   prominens** (`anDome`: h-dome med morfologisk rekonstruktion, bucket-kö i cm; land räknas HÖGT
   för toppar och LÅGT för hålor så grunda hyllor längs land inte blir toppar): "kapsyler" ≥ 0,25 m
   vars topp reser sig ≥ reglaget (standard 0,6 m / hålor 0,8 m). Samma färger/etiketter som förut.
@@ -139,8 +139,9 @@ All text i appen är på svenska. Svara Filip på svenska, kort och tydligt.
   väg: vit prickad linje rakt dit och "… fågelvägen" (`probeCrow`, `#routeLayer.crow`).
 - **UI-byggstenar** (bottenpanel + dra-för-att-stänga `sheetSwipe`, chips, reglage med två handtag,
   faktarutor, knapprutnätet nere till höger, notiser): **`tools/UI.md`** – följ den för nya delar.
-- **Snabbmeddelanden** (`#msgBtn` längst ner i mitten): Fisk!!!, Kommer, Åker in, Mat?, Allt är
-  problem, Bajs. Skickas med din position (`positions/<du>.msg/msgAt`), bubbla vid båten 15 min,
+- **Snabbmeddelanden** (`#msgBtn` längst ner i mitten): Fisk!!!, Kommer, Åker in, Mat?, Bajs + **Egen text**
+  (regnbåge som glider genom texten `.rbText`, pennan efter; liten ruta `#msgOwn`, max 15 tecken räknat
+  med Array.from – en emoji = 1, räknaren "n/15", Enter/➤ skickar, tryck utanför = stäng). Skickas med din position (`positions/<du>.msg/msgAt`), bubbla vid båten 15 min,
   tonas till ~45 %; de första 5 min en snurrande regnbågskant (`.msgRb`, SVG-mask av bubblans form
   inkl. flärpen – `msgRainbow`). Tryck = rutan `#msgCard` (skrivet kl, försvinner om, Åk hit = lodet
   på båten, Dölj för mig / Ta bort för egna). Bara vid sjön.

@@ -1387,6 +1387,21 @@
   #anPanel .grab, #msgCard .grab{position:sticky;}
   #routeLayer.crow .rtLine{stroke:#fff;stroke-width:2;stroke-dasharray:2 7;stroke-linecap:round;}
   #routeLayer.crow .rtUnder{stroke-width:5;}
+  /* "Egen text": a rainbow sliding slowly through the words, the pen after them */
+  .rbText{background:linear-gradient(90deg,#ff5f6d,#ffc371,#fff36b,#6bff95,#5ee7ff,#8f7bff,#ff6bd6,#ff5f6d);background-size:300% 100%;
+    -webkit-background-clip:text;background-clip:text;color:transparent;animation:rbSlide 6s linear infinite;}
+  @keyframes rbSlide{from{background-position:0% 50%;}to{background-position:300% 50%;}}
+  #msgPop .msgOwnBtn{display:inline-flex;align-items:center;gap:6px;border-color:rgba(255,195,113,.6);}
+  #msgPop .msgOwnBtn svg{width:15px;height:15px;color:#ffc371;flex:0 0 auto;}
+  @media (prefers-reduced-motion:reduce){.rbText{animation:none;}}
+  /* the small box for your own text (15 characters) */
+  #msgOwn{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 76px);transform:translateX(-50%);z-index:28;width:min(300px, calc(100vw - 28px));display:none;
+    align-items:center;gap:8px;background:rgba(11,42,58,.97);border:1.5px solid rgba(255,195,113,.7);border-radius:18px;padding:5px 5px 5px 14px;box-shadow:0 6px 18px rgba(0,0,0,.5);}
+  #msgOwn.show{display:flex;}
+  #msgOwnIn{flex:1;min-width:0;background:none;border:none;outline:none;color:#fff;font:inherit;font-size:16px;font-weight:700;caret-color:#ffc371;padding:6px 0;}
+  #msgOwnN{font-size:11px;color:var(--text-muted);min-width:32px;text-align:right;font-variant-numeric:tabular-nums;}
+  #msgOwnN.full{color:#ff8a80;}
+  #msgOwnGo{width:34px;height:34px;border-radius:50%;border:none;background:var(--amber);color:var(--navy);font-size:15px;font-weight:900;cursor:pointer;flex:0 0 auto;}
 </style>
 
 <div id="app">
@@ -1756,6 +1771,7 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"></path></svg>
   </button>
   <div id="msgPop" role="menu" aria-label="Skicka snabbmeddelande"></div>
+  <div id="msgOwn"><input id="msgOwnIn" type="text" autocomplete="off" enterkeyhint="send" aria-label="Egen text (högst 15 tecken)"><span id="msgOwnN">0/15</span><button type="button" id="msgOwnGo" aria-label="Skicka">➤</button></div>
   <div id="msgToast" role="status"></div>
   <div id="msgCard" role="dialog" aria-label="Meddelande"><div class="grab"><button type="button" id="msgCardClose" class="gripX" aria-label="Stäng">✕</button></div>
     <div id="msgCardWho"></div><div id="msgCardTxt"></div>
@@ -6732,11 +6748,11 @@
   var AN_KEY = lakeKey('ffmap_analysis_v1', 'analysis_v1');
   var SHOW_AN_KEY = 'ffmap_show_analysis_v1';
   var AN_MODES = [
-    ['depth', 'Djup'], ['steep', 'Branta kanter'], ['tops', 'Toppar & hålor'], ['veg', 'Växter'],
+    ['depth', 'Djup'], ['steep', 'Branta kanter'], ['tops', 'Grynnor & hålor'], ['veg', 'Växter'],
     ['hard', 'Hård botten'], ['wind', 'Vindkant'], ['similar', 'Liknande']
   ];
   var AN_PRESETS = [
-    ['abborre', 'Abborre', 'toppar och kanter på 2–6 m, gärna nära hård botten'],
+    ['abborre', 'Abborre', 'grynnor och kanter på 2–6 m, gärna nära hård botten'],
     ['gadda', 'Gädda', 'växtkanten på 1–4 m och vindkanten'],
     ['gos', 'Gös', 'branta kanter på 4–10 m nära hård botten']
   ];
@@ -6745,7 +6761,7 @@
                     wind: [255, 178, 63], similar: [255, 80, 160], abborre: [255, 210, 26], gadda: [120, 255, 120], gos: [255, 210, 26] };
   // the depth scale of the sliders = the legend's (0 .. the lake's max depth, same colours)
   var AN_DMAX = parseFloat(String((LAKE.legendTicks || []).slice(-1)[0] || '').replace(',', '.')) || Math.ceil(LAKE.depth.max || 20);
-  var AN_SIMF = [['d', 'Djup'], ['s', 'Lutning'], ['h', 'Botten'], ['v', 'Växter'], ['t', 'Topp/håla']];
+  var AN_SIMF = [['d', 'Djup'], ['s', 'Lutning'], ['h', 'Botten'], ['v', 'Växter'], ['t', 'Grynna/håla']];
   var AN_SIMR = [0, 25, 50, 100];                       // m round the spot (0 = right under it)
   // how far a top rises above the lowest "saddle" towards anything higher (the h-dome, by
   // morphological reconstruction): f in cm, marker = f - H grown back under f; dome = f - rec.
@@ -6967,10 +6983,10 @@
         .filter(function(b){ return b.p >= anSet.topP; }).sort(function(a, b){ return b.p - a.p; });
       var hb = anBlobs(capH, A.W, A.H).map(function(c){ var best = c[0], p = 0; c.forEach(function(j){ if (A.domeHole[j] > p) p = A.domeHole[j]; if (dep[j] > dep[best]) best = j; }); return { c: c, i: best, p: p }; })
         .filter(function(b){ return b.p >= anSet.holeP; }).sort(function(a, b){ return b.p - a.p; });
-      tb.forEach(function(b, k){ b.c.forEach(function(j){ M[j] = 1; }); if (k < 14) labels.push({ i: b.i, cls: '', txt: 'Topp ' + fmtDepth(dep[b.i]) + ' m' }); });
+      tb.forEach(function(b, k){ b.c.forEach(function(j){ M[j] = 1; }); if (k < 14) labels.push({ i: b.i, cls: '', txt: 'Grynna ' + fmtDepth(dep[b.i]) + ' m' }); });
       hb.forEach(function(b, k){ b.c.forEach(function(j){ M[j] = 2; }); if (k < 8) labels.push({ i: b.i, cls: 'hole', txt: 'Håla ' + fmtDepth(dep[b.i]) + ' m' }); });
-      text = '<b>' + tb.length + '</b> toppar/grynnor (reser sig minst ' + fmtDepth(anSet.topP) + ' m) · <b>' + hb.length + '</b> hålor (minst ' + fmtDepth(anSet.holeP) + ' m djupa)';
-      note = 'Hur mycket en topp reser sig över den lägsta "sadeln" runt den – grunda hyllor längs land räknas inte. Tryck på en etikett för lodet.';
+      text = '<b>' + tb.length + '</b> grynnor (reser sig minst ' + fmtDepth(anSet.topP) + ' m) · <b>' + hb.length + '</b> hålor (minst ' + fmtDepth(anSet.holeP) + ' m djupa)';
+      note = 'Hur mycket en grynna reser sig över den lägsta "sadeln" runt den – grunda hyllor längs land räknas inte. Tryck på en etikett för lodet.';
     } else if (m === 'veg'){
       for (i = 0; i < N; i++) if ((anBottom[i] & 8) && wat[i]){ M[i] = 1; n++; }
       text = n ? '<b>Växter</b> (vass, näckrosor, bottenväxter) · ' + anPct(n) + ' av sjön' : 'Ingen växtlighet mätt här.';
@@ -7014,7 +7030,7 @@
         });
         text = use.length ? 'Som <b>' + escHtml(ref.name || 'platsen') + '</b>' + (anSet.simR ? ' (inom ' + anSet.simR + ' m)' : '') + ': ' +
           use.map(function(k){ return k === 'd' ? fmtDepth(r0.d) + ' m' : k === 's' ? 'lutning ' + Math.round(r0.s) + ' %' : k === 'h' ? (r0.h >= 0.5 ? AN_HARD[Math.min(3, Math.round(r0.h) - 1)] || 'mjuk' : 'botten ej mätt').toLowerCase() + ' botten'
-            : k === 'v' ? 'växter ' + Math.round(r0.v * 100) + ' %' : (r0.t >= 0.6 ? 'topp' : r0.t <= -0.8 ? 'håla' : 'jämn botten'); }).join(', ').replace('botten ej mätt botten', 'botten ej mätt')
+            : k === 'v' ? 'växter ' + Math.round(r0.v * 100) + ' %' : (r0.t >= 0.6 ? 'grynna' : r0.t <= -0.8 ? 'håla' : 'jämn botten'); }).join(', ').replace('botten ej mätt botten', 'botten ej mätt')
           : 'Välj minst en sak att jämföra.';
       }
     } else {                                             // presets (rules of thumb)
@@ -7142,7 +7158,7 @@
     var fm = function(v){ return fmtDepth(+v) + ' m'; }, h = '';
     if (m === 'depth') h = anDualRow('depth');
     else if (m === 'steep') h = anRangeRow('anSlope', 'Lutning', 4, 30, 1, anSet.slope, function(v){ return v + ' %'; }) + anDualRow('steep');
-    else if (m === 'tops') h = anRangeRow('anTopP', 'Toppar', 0.3, 2.5, 0.1, anSet.topP, function(v){ return '≥ ' + fmtDepth(+v) + ' m'; }) +
+    else if (m === 'tops') h = anRangeRow('anTopP', 'Grynnor', 0.3, 2.5, 0.1, anSet.topP, function(v){ return '≥ ' + fmtDepth(+v) + ' m'; }) +
       anRangeRow('anHoleP', 'Hålor', 0.3, 2.5, 0.1, anSet.holeP, function(v){ return '≥ ' + fmtDepth(+v) + ' m'; });
     else if (m === 'hard') h = anRangeRow('anHmin', 'Minst', 1, 4, 1, anSet.hmin, function(v){ return AN_HARD[v - 1]; }) + anDualRow('hard');
     else if (m === 'similar'){
@@ -7298,7 +7314,7 @@
       var f = nw ? nv / nw : 0;
       veg = f < 0.05 ? 'Inga' : f < 0.3 ? 'Lite' : f < 0.7 ? 'En del' : 'Mycket'; vegSub = Math.round(f * 100) + ' % inom 25 m';
     }
-    var t = A.tpi[i], terr = t >= 0.6 ? '⛰ <b>Topp/grynna</b> – ' + fmtDepth(t) + ' m grundare än runt om' : t <= -0.8 ? '🕳 <b>Håla</b> – ' + fmtDepth(-t) + ' m djupare än runt om' : 'Jämn botten runt om';
+    var t = A.tpi[i], terr = t >= 0.6 ? '⛰ <b>Grynna</b> – ' + fmtDepth(t) + ' m grundare än runt om' : t <= -0.8 ? '🕳 <b>Håla</b> – ' + fmtDepth(-t) + ' m djupare än runt om' : 'Jämn botten runt om';
     el.innerHTML =
       '<div class="wpTile"><i>Djup</i><b>' + fmtDepth(dm) + ' m</b><small>' + (dm < 2 ? 'grunt' : dm < 6 ? 'medel' : 'djupt') + '</small></div>' +
       '<div class="wpTile"><i>Lutning</i><b>' + Math.round(sl) + ' %</b><small>' + slTxt + '</small></div>' +
@@ -7417,17 +7433,41 @@
      A small button at the bottom: tap -> the choices; tap one -> it shows as a bubble at
      your boat for everyone for 15 min (sent with your position, positions/<you>.msg).
      Tap your own bubble to take it back; tap someone else's to hide it for you. */
-  var MSG_TEXTS = ['Fisk!!! 🎣', 'Kommer 🚤', 'Åker in 🏠', 'Mat? 🍔', 'Allt är problem 😩', 'Bajs 💩'];
+  var MSG_TEXTS = ['Fisk!!! 🎣', 'Kommer 🚤', 'Åker in 🏠', 'Mat? 🍔', 'Bajs 💩'];
+  var MSG_OWN_MAX = 15;                // "Egen text": at most 15 characters (an emoji = 1)
   var MSG_NEW_MS = 5 * 60000;          // the first 5 min: a thin rainbow edge running round the bubble
   var MSG_MS = 15 * 60000;
   var ownMsg = null, msgHidden = {}, msgLayerEl = document.getElementById('msgLayer');
   var msgBtn = document.getElementById('msgBtn'), msgPop = document.getElementById('msgPop');
-  msgPop.innerHTML = MSG_TEXTS.map(function(t){ return '<button type="button" data-t="' + t + '">' + t + '</button>'; }).join('');
+  msgPop.innerHTML = MSG_TEXTS.map(function(t){ return '<button type="button" data-t="' + t + '">' + t + '</button>'; }).join('') +
+    '<button type="button" id="msgOwnBtn" class="msgOwnBtn"><b class="rbText">Egen text</b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l4-1L19 8l-3-3L5 16z"></path><path d="M14 6l3 3"></path></svg></button>';
+  var msgOwn = document.getElementById('msgOwn'), msgOwnIn = document.getElementById('msgOwnIn'), msgOwnN = document.getElementById('msgOwnN');
+  function openMsgOwn(open){
+    msgOwn.classList.toggle('show', open);
+    if (open){ msgOwnIn.value = ''; msgOwnCount(); msgOwnIn.focus(); } else msgOwnIn.blur();
+  }
+  function msgOwnCount(){
+    var ch = Array.from(msgOwnIn.value);
+    if (ch.length > MSG_OWN_MAX){ msgOwnIn.value = ch.slice(0, MSG_OWN_MAX).join(''); ch = ch.slice(0, MSG_OWN_MAX); }
+    msgOwnN.textContent = ch.length + '/' + MSG_OWN_MAX; msgOwnN.classList.toggle('full', ch.length >= MSG_OWN_MAX);
+  }
+  function sendMsgOwn(){
+    var t = msgOwnIn.value.replace(/\s+/g, ' ').trim();
+    openMsgOwn(false);
+    if (t) sendMsg(Array.from(t).slice(0, MSG_OWN_MAX).join(''));
+  }
+  msgOwnIn.addEventListener('input', msgOwnCount);
+  msgOwnIn.addEventListener('keydown', function(e){ if (e.key === 'Enter'){ e.preventDefault(); sendMsgOwn(); } if (e.key === 'Escape') openMsgOwn(false); });
+  document.getElementById('msgOwnGo').addEventListener('click', function(e){ e.stopPropagation(); sendMsgOwn(); });
+  msgOwn.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
+  msgOwn.addEventListener('click', function(e){ e.stopPropagation(); });
+  document.addEventListener('pointerdown', function(e){ if (msgOwn.classList.contains('show') && !msgOwn.contains(e.target)) openMsgOwn(false); });
   function toggleMsgPop(open){ msgPop.classList.toggle('show', open); msgBtn.classList.toggle('open', open); }
   msgBtn.addEventListener('click', function(e){ e.stopPropagation(); toggleMsgPop(!msgPop.classList.contains('show')); if (msgPop.classList.contains('show')) showAnPanel(false); });
   msgPop.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
   msgPop.addEventListener('click', function(e){
     e.stopPropagation();
+    if (e.target.closest && e.target.closest('#msgOwnBtn')){ toggleMsgPop(false); openMsgOwn(true); return; }
     var b = e.target.closest ? e.target.closest('button[data-t]') : null; if (!b) return;
     toggleMsgPop(false); sendMsg(b.getAttribute('data-t'));
   });
