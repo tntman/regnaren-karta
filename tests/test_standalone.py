@@ -1,4 +1,4 @@
-# iOS home-screen app: the status bar must be "black", not "black-translucent". With
+# iOS home-screen app: the status bar must be "default" (takes the theme-color), never "black-translucent". With
 # translucent, iOS 26 makes the web view a status bar too short -- a dead band at the
 # bottom that no CSS can reach (WebKit bug 301108; stretching the app over it only
 # clipped the buttons, tried 2026-09-29). And no leftover stretching code.
@@ -13,7 +13,7 @@ ME = (58.88951, 15.77759)
 with sync_playwright() as p:
     b, ctx, pg, errs = new_page(p, geo=ME, cfg={}, name='Filip')
     style = pg.get_attribute('meta[name="apple-mobile-web-app-status-bar-style"]', 'content')
-    check('status bar "black" (not "black-translucent")', style == 'black', style)
+    check('status bar "default" (takes the theme-color; not "black-translucent")', style == 'default', style)
     check('viewport still viewport-fit=cover (safe areas reported)', 'viewport-fit=cover' in pg.get_attribute('meta[name="viewport"]', 'content'))
     html = pg.content()
     check('no stretching over the dead band (it only clipped the buttons)', 'iosGap' not in html and 'fixIosGap' not in html)
@@ -27,8 +27,8 @@ with sync_playwright() as p:
     ctx.add_init_script("Object.defineProperty(navigator, 'standalone', { value: true, configurable: true });")
     pg.reload(); pg.wait_for_timeout(800); fakefb.login(pg, 'Filip'); pg.wait_for_timeout(1200)
     bg = pg.evaluate("getComputedStyle(document.querySelector('header')).backgroundImage")
-    check('home-screen app, upright: the top fades from the status bar black (no edge) to clear', pg.evaluate("document.documentElement.classList.contains('iosApp')") and bg.startswith('linear-gradient(rgb(0, 0, 0) 0%') and 'rgba(6, 20, 28, 0) 100%' in bg, bg)
-    check('the status bar colour and the map background are the same black', pg.evaluate("document.querySelector('meta[name=theme-color]').content") == '#000000' and pg.evaluate("getComputedStyle(document.getElementById('stage')).backgroundColor") == 'rgb(0, 0, 0)')
+    check('home-screen app, upright: the top fades from the status bar blue (no edge) to clear', pg.evaluate("document.documentElement.classList.contains('iosApp')") and bg.startswith('linear-gradient(rgb(6, 20, 28) 0%') and 'rgba(6, 20, 28, 0) 100%' in bg, bg)
+    check('the status bar colour (theme-color) and the map background are the same blue', pg.evaluate("document.querySelector('meta[name=theme-color]').content") == '#06141C' and pg.evaluate("getComputedStyle(document.getElementById('stage')).backgroundColor") == 'rgb(6, 20, 28)')
     pg.screenshot(path='shot_standalone_top.png', clip={'x': 0, 'y': 0, 'width': 390, 'height': 260})
     pg.set_viewport_size({'width': 844, 'height': 390}); pg.wait_for_timeout(500)
     check('...on its side (no status bar): the usual fade', 'rgba(6, 20, 28, 0.85)' in pg.evaluate("getComputedStyle(document.querySelector('header')).backgroundImage"))

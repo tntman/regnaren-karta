@@ -57,11 +57,13 @@ Uppdatera rätt anteckning när något ändras.
   måste överleva: inställningar i localStorage, öppna vyer/halvgjort i `saveRotationState()`/
   `restoreRotationUi()` (sessionStorage, `js/92-rotation.js`; sparas när vridningen BÖRJAR, innan
   nya storleken flyttat skrollägen). Nya UI-tillstånd ska läggas till där.
-- **iOS hemskärmsapp:** statusraden är `black` (src/head.html), INTE `black-translucent`: med
+- **iOS hemskärmsapp:** statusraden är `default` (src/head.html), INTE `black-translucent`: med
   translucent gör iOS 26 webbvyn en statusrad för kort – en död rand längst ner som ingen CSS
-  når (WebKit-bugg 301108). Statusraden är svart, så allt runt den är också svart: `theme-color`,
-  manifestets färger, kartans bakgrund (`#stage`) och body; toppens tona i stående hemskärmsapp
-  (`html.iosApp`) börjar i svart och tonar ut – ingen kant mot statusraden.
+  når (WebKit-bugg 301108). `default` lägger sidan under statusraden (som `black`) men ger raden
+  `theme-color`: appens mörkblå #06141C – samma som kartans bakgrund (`#stage`), body, manifestet
+  och toppens tona i stående hemskärmsapp (`html.iosApp`, börjar i #06141C och tonar ut). Filip vill
+  ha den blå, inte svart (svart provades 2026-09-29). Ändrad statusrad kräver att appen läggs till
+  på hemskärmen igen.
 - **Ordning/hoisting:** många `var` deklareras i senare js-filer. Sätt checkbox-tillstånd som
   beror på sådana variabler i `boot()` (`js/90-boot.js`, se toggleDepth/toggleTrack).
 - **Firebase-kvot** (gratis: 50k reads/dygn). Positioner delas var 20:e s vid rörelse
