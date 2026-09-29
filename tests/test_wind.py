@@ -32,6 +32,11 @@ with sync_playwright() as p:
     lit = pg.evaluate("""() => { var c = document.getElementById('windLayer'), d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data, n = 0;
                          for (var i = 3; i < d.length; i += 4) if (d[i] > 0) n++; return n; }""")
     check('the canvas has something on it', lit > 1000, lit)
+    blue = pg.evaluate("""() => { var c = document.getElementById('windLayer'), d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data, n = 0, w = 0;
+                         for (var i = 0; i < d.length; i += 4) if (d[i + 3] > 30 && d[i + 3] < 150){ n++; if (d[i + 2] > d[i] + 15) w++; } return [n, w]; }""")
+    check('the lee is a light blue tone (not plain white)', blue[0] > 1000 and blue[1] > 0.6 * blue[0], blue)
+    st = [pg.evaluate('window.__ffViewStep(%d, %d, %s)' % a) for a in ((390, 844, 'false'), (390, 844, 'true'), (1920, 1000, 'false'), (1920, 1000, 'true'))]
+    check('lee/Kartanalys detail: phone 1 px still / 2 px dragging; a big desktop screen coarser so it pans as fast', st[0] == 1 and st[1] == 2 and st[2] == 2 and st[3] >= 4 and 1920 * 1000 / st[3] ** 2 <= 100000, st)
     pg.screenshot(path='shot_wind_6.png')
     # zoomed far in: the lee edge is drawn per screen pixel, so it stays smooth
     edge = pg.evaluate("""() => { var c = document.getElementById('windLayer'), dpr = window.devicePixelRatio || 1,

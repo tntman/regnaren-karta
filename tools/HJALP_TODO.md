@@ -20,7 +20,7 @@ kanter, Djup/Andras till Inställningar, panorera över markeringar).
 
 ## Att göra
 
-(inget just nu)
+- [ ] 2026-09-29 – Vind och lä: lä är nu ljusblått, starkast vid kanten, med svaga streck i vindens riktning; snabbare panorering på dator. Hjälp: Väder, vind & lä (text: "den ljusa ytan" → "den ljusblå, strimmiga ytan") + animering `vader`. Nyhet: "Tydligare lä-område" (BÄTTRE)
 
 <!-- mall:
 - [ ] ÅÅÅÅ-MM-DD – Vad som ändrats. Hjälp: avsnitt X (text) + animering `namn`. Nyhet: "…" (NYTT/BÄTTRE/FIXAT)

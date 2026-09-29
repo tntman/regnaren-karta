@@ -114,7 +114,7 @@ funktionen är på; tryck = stäng av + förklarande notis.
 ## Ritlager (canvas) i skärmkoordinater
 
 Vind/lä, blixtar, Kartanalys: en `<canvas>` i `#stage` över kartan, ritas om i
-`render()`. Per skärmpunkt (1 css-px stilla, var 2:a medan man drar) och cachat per vy (nyckel =
+`render()`. Per skärmpunkt (`viewStep()`: 1 css-px stilla, var 2:a medan man drar, grövre på stora skärmar) och cachat per vy (nyckel =
 origin, skala, storlek, version, steg) – blir aldrig kantigt inzoomat. Kanter kantutjämnas: räkna ett
 mjukt fält (bilinjärt), avstånd till kanten = (värde − 0,5) / lutning, täckning = 0,5 + avstånd. Kartanalysens gråtoning: en andra
 canvas med `mix-blend-mode:saturation` (grå där kartan ska avfärgas).

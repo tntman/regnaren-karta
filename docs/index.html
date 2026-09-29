@@ -6463,6 +6463,14 @@
     return windField;
   }
   // value of a depth-grid field at a map-picture point (bilinear)
+  // how fine the per-point layers (lee, Kartanalys) are drawn: every css px when the map stands still,
+  // every 2nd while it's dragged -- on a big (desktop) screen coarser, so it never counts many more
+  // points than a phone does (~80 000 while dragging, ~700 000 standing still)
+  function viewStep(W, H){
+    var drag = stage.classList.contains('dragging');
+    return Math.max(drag ? 2 : 1, Math.ceil(Math.sqrt(W * H / (drag ? 90000 : 700000))));
+  }
+  function edgeW(STEP){ return STEP === 1 ? 1.1 : STEP === 2 ? 0.7 : 0.55; }     // a line's half width, in steps
   function gridAt(arr, ix, iy){
     var gx = ix / IMG_W * DEPTH_W - 0.5, gy = iy / IMG_H * DEPTH_H - 0.5;
     var x0 = Math.floor(gx), y0 = Math.floor(gy), tx = gx - x0, ty = gy - y0;
@@ -6470,15 +6478,16 @@
     var j = y0 * DEPTH_W + x0;
     return (arr[j] * (1 - tx) + arr[j + 1] * tx) * (1 - ty) + (arr[j + DEPTH_W] * (1 - tx) + arr[j + DEPTH_W + 1] * tx) * ty;
   }
-  // the lee for what's on screen, 1 point per 2 css px (redone only when the view moves)
+  // the lee for what's on screen, 1 point per css px (coarser while dragging, see viewStep; redone only when the view moves)
   function drawLeeView(F, W, H){
-    var STEP = stage.classList.contains('dragging') ? 2 : 1, vw = Math.ceil(W / STEP), vh = Math.ceil(H / STEP);
+    var STEP = viewStep(W, H), vw = Math.ceil(W / STEP), vh = Math.ceil(H / STEP);
     var vkey = originX.toFixed(1) + ',' + originY.toFixed(1) + ',' + scale.toFixed(5) + ',' + W + 'x' + H + ',' + STEP;
     if (!F.view || F.view.key !== vkey){
       var cv = F.view ? F.view.cv : document.createElement('canvas');
       if (cv.width !== vw || cv.height !== vh){ cv.width = vw; cv.height = vh; }
       var c2 = cv.getContext('2d'), im = c2.createImageData(vw, vh), px = im.data;
       var lee = new Float32Array(vw * vh), lake = new Float32Array(vw * vh), ff = F.ff, lk = F.lk, D = F.leeD;
+      var wto = (F.from + 180) * Math.PI / 180, wpx = Math.cos(wto), wpy = Math.sin(wto);   // (across the wind: the lines run with it)
       for (var y = 0; y < vh; y++) for (var x = 0; x < vw; x++){
         var ix = (x * STEP + 1 - originX) / scale, iy = (y * STEP + 1 - originY) / scale, i = y * vw + x;
         var m = gridAt(lk, ix, iy); lake[i] = m;
@@ -6490,10 +6499,14 @@
         function nb(j){ return lake[j] > 0.3 ? lee[j] : lee[i2]; }
         var gx = (nb(x2 < vw - 1 ? i2 + 1 : i2) - nb(x2 > 0 ? i2 - 1 : i2)) / 2, gy = (nb(y2 < vh - 1 ? i2 + vw : i2) - nb(y2 > 0 ? i2 - vw : i2)) / 2;
         var d = lee[i2] / (Math.sqrt(gx * gx + gy * gy) + 1e-3);       // steps to the lee's edge
-        var cov = d < -0.5 ? 0 : d > 0.5 ? 1 : d + 0.5, e = Math.max(0, 1 - Math.abs(d) / (STEP === 1 ? 1.1 : 0.7));
-        var a1 = 72 / 255 * cov * m2, a2 = 170 / 255 * e * m2, a = a2 + a1 * (1 - a2);
+        var cov = d < -0.5 ? 0 : d > 0.5 ? 1 : d + 0.5, e = Math.max(0, 1 - Math.abs(d) / edgeW(STEP));
+        if (cov <= 0 && e <= 0) continue;
+        // thin lines along the wind, fixed to the map (they move with it), every 9 css px, soft edges
+        var sl = ((x2 * STEP - originX) * wpx + (y2 * STEP - originY) * wpy) % 9; if (sl < 0) sl += 9;
+        var st = Math.max(0, 1 - Math.max(0, Math.abs(sl - 4.5) - 0.35) / 0.9);
+        var a1 = (60 + 90 * Math.max(0, 1 - d * STEP / 22) + 35 * st) / 255 * cov * m2, a2 = 170 / 255 * e * m2, a = a2 + a1 * (1 - a2);
         if (a <= 0) continue;
-        px[k] = (255 * a2 + 235 * a1 * (1 - a2)) / a; px[k + 1] = (255 * a2 + 250 * a1 * (1 - a2)) / a; px[k + 2] = (255 * a2 + 245 * a1 * (1 - a2)) / a; px[k + 3] = a * 255;
+        px[k] = (255 * a2 + 205 * a1 * (1 - a2)) / a; px[k + 1] = (255 * a2 + 235 * a1 * (1 - a2)) / a; px[k + 2] = 255; px[k + 3] = a * 255;
       }
       c2.putImageData(im, 0, 0);
       F.view = { key: vkey, cv: cv };
@@ -6567,6 +6580,7 @@
     applyWind();
   });
   document.addEventListener('visibilitychange', function(){ if (windOn) applyWind(); });
+  window.__ffViewStep = function(W, H, drag){ var d = stage.classList.contains('dragging'); stage.classList.toggle('dragging', !!drag); var r = viewStep(W, H); stage.classList.toggle('dragging', d); return r; };
   window.__ffWind = function(){ var F = windField; return F ? { leeShare: F.leeShare, leeD: F.leeD, ms: F.ms, from: F.from, drawn: drawWind() } : null; }; // (for the tests)
   applyWind();
   document.addEventListener('visibilitychange', function(){ if (document.visibilityState === 'visible') fetchWeather(false); });
@@ -7140,7 +7154,7 @@
     [anCanvas, anSatCanvas].forEach(function(c){ if (c.width !== Math.round(W * dpr) || c.height !== Math.round(H * dpr)){ c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); } });
     anCtx.setTransform(dpr, 0, 0, dpr, 0, 0); anCtx.clearRect(0, 0, W, H);
     anSatCtx.setTransform(dpr, 0, 0, dpr, 0, 0); anSatCtx.clearRect(0, 0, W, H);
-    var STEP = stage.classList.contains('dragging') ? 2 : 1, vw = Math.ceil(W / STEP), vh = Math.ceil(H / STEP), A = AN, R = anRes;
+    var STEP = viewStep(W, H), vw = Math.ceil(W / STEP), vh = Math.ceil(H / STEP), A = AN, R = anRes;
     var key = originX.toFixed(1) + ',' + originY.toFixed(1) + ',' + scale.toFixed(5) + ',' + W + 'x' + H + ',' + R.ver + ',' + anSet.dim + ',' + STEP;
     if (!anView || anView.key !== key){
       var cv = anView ? anView.cv : document.createElement('canvas'), sv = anView ? anView.sv : document.createElement('canvas');
@@ -7179,7 +7193,7 @@
         over(6, 14, 20, dimA * k0);
         if (c1col) over(c1col[0], c1col[1], c1col[2], 105 * k1);
         over(c2col[0], c2col[1], c2col[2], c2a * k2);
-        var LW = STEP === 1 ? 1.1 : 0.7;
+        var LW = edgeW(STEP);
         var e = Math.max(cl(1 - Math.abs(d1) / LW), cl(1 - Math.abs(d2) / LW));
         if (e > 0) over(255, 255, 255, 180 * e);        // (as thin and soft as the lee's edge)
         var es = cl(1 - Math.abs(dl) / (LW * 0.8));
