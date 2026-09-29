@@ -49,12 +49,19 @@ All text i appen är på svenska. Svara Filip på svenska, kort och tydligt.
 Uppdatera rätt anteckning när något ändras.
 
 ## Viktiga saker i koden
-- **iOS hemskärmsapp laddar om sidan vid rotation.** Allt tillstånd måste överleva:
-  inställningar i localStorage, öppna vyer/halvgjort i `saveRotationState()`/
-  `restoreRotationUi()` (sessionStorage, `js/92-rotation.js`). Nya UI-tillstånd ska läggas till där.
+- **iOS hemskärmsapp laddar om sidan vid rotation** (WebKit visar annars en gammal bild och trycken
+  hamnar fel). Sidan minns om den laddades liggande/stående (`loadedLandscape`, `js/12-map.js`) och
+  laddar om när skärmen lagt sig åt andra hållet – även efter en resize utan vridningshändelse (en
+  omladdning mitt i en vridning rättar sig själv). Skydd mot loop: högst 4 omladdningar på 20 s
+  (förr: ingen vridning inom 3 s → "förskjutna" knappar om man vred tillbaka snabbt). Allt tillstånd
+  måste överleva: inställningar i localStorage, öppna vyer/halvgjort i `saveRotationState()`/
+  `restoreRotationUi()` (sessionStorage, `js/92-rotation.js`; sparas när vridningen BÖRJAR, innan
+  nya storleken flyttat skrollägen). Nya UI-tillstånd ska läggas till där.
 - **iOS hemskärmsapp:** statusraden är `black` (src/head.html), INTE `black-translucent`: med
   translucent gör iOS 26 webbvyn en statusrad för kort – en död rand längst ner som ingen CSS
-  når (WebKit-bugg 301108). Toppen tonar (85 % → genomskinligt) i stående hemskärmsapp (`html.iosApp`).
+  når (WebKit-bugg 301108). Statusraden är svart, så allt runt den är också svart: `theme-color`,
+  manifestets färger, kartans bakgrund (`#stage`) och body; toppens tona i stående hemskärmsapp
+  (`html.iosApp`) börjar i svart och tonar ut – ingen kant mot statusraden.
 - **Ordning/hoisting:** många `var` deklareras i senare js-filer. Sätt checkbox-tillstånd som
   beror på sådana variabler i `boot()` (`js/90-boot.js`, se toggleDepth/toggleTrack).
 - **Firebase-kvot** (gratis: 50k reads/dygn). Positioner delas var 20:e s vid rörelse

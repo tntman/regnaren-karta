@@ -184,7 +184,7 @@
   function render(){
     world.style.transform = 'translate(' + originX + 'px,' + originY + 'px) scale(' + scale + ')';
     renderDetail();
-    if (windOn && windCanvas) drawWind();   // ("Vind och lä" -- set up further down)
+    if (windOn && windCanvas){ try { drawWind(); } catch(e){} }   // ("Vind och lä" -- set up further down; never stops the rest)
     if (ltOn && ltCanvas) ltDrawMap();      // ("Blixtar" -- also further down)
     if (anCanvas) anDraw();                  // (Kartanalys, further down)
     if (msgLayerEl) renderMessages();         // (quick messages, further down)
@@ -296,11 +296,11 @@
     clampOrigin();
     render();
   }
-  window.addEventListener('resize', refreshLayout);
+  window.addEventListener('resize', function(){ refreshLayout(); checkRotationReload(); });
   if (window.visualViewport){
     // more reliable than window resize/orientationchange in some
     // WKWebView contexts (see the standalone home-screen note below)
-    window.visualViewport.addEventListener('resize', refreshLayout);
+    window.visualViewport.addEventListener('resize', function(){ refreshLayout(); checkRotationReload(); });
   }
 
   // True only for an iOS "Add to Home Screen" launch (no Safari chrome).
@@ -321,14 +321,17 @@
     var tNow = Date.now();
     if (tNow - lastOrientationEventAt < 1000) return;
     lastOrientationEventAt = tNow;
-    // capture where you're looking (in image-space coordinates, so it's
-    // independent of the viewport size) before anything below touches
-    // scale/originX/originY, in case a standalone-mode reload needs it
-    var preCx = (stageW/2 - originX) / scale;
-    var preCy = (stageH/2 - originY) / scale;
-    var preScale = scale;
+    // what was on screen right when the turn began -- before the new size moves anything (scroll
+    // positions, the map's centre); used if this turn ends in a reload
+    if (isStandaloneApp){
+      preTurn = { t: tNow, view: { cx: (stageW / 2 - originX) / scale, cy: (stageH / 2 - originY) / scale, scale: scale, t: tNow } };
+      saveRotationState();
+    }
 
     function settle(){
+      // 0) iOS can leave the page scrolled a bit after a rotation: then every tap lands beside
+      //    what's drawn (the buttons seem "offset") -- put it back at the top
+      try { window.scrollTo(0, 0); document.documentElement.scrollTop = 0; document.body.scrollTop = 0; } catch(e){}
       // 1) drop any pointer/gesture tracking that never got a matching
       //    pointerup (a touch interrupted by the physical rotation)
       pointers.clear();
@@ -346,31 +349,40 @@
     settle();
     setTimeout(settle, 150);
     setTimeout(settle, 400);
-    if (isStandaloneApp){
-      // iOS home-screen web apps have a long-standing WebKit bug where the
-      // screen keeps showing a stale, already-painted frame from before the
-      // rotation -- the DOM layout itself is already correct (so a JS-side
-      // "is it broken?" check like comparing getBoundingClientRect() can
-      // never detect this: the layout numbers are fine, only what's
-      // painted on screen is stale), which is why recomputing the layout
-      // above never actually fixes what's on screen. A real reload is the
-      // only fix that reliably repaints. Guard against reload loops (two
-      // orientation events can fire for one physical rotation) with a
-      // short cooldown stamped in sessionStorage.
-      var now = Date.now();
-      var last = 0;
-      try { last = Number(sessionStorage.getItem('regnaren_last_rot_reload') || 0); } catch(e){}
-      if (now - last > 3000){
-        try {
-          sessionStorage.setItem('regnaren_last_rot_reload', String(now));
-          // so initView() can put you back where you were looking instead
-          // of snapping to the default view after the reload
-          sessionStorage.setItem(VIEW_STATE_KEY, JSON.stringify({ cx: preCx, cy: preCy, scale: preScale, t: now }));
-        } catch(e){}
-        saveRotationState(); // open page/sheet, typed text, speed history ... (see below)
-        setTimeout(function(){ window.location.reload(); }, 350);
-      }
-    }
+    checkRotationReload();
+  }
+  // iOS home-screen web apps have a long-standing WebKit bug where the screen keeps showing a
+  // stale frame from before the rotation (and taps land where things WERE) -- the DOM layout is
+  // already right, only what's painted is stale, so no layout fix helps. A real reload is the only
+  // fix that reliably repaints. The page remembers which way round it was laid out when it loaded;
+  // whenever the screen has settled the other way round, it reloads. (It used to skip any rotation
+  // within 3 s of the last reload -- turning the phone back quickly then left the stale, "offset"
+  // screen until you turned it again. A reload that happened in the middle of the turn now fixes
+  // itself too: the page loaded the old way round, the screen settles the new way -> reload again.)
+  var loadedLandscape = window.innerWidth > window.innerHeight, rotCheckT = null, preTurn = null;
+  function checkRotationReload(){
+    if (!isStandaloneApp) return;
+    clearTimeout(rotCheckT);
+    rotCheckT = setTimeout(function(){
+      var land = window.innerWidth > window.innerHeight;
+      if (land === loadedLandscape || !(window.innerWidth > 0 && window.innerHeight > 0)) return;
+      // (a guard against reload loops: at most 4 in 20 s)
+      var now = Date.now(), recent = [];
+      try { recent = JSON.parse(sessionStorage.getItem('ffmap_rot_reloads') || '[]').filter(function(t){ return now - t < 20000; }); } catch(e){}
+      if (recent.length >= 4) return;
+      recent.push(now);
+      try {
+        sessionStorage.setItem('ffmap_rot_reloads', JSON.stringify(recent));
+        // so initView() can put you back where you were looking instead of snapping to the
+        // default view after the reload (refreshLayout keeps the centre through the turn)
+        var fresh = preTurn && now - preTurn.t < 3000;
+        sessionStorage.setItem(VIEW_STATE_KEY, JSON.stringify(fresh ? preTurn.view : { cx: (stageW / 2 - originX) / scale, cy: (stageH / 2 - originY) / scale, scale: scale, t: now }));
+      } catch(e){}
+      // open page/sheet, typed text, speed history ... (see 92-rotation.js) -- already saved when the
+      // turn began (before the new size moved scroll positions); otherwise now
+      if (!(preTurn && now - preTurn.t < 3000)) saveRotationState();
+      window.location.reload();
+    }, 450);
   }
   window.addEventListener('orientationchange', handleOrientationEvent);
   if (window.screen && window.screen.orientation){

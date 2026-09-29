@@ -16,8 +16,10 @@ orange (#FFB23F).
   Steg `viewStep()`: 1 css-px stilla, 2 vid dragning; större skärm grövre så en dator aldrig
   räknar mer än ~90 000 punkter vid dragning / ~700 000 stilla (desktop blev seg). Görs om
   bara när vyn flyttas. Kanten kantutjämnad (lä-värde / lutning = avstånd till kanten).
-- Utseende: ljusblå ton, starkast vid kanten och tonar inåt (~22 px), svaga tunna streck i
-  vindens riktning (var 9:e px, fästa i kartan) + tunn vit kant. Öppet vatten: "kometer" (tunt
+  Ritningen får aldrig stanna: kartan kan vara 0 px mitt i en vridning (då ritas inget), och ett
+  fel i en bildruta stoppar inte loopen (lä försvann annars efter vridning).
+- Utseende: blå ton (170,215,255), starkast vid kanten och tonar inåt (~22 px, täckning 85–170/255)
+  + tunn vit kant. (Streck i vindens riktning provades 2026-09-29 och togs bort igen.) Öppet vatten: "kometer" (tunt
   huvud, tjockare svans) som driver med vinden, fler/längre/snabbare vid mer vind. ~30 fps bara
   när påslaget och synligt.
 - `window.__ffWind()`, `window.__ffViewStep(W, H, drag)` för testerna.

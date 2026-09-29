@@ -12,6 +12,8 @@ JS = JS.replace("  var wpListeners = [], posListeners = [];", """  try { var sav
 JS = JS.replace("function fireWp(){ wpListeners.forEach", "function fireWp(){ persistWp(); wpListeners.forEach")
 fakefb.FAKE_FIREBASE_JS = JS
 from fakefb import new_page, login
+import test_weather as _tw
+_wx = _tw.wx_json(); _wx['current']['wind_speed_10m'] = 6; _wx['current']['wind_direction_10m'] = 250
 
 results = []
 def check(name, cond, info=''):
@@ -28,7 +30,6 @@ def rotate(pg, w, h):
     pg.evaluate("window.dispatchEvent(new Event('orientationchange')); if (screen.orientation) screen.orientation.dispatchEvent(new Event('change'));")
     pg.wait_for_load_state('load')
     pg.wait_for_timeout(1500)
-    pg.wait_for_timeout(1700)   # (reload cooldown is 3 s)
 
 def reloads(pg): return pg.evaluate("performance.getEntriesByType('navigation')[0].type")
 
@@ -138,6 +139,35 @@ with sync_playwright() as p:
     check('name picker kept "Annat namn" + typed text', pg.eval_on_selector('#nameModal', 'e=>e.classList.contains("show")') and pg.input_value('#nameInput') == 'Kalle Anka', pg.input_value('#nameInput'))
     pg.click('#nameSave'); pg.wait_for_timeout(500)
     check('logged in as the typed name', 'Kalle Anka' in pg.inner_text('#headerUser'))
+    check('no page errors', not errs, errs)
+    b.close()
+
+    # ---- turning back quickly, a reload in the middle of a turn, the lee after a turn ----
+    b, ctx, pg, errs = new_page(p, geo=ME, cfg={}, name='Filip')
+    ctx.add_init_script("Object.defineProperty(navigator, 'standalone', { value: true, configurable: true });")
+    ctx.route('**/api.open-meteo.com/**', lambda r: r.fulfill(status=200, content_type='application/json', body=json.dumps(_wx), headers={'Access-Control-Allow-Origin': '*'}))
+    pg.evaluate("localStorage.removeItem('ffmap_weather_v1'); localStorage.setItem('ffmap_show_wind_v1', '1')")
+    pg.reload(); pg.wait_for_timeout(2500)
+    def turn(w, h, event=True):
+        pg.evaluate("window.__rc = 1")
+        pg.set_viewport_size({'width': w, 'height': h})
+        if event: pg.evaluate("window.dispatchEvent(new Event('orientationchange')); if (screen.orientation) screen.orientation.dispatchEvent(new Event('change'));")
+        pg.wait_for_timeout(1400); pg.wait_for_load_state('load'); pg.wait_for_timeout(900)
+        return pg.evaluate('window.__rc') is None
+    check('turned sideways: reloaded', turn(844, 390))
+    check('turned straight back at once (< 3 s): reloaded again -- used to be skipped, leaving taps "offset"', turn(390, 844))
+    check('a reload in the middle of a turn: when the screen settles the other way round (only a resize) it reloads again', turn(844, 390, event=False))
+    check('a resize that does not turn it (e.g. taller): no reload', not turn(844, 420, event=False))
+    def lee_px():
+        return pg.evaluate("""() => { var c = document.getElementById('windLayer'), d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data, n = 0;
+                              for (var i = 0; i < d.length; i += 4) if (d[i + 3] > 30 && d[i + 2] > d[i] + 30) n++; return n; }""")
+    check('after the turns: the lee is drawn', lee_px() > 500, lee_px())
+    pg.evaluate("document.getElementById('stage').style.height = '0px'"); pg.wait_for_timeout(300)
+    pg.evaluate("document.getElementById('stage').style.height = ''"); pg.wait_for_timeout(600)
+    check('the map 0 px high for a moment (mid-turn): no error, the lee comes back', not errs and lee_px() > 500, (errs, lee_px()))
+    pg.evaluate("sessionStorage.removeItem('ffmap_rot_reloads')")
+    n = sum(turn(390, 844) if k % 2 == 0 else turn(844, 390) for k in range(6))
+    check('turning 6 times quickly: 4 reloads, then it stops (no reload loop)', n == 4, n)
     check('no page errors', not errs, errs)
     b.close()
 print('\n%d/%d passed' % (sum(results), len(results)))

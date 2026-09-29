@@ -11,7 +11,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <title>FF Map</title>
 <meta name="apple-mobile-web-app-title" content="FF Map">
-<meta name="theme-color" content="#0B2A3A">
+<!-- black like the status bar and the map's background: no edge at the top (iOS may colour the
+     status bar from this / the manifest) -->
+<meta name="theme-color" content="#000000">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="data:image/png;base64,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">
@@ -40,7 +42,7 @@
   [hidden]{display:none !important;}
   html,body{height:100%;}
   body{
-    background:var(--navy);
+    background:#000;                 /* (= the status bar: no edge at the top) */
     color:var(--offwhite);
     overflow:hidden;
     overscroll-behavior:none;
@@ -53,7 +55,7 @@
     touch-action:none;
     -webkit-user-select:none;user-select:none;
     -webkit-touch-callout:none;
-    background:#050f15;
+    background:#000;                 /* outside the map picture: the same black as the status bar */
     cursor:grab;
   }
   #stage.dragging{cursor:grabbing;}
@@ -71,10 +73,10 @@
   /* "Blixtar": strikes on the map + an arrow at the edge towards the nearest (screen canvas) */
   #ltLayer{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;display:none;}
   #ltLayer.on{display:block;}
-  /* iPhone home-screen app, upright: under the (black) status bar the fade starts solid in the
-     app's own blue-grey, like the one at the bottom -- no see-through line under the bar */
+  /* iPhone home-screen app, upright: the fade starts in the status bar's own black (no edge
+     between them) and fades out over the map */
   @media (orientation:portrait){
-    html.iosApp header{background:linear-gradient(to bottom, rgba(6,20,28,.85) 0%, rgba(6,20,28,.4) 45%, rgba(6,20,28,0) 100%);}
+    html.iosApp header{background:linear-gradient(to bottom, #000 0%, rgba(0,0,0,.6) 22%, rgba(6,20,28,.3) 60%, rgba(6,20,28,0) 100%);}
   }
   #mapLoading{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:1;color:var(--text-muted);font-size:13px;pointer-events:none;display:none;}
   #mapLoading.show{display:block;}
@@ -2578,7 +2580,7 @@
   function render(){
     world.style.transform = 'translate(' + originX + 'px,' + originY + 'px) scale(' + scale + ')';
     renderDetail();
-    if (windOn && windCanvas) drawWind();   // ("Vind och lä" -- set up further down)
+    if (windOn && windCanvas){ try { drawWind(); } catch(e){} }   // ("Vind och lä" -- set up further down; never stops the rest)
     if (ltOn && ltCanvas) ltDrawMap();      // ("Blixtar" -- also further down)
     if (anCanvas) anDraw();                  // (Kartanalys, further down)
     if (msgLayerEl) renderMessages();         // (quick messages, further down)
@@ -2690,11 +2692,11 @@
     clampOrigin();
     render();
   }
-  window.addEventListener('resize', refreshLayout);
+  window.addEventListener('resize', function(){ refreshLayout(); checkRotationReload(); });
   if (window.visualViewport){
     // more reliable than window resize/orientationchange in some
     // WKWebView contexts (see the standalone home-screen note below)
-    window.visualViewport.addEventListener('resize', refreshLayout);
+    window.visualViewport.addEventListener('resize', function(){ refreshLayout(); checkRotationReload(); });
   }
 
   // True only for an iOS "Add to Home Screen" launch (no Safari chrome).
@@ -2715,14 +2717,17 @@
     var tNow = Date.now();
     if (tNow - lastOrientationEventAt < 1000) return;
     lastOrientationEventAt = tNow;
-    // capture where you're looking (in image-space coordinates, so it's
-    // independent of the viewport size) before anything below touches
-    // scale/originX/originY, in case a standalone-mode reload needs it
-    var preCx = (stageW/2 - originX) / scale;
-    var preCy = (stageH/2 - originY) / scale;
-    var preScale = scale;
+    // what was on screen right when the turn began -- before the new size moves anything (scroll
+    // positions, the map's centre); used if this turn ends in a reload
+    if (isStandaloneApp){
+      preTurn = { t: tNow, view: { cx: (stageW / 2 - originX) / scale, cy: (stageH / 2 - originY) / scale, scale: scale, t: tNow } };
+      saveRotationState();
+    }
 
     function settle(){
+      // 0) iOS can leave the page scrolled a bit after a rotation: then every tap lands beside
+      //    what's drawn (the buttons seem "offset") -- put it back at the top
+      try { window.scrollTo(0, 0); document.documentElement.scrollTop = 0; document.body.scrollTop = 0; } catch(e){}
       // 1) drop any pointer/gesture tracking that never got a matching
       //    pointerup (a touch interrupted by the physical rotation)
       pointers.clear();
@@ -2740,31 +2745,40 @@
     settle();
     setTimeout(settle, 150);
     setTimeout(settle, 400);
-    if (isStandaloneApp){
-      // iOS home-screen web apps have a long-standing WebKit bug where the
-      // screen keeps showing a stale, already-painted frame from before the
-      // rotation -- the DOM layout itself is already correct (so a JS-side
-      // "is it broken?" check like comparing getBoundingClientRect() can
-      // never detect this: the layout numbers are fine, only what's
-      // painted on screen is stale), which is why recomputing the layout
-      // above never actually fixes what's on screen. A real reload is the
-      // only fix that reliably repaints. Guard against reload loops (two
-      // orientation events can fire for one physical rotation) with a
-      // short cooldown stamped in sessionStorage.
-      var now = Date.now();
-      var last = 0;
-      try { last = Number(sessionStorage.getItem('regnaren_last_rot_reload') || 0); } catch(e){}
-      if (now - last > 3000){
-        try {
-          sessionStorage.setItem('regnaren_last_rot_reload', String(now));
-          // so initView() can put you back where you were looking instead
-          // of snapping to the default view after the reload
-          sessionStorage.setItem(VIEW_STATE_KEY, JSON.stringify({ cx: preCx, cy: preCy, scale: preScale, t: now }));
-        } catch(e){}
-        saveRotationState(); // open page/sheet, typed text, speed history ... (see below)
-        setTimeout(function(){ window.location.reload(); }, 350);
-      }
-    }
+    checkRotationReload();
+  }
+  // iOS home-screen web apps have a long-standing WebKit bug where the screen keeps showing a
+  // stale frame from before the rotation (and taps land where things WERE) -- the DOM layout is
+  // already right, only what's painted is stale, so no layout fix helps. A real reload is the only
+  // fix that reliably repaints. The page remembers which way round it was laid out when it loaded;
+  // whenever the screen has settled the other way round, it reloads. (It used to skip any rotation
+  // within 3 s of the last reload -- turning the phone back quickly then left the stale, "offset"
+  // screen until you turned it again. A reload that happened in the middle of the turn now fixes
+  // itself too: the page loaded the old way round, the screen settles the new way -> reload again.)
+  var loadedLandscape = window.innerWidth > window.innerHeight, rotCheckT = null, preTurn = null;
+  function checkRotationReload(){
+    if (!isStandaloneApp) return;
+    clearTimeout(rotCheckT);
+    rotCheckT = setTimeout(function(){
+      var land = window.innerWidth > window.innerHeight;
+      if (land === loadedLandscape || !(window.innerWidth > 0 && window.innerHeight > 0)) return;
+      // (a guard against reload loops: at most 4 in 20 s)
+      var now = Date.now(), recent = [];
+      try { recent = JSON.parse(sessionStorage.getItem('ffmap_rot_reloads') || '[]').filter(function(t){ return now - t < 20000; }); } catch(e){}
+      if (recent.length >= 4) return;
+      recent.push(now);
+      try {
+        sessionStorage.setItem('ffmap_rot_reloads', JSON.stringify(recent));
+        // so initView() can put you back where you were looking instead of snapping to the
+        // default view after the reload (refreshLayout keeps the centre through the turn)
+        var fresh = preTurn && now - preTurn.t < 3000;
+        sessionStorage.setItem(VIEW_STATE_KEY, JSON.stringify(fresh ? preTurn.view : { cx: (stageW / 2 - originX) / scale, cy: (stageH / 2 - originY) / scale, scale: scale, t: now }));
+      } catch(e){}
+      // open page/sheet, typed text, speed history ... (see 92-rotation.js) -- already saved when the
+      // turn began (before the new size moved scroll positions); otherwise now
+      if (!(preTurn && now - preTurn.t < 3000)) saveRotationState();
+      window.location.reload();
+    }, 450);
   }
   window.addEventListener('orientationchange', handleOrientationEvent);
   if (window.screen && window.screen.orientation){
@@ -6493,7 +6507,6 @@
       if (cv.width !== vw || cv.height !== vh){ cv.width = vw; cv.height = vh; }
       var c2 = cv.getContext('2d'), im = c2.createImageData(vw, vh), px = im.data;
       var lee = new Float32Array(vw * vh), lake = new Float32Array(vw * vh), ff = F.ff, lk = F.lk, D = F.leeD;
-      var wto = (F.from + 180) * Math.PI / 180, wpx = Math.cos(wto), wpy = Math.sin(wto);   // (across the wind: the lines run with it)
       for (var y = 0; y < vh; y++) for (var x = 0; x < vw; x++){
         var ix = (x * STEP + 1 - originX) / scale, iy = (y * STEP + 1 - originY) / scale, i = y * vw + x;
         var m = gridAt(lk, ix, iy); lake[i] = m;
@@ -6507,12 +6520,10 @@
         var d = lee[i2] / (Math.sqrt(gx * gx + gy * gy) + 1e-3);       // steps to the lee's edge
         var cov = d < -0.5 ? 0 : d > 0.5 ? 1 : d + 0.5, e = Math.max(0, 1 - Math.abs(d) / edgeW(STEP));
         if (cov <= 0 && e <= 0) continue;
-        // thin lines along the wind, fixed to the map (they move with it), every 9 css px, soft edges
-        var sl = ((x2 * STEP - originX) * wpx + (y2 * STEP - originY) * wpy) % 9; if (sl < 0) sl += 9;
-        var st = Math.max(0, 1 - Math.max(0, Math.abs(sl - 4.5) - 0.35) / 0.9);
-        var a1 = (60 + 90 * Math.max(0, 1 - d * STEP / 22) + 35 * st) / 255 * cov * m2, a2 = 170 / 255 * e * m2, a = a2 + a1 * (1 - a2);
+        // light blue, strongest at the edge and fading inwards (~22 css px)
+        var a1 = (85 + 85 * Math.max(0, 1 - d * STEP / 22)) / 255 * cov * m2, a2 = 170 / 255 * e * m2, a = a2 + a1 * (1 - a2);
         if (a <= 0) continue;
-        px[k] = (255 * a2 + 205 * a1 * (1 - a2)) / a; px[k + 1] = (255 * a2 + 235 * a1 * (1 - a2)) / a; px[k + 2] = 255; px[k + 3] = a * 255;
+        px[k] = (255 * a2 + 170 * a1 * (1 - a2)) / a; px[k + 1] = (255 * a2 + 215 * a1 * (1 - a2)) / a; px[k + 2] = 255; px[k + 3] = a * 255;
       }
       c2.putImageData(im, 0, 0);
       F.view = { key: vkey, cv: cv };
@@ -6527,6 +6538,7 @@
     }
     wctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     wctx.clearRect(0, 0, W, H);
+    if (!(W >= 2 && H >= 2)) return 0;          // (mid-rotation the map can be 0 px for a moment: nothing to draw)
     var F = windOn ? computeWindField() : null;
     if (!F) return 0;
     drawLeeView(F, W, H);
@@ -6569,7 +6581,9 @@
           if (p.life >= 1 || p.x < -30 || p.y < -30 || p.x > W + 30 || p.y > H + 30){ p.x = Math.random() * W; p.y = Math.random() * H; p.life = 0; }
         });
       }
-      drawWind();
+      // (never let one bad frame stop the drifting for good -- the lee would then vanish after a
+      //  rotation until the phone was turned again)
+      try { drawWind(); } catch(e){ windField && (windField.view = null); }
     }
     windLoop = requestAnimationFrame(stepWind);
   }
@@ -6586,6 +6600,7 @@
     applyWind();
   });
   document.addEventListener('visibilitychange', function(){ if (windOn) applyWind(); });
+  window.addEventListener('pageshow', function(){ if (windOn) applyWind(); });
   window.__ffViewStep = function(W, H, drag){ var d = stage.classList.contains('dragging'); stage.classList.toggle('dragging', !!drag); var r = viewStep(W, H); stage.classList.toggle('dragging', d); return r; };
   window.__ffWind = function(){ var F = windField; return F ? { leeShare: F.leeShare, leeD: F.leeD, ms: F.ms, from: F.from, drawn: drawWind() } : null; }; // (for the tests)
   applyWind();
@@ -7160,6 +7175,7 @@
     [anCanvas, anSatCanvas].forEach(function(c){ if (c.width !== Math.round(W * dpr) || c.height !== Math.round(H * dpr)){ c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); } });
     anCtx.setTransform(dpr, 0, 0, dpr, 0, 0); anCtx.clearRect(0, 0, W, H);
     anSatCtx.setTransform(dpr, 0, 0, dpr, 0, 0); anSatCtx.clearRect(0, 0, W, H);
+    if (!(W >= 2 && H >= 2)) return;          // (mid-rotation the map can be 0 px for a moment)
     var STEP = viewStep(W, H), vw = Math.ceil(W / STEP), vh = Math.ceil(H / STEP), A = AN, R = anRes;
     var key = originX.toFixed(1) + ',' + originY.toFixed(1) + ',' + scale.toFixed(5) + ',' + W + 'x' + H + ',' + R.ver + ',' + anSet.dim + ',' + STEP;
     if (!anView || anView.key !== key){

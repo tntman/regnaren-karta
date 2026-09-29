@@ -105,7 +105,6 @@
       if (cv.width !== vw || cv.height !== vh){ cv.width = vw; cv.height = vh; }
       var c2 = cv.getContext('2d'), im = c2.createImageData(vw, vh), px = im.data;
       var lee = new Float32Array(vw * vh), lake = new Float32Array(vw * vh), ff = F.ff, lk = F.lk, D = F.leeD;
-      var wto = (F.from + 180) * Math.PI / 180, wpx = Math.cos(wto), wpy = Math.sin(wto);   // (across the wind: the lines run with it)
       for (var y = 0; y < vh; y++) for (var x = 0; x < vw; x++){
         var ix = (x * STEP + 1 - originX) / scale, iy = (y * STEP + 1 - originY) / scale, i = y * vw + x;
         var m = gridAt(lk, ix, iy); lake[i] = m;
@@ -119,12 +118,10 @@
         var d = lee[i2] / (Math.sqrt(gx * gx + gy * gy) + 1e-3);       // steps to the lee's edge
         var cov = d < -0.5 ? 0 : d > 0.5 ? 1 : d + 0.5, e = Math.max(0, 1 - Math.abs(d) / edgeW(STEP));
         if (cov <= 0 && e <= 0) continue;
-        // thin lines along the wind, fixed to the map (they move with it), every 9 css px, soft edges
-        var sl = ((x2 * STEP - originX) * wpx + (y2 * STEP - originY) * wpy) % 9; if (sl < 0) sl += 9;
-        var st = Math.max(0, 1 - Math.max(0, Math.abs(sl - 4.5) - 0.35) / 0.9);
-        var a1 = (60 + 90 * Math.max(0, 1 - d * STEP / 22) + 35 * st) / 255 * cov * m2, a2 = 170 / 255 * e * m2, a = a2 + a1 * (1 - a2);
+        // light blue, strongest at the edge and fading inwards (~22 css px)
+        var a1 = (85 + 85 * Math.max(0, 1 - d * STEP / 22)) / 255 * cov * m2, a2 = 170 / 255 * e * m2, a = a2 + a1 * (1 - a2);
         if (a <= 0) continue;
-        px[k] = (255 * a2 + 205 * a1 * (1 - a2)) / a; px[k + 1] = (255 * a2 + 235 * a1 * (1 - a2)) / a; px[k + 2] = 255; px[k + 3] = a * 255;
+        px[k] = (255 * a2 + 170 * a1 * (1 - a2)) / a; px[k + 1] = (255 * a2 + 215 * a1 * (1 - a2)) / a; px[k + 2] = 255; px[k + 3] = a * 255;
       }
       c2.putImageData(im, 0, 0);
       F.view = { key: vkey, cv: cv };
@@ -139,6 +136,7 @@
     }
     wctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     wctx.clearRect(0, 0, W, H);
+    if (!(W >= 2 && H >= 2)) return 0;          // (mid-rotation the map can be 0 px for a moment: nothing to draw)
     var F = windOn ? computeWindField() : null;
     if (!F) return 0;
     drawLeeView(F, W, H);
@@ -181,7 +179,9 @@
           if (p.life >= 1 || p.x < -30 || p.y < -30 || p.x > W + 30 || p.y > H + 30){ p.x = Math.random() * W; p.y = Math.random() * H; p.life = 0; }
         });
       }
-      drawWind();
+      // (never let one bad frame stop the drifting for good -- the lee would then vanish after a
+      //  rotation until the phone was turned again)
+      try { drawWind(); } catch(e){ windField && (windField.view = null); }
     }
     windLoop = requestAnimationFrame(stepWind);
   }
@@ -198,6 +198,7 @@
     applyWind();
   });
   document.addEventListener('visibilitychange', function(){ if (windOn) applyWind(); });
+  window.addEventListener('pageshow', function(){ if (windOn) applyWind(); });
   window.__ffViewStep = function(W, H, drag){ var d = stage.classList.contains('dragging'); stage.classList.toggle('dragging', !!drag); var r = viewStep(W, H); stage.classList.toggle('dragging', d); return r; };
   window.__ffWind = function(){ var F = windField; return F ? { leeShare: F.leeShare, leeD: F.leeD, ms: F.ms, from: F.from, drawn: drawWind() } : null; }; // (for the tests)
   applyWind();
