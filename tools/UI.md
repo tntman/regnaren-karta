@@ -33,7 +33,7 @@ Exempel: platsens ruta `#wpSheet`, Kartanalys `#anPanel`.
 - Liggande läge: panelen till höger, `width:420px`.
 
 **Överdelen (samma på alla rutor nertill):** greppremsan med strecket i mitten och ett ✕
-(`.gripX`, bara tecknet – ingen ram) i remsans högra hörn; tryckytan 46 × 30 px. Ingen rubrik,
+(`.gripX`, bara tecknet – ingen ram, 16 px, samma grå som strecket) i remsans högra hörn; tryckytan 46 × 30 px. Ingen rubrik,
 ingen Avbryt-knapp. ✕ startar ingen dragning (`sheetSwipe` hoppar över `.gripX`).
 **Håller man i remsan** (`.dragging`): överkanten lyser blå + en mjuk blå strålkastare i remsan,
 strecket vitt och lysande.
@@ -107,13 +107,16 @@ funktionen är på; tryck = stäng av + förklarande notis.
 ## Pratbubblor vid båtar
 
 `.msgBub` (vit, egen = ljusgul `.mine`), pil nedåt, placeras i skärmkoordinater i
-`#msgLayer` och flyttas i `render()`.
+`#msgLayer` och flyttas i `render()`. Flera i samma båt = en bubbla med en rad per person
+(`.mLine`, nyast överst, egen rad ljusgul). Saker på kartan ska låta fingret panorera:
+`pointerdown` → `mapPointerDown(e, true)`, och `if (mapDraggedJustNow()) return;` i click.
 
 ## Ritlager (canvas) i skärmkoordinater
 
 Vind/lä, blixtar, Kartanalys: en `<canvas>` i `#stage` över kartan, ritas om i
-`render()`. Per skärmpunkt (var 2:a css-px) och cachat per vy (nyckel = origin, skala,
-storlek, version) – blir aldrig kantigt inzoomat. Kartanalysens gråtoning: en andra
+`render()`. Per skärmpunkt (1 css-px stilla, var 2:a medan man drar) och cachat per vy (nyckel =
+origin, skala, storlek, version, steg) – blir aldrig kantigt inzoomat. Kanter kantutjämnas: räkna ett
+mjukt fält (bilinjärt), avstånd till kanten = (värde − 0,5) / lutning, täckning = 0,5 + avstånd. Kartanalysens gråtoning: en andra
 canvas med `mix-blend-mode:saturation` (grå där kartan ska avfärgas).
 
 ## Rotation

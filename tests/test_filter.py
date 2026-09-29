@@ -41,7 +41,12 @@ with sync_playwright() as p:
     ps = pins(pg)
     check('Gädda off -> gädda spot hidden', len(ps) == 3 and not any(x['t'] == 'gadda' for x in ps), ps)
     check('filter dot shows something is filtered', pg.is_visible('.visMoreDot'))
+    check('Filter: "Visa markeringar"; Andras 50/100 % and Djup are no longer there', 'visa markeringar' in pg.inner_text('#visMore').lower() and not pg.query_selector('#visMore #othersOpacitySeg') and not pg.query_selector('#visMore #toggleDepth'))
+    pg.click('#menuBtn'); pg.click('#menuItemSettings'); pg.wait_for_timeout(250)
+    check('...they are in Inställningar', pg.is_visible('#othersOpacitySeg') and pg.is_visible('label:has(#toggleDepth)') and 'Andras fiskeplatser' in pg.inner_text('#settingsView'))
     pg.click('#othersOpacitySeg button[data-op="0.5"]'); pg.wait_for_timeout(150)
+    pg.click('#settingsBackBtn'); pg.wait_for_timeout(250)
+    if not pg.is_visible('#visMore'): pg.click('#visMoreBtn'); pg.wait_for_timeout(250)
     check("50 % -> others' spots half see-through, mine not", all(x['op'] == ('0.5' if x['other'] else '1') for x in pins(pg)), pins(pg))
     pg.screenshot(path='shot_filter_used.png')
 

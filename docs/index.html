@@ -74,7 +74,7 @@
   /* iPhone home-screen app, upright: under the (black) status bar the fade starts solid in the
      app's own blue-grey, like the one at the bottom -- no see-through line under the bar */
   @media (orientation:portrait){
-    html.iosApp header{background:linear-gradient(to bottom, rgb(6,20,28) 0%, rgba(6,20,28,.85) 20%, rgba(6,20,28,.4) 65%, rgba(6,20,28,0) 100%);}
+    html.iosApp header{background:linear-gradient(to bottom, rgba(6,20,28,.85) 0%, rgba(6,20,28,.4) 45%, rgba(6,20,28,0) 100%);}
   }
   #mapLoading{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:1;color:var(--text-muted);font-size:13px;pointer-events:none;display:none;}
   #mapLoading.show{display:block;}
@@ -768,7 +768,7 @@
   .sheetGrab{position:sticky;top:-10px;z-index:3;margin:-10px -18px 6px;height:30px;display:flex;align-items:center;justify-content:center;background:var(--navy);border-radius:16px 16px 0 0;cursor:grab;}
   .sheetHandle{width:40px;height:5px;background:rgba(255,255,255,.3);border-radius:3px;}
   .gripX{position:absolute;right:4px;top:0;width:46px;height:30px;padding:0;border:none;background:none;color:var(--text-muted);
-    font-size:16px;line-height:30px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+    font-size:16px;line-height:30px;cursor:pointer;-webkit-tap-highlight-color:transparent;color:rgba(255,255,255,.3);}
   .gripX:active{color:#fff;}
   /* holding the grip: the top edge lights up blue + a soft blue spotlight, the bar white and glowing */
   #wpSheet.dragging, #anPanel.dragging, #msgCard.dragging{border-top-color:#58b4ff;box-shadow:0 -10px 30px rgba(0,0,0,.45),0 -2px 14px rgba(88,180,255,.9);}
@@ -790,7 +790,11 @@
   .typeSeg button[data-type="fara"]{--tc:var(--t-fara);}
   .typeSeg button[data-type="meet"]{--tc:var(--t-meet);}
   .typeSeg button[data-type="hem"]{--tc:var(--t-hem);}
-  .typeSeg button.active{background:var(--tc);color:var(--ink);}
+  .typeSeg button.active{background:var(--tc);color:var(--ink);position:relative;overflow:hidden;}
+  .typeSeg button.active::after{content:'';position:absolute;top:0;bottom:0;left:-60%;width:50%;pointer-events:none;
+    background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);animation:pillSweep 2.8s ease-in-out infinite;}
+  @keyframes pillSweep{0%{left:-60%;}55%,100%{left:120%;}}
+  @media (prefers-reduced-motion:reduce){ .typeSeg button.active::after{display:none;} }
   .typeSeg button[data-type="fara"].active, .typeSeg button[data-type="hem"].active{color:#fff;}
   .typeSeg button:disabled{opacity:.45;cursor:default;}
   .typeSeg button.active:disabled{opacity:1;}
@@ -1431,6 +1435,11 @@
   #msgOwnN{font-size:11px;color:var(--text-muted);min-width:32px;text-align:right;font-variant-numeric:tabular-nums;}
   #msgOwnN.full{color:#ff8a80;}
   #msgOwnGo{width:34px;height:34px;border-radius:50%;border:none;background:var(--amber);color:var(--navy);font-size:15px;font-weight:900;cursor:pointer;flex:0 0 auto;}
+  .msgBub .mLine{white-space:nowrap;line-height:1.45;}
+  .msgBub.multi{padding:5px 11px;}
+  .msgBub:not(.mine) .mLine.mine{background:#FFE7B8;border-radius:7px;margin:0 -6px;padding:0 6px;}
+  /* a finger on these may also pan the map */
+  .wpPin, .wpFara, .wpBeacon, .boatPip, .msgBub, .anLbl{touch-action:none;}
 </style>
 </head>
 <body>
@@ -1600,6 +1609,26 @@
           <span class="satVal" id="trackOpVal">60 %</span>
         </div>
       </div>
+      <div class="settingsRow" style="flex-direction:column;align-items:stretch;">
+        <div class="settingsRowText">
+          <div class="settingsRowTitle">Andras fiskeplatser</div>
+          <div class="settingsRowDesc">Hur tydligt gruppens platser syns på kartan.</div>
+        </div>
+        <div class="segmented" id="othersOpacitySeg" role="radiogroup" aria-label="Synlighet för andras fiskeplatser">
+          <button type="button" data-op="0.5" role="radio">50 %</button>
+          <button type="button" data-op="1" role="radio">100 %</button>
+        </div>
+      </div>
+      <label class="settingsRow" for="toggleDepth">
+        <div class="settingsRowText">
+          <div class="settingsRowTitle">Djupet under båten</div>
+          <div class="settingsRowDesc">Visas bredvid farten nere till vänster.</div>
+        </div>
+        <span class="toggle">
+          <input type="checkbox" id="toggleDepth" checked>
+          <span class="toggleTrack"><span class="toggleThumb"></span></span>
+        </span>
+      </label>
       <label class="settingsRow" for="gpsPulseToggle">
         <div class="settingsRowText">
           <div class="settingsRowTitle">Pulserande ring vid din position</div>
@@ -1847,7 +1876,7 @@
     </button>
     <div id="visMore" hidden>
      <div class="visCol">
-      <div class="visHead">Visa</div>
+      <div class="visHead">Visa markeringar</div>
       <label class="visRow">
         <span class="visSwatch visSwatch--person" id="swatchMine"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"></path></svg></span>
         <span class="visLabel">Mina</span>
@@ -1882,14 +1911,6 @@
         </span>
       </label>
       <div class="visSeparator"></div>
-      <label class="visRow">
-        <span class="visSwatch visSwatch--depth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6c2 1.4 4 1.4 6 0s4-1.4 6 0 4 1.4 6 0"></path><path d="M12 10v10"></path><path d="M8.5 16.5 12 20l3.5-3.5"></path></svg></span>
-        <span class="visLabel">Djup</span>
-        <span class="toggle">
-          <input type="checkbox" id="toggleDepth" checked>
-          <span class="toggleTrack"><span class="toggleThumb"></span></span>
-        </span>
-      </label>
       <label class="visRow">
         <span class="visSwatch visSwatch--track"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="18" r="2"></circle><path d="M7 18h5a3.5 3.5 0 0 0 0-7H9.5a3.5 3.5 0 0 1 0-7H19"></path></svg></span>
         <span class="visLabel">Spår</span>
@@ -1942,11 +1963,6 @@
      <div class="visCol">
       <div class="visHead">Typer</div>
       <div id="visTypes"></div>
-      <div class="visHead">Andras</div>
-      <div class="visSeg" id="othersOpacitySeg" role="radiogroup" aria-label="Synlighet för andras fiskeplatser">
-        <button type="button" data-op="0.5" role="radio">50 %</button>
-        <button type="button" data-op="1" role="radio">100 %</button>
-      </div>
      </div>
     </div>
   </div>
@@ -2757,7 +2773,12 @@
 
   var gestureWasMulti = false; // this touch sequence has had 2 fingers down (a pinch)
   var tapHadMenuOpen = false;   // a tap that just closes the menu shouldn't also drop a depth probe
-  stage.addEventListener('pointerdown', function(e){
+  stage.addEventListener('pointerdown', function(e){ mapPointerDown(e, false); });
+  // a finger that starts on something on the map (a spot, a boat, a message, a label) still pans
+  // the map; only a short tap without moving opens the thing (see mapDraggedJustNow)
+  var lastDrag = null;
+  function mapDraggedJustNow(){ return !!(lastDrag && performance.now() - lastDrag.t < 450 && lastDrag.moved >= 10); }
+  function mapPointerDown(e, onItem){
     pointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
     stage.classList.add('dragging');
     animToken++; // touching the map stops a running pan/zoom animation
@@ -2765,9 +2786,9 @@
       gestureWasMulti = false;
       tapHadMenuOpen = typeof menuPanel !== 'undefined' && menuPanel.classList.contains('show');
       var p = pointers.values().next().value;
-      panStart = {x:p.x, y:p.y, originX:originX, originY:originY, moved:0, t0:performance.now()};
+      panStart = {x:p.x, y:p.y, originX:originX, originY:originY, moved:0, t0:performance.now(), onItem: !!onItem};
       pinch = null;
-      if (!measureMode) startLongPress(p.x, p.y); // (in measuring mode a tap adds a point instead)
+      if (!measureMode && !onItem) startLongPress(p.x, p.y); // (in measuring mode a tap adds a point instead)
     } else if (pointers.size === 2){
       cancelLongPress();
       gestureWasMulti = true;
@@ -2775,7 +2796,7 @@
       pinch = { prevDist: dist(pts[0], pts[1]) };
       panStart = null;
     }
-  });
+  }
 
   window.addEventListener('pointermove', function(e){
     if (!pointers.has(e.pointerId)) return;
@@ -2814,6 +2835,9 @@
       pinch = null;
     } else if (pointers.size === 0){
       stage.classList.remove('dragging');
+      if (panStart) lastDrag = { t: performance.now(), moved: panStart.moved };
+      if (panStart && panStart.onItem){ panStart = null; pinch = null; if (typeof render === 'function') scheduleRender(); return; }   // (its own click opens it)
+      if (typeof anCanvas !== 'undefined') scheduleRender();                 // (full-resolution outlines again)
       if (measureMode && wasSingle && panStart && panStart.moved < 10 && (performance.now() - panStart.t0) < 600){
         // measuring: every tap on the map is a new point (no double-tap zoom)
         addMeasurePointAtScreen(p.x, p.y);
@@ -3029,9 +3053,10 @@
       if (!el){
         el = document.createElement('div');
         el.setAttribute('data-id', wp.id);
-        el.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
+        el.addEventListener('pointerdown', function(e){ e.stopPropagation(); mapPointerDown(e, true); });
         el.addEventListener('click', function(e){
           e.stopPropagation();
+          if (mapDraggedJustNow()) return;       // (the finger panned the map -- not a tap on the spot)
           // look up the CURRENT waypoint by id at click time rather than closing over
           // the object from render time -- that object gets replaced on every re-render
           // (a Firestore sync, a refresh, a reload), so a stale closure would keep
@@ -3568,9 +3593,10 @@
           el.setAttribute('data-cluster', c.id);
           el.className = 'boatPip';
           el.innerHTML = '<span class="boatDot"></span><span class="boatName"></span>';
-          el.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
+          el.addEventListener('pointerdown', function(e){ e.stopPropagation(); mapPointerDown(e, true); });
           el.addEventListener('click', function(e){
             e.stopPropagation();
+            if (mapDraggedJustNow()) return;
             // look up the CURRENT cluster by id at click time, same reasoning
             // as waypoint pins: the object backing this element gets replaced
             // on every snapshot update, so a stale closure would show old data
@@ -6433,8 +6459,8 @@
   }
   // the lee for what's on screen, 1 point per 2 css px (redone only when the view moves)
   function drawLeeView(F, W, H){
-    var STEP = 2, vw = Math.ceil(W / STEP), vh = Math.ceil(H / STEP);
-    var vkey = originX.toFixed(1) + ',' + originY.toFixed(1) + ',' + scale.toFixed(5) + ',' + W + 'x' + H;
+    var STEP = stage.classList.contains('dragging') ? 2 : 1, vw = Math.ceil(W / STEP), vh = Math.ceil(H / STEP);
+    var vkey = originX.toFixed(1) + ',' + originY.toFixed(1) + ',' + scale.toFixed(5) + ',' + W + 'x' + H + ',' + STEP;
     if (!F.view || F.view.key !== vkey){
       var cv = F.view ? F.view.cv : document.createElement('canvas');
       if (cv.width !== vw || cv.height !== vh){ cv.width = vw; cv.height = vh; }
@@ -6443,18 +6469,18 @@
       for (var y = 0; y < vh; y++) for (var x = 0; x < vw; x++){
         var ix = (x * STEP + 1 - originX) / scale, iy = (y * STEP + 1 - originY) / scale, i = y * vw + x;
         var m = gridAt(lk, ix, iy); lake[i] = m;
-        if (m < 0.02) continue;
-        var f = gridAt(ff, ix, iy) / m;                         // (weighted: land cells hold 0)
-        lee[i] = f < D ? 1 : 0;
+        lee[i] = m < 0.02 ? 0 : (D - gridAt(ff, ix, iy) / m) / D;       // > 0 = lee
       }
       for (var y2 = 0; y2 < vh; y2++) for (var x2 = 0; x2 < vw; x2++){
-        var i2 = y2 * vw + x2; if (!lee[i2]) continue;
-        var m2 = Math.min(1, lake[i2] * 1.6), k = i2 * 4;
-        // edge: a lee point next to open lake water (not next to land) -- ~2 px, at every zoom
-        var edge = (x2 > 0 && !lee[i2 - 1] && lake[i2 - 1] > 0.5) || (x2 < vw - 1 && !lee[i2 + 1] && lake[i2 + 1] > 0.5) ||
-                   (y2 > 0 && !lee[i2 - vw] && lake[i2 - vw] > 0.5) || (y2 < vh - 1 && !lee[i2 + vw] && lake[i2 + vw] > 0.5);
-        if (edge){ px[k] = 255; px[k + 1] = 255; px[k + 2] = 255; px[k + 3] = Math.round(170 * m2); }
-        else { px[k] = 235; px[k + 1] = 250; px[k + 2] = 245; px[k + 3] = Math.round(72 * m2); }
+        var i2 = y2 * vw + x2, m2 = Math.min(1, lake[i2] * 1.6), k = i2 * 4; if (m2 <= 0) continue;
+        // (only water neighbours: along the shore there's no lee edge, as before)
+        function nb(j){ return lake[j] > 0.3 ? lee[j] : lee[i2]; }
+        var gx = (nb(x2 < vw - 1 ? i2 + 1 : i2) - nb(x2 > 0 ? i2 - 1 : i2)) / 2, gy = (nb(y2 < vh - 1 ? i2 + vw : i2) - nb(y2 > 0 ? i2 - vw : i2)) / 2;
+        var d = lee[i2] / (Math.sqrt(gx * gx + gy * gy) + 1e-3);       // steps to the lee's edge
+        var cov = d < -0.5 ? 0 : d > 0.5 ? 1 : d + 0.5, e = Math.max(0, 1 - Math.abs(d) / (STEP === 1 ? 1.1 : 0.7));
+        var a1 = 72 / 255 * cov * m2, a2 = 170 / 255 * e * m2, a = a2 + a1 * (1 - a2);
+        if (a <= 0) continue;
+        px[k] = (255 * a2 + 235 * a1 * (1 - a2)) / a; px[k + 1] = (255 * a2 + 250 * a1 * (1 - a2)) / a; px[k + 2] = (255 * a2 + 245 * a1 * (1 - a2)) / a; px[k + 3] = a * 255;
       }
       c2.putImageData(im, 0, 0);
       F.view = { key: vkey, cv: cv };
@@ -7018,8 +7044,8 @@
         .filter(function(b){ return b.p >= anSet.topP; }).sort(function(a, b){ return b.p - a.p; });
       var hb = anBlobs(capH, A.W, A.H).map(function(c){ var best = c[0], p = 0; c.forEach(function(j){ if (A.domeHole[j] > p) p = A.domeHole[j]; if (dep[j] > dep[best]) best = j; }); return { c: c, i: best, p: p }; })
         .filter(function(b){ return b.p >= anSet.holeP; }).sort(function(a, b){ return b.p - a.p; });
-      tb.forEach(function(b, k){ b.c.forEach(function(j){ M[j] = 1; }); if (k < 14) labels.push({ i: b.i, cls: '', txt: 'Grynna ' + fmtDepth(dep[b.i]) + ' m' }); });
-      hb.forEach(function(b, k){ b.c.forEach(function(j){ if (A.domeHole[j] >= Math.max(0.25, b.p - AN_HOLE_CORE)) M[j] = 2; }); if (k < 8) labels.push({ i: b.i, cls: 'hole', txt: 'Håla ' + fmtDepth(dep[b.i]) + ' m' }); });
+      tb.forEach(function(b, k){ b.c.forEach(function(j){ M[j] = 1; }); if (k < 14) labels.push({ i: b.i, cls: '', txt: fmtDepth(dep[b.i]) + ' m' }); });
+      hb.forEach(function(b, k){ b.c.forEach(function(j){ if (A.domeHole[j] >= Math.max(0.25, b.p - AN_HOLE_CORE)) M[j] = 2; }); if (k < 8) labels.push({ i: b.i, cls: 'hole', txt: fmtDepth(dep[b.i]) + ' m' }); });
       text = '<b>' + tb.length + '</b> grynnor (reser sig minst ' + fmtDepth(anSet.topP) + ' m) · <b>' + hb.length + '</b> hålor (minst ' + fmtDepth(anSet.holeP) + ' m djupa)';
       note = '<b>Grynna</b> = ett grundare ställe ute i sjön som reser sig minst ' + fmtDepth(anSet.topP) + ' m över den lägsta "sadeln" runt den – där det sluttar ner åt alla håll. Grunda hyllor längs land räknas inte. ' +
         '<b>Håla</b> = en grop som går minst ' + fmtDepth(anSet.holeP) + ' m under kanten runt den; bara gropens djupaste del (0,6 m) visas. Siffran = djupet där grynnan är grundast / hålan djupast. Tryck på en etikett för lodet.';
@@ -7101,40 +7127,52 @@
     [anCanvas, anSatCanvas].forEach(function(c){ if (c.width !== Math.round(W * dpr) || c.height !== Math.round(H * dpr)){ c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); } });
     anCtx.setTransform(dpr, 0, 0, dpr, 0, 0); anCtx.clearRect(0, 0, W, H);
     anSatCtx.setTransform(dpr, 0, 0, dpr, 0, 0); anSatCtx.clearRect(0, 0, W, H);
-    var STEP = 2, vw = Math.ceil(W / STEP), vh = Math.ceil(H / STEP), A = AN, R = anRes;
-    var key = originX.toFixed(1) + ',' + originY.toFixed(1) + ',' + scale.toFixed(5) + ',' + W + 'x' + H + ',' + R.ver + ',' + anSet.dim;
+    var STEP = stage.classList.contains('dragging') ? 2 : 1, vw = Math.ceil(W / STEP), vh = Math.ceil(H / STEP), A = AN, R = anRes;
+    var key = originX.toFixed(1) + ',' + originY.toFixed(1) + ',' + scale.toFixed(5) + ',' + W + 'x' + H + ',' + R.ver + ',' + anSet.dim + ',' + STEP;
     if (!anView || anView.key !== key){
       var cv = anView ? anView.cv : document.createElement('canvas'), sv = anView ? anView.sv : document.createElement('canvas');
       [cv, sv].forEach(function(c){ if (c.width !== vw || c.height !== vh){ c.width = vw; c.height = vh; } });
       var c2 = cv.getContext('2d'), im = c2.createImageData(vw, vh), px = im.data, col = R.color;
       var s2 = sv.getContext('2d'), sm = s2.createImageData(vw, vh), sp = sm.data;
       var dimA = Math.round(255 * anSet.dim), satA = Math.round(255 * Math.min(1, anSet.dim + 0.2));
-      var val = new Uint8Array(vw * vh), lkv = new Uint8Array(vw * vh);
+      var N2 = vw * vh, f1 = new Float32Array(N2), f2 = new Float32Array(N2), fl = new Float32Array(N2);
       for (var y = 0; y < vh; y++) for (var x = 0; x < vw; x++){
         var ix = (x * STEP + 1 - originX) / scale, iy = (y * STEP + 1 - originY) / scale;
-        var lgx = Math.floor(ix / IMG_W * A.W), lgy = Math.floor(iy / IMG_H * A.H);
-        lkv[y * vw + x] = (lgx >= 0 && lgy >= 0 && lgx < A.W && lgy < A.H && A.lake[lgy * A.W + lgx]) ? 1 : 0;
-        // the 4 nearest cells, weighted (smooth outlines instead of 5 m steps): the class with most weight
         var fx = ix / IMG_W * A.W - 0.5, fy = iy / IMG_H * A.H - 0.5, x0 = Math.floor(fx), y0 = Math.floor(fy), tx = fx - x0, ty = fy - y0;
-        var w0 = 0, w1 = 0, w2 = 0;
+        var a1 = 0, a2 = 0, al = 0, q = y * vw + x;
         for (var dy = 0; dy <= 1; dy++) for (var dx = 0; dx <= 1; dx++){
           var cx = x0 + dx, cy = y0 + dy, wt = (dx ? tx : 1 - tx) * (dy ? ty : 1 - ty);
-          var cval = (cx >= 0 && cy >= 0 && cx < A.W && cy < A.H) ? R.M[cy * A.W + cx] : 0;
-          if (cval === 1) w1 += wt; else if (cval === 2) w2 += wt; else w0 += wt;
+          if (cx < 0 || cy < 0 || cx >= A.W || cy >= A.H) continue;
+          var ci = cy * A.W + cx, cval = R.M[ci];
+          if (cval === 1) a1 += wt; else if (cval === 2) a2 += wt;
+          if (A.lake[ci]) al += wt;
         }
-        val[y * vw + x] = w1 >= w0 && w1 >= w2 ? 1 : (w2 > w0 ? 2 : 0);
+        f1[q] = a1; f2[q] = a2; fl[q] = al;
       }
+      // signed distance (in steps) from the 0,5 edge of a field: value / slope
+      function sd(f, q, x, y){
+        var gx = (f[x < vw - 1 ? q + 1 : q] - f[x > 0 ? q - 1 : q]) / 2, gy = (f[y < vh - 1 ? q + vw : q] - f[y > 0 ? q - vw : q]) / 2;
+        return (f[q] - 0.5) / (Math.sqrt(gx * gx + gy * gy) + 1e-3);
+      }
+      function cl(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
+      var c1col = col, c2col = anSet.mode === 'tops' ? [60, 200, 255] : [70, 200, 60], c2a = anSet.mode !== 'tops' ? 60 : 105;
       for (var y2 = 0; y2 < vh; y2++) for (var x2 = 0; x2 < vw; x2++){
-        var i2 = y2 * vw + x2, v = val[i2], k = i2 * 4;
-        // the shore (lake next to land): a thin dashed white line, 50 % (easier to see the lake on the dark map)
-        if (lkv[i2] && ((x2 > 0 && !lkv[i2 - 1]) || (x2 < vw - 1 && !lkv[i2 + 1]) || (y2 > 0 && !lkv[i2 - vw]) || (y2 < vh - 1 && !lkv[i2 + vw])) &&
-            Math.floor((x2 + y2) / 3) % 2 === 0){ px[k] = 255; px[k + 1] = 255; px[k + 2] = 255; px[k + 3] = 128; continue; }
-        if (!v){ px[k] = 6; px[k + 1] = 14; px[k + 2] = 20; px[k + 3] = dimA;                  // toned down ...
-                 sp[k] = 128; sp[k + 1] = 128; sp[k + 2] = 128; sp[k + 3] = satA; continue; }     // ... and greyed
-        var edge = (x2 > 0 && val[i2 - 1] !== v) || (x2 < vw - 1 && val[i2 + 1] !== v) || (y2 > 0 && val[i2 - vw] !== v) || (y2 < vh - 1 && val[i2 + vw] !== v);
-        var c = v === 2 ? (anSet.mode === 'tops' ? [60, 200, 255] : [70, 200, 60]) : col;
-        if (edge){ px[k] = 255; px[k + 1] = 255; px[k + 2] = 255; px[k + 3] = 210; }
-        else if (c){ px[k] = c[0]; px[k + 1] = c[1]; px[k + 2] = c[2]; px[k + 3] = v === 2 && anSet.mode !== 'tops' ? 60 : 105; }
+        var q2 = y2 * vw + x2, k = q2 * 4;
+        var d1 = sd(f1, q2, x2, y2), d2 = sd(f2, q2, x2, y2), dl = sd(fl, q2, x2, y2);
+        var k1 = cl(0.5 + d1), k2 = cl(0.5 + d2), k0 = cl(1 - k1 - k2);
+        // "over" in order: toned down, the found area(s), their white edge, the dashed shore
+        var r = 0, g = 0, b = 0, a = 0;
+        function over(cr, cg, cb, ca){ ca /= 255; r = cr * ca + r * (1 - ca); g = cg * ca + g * (1 - ca); b = cb * ca + b * (1 - ca); a = ca + a * (1 - ca); }
+        over(6, 14, 20, dimA * k0);
+        if (c1col) over(c1col[0], c1col[1], c1col[2], 105 * k1);
+        over(c2col[0], c2col[1], c2col[2], c2a * k2);
+        var LW = STEP === 1 ? 1.1 : 0.7;
+        var e = Math.max(cl(1 - Math.abs(d1) / LW), cl(1 - Math.abs(d2) / LW));
+        if (e > 0) over(255, 255, 255, 180 * e);        // (as thin and soft as the lee's edge)
+        var es = cl(1 - Math.abs(dl) / (LW * 0.8));
+        if (es > 0) over(255, 255, 255, 128 * es);      // the shore: a solid line, 50 %
+        if (a > 0){ px[k] = r / a; px[k + 1] = g / a; px[k + 2] = b / a; px[k + 3] = a * 255; }
+        sp[k] = 128; sp[k + 1] = 128; sp[k + 2] = 128; sp[k + 3] = satA * k0;
       }
       c2.putImageData(im, 0, 0); s2.putImageData(sm, 0, 0);
       anView = { key: key, cv: cv, sv: sv };
@@ -7294,10 +7332,11 @@
   anBtn.addEventListener('click', function(e){ e.stopPropagation(); showAnPanel(!anPanel.classList.contains('show')); });
   document.getElementById('anClose').addEventListener('click', function(){ showAnPanel(false); });
   document.getElementById('anClear').addEventListener('click', function(){ anSet.mode = null; anSave(); anCtlMode = '#'; anCompute(); });
-  anLabelsEl.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
+  anLabelsEl.addEventListener('pointerdown', function(e){ e.stopPropagation(); if (e.target.closest && e.target.closest('.anLbl')) mapPointerDown(e, true); });
   anLabelsEl.addEventListener('click', function(e){
     var l = e.target.closest ? e.target.closest('.anLbl') : null; if (!l) return;
     e.stopPropagation();
+    if (mapDraggedJustNow()) return;
     var p = anImgOfCell(+l.getAttribute('data-i'));
     if (l.classList.contains('sim') && anRes && anRes.list){ var it = anRes.list[+l.textContent - 1]; if (it){ startNav('Liknande #' + it.n, it.x, it.y); return; } }
     showAnPanel(false); setProbe({ x: p.x, y: p.y });
@@ -7554,30 +7593,46 @@
       if (!b.msg || !b.msgAt || now - b.msgAt >= MSG_MS || msgHidden[id + '@' + b.msgAt]) return;
       items.push({ key: id + '@' + b.msgAt, mine: false, text: b.msg, who: b.name, at: b.msgAt, lat: b.lat, lon: b.lon });
     });
-    var keep = {};
+    // the same boat (as for the boat pins: closer than BOAT_CLUSTER_METERS) = one bubble; newest first
+    items.sort(function(a, b){ return b.at - a.at; });
+    var groups = [];
     items.forEach(function(it){
-      keep[it.key] = 1;
-      var el = msgLayerEl.querySelector('[data-k="' + it.key.replace(/"/g, '') + '"]');
-      if (!el){ el = document.createElement('div'); el.className = 'msgBub' + (it.mine ? ' mine' : ''); el.setAttribute('data-k', it.key.replace(/"/g, '')); msgLayerEl.appendChild(el); }
-      var isNew = now - it.at < MSG_NEW_MS;
-      var html = escHtml(it.text) + '<small>' + escHtml(it.who || '') + '</small>';
+      var g = groups.filter(function(q){ return haversineKm(q.lat, q.lon, it.lat, it.lon) * 1000 < BOAT_CLUSTER_METERS; })[0];
+      if (g) g.items.push(it); else groups.push({ lat: it.lat, lon: it.lon, items: [it] });
+    });
+    var keep = {};
+    function fade(it){ return 1 - 0.55 * Math.min(1, (now - it.at) / MSG_MS); }       // fades over the 15 min
+    groups.forEach(function(g){
+      var gk = g.items.map(function(it){ return it.key.replace(/"/g, ''); }).join('|');
+      keep[gk] = 1;
+      var el = null; Array.prototype.forEach.call(msgLayerEl.children, function(c){ if (c.getAttribute('data-k') === gk) el = c; });
+      if (!el){ el = document.createElement('div'); el.setAttribute('data-k', gk); msgLayerEl.appendChild(el); }
+      el.className = 'msgBub' + (g.items.length === 1 && g.items[0].mine ? ' mine' : '') + (g.items.length > 1 ? ' multi' : '');
+      var isNew = g.items.some(function(it){ return now - it.at < MSG_NEW_MS; });
+      var html = g.items.map(function(it){
+        return '<div class="mLine' + (it.mine ? ' mine' : '') + '" data-k="' + escHtml(it.key.replace(/"/g, '')) + '">' + escHtml(it.text) + '<small>' + escHtml(it.who || '') + '</small></div>';
+      }).join('');
       if (el.getAttribute('data-h') !== html + isNew){
         el.setAttribute('data-h', html + isNew);
         el.innerHTML = html + (isNew ? '<i class="msgRb"></i>' : '');
         if (isNew) msgRainbow(el);
       }
-      el.style.opacity = (1 - 0.55 * Math.min(1, (now - it.at) / MSG_MS)).toFixed(2);   // fades over the 15 min
-      msgItems[el.getAttribute('data-k')] = it;
-      var p = latLonToImgPx(it.lat, it.lon);
+      var top = fade(g.items[0]);
+      el.style.opacity = top.toFixed(2);
+      Array.prototype.forEach.call(el.querySelectorAll('.mLine'), function(ln, k){ ln.style.opacity = (fade(g.items[k]) / top).toFixed(2); });
+      g.items.forEach(function(it){ msgItems[it.key.replace(/"/g, '')] = it; });
+      var p = latLonToImgPx(g.lat, g.lon);
       el.style.left = (originX + p.x * scale) + 'px'; el.style.top = (originY + p.y * scale) + 'px';
     });
     Array.prototype.slice.call(msgLayerEl.children).forEach(function(el){ if (!keep[el.getAttribute('data-k')]) el.remove(); });
   }
-  msgLayerEl.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
+  msgLayerEl.addEventListener('pointerdown', function(e){ e.stopPropagation(); if (e.target.closest && e.target.closest('.msgBub')) mapPointerDown(e, true); });
   msgLayerEl.addEventListener('click', function(e){
     var el = e.target.closest ? e.target.closest('.msgBub') : null; if (!el) return;
     e.stopPropagation();
-    openMsgCard(el.getAttribute('data-k'));
+    if (mapDraggedJustNow()) return;
+    var line = (e.target.closest && e.target.closest('.mLine')) || el.querySelector('.mLine');   // (a row of a shared bubble)
+    if (line) openMsgCard(line.getAttribute('data-k'));
   });
   var msgCard = document.getElementById('msgCard'), msgCardK = null, msgCardT = null;
   function fmtClock(ms){ var d = new Date(ms); return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2); }
@@ -7610,7 +7665,8 @@
     renderMessages();
   });
   setInterval(renderMessages, 20000);
-  window.__ffMsgs = function(){ return Array.prototype.map.call(msgLayerEl.children, function(el){ return { k: el.getAttribute('data-k'), t: el.textContent }; }); };
+  window.__ffMsgs = function(){ return Array.prototype.map.call(msgLayerEl.querySelectorAll('.mLine'), function(ln){ var b = ln.parentNode;
+    return { k: ln.getAttribute('data-k'), t: ln.textContent, bubble: b.getAttribute('data-k'), o: +(b.style.opacity || 1) * +(ln.style.opacity || 1) }; }); };
   ltRender(); ltTick();
 
   /* ---------------- init ---------------- */

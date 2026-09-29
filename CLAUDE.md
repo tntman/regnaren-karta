@@ -117,7 +117,9 @@ All text i appen är på svenska. Svara Filip på svenska, kort och tydligt.
   för toppar och LÅGT för hålor så grunda hyllor längs land inte blir toppar): "kapsyler" ≥ 0,25 m
   vars topp reser sig ≥ reglaget (standard 0,6 m / hålor 0,8 m). Hålor ritas bara med sin djupaste
   del (`AN_HOLE_CORE` 0,6 m) – annars blev en hel djupbassäng en jättehåla (upp till 28 ha). Sjöns
-  kontur ritas streckad vit 50 % i Kartanalys. Samma färger/etiketter som förut.
+  kontur ritas heldragen vit 50 % i Kartanalys. Etiketterna = bara djupet ("2,4 m", inte "Grynna …").
+  **Mjuka kanter**: kanterna räknas som ett avstånd (fältets värde / lutning) → kantutjämnat, som lä;
+  full upplösning (1 css-px) när kartan står still, var 2:a px medan man drar (`STEP`, i cache-nyckeln).
   "Mörkare" ligger i Inställningar (`#anDimSet`), inte i panelen. **Av efter omstart** (kvar vid
   vridning, `rotState`); inget att visa (t.ex. Liknande innan platserna laddats) = ingen gråtoning.
   Panelen: ingen rubrik, ✕ i greppremsan, "Rensa" efter en avskiljare, aktiv bara med något valt.
@@ -146,15 +148,21 @@ All text i appen är på svenska. Svara Filip på svenska, kort och tydligt.
   med Array.from – en emoji = 1, räknaren "n/15", Enter/➤ skickar, tryck utanför = stäng). Skickas med din position (`positions/<du>.msg/msgAt`), bubbla vid båten 15 min,
   tonas till ~45 %; de första 5 min en snurrande regnbågskant (`.msgRb`, SVG-mask av bubblans form
   inkl. flärpen – `msgRainbow`). Tryck = rutan `#msgCard` (skrivet kl, försvinner om, Åk hit = lodet
-  på båten, Dölj för mig / Ta bort för egna). Bara vid sjön.
+  på båten, Dölj för mig / Ta bort för egna). Bara vid sjön. **Flera i samma båt** (< BOAT_CLUSTER_METERS):
+  EN bubbla (`.msgBub.multi`), en rad per person (`.mLine`, egen data-k), nyast överst, äldre rader
+  blekare; regnbågskanten om någon rad är < 5 min. Tryck på en rad = den radens ruta.
 - **Åskvarning** (Inställningar: Av/5/10/20 km, ljud, vibration; standard 10 km): nytt nedslag
   < 5 min och inom avståndet → `#ltAlarm` + pip (WebAudio, låses upp vid första tryck) +
   vibration (finns inte på iPhone). Varje nedslag larmar en gång.
 - **Håll skärmen tänd** (Filter, av som standard, `ffmap_wakelock_v1`): Wake Lock, tas igen när
   appen blir synlig. På = gul sol `#wakeBadge` vid namnet; tryck = av + notis `#wakeNote` (✕, tonar
   bort efter 20 s).
-- **Filter**: "Namn" är borttaget (namnen visas alltid). Knapparna nere till höger = 2 × 2-rutnät,
-  lika stora (`--bb`).
+- **Filter**: "Namn" är borttaget (namnen visas alltid). Rubriken "Visa markeringar". "Djup" (djupet under
+  båten, `#toggleDepth`) och "Andras fiskeplatser 50/100 %" (`#othersOpacitySeg`) ligger i Inställningar.
+  Knapparna nere till höger = 2 × 2-rutnät, lika stora (`--bb`).
+- **Panorera över markeringar**: ett finger som börjar på en plats, båt, bubbla eller etikett panorerar
+  kartan (`mapPointerDown(e, true)`: ingen långtryckning/lod); bara ett tryck utan att dra öppnar den
+  (`mapDraggedJustNow()` i deras click).
 - **Pushnotiser**: inte gjort (kräver server/Firebase-betalplan) – utforskas senare.
 - **Positionsintervall** per sjö (`config/<lake>`, localStorage via `lakeKey`); sjö utan
   inställning i databasen = 20 s.

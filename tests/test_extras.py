@@ -106,20 +106,20 @@ with sync_playwright() as p:
     check('sent with your position (for everyone)', w and w[-1]['msg'] == 'Åker in 🏠' and w[-1]['lat'] and not pg.is_visible('#msgPop'), w)
     check('your bubble at your boat', any(m['k'] == 'me' and 'Åker in' in m['t'] for m in pg.evaluate('window.__ffMsgs()')))
     pg.screenshot(path='shot_msgs.png')
-    check('a new message: the rainbow edge (first 5 min), round the tail too', pg.evaluate("(() => { var r = document.querySelector('.msgBub.mine .msgRb'); return !!r && r.offsetHeight > document.querySelector('.msgBub.mine').offsetHeight + 5; })()"))
-    op = pg.evaluate("[].map.call(document.querySelectorAll('.msgBub'), e => [e.getAttribute('data-k'), +e.style.opacity])")
+    check('a new message: the rainbow edge (first 5 min), round the tail too', pg.evaluate("(() => { var bb = document.querySelector('.mLine.mine').closest('.msgBub'), r = bb.querySelector('.msgRb'); return !!r && r.offsetHeight > bb.offsetHeight + 5; })()"))
+    op = [[m['k'], m['o']] for m in pg.evaluate('window.__ffMsgs()')]
     check("they fade with age: Calle's (2 min) less than yours (new)", dict(op).get('me', 0) > [v for k, v in op if k != 'me'][0], op)
-    check("Calle's (2 min old) also has the rainbow edge", pg.evaluate("!!document.querySelector('.msgBub:not(.mine) .msgRb')"))
-    pg.evaluate("document.querySelector('.msgBub:not(.mine)').click()"); pg.wait_for_timeout(500)
+    check("Calle's (2 min old) also has the rainbow edge", pg.evaluate("!!document.querySelector('.mLine:not(.mine)').closest('.msgBub').querySelector('.msgRb')"))
+    pg.evaluate("document.querySelector('.mLine:not(.mine)').click()"); pg.wait_for_timeout(500)
     card = pg.inner_text('#msgCard')
     check("tap Calle's: a panel with when it was written and when it goes", pg.eval_on_selector('#msgCard', 'e => e.classList.contains("show")') and 'CALLE' in card and 'Hugg!' in card and 'Skrivet' in card and '2 min sedan' in card and 'Försvinner om 13 min' in card, card)
     pg.click('#msgCardGo'); pg.wait_for_timeout(700)
     check('"Åk hit": the lead line on Calle\'s boat', pg.eval_on_selector('#probe', 'e => e.classList.contains("show")') and not pg.eval_on_selector('#msgCard', 'e => e.classList.contains("show")'))
-    pg.evaluate("document.querySelector('.msgBub:not(.mine)').click()"); pg.wait_for_timeout(700)
+    pg.evaluate("document.querySelector('.mLine:not(.mine)').click()"); pg.wait_for_timeout(700)
     pg.click('#msgCardDrop'); pg.wait_for_timeout(300)
     check("...\"Dölj för mig\": hidden for you", not any(m['k'] != 'me' for m in pg.evaluate('window.__ffMsgs()')))
     pg.evaluate('window.__posWrites.length = 0')
-    pg.evaluate("document.querySelector('.msgBub.mine').click()"); pg.wait_for_timeout(400)
+    pg.evaluate("document.querySelector('.mLine.mine').click()"); pg.wait_for_timeout(400)
     check('your own: the panel says "Ta bort (för alla)"', pg.inner_text('#msgCardDrop') == 'Ta bort (för alla)' and not pg.is_visible('#msgCardGo'))
     pg.click('#msgCardDrop'); pg.wait_for_timeout(300)
     w = pg.evaluate('window.__posWrites')
@@ -154,6 +154,35 @@ with sync_playwright() as p:
     pg.wait_for_timeout(1200); pg.evaluate('window.__posWrites.length = 0')
     pg.click('#msgBtn'); pg.click('#msgPop button:has-text("Fisk")'); pg.wait_for_timeout(300)
     check('away from the lake: nothing sent, a note instead', not [x for x in pg.evaluate('window.__posWrites') if x.get('msg')] and pg.is_visible('#msgToast'))
+    b.close()
+
+    # several messages from the same boat: ONE bubble, a row per person, newest first
+    cfg3 = {'waypoints': cfg['waypoints'], 'positions': [
+        {'uid': 'kalle', 'name': 'Calle', 'lat': B1[0], 'lon': B1[1], 'ageMin': 0, 'msg': 'Kommer 🚤', 'msgAgeMin': 9},
+        {'uid': 'pia', 'name': 'Pia', 'lat': B1[0] + 0.00005, 'lon': B1[1], 'ageMin': 0, 'msg': 'Fisk!!! 🎣', 'msgAgeMin': 1},
+        {'uid': 'olle', 'name': 'Olle', 'lat': B1[0], 'lon': B1[1] + 0.00008, 'ageMin': 0, 'msg': 'Mat? 🍔', 'msgAgeMin': 4}]}
+    b, ctx, pg, errs = new_page(p, geo=B3, cfg=cfg3, name='Filip')
+    pg.wait_for_timeout(1500)
+    ms = pg.evaluate('window.__ffMsgs()')
+    check('three in the same boat: one shared bubble', pg.evaluate("document.querySelectorAll('.msgBub').length") == 1 and len(ms) == 3 and len(set(m['bubble'] for m in ms)) == 1, ms)
+    check('...one row per person, newest first (Pia, Olle, Calle)', [m['t'].split('🎣')[0] for m in ms][0].startswith('Fisk') and 'Pia' in ms[0]['t'] and 'Olle' in ms[1]['t'] and 'Calle' in ms[2]['t'], ms)
+    check('...older rows fainter', ms[0]['o'] > ms[1]['o'] > ms[2]['o'], [m['o'] for m in ms])
+    check('...the rainbow edge round the whole bubble (one is new)', pg.evaluate("!!document.querySelector('.msgBub.multi .msgRb')"))
+    pg.screenshot(path='shot_msgs_group.png')
+    pg.evaluate("[].filter.call(document.querySelectorAll('.mLine'), e => e.textContent.indexOf('Olle') >= 0)[0].click()"); pg.wait_for_timeout(500)
+    card = pg.inner_text('#msgCard')
+    check("tap Olle's row: his message's panel", 'OLLE' in card and 'Mat?' in card, card)
+    pg.click('#msgCardClose'); pg.wait_for_timeout(400)
+    # a finger that starts on a spot still pans the map; a plain tap opens it
+    s0 = pg.evaluate('window.__ffGeo.screenOf(%f, %f)' % B4)
+    pg.mouse.move(s0[0], s0[1] - 12); pg.mouse.down()
+    for k in range(1, 9): pg.mouse.move(s0[0] - 10 * k, s0[1] - 12 + 6 * k); pg.wait_for_timeout(16)
+    pg.mouse.up(); pg.wait_for_timeout(500)
+    s1 = pg.evaluate('window.__ffGeo.screenOf(%f, %f)' % B4)
+    check('drag that starts on a spot: the map pans, the spot is not opened', abs(s1[0] - s0[0] + 80) < 6 and abs(s1[1] - s0[1] - 48) < 6 and not pg.eval_on_selector('#wpSheet', 'e => e.classList.contains("show")'), (s0, s1))
+    pg.mouse.click(s1[0], s1[1] - 12); pg.wait_for_timeout(500)
+    check('...a tap on it opens it', pg.eval_on_selector('#wpSheet', 'e => e.classList.contains("show")') and pg.input_value('#wpName') == 'Djupa hålet')
+    check('no page errors', not errs, errs)
     b.close()
 
     # ---- lightning alarm: a strike 3 km away, 1 min old

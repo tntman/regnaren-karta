@@ -29,6 +29,11 @@ snabbmeddelanden, Hem-plats, Liknande förtydligad).
 - [ ] 2026-09-29 – Kartanalys: av när appen startas om (kvar vid vridning); "Rensa" efter en avskiljare. Hjälp: Kartanalys (text). Nyhet: "Kartanalys börjar avstängd" (BÄTTRE)
 - [ ] 2026-09-29 – Rättat: vägen sjövägen nådde inte hela sjön (Åk hit gav bara djup + avstånd). Om ingen väg hittas: prickad linje "fågelvägen". Hjälp: Lodet (text). Nyhet: "Åk hit och lodet hittar vägen till hela sjön" (FIXAT)
 - [ ] 2026-09-29 – Åk hit (från plats och Liknande) visar nu hela vägen – kartan zoomar så båten, rutten och målet syns. Hjälp: Åk hit + animering `akhit` (spelas in igen). Nyhet: "Åk hit visar hela vägen på kartan" (BÄTTRE)
+- [ ] 2026-09-29 – Snabbmeddelanden: flera i samma båt = en gemensam bubbla, en rad per person (nyast överst). Hjälp: Snabbmeddelanden (text) + ev. animering `meddelanden`. Nyhet: "Flera meddelanden från samma båt i en bubbla" (BÄTTRE)
+- [ ] 2026-09-29 – Filter: rubriken "Visa markeringar"; "Djup" och "Andras 50/100 %" flyttade till Inställningar. Hjälp: Filter + Inställningar (text) + animering `filter` om den visar dem. Nyhet: "Djup och Andras synlighet finns nu i Inställningar" (BÄTTRE)
+- [ ] 2026-09-29 – Kartanalys: etiketterna visar bara djupet (inte "Grynna"/"Håla"), sjöns kant heldragen, mjukare/tunnare kanter (även lä). Hjälp: Kartanalys (text) + animering `analys`. Nyhet: "Mjukare kanter i Kartanalys och Vind och lä" (BÄTTRE)
+- [ ] 2026-09-29 – Kartan går att panorera även om fingret börjar på en markering/båt/bubbla. Hjälp: Kartan (text, om den nämner tryck på markeringar). Nyhet: "Lättare att dra kartan över markeringar" (BÄTTRE)
+- [ ] 2026-09-29 – Små saker: fade upptill i hemskärmsappen, ✕ i rutorna grå som strecket, ljus som sveper genom vald typ. Hjälp: – (animeringar spelas in igen i Hjälp-rundan). Nyhet: ingår i "Ny design på rutorna".
 
 <!-- mall:
 - [ ] ÅÅÅÅ-MM-DD – Vad som ändrats. Hjälp: avsnitt X (text) + animering `namn`. Nyhet: "…" (NYTT/BÄTTRE/FIXAT)

@@ -35,7 +35,7 @@ with sync_playwright() as p:
     # ---- filter menu ----
     check('filter menu closed at start: only the Filter button', not pg.is_visible('#visMore') and not pg.is_visible('#toggleMine'))
     pg.click('#visMoreBtn'); pg.wait_for_timeout(200)
-    check('open: Mina/Andras/Båtar/Djup/Spår + types (no "Namn" any more: names always shown)', all(pg.is_visible('label:has(#%s)' % i) for i in ['toggleMine','toggleOthers','toggleBoats','toggleDepth','toggleTrack']) and not pg.is_visible('label:has(#toggleNames)'))
+    check('open: Mina/Andras/Båtar/Spår + types (no "Namn": names always shown; Djup is in Inställningar)', all(pg.is_visible('label:has(#%s)' % i) for i in ['toggleMine','toggleOthers','toggleBoats','toggleTrack']) and not pg.is_visible('label:has(#toggleNames)') and not pg.is_visible('label:has(#toggleDepth)'))
     pg.screenshot(path='feat_filter_open.png')
     pg.click('label:has(#toggleBoats) .toggle'); pg.click('#visMoreBtn'); pg.wait_for_timeout(200)
     check('Båtar off -> dot on the closed Filter button', pg.is_visible('.visMoreDot'))
@@ -53,9 +53,9 @@ with sync_playwright() as p:
     ctx.set_geolocation({'latitude': la2, 'longitude': lo2, 'accuracy': 5}); pg.wait_for_timeout(1800)
     dv = pg.inner_text('#depthVal')
     check('...and ~2 m at a shallow spot', abs(float(dv.replace(',', '.')) - 2.0) < 0.5, dv)
-    pg.click('#visMoreBtn'); pg.click('label:has(#toggleDepth) .toggle'); pg.wait_for_timeout(200)
+    pg.click('#menuBtn'); pg.click('#menuItemSettings'); pg.wait_for_timeout(250); pg.click('label:has(#toggleDepth) .toggle'); pg.click('#settingsBackBtn'); pg.wait_for_timeout(300)
     check('Djup off -> depth hidden, knots still shown', not pg.is_visible('#depthVal') and pg.is_visible('#speedVal'))
-    pg.click('label:has(#toggleDepth) .toggle'); pg.click('#visMoreBtn'); pg.wait_for_timeout(200)
+    pg.click('#menuBtn'); pg.click('#menuItemSettings'); pg.wait_for_timeout(250); pg.click('label:has(#toggleDepth) .toggle'); pg.click('#settingsBackBtn'); pg.wait_for_timeout(300)
     # ---- track ----
     lat, lon = la2, lo2
     for i in range(14):

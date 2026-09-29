@@ -51,10 +51,10 @@ with sync_playwright() as p:
     check('the rest of the map is also greyed (a saturation layer)', pg.evaluate("getComputedStyle(document.getElementById('anSat')).mixBlendMode") == 'saturation' and pg.is_visible('#anSat'))
     pg.screenshot(path='shot_an_depth.png')
     shore = pg.evaluate("""() => { var c = document.getElementById('anLayer'), d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data, n = 0;
-      for (var i = 0; i < d.length; i += 4) if (d[i] === 255 && d[i + 1] === 255 && d[i + 2] === 255 && d[i + 3] > 100 && d[i + 3] < 150) n++; return n; }""")
-    check('the lake outline: a thin dashed white line at ~50 %', shore > 300, shore)
+      for (var i = 0; i < d.length; i += 4) if (d[i] > 235 && d[i + 1] > 235 && d[i + 2] > 235 && d[i + 3] > 90 && d[i + 3] < 170) n++; return n; }""")
+    check('the lake outline: a thin solid (smooth) white line at ~50 %', shore > 150, shore)
     a = pick(pg, 'steep'); check('Branta kanter: steep parts found', a['ready'] and a['n'] > 100, a)
-    a = pick(pg, 'tops'); check('never called "topp": the labels say "Grynna"', a['labels'] and pg.evaluate("[].every.call(document.querySelectorAll('.anLbl:not(.hole):not(.sim):not(.simRef)'), e => e.textContent.indexOf('Grynna ') === 0)") and 'topp' not in pg.inner_text('#anPanel').lower())
+    a = pick(pg, 'tops'); check('never called "topp"; the labels are just the depth ("2,4 m")', a['labels'] and pg.evaluate("[].every.call(document.querySelectorAll('.anLbl:not(.sim):not(.simRef)'), e => /^\d+(,\d)? m$/.test(e.textContent))") and 'topp' not in pg.inner_text('#anPanel').lower())
     a = an(pg); check('Grynnor & hålor (prominence: how far they rise above the saddle): labelled on the map', a['ready'] and a['labels'] >= 4 and 'reser sig minst 0,6 m' in a['text'], a)
     def setr(i, v): pg.evaluate("([i, v]) => { var e = document.getElementById(i); e.value = v; e.dispatchEvent(new Event('input', { bubbles: true })); }", [i, v])
     setr('anTopP', 2.0); setr('anHoleP', 2.0); pg.wait_for_timeout(900)
