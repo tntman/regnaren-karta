@@ -25,9 +25,9 @@
  },
  "legendTicks": [
   "0 m",
-  "5 m",
-  "10 m",
-  "50 m"
+  "4 m",
+  "8 m",
+  "12 m"
  ],
  "contourText": "Djupkurvor från C-MAP Genesis",
  "mapFile": "map_v4_{style}.jpg",
@@ -37,19 +37,19 @@
    "id": "s1",
    "name": "Djupfärger",
    "desc": "Flygfoto + djupfärger med relief",
-   "legend": "linear-gradient(to right,#d62728 0%,#f86f13 8%,#ffbc05 17%,#aec611 25%,#2ca02c 33%,#22af7d 42%,#17bdcf 50%,#1b86d3 58%,#1f4fd6 67%,#1437a2 75%,#0c2474 83%,#081649 92%,#03081f 100%)"
+   "legend": "linear-gradient(to right,#d62728 0%,#e34320 4.2%,#f16217 8.3%,#fe7d0f 12.5%,#ff9e09 16.7%,#ffbc05 20.8%,#ffdd00 25%,#cdcf0a 29.2%,#96be16 33.3%,#64b020 37.5%,#2ca02c 41.7%,#28a64b 45.8%,#24ac6d 50%,#20b28c 54.2%,#1bb8ae 58.3%,#17bdcf 62.5%,#19a8d0 66.7%,#1a90d2 70.8%,#1c7bd3 75%,#1d64d5 79.2%,#1f4fd6 83.3%,#1e4ed4 87.5%,#1e4dd1 91.7%,#1d4ccf 95.8%,#1d4bcc 100%)"
   },
   {
    "id": "s2",
    "name": "Förenklad",
    "desc": "Samma djupfärger, utan skuggning",
-   "legend": "linear-gradient(to right,#d62728 0%,#f86f13 8%,#ffbc05 17%,#aec611 25%,#2ca02c 33%,#22af7d 42%,#17bdcf 50%,#1b86d3 58%,#1f4fd6 67%,#1437a2 75%,#0c2474 83%,#081649 92%,#03081f 100%)"
+   "legend": "linear-gradient(to right,#d62728 0%,#e34320 4.2%,#f16217 8.3%,#fe7d0f 12.5%,#ff9e09 16.7%,#ffbc05 20.8%,#ffdd00 25%,#cdcf0a 29.2%,#96be16 33.3%,#64b020 37.5%,#2ca02c 41.7%,#28a64b 45.8%,#24ac6d 50%,#20b28c 54.2%,#1bb8ae 58.3%,#17bdcf 62.5%,#19a8d0 66.7%,#1a90d2 70.8%,#1c7bd3 75%,#1d64d5 79.2%,#1f4fd6 83.3%,#1e4ed4 87.5%,#1e4dd1 91.7%,#1d4ccf 95.8%,#1d4bcc 100%)"
   },
   {
    "id": "s3",
    "name": "Sjökort",
    "desc": "Blå djupband som en papperskarta",
-   "legend": "linear-gradient(to right,#dff3fb 0%,#c4e7f6 7%,#a9dbf2 13%,#8fcdec 20%,#74bde4 33%,#5aa9d8 50%,#4796cb 67%,#3a84bd 75%,#2f72ae 83%)"
+   "legend": "linear-gradient(to right,#dff3fb 0%,#dff3fb 8.3%,#c4e7f6 8.3%,#c4e7f6 16.7%,#a9dbf2 16.7%,#a9dbf2 25%,#8fcdec 25%,#8fcdec 41.7%,#74bde4 41.7%,#74bde4 62.5%,#5aa9d8 62.5%,#5aa9d8 83.3%,#4796cb 83.3%,#4796cb 100%)"
   },
   {
    "id": "s5",
@@ -61,7 +61,7 @@
    "id": "s6",
    "name": "Blå relief",
    "desc": "Blå toner med skuggad bottenform",
-   "legend": "linear-gradient(to right,#cfeefa 0%,#6fc3e8 25%,#2a86c9 50%,#125099 75%,#0a2c63 100%)"
+   "legend": "linear-gradient(to right,#cfeefa 0%,#c3e9f8 4.2%,#b5e3f5 8.3%,#a9ddf3 12.5%,#9cd7f0 16.7%,#90d2ee 20.8%,#82ccec 25%,#76c6e9 29.2%,#6abfe6 33.3%,#62b7e2 37.5%,#58afde 41.7%,#4fa7da 45.8%,#469ed5 50%,#3d97d2 54.2%,#338ecd 58.3%,#2a86c9 62.5%,#277fc3 66.7%,#2377bc 70.8%,#2070b6 75%,#1d69b0 79.2%,#1a62aa 83.3%,#1a61a9 87.5%,#1960a8 91.7%,#195fa7 95.8%,#185fa7 100%)"
   },
   {
    "id": "g1",

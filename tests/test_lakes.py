@@ -57,7 +57,10 @@ with sync_playwright() as p:
     check('weather card named after the lake', pg.inner_text('#wxTitle') == 'Väder vid Vågsfjärden')
     check('title = the lake', pg.inner_text('#lakeTitle') == 'VÅGSFJÄRDEN', pg.inner_text('#lakeTitle'))
     ticks = pg.eval_on_selector_all('#legendTicks span', 'e=>e.map(x=>x.textContent)')
-    check('fixed depth scale 0 / 5 / 10 / 50 m', ticks == ['0 m', '5 m', '10 m', '50 m'], ticks)
+    check("legend runs to the lake's own max depth (Vågsfjärden ~37 m -> 0 / 20 / 40 m)", ticks == ['0 m', '20 m', '40 m'], ticks)
+    bar = pg.eval_on_selector('#legend .bar', 'e=>e.style.background')
+    # the colours follow the fixed scale: 10 m (blue #1f4fd6) sits a quarter of the way along 0-40 m
+    check('legend colours = the fixed scale for those depths (10 m blue at 25 %)', 'rgb(31, 79, 214) 25%' in bar, bar[:200])
     n_styles = pg.eval_on_selector_all('#mapStyleList .styleOpt', 'e=>e.length')
     check('8 map styles (incl. C-MAP original, vegetation, hardness; no Natt)', n_styles == 8, n_styles)
     w = [x for x in pg.evaluate('window.__posWrites') if x['id'] == 'filip']
@@ -133,6 +136,8 @@ with sync_playwright() as p:
         got = pg.inner_text('#depthVal')
         v = float(got.replace(',', '.')) if re.match(r'^[0-9]+,?[0-9]*$', got) else None
         check('Sjösjön: depth at a %g m label: %s m' % (want, got), v is not None and abs(v - want) <= 1.0, got)
+    ticks = pg.eval_on_selector_all('#legendTicks span', 'e=>e.map(x=>x.textContent)')
+    check('Sjösjön legend: 0 / 7 / 14 m (max 13,5 m)', ticks == ['0 m', '7 m', '14 m'], ticks)
     check('Sjösjön: no page errors', not errs, errs)
     b.close()
 print('\n%d/%d passed' % (sum(results), len(results)))

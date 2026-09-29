@@ -141,6 +141,12 @@ def main():
     maxd = float(np.nanmax(dep)); sc = 2 if maxd <= 20 else 5
     DMAX = sc * math.ceil(maxd / sc)
     print('max depth %.1f m -> colour scale 0-%d m' % (maxd, DMAX))
+    # The legend runs from 0 to the lake's own max depth (Filip: "0-50 m" looked like the
+    # lake went that deep): whole metres up to 20 m, else 5 m steps; ticks evenly spaced
+    # in metres (4 if they come out whole, else 3). Its colours = the fixed scale for those depths.
+    LMAX = math.ceil(maxd) if maxd <= 20 else 5 * math.ceil(maxd / 5)
+    nt = 4 if LMAX % 3 == 0 else 3
+    TICKS = ['%s m' % ('%g' % (LMAX * i / (nt - 1))).replace('.', ',') for i in range(nt)]
     PXD = 156543.03392 * math.cos(math.radians((la0 + la1) / 2)) / 2 ** DZ   # metres per px at DZ
     # Parts of the lake Genesis has no data for (inside the OpenStreetMap outline): a hard
     # cut-out -- the aerial photo shows there. For the relief and the colours at their
@@ -162,8 +168,17 @@ def main():
     def fpos(d): return np.interp(d, DEPTH_KNOTS_M, DEPTH_KNOTS_F)
     def ramp(cmap): return cmap(fpos(depc))[..., :3].astype(np.float32) * 255
     def u8(a): return np.clip(a, 0, 255).astype(np.uint8)
-    def legend_css(cmap, n=7):
-        return 'linear-gradient(to right,' + ','.join('%s %d%%' % (mcolors.to_hex(cmap(i / (n - 1))), round(100 * i / (n - 1))) for i in range(n)) + ')'
+    def legend_css(cmap, n=25):
+        # evenly spaced in metres 0..LMAX, each the colour the map uses at that depth
+        return 'linear-gradient(to right,' + ','.join('%s %g%%' % (mcolors.to_hex(cmap(float(fpos(LMAX * i / (n - 1))))), round(100 * i / (n - 1), 1)) for i in range(n)) + ')'
+    def bands_css(cols, edges):
+        # Sjökort: hard bands, where each starts in metres (0..LMAX)
+        st = []
+        for k, (c, e) in enumerate(zip(cols, edges)):
+            if e >= LMAX: break
+            nxt = min(LMAX, edges[k + 1]) if k + 1 < len(edges) else LMAX
+            st.append('%s %g%%,%s %g%%' % (c, round(100 * e / LMAX, 1), c, round(100 * nxt / LMAX, 1)))
+        return 'linear-gradient(to right,' + ','.join(st) + ')'
     # Djupfärger: red 0 m, orange 1,5, yellow 3, green 5, turquoise 7,5, blue 10, dark blue 50 m
     c1 = mcolors.LinearSegmentedColormap.from_list('c1', [(float(fpos(d)), c) for d, c in
         ((0, '#d62728'), (1.5, '#ff7f0e'), (3, '#ffdd00'), (5, '#2ca02c'), (7.5, '#17becf'), (10, '#1f4fd6'), (25, '#0f2c8a'), (50, '#03081f'))])
@@ -174,12 +189,12 @@ def main():
     for lo, col in zip(edges[1:], bands[1:]): s3[depc >= lo] = hx(col)
     # (id, name, desc, legend, extra, water colour at DZ, how Genesis' lines are drawn)
     STY = [
-        ('s1', 'Djupfärger', 'Flygfoto + djupfärger med relief', legend_css(c1, 13), {}, u8(ramp(c1) * sh[..., None]), 'black'),
-        ('s2', 'Förenklad', 'Samma djupfärger, utan skuggning', legend_css(c1, 13), {}, u8(ramp(c1)), 'black'),
-        ('s3', 'Sjökort', 'Blå djupband som en papperskarta', 'linear-gradient(to right,' + ','.join('%s %d%%' % (c, round(100 * float(fpos(e)))) for c, e in zip(bands, edges)) + ')', {}, u8(s3), 'black'),
+        ('s1', 'Djupfärger', 'Flygfoto + djupfärger med relief', legend_css(c1), {}, u8(ramp(c1) * sh[..., None]), 'black'),
+        ('s2', 'Förenklad', 'Samma djupfärger, utan skuggning', legend_css(c1), {}, u8(ramp(c1)), 'black'),
+        ('s3', 'Sjökort', 'Blå djupband som en papperskarta', bands_css(bands, edges), {}, u8(s3), 'black'),
         # (no "Natt" (s4) -- dropped, Filip's decision; see tools/KARTOR.md)
         ('s5', 'Flygfoto + linjer', 'Naturlig bild med vita djupkurvor', None, {}, None, (255, 255, 255)),
-        ('s6', 'Blå relief', 'Blå toner med skuggad bottenform', legend_css(c6, 5), {}, u8(ramp(c6) * sh[..., None]), 'black'),
+        ('s6', 'Blå relief', 'Blå toner med skuggad bottenform', legend_css(c6), {}, u8(ramp(c6) * sh[..., None]), 'black'),
         ('g1', 'C-MAP original', 'Som på Genesis-kartan – med djupsiffror', None, {'note': 'Siffror = djup i m (liten siffra = tiondelar)'}, 'genesis', 'black'),
         ('v1', 'Vegetation', 'Grönt där ekolodet sett växtlighet', 'linear-gradient(to right,#6fc3e8 0%,#6fc3e8 50%,#46dc3c 50%,#46dc3c 100%)', {'ticks': ['Ingen', '', 'Växtlighet']}, u8(ramp(c6)), 'black'),
         ('c1', 'Bottenhårdhet', 'Mjuk (ljus) till hård (röd) botten, där det finns mätt', 'linear-gradient(to right,' + ','.join('%s %d%%' % (mcolors.to_hex(np.array(c) / 255), p) for c, p in zip(HARD_PAL, (0, 33, 66, 100))) + ')', {'ticks': ['Mjuk', '', 'Hård']}, None, (255, 255, 255)),
@@ -331,7 +346,7 @@ def main():
                 'metersPerPx': 156543.03392 * math.cos(math.radians(latc)) / 2 ** base,
                 'imgW': W // mb, 'imgH': H // mb},
         'depth': {'file': 'depth_v%d.txt' % V, 'w': gw, 'h': gh, 'step': step, 'max': DMAX, 'capped': False},
-        'legendTicks': ['0 m', '5 m', '10 m', '50 m'],        # (fixed scale, the same for every lake)
+        'legendTicks': TICKS,                                  # (0 .. the lake's max depth)
         'contourText': 'Djupkurvor från C-MAP Genesis',
         'mapFile': 'map_v%d_{style}.jpg' % V,
         'thumbFile': 'thumbs_v%d/{style}.jpg' % V,

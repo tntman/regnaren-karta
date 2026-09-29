@@ -164,7 +164,9 @@ färger och relief (ur det kalibrerade djupet).
 - **FAST djupskala, samma i alla sjöar** (Filips beslut): samma djup = samma färg överallt.
   Mest färgskifte 0–10 m (där man fiskar) = 2/3 av skalan, 10–50 m = sista 1/3
   (blått → mörkblått), djupare än 50 m = som 50 m. `DEPTH_KNOTS_M/F` i genesis_render.py.
-  Legend: 0 / 5 / 10 / 50 m (jämnt fördelade = exakt skalans knutpunkter).
+  Legend (nere till vänster): **0 → sjöns eget maxdjup** (hela meter upp till 20 m, annars 5 m-steg;
+  Regnaren 0/4/8/12, Sjösjön 0/7/14, Vågsfjärden 0/20/40), jämnt i meter, med skalans färger för
+  just de djupen. *Förkastat:* 0/5/10/50 m för alla – såg ut som att sjön var 50 m djup (Filip).
   *Förkastat:* skala relativ till sjöns maxdjup (0–DMAX) – samma djup fick olika färg i
   olika sjöar. (DMAX används nu bara som `depth.max` i lake.json.)
   Följd: djupa sjöar (Vågsfjärden) blir mest blå med färg bara längs kanterna – avsiktligt.
