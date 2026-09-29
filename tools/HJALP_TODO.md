@@ -20,7 +20,7 @@ kanter, Djup/Andras till Inställningar, panorera över markeringar).
 
 ## Att göra
 
-- [ ] 2026-09-29 – Vind och lä: lä är nu blått och tydligare, starkast vid kanten; snabbare panorering på dator. Hjälp: Väder, vind & lä (text: "den ljusa ytan" → "den blå ytan") + animering `vader`. Nyhet: "Tydligare lä-område" (BÄTTRE)
+- [ ] 2026-09-29 – Vind och lä: lä är nu blått och tydligare, starkast vid kanten; snabbare panorering på dator. Hjälp: Väder, vind & lä (text: "den ljusa ytan" → "den blå ytan") + animering `vader`. Nyhet: "Tydligare lä-område, mjukare kanter i Kartanalys när man panorerar" (BÄTTRE)
 - [ ] 2026-09-29 – Rättat: efter vridning av telefonen kunde knapparna vara "förskjutna" och lä försvinna; statusraden i hemskärmsappen är appens blå, samma som bakgrunden (ingen kant). Hjälp: – . Nyhet: "Vridning av telefonen fungerar bättre" (FIXAT)
 
 <!-- mall:

@@ -317,6 +317,47 @@
   }
   function anPct(n){ var w = 0, A = AN; for (var i = 0; i < A.N; i++) w += A.wat[i]; var p = 100 * n / Math.max(1, w); return (p < 1 && p > 0 ? '<1' : Math.round(p)) + ' %'; }
   function escHtml(t){ return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  // Smooth versions of the found areas (and the lake), for drawing. The areas are yes/no per grid
+  // cell: drawn straight from that, their edges came out beaded / stair-stepped -- worst zoomed out
+  // and while panning, when each drawn point covers several cells and moves over them. The lee
+  // never had that: it's drawn from a smooth field. So the same here: halve the grid (averaging)
+  // until a cell is about one drawn point, then soften with a 1-2-1 filter. Cached per result and
+  // level; the edge is then found in this smooth field exactly like the lee's.
+  var anPyr = null;
+  function anField(R, A, lv){
+    if (!anPyr || anPyr.ver !== R.ver || anPyr.A !== A){
+      var N0 = A.W * A.H, f0 = [new Float32Array(N0), new Float32Array(N0), new Float32Array(N0)];
+      for (var i0 = 0; i0 < N0; i0++){ var v0 = R.M[i0]; if (v0 === 1) f0[0][i0] = 1; else if (v0 === 2) f0[1][i0] = 1; if (A.lake[i0]) f0[2][i0] = 1; }
+      anPyr = { ver: R.ver, A: A, raw: [{ w: A.W, h: A.H, f: f0 }], soft: [] };
+    }
+    var P = anPyr;
+    while (P.raw.length <= lv){
+      var pr = P.raw[P.raw.length - 1], w2 = Math.ceil(pr.w / 2), h2 = Math.ceil(pr.h / 2), g = [];
+      if (pr.w < 4 || pr.h < 4){ lv = P.raw.length - 1; break; }
+      for (var c = 0; c < 3; c++){
+        var src = pr.f[c], dst = new Float32Array(w2 * h2);
+        for (var y = 0; y < h2; y++) for (var x = 0; x < w2; x++){
+          var s = 0, n = 0;
+          for (var dy = 0; dy < 2; dy++){ var yy = 2 * y + dy; if (yy >= pr.h) continue;
+            for (var dx = 0; dx < 2; dx++){ var xx = 2 * x + dx; if (xx >= pr.w) continue; s += src[yy * pr.w + xx]; n++; } }
+          dst[y * w2 + x] = s / n;
+        }
+        g.push(dst);
+      }
+      P.raw.push({ w: w2, h: h2, f: g });
+    }
+    if (!P.soft[lv]){
+      var r0 = P.raw[lv], w = r0.w, h = r0.h, out = [];
+      for (var c2 = 0; c2 < 3; c2++){
+        var a = r0.f[c2], t = new Float32Array(w * h), o = new Float32Array(w * h);
+        for (var y1 = 0; y1 < h; y1++) for (var x1 = 0; x1 < w; x1++){ var j = y1 * w + x1; t[j] = (a[x1 > 0 ? j - 1 : j] + 2 * a[j] + a[x1 < w - 1 ? j + 1 : j]) / 4; }
+        for (var y2 = 0; y2 < h; y2++) for (var x2 = 0; x2 < w; x2++){ var j2 = y2 * w + x2; o[j2] = (t[y2 > 0 ? j2 - w : j2] + 2 * t[j2] + t[y2 < h - 1 ? j2 + w : j2]) / 4; }
+        out.push(o);
+      }
+      P.soft[lv] = { w: w, h: h, f: out, lv: lv };
+    }
+    return P.soft[lv];
+  }
   // draw: toned down outside, lit (+ a light edge) inside; per screen point like the lee
   function anDraw(){
     var dpr = window.devicePixelRatio || 1, W = stage.clientWidth, H = stage.clientHeight;
@@ -337,16 +378,19 @@
       var s2 = sv.getContext('2d'), sm = s2.createImageData(vw, vh), sp = sm.data;
       var dimA = Math.round(255 * anSet.dim), satA = Math.round(255 * Math.min(1, anSet.dim + 0.2));
       var N2 = vw * vh, f1 = new Float32Array(N2), f2 = new Float32Array(N2), fl = new Float32Array(N2);
+      // the smooth field at the level where a cell is about one drawn point (see anField)
+      var cpp = A.W / IMG_W / scale * STEP, want = Math.max(0, Math.round(Math.log(Math.max(1, cpp)) / Math.LN2));
+      var Lf = anField(R, A, want), LW2 = Lf.w, LH2 = Lf.h, g1 = Lf.f[0], g2 = Lf.f[1], gl = Lf.f[2];
+      var kx = A.W / IMG_W / (1 << Lf.lv), ky = A.H / IMG_H / (1 << Lf.lv);
       for (var y = 0; y < vh; y++) for (var x = 0; x < vw; x++){
         var ix = (x * STEP + 1 - originX) / scale, iy = (y * STEP + 1 - originY) / scale;
-        var fx = ix / IMG_W * A.W - 0.5, fy = iy / IMG_H * A.H - 0.5, x0 = Math.floor(fx), y0 = Math.floor(fy), tx = fx - x0, ty = fy - y0;
+        var fx = ix * kx - 0.5, fy = iy * ky - 0.5, x0 = Math.floor(fx), y0 = Math.floor(fy), tx = fx - x0, ty = fy - y0;
         var a1 = 0, a2 = 0, al = 0, q = y * vw + x;
         for (var dy = 0; dy <= 1; dy++) for (var dx = 0; dx <= 1; dx++){
           var cx = x0 + dx, cy = y0 + dy, wt = (dx ? tx : 1 - tx) * (dy ? ty : 1 - ty);
-          if (cx < 0 || cy < 0 || cx >= A.W || cy >= A.H) continue;
-          var ci = cy * A.W + cx, cval = R.M[ci];
-          if (cval === 1) a1 += wt; else if (cval === 2) a2 += wt;
-          if (A.lake[ci]) al += wt;
+          if (cx < 0 || cy < 0 || cx >= LW2 || cy >= LH2) continue;
+          var ci = cy * LW2 + cx;
+          a1 += g1[ci] * wt; a2 += g2[ci] * wt; al += gl[ci] * wt;
         }
         f1[q] = a1; f2[q] = a2; fl[q] = al;
       }
@@ -356,21 +400,22 @@
         return (f[q] - 0.5) / (Math.sqrt(gx * gx + gy * gy) + 1e-3);
       }
       function cl(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
+      var EA = edgeW(STEP, 1.1), ES = edgeW(STEP, 0.9);     // (line widths: see edgeW)
       var c1col = col, c2col = anSet.mode === 'tops' ? [60, 200, 255] : [70, 200, 60], c2a = anSet.mode !== 'tops' ? 60 : 105;
       for (var y2 = 0; y2 < vh; y2++) for (var x2 = 0; x2 < vw; x2++){
         var q2 = y2 * vw + x2, k = q2 * 4;
         var d1 = sd(f1, q2, x2, y2), d2 = sd(f2, q2, x2, y2), dl = sd(fl, q2, x2, y2);
-        var k1 = cl(0.5 + d1), k2 = cl(0.5 + d2), k0 = cl(1 - k1 - k2);
+        // (a found bit smaller than a drawn point is under 0,5 in the smooth field: shown faintly, not lost)
+        var k1 = Math.max(cl(0.5 + d1), 0.8 * f1[q2]), k2 = Math.max(cl(0.5 + d2), 0.8 * f2[q2]), k0 = cl(1 - k1 - k2);
         // "over" in order: toned down, the found area(s), their white edge, the dashed shore
         var r = 0, g = 0, b = 0, a = 0;
         function over(cr, cg, cb, ca){ ca /= 255; r = cr * ca + r * (1 - ca); g = cg * ca + g * (1 - ca); b = cb * ca + b * (1 - ca); a = ca + a * (1 - ca); }
         over(6, 14, 20, dimA * k0);
         if (c1col) over(c1col[0], c1col[1], c1col[2], 105 * k1);
         over(c2col[0], c2col[1], c2col[2], c2a * k2);
-        var LW = edgeW(STEP);
-        var e = Math.max(cl(1 - Math.abs(d1) / LW), cl(1 - Math.abs(d2) / LW));
+        var e = Math.max(cl(1 - Math.abs(d1) / EA[0]), cl(1 - Math.abs(d2) / EA[0])) * EA[1];
         if (e > 0) over(255, 255, 255, 180 * e);        // (as thin and soft as the lee's edge)
-        var es = cl(1 - Math.abs(dl) / (LW * 0.8));
+        var es = cl(1 - Math.abs(dl) / ES[0]) * ES[1];
         if (es > 0) over(255, 255, 255, 128 * es);      // the shore: a solid line, 50 %
         if (a > 0){ px[k] = r / a; px[k + 1] = g / a; px[k + 2] = b / a; px[k + 3] = a * 255; }
         sp[k] = 128; sp[k + 1] = 128; sp[k + 2] = 128; sp[k + 3] = satA * k0;

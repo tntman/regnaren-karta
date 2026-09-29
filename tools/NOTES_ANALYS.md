@@ -37,8 +37,12 @@ svepande ljus), en knapprad: Åk hit, Liknande → Kartanalys "Liknande", Ta bor
   hålor 0,8 m). Hålor ritas bara med sin djupaste del (`AN_HOLE_CORE` 0,6 m) – annars blev en
   hel djupbassäng en jättehåla (upp till 28 ha). Etiketterna = bara djupet ("2,4 m").
 - Sjöns kontur ritas heldragen vit 50 %.
-- **Mjuka kanter**: fälten interpoleras bilinjärt, avstånd till kanten = (värde − 0,5) / lutning
-  → kantutjämnat, som lä. Upplösning `viewStep()` (50-wind-lee.js): 1 css-px när kartan står
+- **Mjuka kanter** (som lä): områdena är ja/nej per rutnätscell – ritat rakt av blev kanten pärlig
+  och fladdrade vid panorering utzoomat. Därför ritas de från ett mjukt fält (`anField`: rutnätet
+  halveras med medelvärde tills en cell ≈ en ritad punkt, sedan 1-2-1-filter; cachat per resultat
+  och nivå), avstånd till kanten = (värde − 0,5) / lutning. Små bitar (< 0,5 i fältet) visas svagt.
+  Linjerna aldrig smalare än en ritad punkt åt varje håll, svagare i stället (`edgeW(STEP, css)` i
+  50-wind-lee.js) – annars pärlband när varannan px ritas. `tests/test_smooth.py` mäter fladdret. Upplösning `viewStep()` (50-wind-lee.js): 1 css-px när kartan står
   still, grövre medan man drar (och på stora skärmar); steget ingår i cache-nyckeln.
 - **Av efter omstart** (kvar vid vridning, `rotState`); inget att visa (t.ex. Liknande innan
   platserna laddats) = ingen gråtoning.

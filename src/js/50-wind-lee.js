@@ -88,7 +88,11 @@
     var drag = stage.classList.contains('dragging');
     return Math.max(drag ? 2 : 1, Math.ceil(Math.sqrt(W * H / (drag ? 90000 : 700000))));
   }
-  function edgeW(STEP){ return STEP === 1 ? 1.1 : STEP === 2 ? 0.7 : 0.55; }     // a line's half width, in steps
+  // a thin line drawn per point: half width `css` css px. A line thinner than the spacing of the drawn
+  // points (while dragging: every 2nd px) comes out beaded -- a point lands on it or beside it. So
+  // it's never thinner than one point each side, and fainter to match (the same amount of line).
+  // -> [half width in points, strength]
+  function edgeW(STEP, css){ var w = (css || 1.1) / STEP; return w >= 1 ? [w, 1] : [1, w]; }
   function gridAt(arr, ix, iy){
     var gx = ix / IMG_W * DEPTH_W - 0.5, gy = iy / IMG_H * DEPTH_H - 0.5;
     var x0 = Math.floor(gx), y0 = Math.floor(gy), tx = gx - x0, ty = gy - y0;
@@ -104,7 +108,7 @@
       var cv = F.view ? F.view.cv : document.createElement('canvas');
       if (cv.width !== vw || cv.height !== vh){ cv.width = vw; cv.height = vh; }
       var c2 = cv.getContext('2d'), im = c2.createImageData(vw, vh), px = im.data;
-      var lee = new Float32Array(vw * vh), lake = new Float32Array(vw * vh), ff = F.ff, lk = F.lk, D = F.leeD;
+      var lee = new Float32Array(vw * vh), lake = new Float32Array(vw * vh), ff = F.ff, lk = F.lk, D = F.leeD, EW = edgeW(STEP);
       for (var y = 0; y < vh; y++) for (var x = 0; x < vw; x++){
         var ix = (x * STEP + 1 - originX) / scale, iy = (y * STEP + 1 - originY) / scale, i = y * vw + x;
         var m = gridAt(lk, ix, iy); lake[i] = m;
@@ -116,7 +120,7 @@
         function nb(j){ return lake[j] > 0.3 ? lee[j] : lee[i2]; }
         var gx = (nb(x2 < vw - 1 ? i2 + 1 : i2) - nb(x2 > 0 ? i2 - 1 : i2)) / 2, gy = (nb(y2 < vh - 1 ? i2 + vw : i2) - nb(y2 > 0 ? i2 - vw : i2)) / 2;
         var d = lee[i2] / (Math.sqrt(gx * gx + gy * gy) + 1e-3);       // steps to the lee's edge
-        var cov = d < -0.5 ? 0 : d > 0.5 ? 1 : d + 0.5, e = Math.max(0, 1 - Math.abs(d) / edgeW(STEP));
+        var cov = d < -0.5 ? 0 : d > 0.5 ? 1 : d + 0.5, e = Math.max(0, 1 - Math.abs(d) / EW[0]) * EW[1];
         if (cov <= 0 && e <= 0) continue;
         // light blue, strongest at the edge and fading inwards (~22 css px)
         var a1 = (85 + 85 * Math.max(0, 1 - d * STEP / 22)) / 255 * cov * m2, a2 = 170 / 255 * e * m2, a = a2 + a1 * (1 - a2);

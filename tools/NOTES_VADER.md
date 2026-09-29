@@ -19,7 +19,7 @@ orange (#FFB23F).
   Ritningen får aldrig stanna: kartan kan vara 0 px mitt i en vridning (då ritas inget), och ett
   fel i en bildruta stoppar inte loopen (lä försvann annars efter vridning).
 - Utseende: blå ton (170,215,255), starkast vid kanten och tonar inåt (~22 px, täckning 85–170/255)
-  + tunn vit kant. (Streck i vindens riktning provades 2026-09-29 och togs bort igen.) Öppet vatten: "kometer" (tunt
+  + tunn vit kant (`edgeW`: aldrig smalare än en ritad punkt, svagare i stället – se NOTES_ANALYS). (Streck i vindens riktning provades 2026-09-29 och togs bort igen.) Öppet vatten: "kometer" (tunt
   huvud, tjockare svans) som driver med vinden, fler/längre/snabbare vid mer vind. ~30 fps bara
   när påslaget och synligt.
 - `window.__ffWind()`, `window.__ffViewStep(W, H, drag)` för testerna.
