@@ -30,7 +30,8 @@ bird = math.hypot(B[0] - A[0], B[1] - A[1]) * 156543.03392 * math.cos(math.radia
 LA, LB, LU = ll(*A), ll(*B), ll(*U)
 now = time.time() * 1000
 cfg = {'waypoints': [
-    {'lat': LB[0], 'lon': LB[1], 'name': 'Stenen', 'uid': 'filip', 'by': 'Filip', 'type': 'fara'},
+    {'lat': LB[0] + 0.0015, 'lon': LB[1], 'name': 'Stenen', 'uid': 'filip', 'by': 'Filip', 'type': 'fara'},   # (not where the lead line goes)
+    {'lat': LA[0] + 0.0004, 'lon': LA[1] - 0.0015, 'name': 'Grundet', 'uid': 'kalle', 'by': 'Calle', 'type': 'fara'},
     {'lat': LU[0], 'lon': LU[1], 'name': 'Viken', 'uid': 'filip', 'by': 'Filip', 'type': 'mark'},
     {'lat': LA[0] + 0.001, 'lon': LA[1], 'name': 'Lunch', 'uid': 'kalle', 'by': 'Calle', 'type': 'meet', 'expiresAt': now + 30 * 60000},
     {'lat': LA[0] - 0.001, 'lon': LA[1], 'name': 'Gammal lunch', 'uid': 'kalle', 'by': 'Calle', 'type': 'meet', 'expiresAt': now - 60000},
@@ -63,9 +64,25 @@ with sync_playwright() as p:
     b, ctx, pg, errs = new_page(p, geo=LA, cfg=cfg, name='Filip')
     pg.wait_for_timeout(1500)
     # ---- Fara
-    r = pin_rect(pg, 'Stenen')
-    check('Fara: its own red pin with a warning triangle', r and 'wpPin--fara' in r[4] and
-          pg.evaluate("getComputedStyle(document.querySelector('.wpPin--fara')).backgroundColor") == 'rgb(229, 50, 45)', r)
+    r, r2 = pin_rect(pg, 'Stenen'), pin_rect(pg, 'Grundet')
+    check('Fara: a red stop sign (8 corners) with a white X, not a drop', r and r[4] == 'wpFara' and
+          pg.evaluate("document.querySelector('.wpFara svg path').getAttribute('fill')") == '#E5322D' and
+          pg.evaluate("document.querySelector('.wpFara svg path').getAttribute('d')").startswith('M8 1.6h8l6.4 6.4v8L16 22.4H8L1.6 16V8z'), r)
+    check("Fara: the same for everyone's (yours and Calle's look and size alike)", r2 and r2[4] == 'wpFara' and abs(r[2] - r2[2]) < 0.5, (r, r2))
+    check("Fara: about others' size, a bit bigger (~21 px at Normal), on top of the other spots",
+          18 <= r[2] <= 24 and pg.evaluate("getComputedStyle(document.querySelector('.wpFara')).zIndex") == '3', r)
+    # filters never hide a Fara
+    pg.click('#visMoreBtn'); pg.wait_for_timeout(200)
+    check('Filter has no Fara switch', pg.query_selector('#visTypes input[data-type="fara"]') is None)
+    pg.click('label:has(#toggleMine) .toggle'); pg.click('label:has(#toggleOthers) .toggle'); pg.wait_for_timeout(300)
+    check('Mina + Andras off: the Fara spots still show (the rest do not)', pin_rect(pg, 'Stenen') and pin_rect(pg, 'Grundet') and not pin_rect(pg, 'Viken'))
+    pg.screenshot(path='shot_fara_filtered.png')
+    pg.click('label:has(#toggleMine) .toggle'); pg.click('label:has(#toggleOthers) .toggle'); pg.click('#visMoreBtn'); pg.wait_for_timeout(300)
+    # tap someone else's Fara: the sheet opens on it
+    pg.evaluate("n => { var ids = Object.keys(window.__wpDocs).filter(k => window.__wpDocs[k].name === n); document.querySelector('#waypoints [data-id=\"' + ids[0] + '\"]').click(); }", 'Grundet')
+    pg.wait_for_timeout(400)
+    check("tapping a Fara opens it", pg.input_value('#wpName') == 'Grundet' and pg.eval_on_selector('#wpSheet', 'e=>e.classList.contains("show")'))
+    pg.click('#wpCancel'); pg.wait_for_timeout(300)
     # ---- Träffpunkt
     beacons = pg.eval_on_selector_all('#waypoints .wpBeacon', 'e=>e.map(x=>x.querySelector(".bcTag").textContent)')
     check("Träffpunkt: a beacon with rings + 'name · who · minutes left'", any(re.match(r'^Lunch · Calle · (29|30) min kvar$', t) for t in beacons) and
@@ -76,7 +93,7 @@ with sync_playwright() as p:
     check('...and not in the log', 'Gammal lunch' not in logt and 'Lunch' in logt, logt)
     pg.click('#logBackBtn'); pg.wait_for_timeout(200)
     # someone else's Träffpunkt can't be removed (not admin)
-    pg.evaluate("document.querySelector('#waypoints .wpBeacon').click()"); pg.wait_for_timeout(400)
+    pg.evaluate("Array.from(document.querySelectorAll('#waypoints .wpBeacon')).filter(e => e.querySelector('.bcTag').textContent.indexOf('Lunch ') === 0)[0].click()"); pg.wait_for_timeout(400)
     check("someone else's Träffpunkt: no delete button", pg.eval_on_selector('#wpSheet', 'e=>e.classList.contains("show")') and not pg.is_visible('#wpDelete'))
     pg.click('#wpCancel'); pg.wait_for_timeout(300)
     # a new one of your own: long press -> Träffpunkt -> save; your previous one goes
@@ -93,7 +110,7 @@ with sync_playwright() as p:
     pg.screenshot(path='shot_beacon.png')
 
     # ---- lead line: distance + time by water
-    set_type_shown(pg, 'Fara', False); set_type_shown(pg, 'Markering', False)   # (so a tap there hits the map, not the pin)
+    set_type_shown(pg, 'Markering', False)   # (so a tap there hits the map, not the pin)
     tx, ty = bring_to_centre(pg, *B)
     pg.mouse.click(tx, ty); pg.wait_for_timeout(900)
     dist = pg.inner_text('#probeDistTxt'); tm = pg.inner_text('#probeTime')
@@ -119,7 +136,7 @@ with sync_playwright() as p:
     check('lake without depth data: "Okänt djup" (OpenStreetMap outline)', pg.inner_text('#probeDepth') == 'Okänt djup', pg.inner_text('#probeDepth'))
     check('...and you still get the way there by water', pg.eval_on_selector('#routeLayer .rtLine', 'e=>e.getAttribute("points")') != '')
     pg.mouse.click(ux, uy); pg.wait_for_timeout(600)
-    set_type_shown(pg, 'Fara', True); set_type_shown(pg, 'Markering', True)
+    set_type_shown(pg, 'Markering', True)
 
     # ---- quick map-style button
     src = lambda: pg.get_attribute('#mapImg', 'src')

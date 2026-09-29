@@ -64,7 +64,8 @@ All text i appen är på svenska. Svara Filip på svenska, kort och tydligt.
 - **Lodet** visar djup · sträcka SJÖVÄGEN · restid. Rutt: grovt rutnät (~9 m), Dijkstra från
   lodet (en gång per lod) → sedan "gå nedför" från båten vid varje GPS-fix; håller avstånd
   från land; räta ut med siktlinjer. Fart: aktuell om ≥1,5 kn, annars snitt/marschfart.
-- **Typer:** Markering, Abborre, Gädda, Gös, Fara (röd, triangel), Träffpunkt (`meet`:
+- **Typer:** Markering, Abborre, Gädda, Gös, Fara (röd stoppskylt/8-kant med vitt X, `.wpFara`,
+  likadan för allas, ~andras storlek + lite, centrerad, ALDRIG dold av filter – ingen Fara-rad i Filter), Träffpunkt (`meet`:
   fyr med ringar, `expiresAt` = +1 h, en per person, bara ägaren/admin tar bort; utgångna
   döljs och ägarens app raderar dem).
 - **Kartlägesknapp** (`#mapTypeBtn`, vänster om Filter): tryck = s1→s2→c1→v1, håll = alla.

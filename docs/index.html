@@ -670,8 +670,16 @@
   /* strong, saturated colours that stand out from the depth colours (the
      white outline + dark edge separate them even over the shallows) */
   :root{ --t-mark:#E4E9EC; --t-abborre:#FF7A1A; --t-gadda:#35D24A; --t-gos:#FFD21A; --t-fara:#E5322D; --t-meet:#FFB23F; }
-  .wpPin--fara{background-color:var(--t-fara);}
-  .wpPin--fara .pinHead svg{color:#fff;}
+  /* "Fara": a red stop sign with a white X -- not a drop like the other spots, the same
+     for everyone's, never hidden by a filter, on top of the other spots. About the size
+     of others' pins, a bit bigger; follows "Storlek på fiskeplatser". Centred on the spot. */
+  .wpFara{position:absolute;left:0;top:0;width:30px;height:30px;z-index:3;
+    transform:translate(-50%,-50%) scale(var(--wp-scale, .7));
+    pointer-events:auto;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+  .wpFara svg{width:30px;height:30px;display:block;
+    filter:drop-shadow(0 0 1.2px rgba(0,0,0,.9)) drop-shadow(0 0 5px rgba(0,0,0,.5)) drop-shadow(0 2px 3px rgba(0,0,0,.5));}
+  .wpFara:active{transform:translate(-50%,-50%) scale(calc(var(--wp-scale, .7) * .9));}
+  .wpFara::after{content:'';position:absolute;inset:calc(var(--wp-hit, 0px) * -1);border-radius:50%;}
   /* "Träffpunkt" (gone after an hour): a beacon with rings spreading out, so
      everyone sees it from far away; the same size for everybody's */
   .wpBeacon{position:absolute;left:0;top:0;width:0;height:0;z-index:3;pointer-events:auto;cursor:pointer;-webkit-tap-highlight-color:transparent;}
@@ -2295,7 +2303,10 @@
   var othersOpacity = 1;
   try { if (localStorage.getItem(OTHERS_OP_KEY) === '0.5') othersOpacity = 0.5; } catch(e){}
   var MARK_SVG = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6" fill="currentColor"></circle></svg>'; // plain position dot
-  var FARA_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"><path d="M12 3.5 21.5 20h-19z"></path><path d="M12 10v4.6"></path><circle cx="12" cy="17.3" r=".9" fill="currentColor"></circle></svg>'; // warning triangle
+  var FARA_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M7.5 7.5l9 9M16.5 7.5l-9 9"></path></svg>'; // an X (lists, type picker)
+  // on the map: a red stop sign (octagon) with a white edge and a white X
+  var FARA_SIGN = '<svg viewBox="0 0 24 24"><path d="M8 1.6h8l6.4 6.4v8L16 22.4H8L1.6 16V8z" fill="#E5322D" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"></path>' +
+    '<path d="M8.2 8.2l7.6 7.6M15.8 8.2l-7.6 7.6" stroke="#fff" stroke-width="3" stroke-linecap="round"></path></svg>';
   var MEET_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"><path d="M6 21V4"></path><path d="M6 4h11l-2.5 4L17 12H6"></path></svg>'; // flag
   function wpIconSvg(type){ return type === 'mark' ? MARK_SVG : type === 'fara' ? FARA_SVG : type === 'meet' ? MEET_SVG : FISH_SVG; }
 
@@ -2338,7 +2349,7 @@
       var mine = isMine(wp);
       var editing = wp.id === editingId; // the spot you're editing always shows, whatever the filters say
       if (isExpired(wp) && !editing) return;   // a Träffpunkt whose hour is up
-      if (!editing){
+      if (!editing && wpType(wp) !== 'fara'){   // a Fara always shows, whatever the filters say
         if (mine && !showMine) return;
         if (!mine && !showOthers) return;
         if (hiddenTypes[wpType(wp)]) return;
@@ -2371,7 +2382,15 @@
         el.setAttribute('data-type', type);
         el.innerHTML = type === 'meet'
           ? '<span class="bcRing"></span><span class="bcRing"></span><span class="bcRing"></span><div class="bcCore">' + MEET_SVG + '</div><div class="bcTag"></div>'
+          : type === 'fara' ? FARA_SIGN
           : '<div class="pinHead">' + wpIconSvg(type) + '</div>';
+      }
+      if (type === 'fara'){
+        // the same stop sign for everyone's, centred on the spot
+        if (el.className !== 'wpFara') el.className = 'wpFara';
+        el.style.left = sx + 'px';
+        el.style.top = sy + 'px';
+        return;
       }
       if (type === 'meet'){
         // a beacon, centred on the spot, the same for everyone: "Lunch · Calle · 42 min kvar"
@@ -2792,7 +2811,8 @@
   visMoreBtn.addEventListener('click', function(){ setVisMoreOpen(visMoreEl.hidden); });
   try { if (sessionStorage.getItem(VIS_MORE_OPEN_KEY) === '1') setVisMoreOpen(true); } catch(e){}
 
-  visTypesEl.innerHTML = Object.keys(WP_TYPES).map(function(t){
+  delete hiddenTypes.fara;   // (Fara can't be hidden -- no switch for it; an old saved choice is dropped)
+  visTypesEl.innerHTML = Object.keys(WP_TYPES).filter(function(t){ return t !== 'fara'; }).map(function(t){
     return '<label class="visRow">' +
       '<span class="visSwatch ws-' + t + '">' + wpIconSvg(t) + '</span>' +
       '<span class="visLabel">' + WP_TYPES[t].label + '</span>' +
