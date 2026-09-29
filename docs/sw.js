@@ -6,7 +6,7 @@
      from the saved copy (fetched and saved the first time).
    - Firebase's own traffic (the database, sign-in) is never touched here --
      the app's offline data is handled by Firebase itself. */
-var CACHE = 'ffmap-v6';
+var CACHE = 'ffmap-v7';
 var APP_KEY = './';   // the page is stored under one key, whatever URL it was opened with
 var FIREBASE_LIBS = [
   'https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js',

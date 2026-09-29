@@ -5,7 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<!-- "black", not "black-translucent": with translucent, iOS 26 home-screen apps get a web view a
+     status bar too short -- an empty band at the bottom that nothing can draw in (WebKit bug
+     301108). "black" puts the page below the status bar instead: full height, no band. -->
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <title>FF Map</title>
 <meta name="apple-mobile-web-app-title" content="FF Map">
 <meta name="theme-color" content="#0B2A3A">
