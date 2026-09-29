@@ -65,6 +65,7 @@ FAKE_FIREBASE_JS = r"""
   var posDocs = {};
   (cfg.positions || []).forEach(function(p){
     posDocs[p.uid] = { lat:p.lat, lon:p.lon, name:p.name, uid:p.uid, lake:p.lake||'regnaren', device:p.device, updatedAt: ts(now - (p.ageMin||0)*60000) };
+    if (p.msg){ posDocs[p.uid].msg = p.msg; posDocs[p.uid].msgAt = now - (p.msgAgeMin||0)*60000; }   // (a quick message)
   });
   var wpDocs = {};
   (cfg.waypoints || []).forEach(function(w, i){
@@ -83,6 +84,7 @@ FAKE_FIREBASE_JS = r"""
   window.__setFromCache = function(v){ window.__fromCache = v; fireWp(); };
   window.__addPos = function(p){
     posDocs[p.uid] = { lat:p.lat, lon:p.lon, name:p.name, uid:p.uid, lake:p.lake||'regnaren', device:p.device, updatedAt: ts(Date.now() - (p.ageMin||0)*60000) };
+    if (p.msg){ posDocs[p.uid].msg = p.msg; posDocs[p.uid].msgAt = Date.now() - (p.msgAgeMin||0)*60000; }
     firePos();
   };
   function listen(list, docs, a, b){
@@ -111,7 +113,7 @@ FAKE_FIREBASE_JS = r"""
     get: function(){ return Promise.resolve(snapOf(posDocs)); },
     doc: function(id){
       return { set: function(d){
-        window.__posWrites.push({ t: Date.now(), id: id, lat: d.lat, lon: d.lon, device: d.device, lake: d.lake,
+        window.__posWrites.push({ t: Date.now(), id: id, lat: d.lat, lon: d.lon, device: d.device, lake: d.lake, msg: d.msg, msgAt: d.msgAt,
           updatedAtMs: (d.updatedAt && d.updatedAt.__epoch) ? d.updatedAt.ms : null });
         var merged = Object.assign({}, posDocs[id] || {}, d);
         merged.updatedAt = (d.updatedAt && d.updatedAt.__epoch) ? ts(d.updatedAt.ms) : ts(Date.now());

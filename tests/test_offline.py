@@ -24,7 +24,7 @@ with sync_playwright() as p:
     check('pause -> "Pausad · x %"', st.startswith('Pausad') and pg.inner_text('#offBtn') == 'Fortsätt', st)
     # go on until done
     pg.click('#offBtn')
-    pg.wait_for_function("document.getElementById('offStatus').textContent.indexOf('Klar') === 0", timeout=120000)
+    pg.wait_for_function("document.getElementById('offStatus').textContent.indexOf('Klar') === 0", timeout=300000)   # (~1 200 files; slow while the other tests run too)
     st = pg.inner_text('#offStatus')
     check('done: "Klar · x MB sparat"', st.startswith('Klar') and pg.inner_text('#offBtn') == 'Ta bort', st)
     cached = pg.evaluate("caches.keys().then(ks => Promise.all(ks.filter(k => k.indexOf('ffmap-offline-regnaren-') === 0).map(k => caches.open(k).then(c => c.keys().then(r => r.length)))))")

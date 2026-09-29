@@ -312,13 +312,15 @@ def s_blixtar(p):
     fmi = lambda r: r.fulfill(status=200, content_type='text/xml', body=xml(), headers={'Access-Control-Allow-Origin': '*'})
     b, ctx, pg = open_app(p, fmi=fmi)
     bring(pg, ME, (110, 560))                          # (the strikes are north-east of the boat)
-    rec = Rec(pg, Y(0, 620)); rec.hold(1800)
+    rec = Rec(pg, Y(0, 620)); rec.hold(2200)
+    if pg.is_visible('#ltAlarm'): tap_el(pg, rec, '#ltAlarmOk', after=700)       # the alarm (strike < 10 km): OK
     x, y = scr(pg, ME)
     for i in range(4):                                 # zoom out a bit: the strikes on the map
         pg.mouse.move(x + 60, y - 60); pg.mouse.wheel(0, 380); rec.hold(260)
     rec.hold(1500)
     strikes.append((0.8, 0.7, 0))                      # a new one, close: it flashes
-    pg.evaluate('__ffLightningFetch()'); rec.hold(3200)
+    pg.evaluate('__ffLightningFetch()'); rec.hold(2600)                         # flashes + warns again
+    if pg.is_visible('#ltAlarm'): tap_el(pg, rec, '#ltAlarmOk', after=1400)
     rec.save('blixtar'); b.close()
 
 def s_filter(p):
@@ -357,6 +359,48 @@ def s_installningar(p):
     rec.hold(2200)
     rec.save('installningar'); b.close()
 
+def s_analys(p):
+    """Kartanalys: depth range (drag), tops & holes (tap a label -> lead line), a preset"""
+    b, ctx, pg = open_app(p)
+    bring(pg, P['B1'], (195, 300))
+    rec = Rec(pg); rec.hold(500)
+    tap_el(pg, rec, '#anBtn', after=700)
+    tap_el(pg, rec, '#anPanel button[data-m="depth"]', after=900)
+    for v in [6.5, 7, 7.5, 8, 8.5, 9]:
+        pg.evaluate("v => { var e = document.getElementById('anHi'); e.value = v; e.dispatchEvent(new Event('input', { bubbles: true })); }", v); rec.hold(180)
+    rec.hold(900)
+    tap_el(pg, rec, '#anPanel button[data-m="tops"]', after=1400)
+    lbl = pg.evaluate("""() => { var best = null; document.querySelectorAll('.anLbl').forEach(function(l){ var r = l.getBoundingClientRect();
+        if (r.top > 110 && r.bottom < 480 && r.left > 10 && r.right < 380 && !best) best = [r.left + r.width / 2, r.top + r.height / 2]; }); return best; }""")
+    if lbl: tap(pg, rec, lbl[0], lbl[1], after=1500)
+    tap_el(pg, rec, '#anBtn', after=600)
+    tap_el(pg, rec, '#anPanel button[data-m="gos"]', after=1800)
+    tap_el(pg, rec, '#anClose', after=1500)
+    rec.save('analys'); b.close()
+
+def s_akhit(p):
+    """tap a spot -> Åk hit -> the card; the boat moves, the distance/time follow"""
+    b, ctx, pg = open_app(p)
+    bring(pg, mix(ME, P['B4'], 0.5), (195, 470))
+    rec = Rec(pg, Y(0, 720)); rec.hold(600)
+    x, y = scr(pg, P['B4']); tap(pg, rec, x, y - 8, after=900)
+    tap_el(pg, rec, '#wpGo', after=1500)
+    sail(pg, ctx, rec, ME, P['B1'], metres_max=45, speed=5.0); rec.hold(1800)
+    rec.save('akhit'); b.close()
+
+def s_meddelanden(p):
+    """the message button -> Hugg! -> a bubble at your boat; Calle answers; tap yours away"""
+    c = mix(P['B1'], P['B4'], 0.5)
+    b, ctx, pg = open_app(p, boats=[{'uid': 'kalle', 'name': 'Calle', 'lat': c[0], 'lon': c[1], 'ageMin': 0}])
+    check_water(pg, c)
+    bring(pg, mix(ME, c, 0.5), (195, 470))
+    rec = Rec(pg, Y(250, 844)); rec.hold(600)
+    tap_el(pg, rec, '#msgBtn', after=900)
+    tap_el(pg, rec, '#msgPop button:has-text("Hugg")', after=1600)
+    pg.evaluate("c => __addPos({ uid: 'kalle', name: 'Calle', lat: c[0], lon: c[1], msg: 'Kommer 🚤' })", list(c)); rec.hold(2200)
+    tap_el(pg, rec, '.msgBub.mine', after=1500)
+    rec.save('meddelanden'); b.close()
+
 def s_installera(p):
     b = p.chromium.launch(**fakefb.LAUNCH)
     ctx = b.new_context(viewport={'width': 390, 'height': 844}, device_scale_factor=2)
@@ -368,7 +412,8 @@ def s_installera(p):
 
 SCENES = [('installera', s_installera), ('kartan', s_kartan), ('kartlagen', s_kartlagen), ('position', s_position),
           ('lodet', s_lodet), ('platser', s_platser), ('andra', s_andra), ('fara', s_fara), ('batar', s_batar), ('mat', s_mat),
-          ('vader', s_vader), ('blixtar', s_blixtar), ('filter', s_filter), ('logg', s_logg), ('installningar', s_installningar)]
+          ('vader', s_vader), ('blixtar', s_blixtar), ('filter', s_filter), ('logg', s_logg), ('installningar', s_installningar),
+          ('analys', s_analys), ('akhit', s_akhit), ('meddelanden', s_meddelanden)]
 
 if __name__ == '__main__':
     want = sys.argv[1:] or [n for n, f in SCENES]

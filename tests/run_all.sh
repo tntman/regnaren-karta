@@ -2,7 +2,7 @@
 # Runs all browser tests against docs/ (build first: python3 tools/build.py)
 # Needs: pip install playwright numpy pillow && python3 -m playwright install chromium
 cd "$(dirname "$0")"
-python3 -m http.server 8899 --directory ../docs >/dev/null 2>&1 &
+python3 serve.py 8899 ../docs >/dev/null 2>&1 &
 SRV=$!; sleep 1
 fail=0
 for t in test_*.py; do

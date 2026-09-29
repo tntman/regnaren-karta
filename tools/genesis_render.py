@@ -332,6 +332,36 @@ def main():
             enc.append(vals[i]); i += 1
     open(os.path.join(OUT, 'depth_v%d.txt' % V), 'w').write(base64.b64encode(bytes(enc)).decode())
 
+    # ---- bottom grid for Kartanalys (same cells as the depth grid): bits 0-2 = Genesis hardness
+    # 1..4 (soft -> hard; 0 = not measured), bit 3 = vegetation. Runs of 0 packed: 250 n_lo n_hi.
+    def lay_dz(n):
+        pth = os.path.join(D, n + '.png')
+        return cropdz(np.array(Image.open(pth).convert('RGBA')), 0) if os.path.exists(pth) else None
+    bot = np.zeros((gh, gw), np.uint8)
+    v = lay_dz('v')
+    if v is not None:
+        vf = np.array(Image.fromarray(((v[..., 3] > 100) & water).astype(np.float32), 'F').resize((gw, gh), Image.BOX))
+        bot |= ((vf >= 0.3) * 8).astype(np.uint8); del v
+    c = lay_dz('c')
+    if c is not None:
+        cm = (c[..., 3] > 100) & water
+        ck = np.argmin(((c[..., None, :3].astype(np.int32) - np.array(HARD_SRC, np.int32)) ** 2).sum(-1), axis=-1) + 1
+        del c
+        mf = np.array(Image.fromarray(cm.astype(np.float32), 'F').resize((gw, gh), Image.BOX))
+        kf = np.array(Image.fromarray((ck * cm).astype(np.float32), 'F').resize((gw, gh), Image.BOX))
+        lvl = np.where(mf >= 0.3, np.clip(np.round(kf / np.maximum(mf, 1e-6)), 1, 4), 0).astype(np.uint8)
+        bot |= lvl; del ck, cm
+    bv = bot.ravel(); enc = bytearray(); i = 0
+    while i < len(bv):
+        if bv[i] == 0:
+            j = i
+            while j < len(bv) and bv[j] == 0 and j - i < 65535: j += 1
+            n = j - i; enc += bytes([250, n & 255, n >> 8]) if n >= 3 else bytes(n); i = j
+        else:
+            enc.append(bv[i]); i += 1
+    open(os.path.join(OUT, 'bottom_v%d.txt' % V), 'w').write(base64.b64encode(bytes(enc)).decode())
+    print('  bottom grid: %d cells with vegetation, %d with hardness' % (((bot & 8) > 0).sum(), ((bot & 7) > 0).sum()))
+
     # full-resolution depth for the tests (the crop at DZ): elevation_m = -depth, water, where it is
     np.savez_compressed(os.path.join(L, 'raw', 'depth_raw.npz'), elevation_m=(-dep0).astype(np.float16), water=water,
                         lake=(osm | water), zoom=DZ, origin=np.array([gx0, gy0]))
@@ -346,6 +376,7 @@ def main():
                 'metersPerPx': 156543.03392 * math.cos(math.radians(latc)) / 2 ** base,
                 'imgW': W // mb, 'imgH': H // mb},
         'depth': {'file': 'depth_v%d.txt' % V, 'w': gw, 'h': gh, 'step': step, 'max': DMAX, 'capped': False},
+        'bottom': {'file': 'bottom_v%d.txt' % V},              # (vegetation + hardness per depth-grid cell)
         'legendTicks': TICKS,                                  # (0 .. the lake's max depth)
         'contourText': 'Djupkurvor från C-MAP Genesis',
         'mapFile': 'map_v%d_{style}.jpg' % V,

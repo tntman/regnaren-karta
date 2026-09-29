@@ -104,11 +104,31 @@ All text i appen är på svenska. Svara Filip på svenska, kort och tydligt.
   markör vid skärmkanten mot närmaste när den är utanför bild. Avstånd från dig om du är vid sjön,
   annars från sjöns mitt. Inget visas när det är lugnt. `window.__ffLightning()` för testerna;
   fakefb blockerar opendata.fmi.fi i alla tester (test_lightning har egen låtsas-XML).
+- **Kartanalys** ("Hitta ställen", knappen nere till höger `#anBtn` – ersatte uppdatera-knappen;
+  Filter "Kartanalys" visar/döljer, på som standard): en panel `#anPanel` med Djup, Branta kanter,
+  Toppar & hålor, Växtkant, Hård botten, Vindkant, Liknande + förinställt Abborre/Gädda/Gös
+  (tumregler från vanliga fiskeråd, INTE data). Räknas i telefonen på djupnätet (`anBase`: lutning,
+  "högre/lägre än runt om" ~28 m, avstånd till land) + `docs/lakes/<id>/bottom_v<V>.txt`
+  (vegetation bit 3, hårdhet 1–4 bit 0–2, RLE 250 n n; görs av genesis_render, även `grid`) + vinden.
+  Canvas `#anLayer` per skärmpunkt (som lä), etiketter i `#anLabels`. Val per sjö (`lakeKey`).
+  `window.__ffGeo`, `__ffAnalysis()` för tester/verktyg.
+- **Åk hit** (knapp i platsens ruta `#wpGo`, och i Kartanalys-listan): lodet släpps på platsen +
+  kort `#navCard` (pil längs rutten, sträcka sjövägen, tid). ✕ eller bort med lodet = slut.
+- **Snabbmeddelanden** (`#msgBtn` längst ner i mitten): skickas med din position
+  (`positions/<du>.msg/msgAt`), bubbla vid båten 15 min; tryck egen = ta bort (för alla),
+  andras = dölj för dig. Bara vid sjön.
+- **Åskvarning** (Inställningar: Av/5/10/20 km, ljud, vibration; standard 10 km): nytt nedslag
+  < 5 min och inom avståndet → `#ltAlarm` + pip (WebAudio, låses upp vid första tryck) +
+  vibration (finns inte på iPhone). Varje nedslag larmar en gång.
+- **Håll skärmen tänd** (Filter, av som standard, `ffmap_wakelock_v1`): Wake Lock, tas igen när
+  appen blir synlig.
+- **Pushnotiser**: inte gjort (kräver server/Firebase-betalplan) – utforskas senare.
 - **Positionsintervall** per sjö (`config/<lake>`, localStorage via `lakeKey`); sjö utan
   inställning i databasen = 20 s.
 - **Ny sjö:** receptet steg för steg + Genesis egenheter + vad som testats och förkastats
   står i `tools/KARTOR.md`.
-- Tester körs parallellt (6 åt gången, `TEST_JOBS` ändrar), ~3 min. Tester får inte ändra
+- Tester körs parallellt (6 åt gången, `TEST_JOBS` ändrar), ~3,5 min, mot `tests/serve.py` (egen
+  webbserver med lång anslutningskö – `python -m http.server` fastnade när många tester körde samtidigt). Tester får inte ändra
   filer i `docs/` (de körs samtidigt) – blockera i webbläsaren i stället (`pg.route`).
 - Väder: Open-Meteo (ingen nyckel), cache 30 min, lagras lokalt.
 
@@ -121,5 +141,4 @@ config/{lake}: read auth; write kräver posIntervalS i [10,20,30,60].
 ## Idéer som diskuterats men inte gjorts
 - Riktig iPhone-app via Capacitor + TestFlight (bakgrundsposition). Kräver Mac + Apple-konto.
 - iOS Genvägar-automation som skickar position när appen är stängd.
-- "Håll skärmen tänd" (Wake Lock; fungerar i hemskärmsappar från iOS 18.4).
-- Fångstlogg/tävlingsläge, navigera till plats, anteckningar på fiskeplatser.
+- Fångstlogg/tävlingsläge, anteckningar på fiskeplatser, pushnotiser (Träffpunkt/Fara/blixt).

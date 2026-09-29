@@ -39,7 +39,7 @@ with sync_playwright() as p:
     b, pg, errs = fresh(p, UA['ios'])
     check('first time: Hjälp opens by itself after the name, with a welcome', pg.is_visible('#helpView') and pg.is_visible('#helpWelcome') and 'Välkommen, Filip!' in pg.inner_text('#helpWelcome'), pg.inner_text('#helpWelcome') if pg.is_visible('#helpWelcome') else '')
     toc = pg.eval_on_selector_all('#helpToc a', 'e => e.map(x => x.textContent.trim())')
-    check('contents: 16 sections', len(toc) == 16 and 'Blixtar' in ''.join(toc) and 'Installera appen' in ''.join(toc), toc)
+    check('contents: 20 sections', len(toc) == 20 and 'Blixtar' in ''.join(toc) and 'Installera appen' in ''.join(toc), toc)
     check('iPhone Safari: the Safari steps are shown, not "✓ installed"', os_tab(pg) == 'ios' and pg.is_visible('.helpSteps[data-os="ios"]') and not pg.is_visible('#helpInstalled'), os_tab(pg))
     news = pg.eval_on_selector_all('#helpNewsList .helpNewsItem', 'e => e.filter(x => x.offsetParent).length')
     check('Nytt i appen: 5 shown, the rest behind "Visa äldre"', news == 5 and pg.is_visible('#helpNewsMore'), news)
@@ -101,7 +101,7 @@ with sync_playwright() as p:
 html = open(os.path.join(os.path.dirname(HELP), 'index.html'), encoding='utf-8').read()
 want = re.findall(r'src="help/([a-z]+)\.webp"', html)
 missing = [w for w in want if not os.path.exists(os.path.join(HELP, w + '.webp'))]
-check('all %d animations exist in docs/help/' % len(want), len(want) == 15 and not missing, missing)
+check('all %d animations exist in docs/help/' % len(want), len(want) == 18 and not missing, missing)
 from PIL import Image
 wrong = [w for w in want if w not in missing and ('width="%d" height="%d" src="help/%s.webp"' % (Image.open(os.path.join(HELP, w + '.webp')).size + (w,))) not in html]
 check('the page has the size of each animation (no jumping while they load; tools/help_anim.py writes them)', not wrong, wrong)

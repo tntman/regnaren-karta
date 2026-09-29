@@ -12,7 +12,7 @@ $env:PYTHONIOENCODING = 'utf-8'
 $edge = "${env:ProgramFiles(x86)}\Microsoft\Edge\Application\msedge.exe"
 if (-not $env:CHROMIUM -and (Test-Path $edge)) { $env:CHROMIUM = $edge }
 $jobs = 6; if ($env:TEST_JOBS) { $jobs = [int]$env:TEST_JOBS }
-$srv = Start-Process py -ArgumentList '-3', '-m', 'http.server', '8899', '--directory', '..\docs' `
+$srv = Start-Process py -ArgumentList '-3', 'serve.py', '8899', '..\docs' `
     -WindowStyle Hidden -PassThru
 Start-Sleep -Seconds 1
 $tmp = Join-Path ([IO.Path]::GetTempPath()) ('ffmap_tests_' + [guid]::NewGuid().ToString('N').Substring(0, 8))

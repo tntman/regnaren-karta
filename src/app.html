@@ -173,20 +173,6 @@
   #locateBtn.tracking{background:var(--offwhite);}
   #locateBtn:disabled{opacity:.4;}
 
-  #refreshBtn{
-    position:absolute;right:76px;
-    bottom:calc(env(safe-area-inset-bottom,0px) + 25px);
-    z-index:22;
-    width:44px;height:44px;border-radius:50%;
-    background:var(--navy-glass);backdrop-filter:blur(6px);
-    color:var(--offwhite);border:1px solid rgba(255,255,255,.16);
-    display:flex;align-items:center;justify-content:center;
-    box-shadow:0 4px 14px rgba(0,0,0,.35);
-    -webkit-tap-highlight-color:transparent;
-  }
-  #refreshBtn:active{transform:scale(.92);}
-  #refreshBtn svg{width:19px;height:19px;}
-  #refreshBtn.spinning svg{animation:spin .7s linear;}
   @keyframes spin{to{transform:rotate(360deg);}}
 
   /* "add a fishing spot here" button, shaped exactly like a fishing-spot
@@ -576,7 +562,6 @@
     .kicker{font-size:19px;}
     #legend{width:111px;padding:5px 7px 4px;}
     #locateBtn{width:50px;height:50px;}
-    #refreshBtn{width:40px;height:40px;right:72px;}
     #measureBtn{width:40px;height:40px;right:72px;bottom:calc(env(safe-area-inset-bottom,0px) + 82px);}
     #addHereBtn{right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 80px);}
     #visPanel{padding:7px 9px;gap:6px;}
@@ -595,7 +580,7 @@
     #legend{bottom:calc(env(safe-area-inset-bottom,0px) + 8px);}
     #scalebar{bottom:calc(env(safe-area-inset-bottom,0px) + 50px);}
     #locateBtn{bottom:calc(env(safe-area-inset-bottom,0px) + 8px);width:46px;height:46px;}
-    #refreshBtn{bottom:calc(env(safe-area-inset-bottom,0px) + 13px);width:38px;height:38px;right:68px;}
+    #anBtn{bottom:calc(env(safe-area-inset-bottom,0px) + 13px);width:38px;height:38px;right:68px;}
     #addHereBtn{bottom:calc(env(safe-area-inset-bottom,0px) + 62px);}
     #measureBtn{bottom:calc(env(safe-area-inset-bottom,0px) + 62px);width:38px;height:38px;right:68px;}
     #speedPill{left:148px;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);}
@@ -1173,6 +1158,99 @@
   #menuItemHelp{position:relative;}
   #menuItemHelp .newDot{position:static;margin-left:auto;}
   body.helpNew .newDot{display:block;}
+  /* ---- Kartanalys ("Hitta ställen"): filter the map's data; button bottom right ---- */
+  #anLayer{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;display:none;}
+  #anLayer.on{display:block;}
+  #anLabels{position:absolute;inset:0;z-index:15;pointer-events:none;}
+  .anLbl{position:absolute;left:0;top:0;transform:translate(-50%,-50%);pointer-events:auto;cursor:pointer;white-space:nowrap;
+    background:rgba(11,42,58,.9);border:1.5px solid #FFBE28;border-radius:11px;padding:2px 8px;font-size:11.5px;font-weight:700;color:#fff;
+    box-shadow:0 2px 8px rgba(0,0,0,.5);-webkit-tap-highlight-color:transparent;}
+  .anLbl.hole{border-color:#6fd6ff;}
+  .anLbl.sim{border-color:#ff50a0;width:24px;height:24px;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#ff50a0;}
+  #anBtn{
+    position:absolute;right:76px;bottom:calc(env(safe-area-inset-bottom,0px) + 25px);z-index:22;
+    width:44px;height:44px;border-radius:50%;
+    background:var(--navy-glass);backdrop-filter:blur(6px);color:var(--offwhite);border:1px solid rgba(255,255,255,.16);
+    display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.35);-webkit-tap-highlight-color:transparent;padding:0;
+  }
+  #anBtn:active{transform:scale(.92);}
+  #anBtn svg{width:21px;height:21px;}
+  #anBtn.on{border-color:var(--amber);color:var(--amber);}
+  #anPanel{
+    position:absolute;left:0;right:0;bottom:0;z-index:26;background:var(--navy);
+    border-top:1px solid rgba(255,255,255,.14);border-radius:18px 18px 0 0;
+    padding:8px 14px calc(env(safe-area-inset-bottom,0px) + 16px);box-shadow:0 -10px 30px rgba(0,0,0,.45);
+    transform:translateY(105%);transition:transform .25s ease;max-height:62vh;overflow-y:auto;
+  }
+  #anPanel.show{transform:none;}
+  #anPanel .grab{width:38px;height:5px;border-radius:3px;background:rgba(255,255,255,.25);margin:0 auto 8px;}
+  .anHead{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--text-muted);}
+  .anHead span{flex:1;}
+  .anHead button{border:none;background:rgba(255,255,255,.08);color:var(--offwhite);border-radius:14px;padding:5px 10px;font:inherit;font-size:12px;letter-spacing:0;cursor:pointer;}
+  #anClose{width:30px;height:30px;padding:0;border-radius:50%;font-size:15px;}
+  .anChips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;}
+  .anChips button{font:inherit;font-size:12.5px;padding:6px 10px;border-radius:14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:var(--offwhite);cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent;}
+  .anChips button.on{background:var(--amber);color:var(--navy);font-weight:700;border-color:var(--amber);}
+  .anChips.pre button{border-color:rgba(232,163,61,.45);}
+  .anSub{margin-top:11px;font-size:10.5px;font-weight:700;letter-spacing:.08em;color:var(--text-muted);text-transform:uppercase;}
+  #anControls{margin-top:6px;}
+  .anRange{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12.5px;color:#dbe4e7;}
+  .anRange label{flex:0 0 58px;}
+  .anRange input[type=range]{flex:1;accent-color:var(--amber);}
+  .anRange output{flex:0 0 48px;text-align:right;font-weight:700;color:var(--amber);}
+  #anResult{margin-top:9px;font-size:13px;color:#dbe4e7;line-height:1.4;}
+  #anResult b{color:var(--amber);}
+  #anResult .note{display:block;color:var(--text-muted);font-size:11.5px;margin-top:3px;}
+  .anList{margin-top:7px;display:flex;flex-direction:column;gap:5px;}
+  .anList .li{display:flex;align-items:center;gap:9px;background:rgba(255,255,255,.05);border-radius:10px;padding:6px 9px;font-size:13px;color:#dbe4e7;}
+  .anList .n{width:20px;height:20px;border-radius:50%;background:#ff50a0;color:#fff;font-weight:700;font-size:11.5px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
+  .anList button{margin-left:auto;border:none;background:none;color:var(--amber);font:inherit;font-weight:700;font-size:12.5px;cursor:pointer;}
+  #anRefSel{width:100%;margin-top:8px;background:rgba(255,255,255,.08);color:var(--offwhite);border:1px solid rgba(255,255,255,.18);border-radius:9px;padding:7px 8px;font:inherit;font-size:14px;}
+  #anRefSel option{color:#000;}
+  /* ---- "Åk hit": a card at the top with the arrow, distance and time by water ---- */
+  #navCard{position:absolute;left:14px;right:14px;top:calc(env(safe-area-inset-top,0px) + 108px);z-index:21;display:none;align-items:center;gap:12px;
+    background:rgba(11,42,58,.94);border:1px solid rgba(232,163,61,.6);border-radius:16px;padding:9px 12px;box-shadow:0 8px 24px rgba(0,0,0,.5);max-width:420px;}
+  #navCard.show{display:flex;}
+  #navArrow{width:46px;height:46px;border-radius:13px;background:var(--amber);display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
+  #navArrow svg{width:28px;height:28px;transition:transform .4s;}
+  #navText{flex:1;min-width:0;}
+  #navText b{display:block;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  #navText small{display:block;color:var(--text-muted);font-size:12.5px;margin-top:1px;}
+  #navClose{border:none;background:none;color:var(--text-muted);font-size:18px;width:32px;height:32px;cursor:pointer;}
+  #wpGo{margin-right:auto;}
+  /* ---- lightning alarm ---- */
+  #ltAlarm{position:absolute;left:18px;right:18px;top:calc(env(safe-area-inset-top,0px) + 120px);z-index:40;display:none;flex-direction:column;align-items:center;gap:4px;
+    background:rgba(205,38,38,.97);border:2px solid #fff;border-radius:18px;padding:16px;text-align:center;color:#fff;box-shadow:0 10px 40px rgba(0,0,0,.6);max-width:420px;margin:0 auto;}
+  #ltAlarm.show{display:flex;animation:ltAlarmIn .3s ease;}
+  @keyframes ltAlarmIn{from{transform:scale(.9);opacity:0;}to{transform:none;opacity:1;}}
+  #ltAlarm b{font-size:22px;}
+  #ltAlarm small{font-size:14px;opacity:.95;}
+  #ltAlarmOk{margin-top:8px;border:none;border-radius:11px;background:rgba(255,255,255,.22);color:#fff;font:inherit;font-weight:700;font-size:15px;padding:8px 26px;cursor:pointer;}
+  /* ---- quick messages: a small button at the bottom, bubbles at the boats (15 min) ---- */
+  #msgBtn{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 20px);transform:translateX(-50%);z-index:22;
+    width:42px;height:42px;border-radius:50%;background:var(--navy-glass);backdrop-filter:blur(6px);color:var(--offwhite);
+    border:1px solid rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.35);padding:0;-webkit-tap-highlight-color:transparent;}
+  #msgBtn svg{width:20px;height:20px;}
+  #msgBtn.open{border-color:var(--amber);color:var(--amber);}
+  #msgPop{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 72px);transform:translateX(-50%);z-index:24;display:none;
+    flex-wrap:wrap;justify-content:center;gap:6px;width:min(340px, calc(100vw - 28px));}
+  #msgPop.show{display:flex;}
+  #msgPop button{background:rgba(11,42,58,.95);border:1px solid rgba(255,255,255,.22);color:#fff;border-radius:18px;padding:8px 13px;font:inherit;font-weight:700;font-size:14px;box-shadow:0 4px 12px rgba(0,0,0,.4);cursor:pointer;}
+  #msgPop button:active{background:var(--amber);color:var(--navy);}
+  #msgToast{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 72px);transform:translateX(-50%);z-index:24;max-width:calc(100vw - 40px);
+    background:rgba(11,42,58,.95);border:1px solid rgba(232,163,61,.6);color:#fff;border-radius:14px;padding:8px 14px;font-size:13.5px;opacity:0;pointer-events:none;transition:opacity .2s;text-align:center;}
+  #msgToast.show{opacity:1;}
+  #msgLayer{position:absolute;inset:0;z-index:17;pointer-events:none;}
+  .msgBub{position:absolute;left:0;top:0;pointer-events:auto;cursor:pointer;background:#fff;color:#0B2A3A;border-radius:14px;padding:4px 10px;
+    font-weight:700;font-size:13.5px;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,.5);transform:translate(-14px,calc(-100% - 20px));-webkit-tap-highlight-color:transparent;}
+  .msgBub::after{content:'';position:absolute;left:12px;bottom:-7px;border:7px solid transparent;border-top-color:#fff;border-bottom:0;}
+  .msgBub small{font-weight:400;color:#557;margin-left:4px;}
+  .msgBub.mine{background:#FFE7B8;} .msgBub.mine::after{border-top-color:#FFE7B8;}
+  @media (orientation:landscape) and (max-height:520px){
+    #anBtn{width:40px;height:40px;right:72px;}
+    #anPanel{left:auto;width:420px;right:0;max-height:88vh;}
+    #msgBtn{width:38px;height:38px;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);}
+  }
 </style>
 
 <div id="app">
@@ -1180,6 +1258,7 @@
     <div id="world"><img id="mapImg" alt="Djupkarta över sjön Regnaren" draggable="false"></div>
     <div id="detailLayer" aria-hidden="true"></div>
     <canvas id="windLayer" aria-hidden="true"></canvas>
+    <canvas id="anLayer" aria-hidden="true"></canvas>
     <canvas id="ltLayer" aria-hidden="true"></canvas>
     <div id="mapLoading">Laddar karta…</div>
   </div>
@@ -1188,7 +1267,9 @@
   <svg id="routeLayer" aria-hidden="true"><polyline class="rtUnder"></polyline><polyline class="rtLine"></polyline></svg>
   <div id="waypoints"></div>
   <svg id="measureLayer" aria-hidden="true"><polyline class="mlUnder"></polyline><polyline class="mlLine"></polyline><g class="mlPts"></g><text class="mlLabel"></text></svg>
+  <div id="anLabels"></div>
   <div id="boatsLayer"></div>
+  <div id="msgLayer"></div>
   <div id="probe" aria-live="polite"><div class="pbRip pbRip2"></div><div class="pbRip"></div><div class="pbLine"></div><div class="pbWt"><svg viewBox="0 0 16 22" width="9" height="12"><path d="M8 1.5c1 0 1.6.8 1.6 1.7v1.6c3 1.4 4.9 5.2 4.9 9.2 0 3.9-2.9 6.5-6.5 6.5S1.5 17.9 1.5 14c0-4 1.9-7.8 4.9-9.2V3.2c0-.9.6-1.7 1.6-1.7z" fill="#FFB23F" stroke="#0B2A3A" stroke-width="2"></path></svg></div><div class="pbTag"><span class="pbD" id="probeDepth"></span><span class="pbDiv"></span><span class="pbK" id="probeDist"><svg viewBox="0 0 24 24" width="9" height="9"><path d="M12 3l7 17-7-4-7 4z" fill="#FFB23F"></path></svg><span id="probeDistTxt"></span></span><span class="pbDiv pbDivT"></span><span class="pbT" id="probeTime"></span></div></div>
   <div id="longPressRing"></div>
   <div id="bottomFade"></div>
@@ -1273,6 +1354,22 @@
         </div>
         <div class="styleList" id="mapStyleList" role="radiogroup" aria-label="Kartstil"></div>
         <div class="styleMsg" id="mapStyleMsg" hidden></div>
+      </div>
+      <div class="settingsRow" style="flex-direction:column;align-items:stretch;" id="ltAlarmRow">
+        <div class="settingsRowText">
+          <div class="settingsRowTitle">Åskvarning</div>
+          <div class="settingsRowDesc">Larm när en blixt slår ner närmare än så här (kräver Blixtar i Filter). Vibration fungerar inte på iPhone.</div>
+        </div>
+        <div class="segmented" id="ltAlarmSeg" role="radiogroup" aria-label="Åskvarning">
+          <button type="button" data-km="0" role="radio">Av</button>
+          <button type="button" data-km="5" role="radio">5 km</button>
+          <button type="button" data-km="10" role="radio">10 km</button>
+          <button type="button" data-km="20" role="radio">20 km</button>
+        </div>
+        <label class="adminToggleRow" style="display:flex;align-items:center;gap:12px;margin-top:10px;"><div style="flex:1 1 auto;font-size:13.5px;">Ljud</div>
+          <span class="toggle"><input type="checkbox" id="ltAlarmSound"><span class="toggleTrack"><span class="toggleThumb"></span></span></span></label>
+        <label class="adminToggleRow" style="display:flex;align-items:center;gap:12px;margin-top:8px;"><div style="flex:1 1 auto;font-size:13.5px;">Vibration</div>
+          <span class="toggle"><input type="checkbox" id="ltAlarmVib"><span class="toggleTrack"><span class="toggleThumb"></span></span></span></label>
       </div>
       <div class="settingsRow" style="flex-direction:column;align-items:stretch;" id="offlineRow">
         <div class="offRow">
@@ -1508,12 +1605,26 @@
     </svg>
   </button>
 
-  <button id="refreshBtn" aria-label="Uppdatera fiskeplatser" title="Uppdatera fiskeplatser">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M21 12a9 9 0 1 1-3-6.7"></path>
-      <polyline points="21 3 21 9 15 9"></polyline>
-    </svg>
+  <button id="anBtn" aria-label="Kartanalys – hitta ställen" title="Kartanalys – hitta ställen">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="M15.5 15.5 21 21"></path><path d="M7.5 11.5c1-2 2-2 3-1s2 1 3-1"></path></svg>
   </button>
+  <button id="msgBtn" aria-label="Snabbmeddelande" title="Snabbmeddelande">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"></path></svg>
+  </button>
+  <div id="msgPop" role="menu" aria-label="Skicka snabbmeddelande"></div>
+  <div id="msgToast" role="status"></div>
+  <div id="anPanel" role="dialog" aria-label="Kartanalys">
+    <div class="grab"></div>
+    <div class="anHead"><span>KARTANALYS – HITTA STÄLLEN</span><button type="button" id="anClear">Rensa</button><button type="button" id="anClose" aria-label="Stäng">✕</button></div>
+    <div class="anChips" id="anChips"></div>
+    <div class="anSub">Förinställt (tumregler)</div>
+    <div class="anChips pre" id="anPresets"></div>
+    <div id="anControls"></div>
+    <div id="anResult"></div>
+  </div>
+  <div id="navCard" aria-live="polite"><div id="navArrow"><svg viewBox="0 0 24 24"><path d="M12 2l6 18-6-4-6 4z" fill="#0B2A3A"></path></svg></div>
+    <div id="navText"><b id="navName"></b><small id="navInfo"></small></div><button type="button" id="navClose" aria-label="Sluta navigera">✕</button></div>
+  <div id="ltAlarm" role="alertdialog"><b id="ltAlarmMain"></b><small id="ltAlarmSub"></small><button type="button" id="ltAlarmOk">OK</button></div>
 
   <button id="measureBtn" aria-label="Mätverktyg" title="Mät sträcka och restid">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17 17 3l4 4L7 21z"></path><path d="M7 13l2 2M10 10l2 2M13 7l2 2"></path></svg>
@@ -1613,6 +1724,22 @@
           <span class="toggleTrack"><span class="toggleThumb"></span></span>
         </span>
       </label>
+      <label class="visRow">
+        <span class="visSwatch visSwatch--wx"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="M15.5 15.5 21 21"></path></svg></span>
+        <span class="visLabel">Kartanalys</span>
+        <span class="toggle">
+          <input type="checkbox" id="toggleAnalysis">
+          <span class="toggleTrack"><span class="toggleThumb"></span></span>
+        </span>
+      </label>
+      <label class="visRow">
+        <span class="visSwatch visSwatch--wx"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg></span>
+        <span class="visLabel">Håll skärmen tänd</span>
+        <span class="toggle">
+          <input type="checkbox" id="toggleWake">
+          <span class="toggleTrack"><span class="toggleThumb"></span></span>
+        </span>
+      </label>
      </div>
      <div class="visCol">
       <div class="visHead">Typer</div>
@@ -1658,6 +1785,8 @@
         <a href="#help-batar"><span>🚤</span>Båtarna</a><a href="#help-mat"><span>📏</span>Mätverktyget</a>
         <a href="#help-vader"><span>🌬️</span>Väder, vind &amp; lä</a><a href="#help-blixtar"><span>⚡</span>Blixtar</a>
         <a href="#help-filter"><span>🎚️</span>Filter</a><a href="#help-logg"><span>📖</span>Loggen &amp; spår</a>
+        <a href="#help-analys"><span>🔎</span>Kartanalys</a><a href="#help-akhit"><span>➤</span>Åk hit</a>
+        <a href="#help-meddelanden"><span>💬</span>Snabbmeddelanden</a><a href="#help-skarm"><span>☀️</span>Skärmen tänd</a>
         <a href="#help-installningar"><span>⚙️</span>Inställningar</a><a href="#help-tips"><span>🛟</span>Tips &amp; felsökning</a>
       </nav>
 
@@ -1800,16 +1929,59 @@
         <ul>
           <li>Blixtnedslag i realtid inom 30 km: varning med avstånd och riktning – <b style="color:#ff8a80">röd</b> under 10 km, <b style="color:#ffc27a">orange</b> inom 30 km.</li>
           <li>Radar uppe till höger, ⚡ på kartan (gul = nyss, bleknar på 30 min), pil vid kanten mot närmaste.</li>
+          <li><b>Åskvarning:</b> ett stort rött larm med ljud (och vibration på Android) när en blixt slår ner närmare än 10 km – ändra avståndet eller stäng av i Inställningar.</li>
           <li>Data från FMI, några minuters fördröjning. Kan stängas av i Filter.</li>
         </ul>
         <div class="helpWarn">Ersätter inte sunt förnuft – åk in vid åska.</div>
+      </section>
+
+      <section class="helpCard" id="help-analys">
+        <h3><span class="hIc">🔎</span>Kartanalys – hitta ställen</h3>
+        <div class="helpAnim"><img loading="lazy" width="432" height="935" src="help/analys.webp" alt="Kartanalys"></div>
+        <ul>
+          <li><b class="hA">Tryck</b> på förstoringsglaset nere till höger. Välj vad du vill hitta – det som matchar lyser, resten av kartan tonas ner.</li>
+          <li><b>Djup</b> – ett djupintervall (dra i reglagen). <b>Branta kanter</b> – där botten sluttar mest, valfritt djup. <b>Toppar &amp; hålor</b> – grynnor mitt i sjön och gropar; tryck på en etikett för lodet.</li>
+          <li><b>Växtkant</b> – där vassen/växterna slutar. <b>Hård botten</b> – sten/grus där ekolodet mätt. <b>Vindkant</b> – stränder vinden blåser mot just nu.</li>
+          <li><b>Liknande</b> – välj en fiskeplats: appen letar upp ställen med samma djup, lutning och botten, med <b>Åk hit</b>.</li>
+          <li><b>Abborre, Gädda, Gös</b> – förinställda kombinationer. De bygger på vanliga fiskeråd (tumregler), inte på fångster – se dem som tips.</li>
+          <li>Visa/dölj med <b>Kartanalys</b> i Filter. <b>Rensa</b> tar bort den.</li>
+        </ul>
+      </section>
+
+      <section class="helpCard" id="help-akhit">
+        <h3><span class="hIc">➤</span>Åk hit</h3>
+        <div class="helpAnim"><img loading="lazy" width="432" height="798" src="help/akhit.webp" alt="Åk hit"></div>
+        <ul>
+          <li><b class="hA">Tryck</b> på en fiskeplats och välj <b>➤ Åk hit</b> (eller Åk hit i Kartanalys).</li>
+          <li>Kortet högst upp visar pilen, sträckan sjövägen och restiden – rutten ritas runt uddar och öar.</li>
+          <li>✕ på kortet (eller tryck på lodet) avslutar.</li>
+        </ul>
+      </section>
+
+      <section class="helpCard" id="help-meddelanden">
+        <h3><span class="hIc">💬</span>Snabbmeddelanden</h3>
+        <div class="helpAnim"><img loading="lazy" width="432" height="658" src="help/meddelanden.webp" alt="Snabbmeddelanden"></div>
+        <ul>
+          <li><b class="hA">Tryck</b> på pratbubblan längst ner och välj: Hugg!, Kommer, Åker in, Fika? eller Behöver hjälp.</li>
+          <li>Meddelandet syns vid din båt för alla i 15 minuter.</li>
+          <li>Tryck på din bubbla för att ta bort den. Trycker du på någon annans döljs den för dig.</li>
+          <li>Fungerar när du är vid sjön.</li>
+        </ul>
+      </section>
+
+      <section class="helpCard" id="help-skarm">
+        <h3><span class="hIc">☀️</span>Håll skärmen tänd</h3>
+        <ul>
+          <li>Slå på <b>Håll skärmen tänd</b> i Filter – då somnar inte telefonen medan appen är öppen (drar mer batteri).</li>
+          <li>iPhone: fungerar i hemskärmsappen från iOS 18.4.</li>
+        </ul>
       </section>
 
       <section class="helpCard" id="help-filter">
         <h3><span class="hIc">🎚️</span>Filter</h3>
         <div class="helpAnim"><img loading="lazy" width="432" height="775" src="help/filter.webp" alt="Filter"></div>
         <ul>
-          <li>Visa/dölj: Mina, Andras, Båtar, Namn, Djup, Spår, Väder, Vind och lä, Blixtar – och varje typ av plats.</li>
+          <li>Visa/dölj: Mina, Andras, Båtar, Namn, Djup, Spår, Väder, Vind och lä, Blixtar, Kartanalys – och varje typ av plats. Där finns också <b>Håll skärmen tänd</b>.</li>
           <li>Andras platser på 50 % eller 100 %. En prick på Filter betyder att något är dolt.</li>
         </ul>
       </section>
@@ -1827,7 +1999,7 @@
         <h3><span class="hIc">⚙️</span>Inställningar</h3>
         <div class="helpAnim"><img loading="lazy" width="432" height="935" src="help/installningar.webp" alt="Inställningar"></div>
         <ul>
-          <li>Namn, storlek på fiskeplatser, kartstil och kartans färg, spår, pulserande ring, marschfart.</li>
+          <li>Namn, storlek på fiskeplatser, kartstil och kartans färg, spår, pulserande ring, marschfart, <b>åskvarning</b> (avstånd, ljud, vibration).</li>
           <li><b>Ladda ner sjön för offline</b> – gör det hemma innan en tur med dålig täckning.</li>
         </ul>
       </section>
@@ -1866,6 +2038,7 @@
     <input id="wpName" type="text" maxlength="40" placeholder="T.ex. Gösvik">
     <div id="wpMeta" class="sheetMeta"></div>
     <div class="sheetRow">
+      <button id="wpGo" class="btnGhost" type="button">➤ Åk hit</button>
       <button id="wpDelete" class="btnGhost danger">Ta bort</button>
       <button id="wpCancel" class="btnGhost">Avbryt</button>
       <button id="wpSave" class="btnPrimary">Spara</button>
@@ -2038,7 +2211,8 @@
   function setProbe(pr){
     probe = pr;
     probeEl.classList.toggle('show', !!pr);
-    if (!pr){ probeRoute = null; renderRoute(); }
+    if (!pr){ probeRoute = null; renderRoute(); if (navTarget){ navTarget = null; } }
+    if (typeof updateNav === 'function') setTimeout(updateNav, 0);
     if (pr){
       probeEl.classList.remove('drop'); void probeEl.offsetWidth; probeEl.classList.add('drop');
       updateProbeText();
@@ -2077,6 +2251,7 @@
     }
     probeEl.classList.toggle('noTime', !timeOk);
     renderRoute();
+    if (navCard) updateNav();
   }
   function renderRoute(){
     var svg = document.getElementById('routeLayer');
@@ -2162,6 +2337,8 @@
     renderDetail();
     if (windOn && windCanvas) drawWind();   // ("Vind och lä" -- set up further down)
     if (ltOn && ltCanvas) ltDrawMap();      // ("Blixtar" -- also further down)
+    if (anCanvas) anDraw();                  // (Kartanalys, further down)
+    if (msgLayerEl) renderMessages();         // (quick messages, further down)
     renderTrack();
     renderProbe();
     updateMarker();
@@ -2878,6 +3055,7 @@
   document.getElementById('offTitle').textContent = 'Ladda ner ' + LAKE.name + ' för offline';
   function offlineFiles(){
     var list = [LAKE_DIR + LAKE.depth.file];
+    if (LAKE.bottom) list.push(LAKE_DIR + LAKE.bottom.file);     // (Kartanalys: vegetation + hardness)
     QUICK_STYLES.forEach(function(sid){
       list.push(mapFile(sid), thumbFile(sid));
       ((DETAIL && DETAIL.levels) || []).forEach(function(L){
@@ -3279,12 +3457,17 @@
       if (docLake !== LAKE_ID) return;
       var updatedMs = (d.updatedAt && d.updatedAt.toMillis) ? d.updatedAt.toMillis() : now;
       raw.push({ docId: doc.id, uid: d.uid || doc.id, name: d.name || '', lat: d.lat, lon: d.lon, updatedAt: updatedMs });
-      if (d.uid === myUid) return; // that's you -- your own big GPS dot already shows it
-      fresh[doc.id] = { lat: d.lat, lon: d.lon, name: d.name || '', uid: d.uid, updatedAt: updatedMs };
+      if (d.uid === myUid){               // that's you -- your own big GPS dot already shows it
+        if (d.msg && d.msgAt && (!ownMsg || d.msgAt >= ownMsg.at)) ownMsg = { text: d.msg, at: d.msgAt };   // (your quick message, after a reload)
+        else if (!d.msg && ownMsg && d.msgAt === 0) ownMsg = null;
+        return;
+      }
+      fresh[doc.id] = { lat: d.lat, lon: d.lon, name: d.name || '', uid: d.uid, updatedAt: updatedMs, msg: d.msg || null, msgAt: d.msgAt || 0 };
     });
     boatPositions = fresh;
     allPositions = raw;
     renderBoats();
+    if (msgLayerEl) renderMessages();
     refreshAdminIfOpen();
   }
 
@@ -3863,26 +4046,6 @@
   });
   renderPosIntervalAdmin();
 
-  var refreshBtn = document.getElementById('refreshBtn');
-  refreshBtn.addEventListener('click', function(){
-    refreshBtn.classList.remove('spinning');
-    void refreshBtn.offsetWidth; // restart animation if clicked again quickly
-    refreshBtn.classList.add('spinning');
-    setTimeout(function(){ refreshBtn.classList.remove('spinning'); }, 700);
-    if (USE_FIREBASE && fsCol){
-      // { source: 'server' } skips the local cache -- a manual refresh should
-      // actually go and ask the server, not just hand back whatever was
-      // already sitting on the device.
-      fsCol.get({ source: 'server' }).then(function(snap){ countGetReads(snap); applySnapshotDocs(snap); }).catch(function(err){ console.warn('manuell uppdatering misslyckades', err); });
-    } else {
-      loadLocalWaypoints();
-      renderWaypoints();
-    }
-    if (USE_FIREBASE && posCol){
-      posCol.get({ source: 'server' }).then(function(snap){ countGetReads(snap); applyPositionsSnapshot(snap); }).catch(function(err){ console.warn('manuell uppdatering av positioner misslyckades', err); });
-    }
-  });
-
   /* ---------------- sjöar (lakes) ---------------- */
   // The list comes from lakes/*/lake.json (LAKES, top of the script).
   // Choosing another lake remembers it and reloads the page with that lake.
@@ -4030,6 +4193,12 @@
      made by tools/help_anim.py (docs/help/*.webp; one that's missing is just left out). */
   // newest first. t: 'new' (NYTT), 'better' (BÄTTRE), 'fixed' (FIXAT)
   var HELP_NEWS = [
+    { d: '2026-09-29', t: 'new',    x: '<b>Kartanalys</b> – hitta ställen: djup, branta kanter, toppar &amp; hålor, växtkant, hård botten, vindkant, liknande ställen, Abborre/Gädda/Gös' },
+    { d: '2026-09-29', t: 'new',    x: '<b>Åk hit</b> – pil, sträcka och tid sjövägen till en plats' },
+    { d: '2026-09-29', t: 'new',    x: '<b>Snabbmeddelanden</b> vid båten (15 min)' },
+    { d: '2026-09-29', t: 'new',    x: '<b>Åskvarning</b> med ljud när blixten är nära' },
+    { d: '2026-09-29', t: 'new',    x: '<b>Håll skärmen tänd</b> i Filter' },
+    { d: '2026-09-29', t: 'better', x: 'Förstoringsglaset nere till höger ersätter uppdatera-knappen' },
     { d: '2026-09-29', t: 'new',    x: '<b>Hjälp</b> – den här sidan, med animeringar för varje funktion' },
     { d: '2026-09-29', t: 'new',    x: '<b>Blixtar i realtid</b> – varning, radar och ⚡ på kartan' },
     { d: '2026-09-29', t: 'new',    x: '<b>Sjösjön</b> finns i menyn' },
@@ -6145,6 +6314,7 @@
       var had = {}, first = !ltFetchedAt, fresh = {}, n = 0;
       ltStrikes.forEach(function(s){ had[s.k] = 1; });
       ltStrikes = ltParse(x); ltFetchedAt = Date.now();
+      ltCheckAlarm();
       ltStrikes.forEach(function(s){ if (!had[s.k] && Date.now() - s.t < 5 * 60000){ fresh[s.k] = 1; n++; } });
       if (!first && n){ ltFlash = { from: Date.now(), keys: fresh }; if (!ltAnim) ltAnim = requestAnimationFrame(ltPulse); }
       ltRender();
@@ -6296,6 +6466,600 @@
              red: ltPill.classList.contains('red'), radar: ltRadar.classList.contains('show'), drawn: d.drawn, edge: d.edge };
   };
   window.__ffLightningFetch = function(){ ltFetchedAt = 0; ltTick(); };   // (tests / tools/help_anim.py: fetch now)
+
+  /* ================= Kartanalys ("Hitta ställen") =================
+     One place for every "map analysis": the button bottom right opens a panel; one
+     filter at a time (or a preset that combines them). What matches is lit up, the
+     rest of the map is toned down. Everything is worked out on the phone from the
+     lake's depth grid (+ Genesis vegetation/hardness in bottom_v<V>.txt, + the wind
+     from the weather). Shown/hidden with "Kartanalys" in Filter; the choice is
+     remembered per lake. The presets are common fishing rules of thumb, not data. */
+  var AN_KEY = lakeKey('ffmap_analysis_v1', 'analysis_v1');
+  var SHOW_AN_KEY = 'ffmap_show_analysis_v1';
+  var AN_MODES = [
+    ['depth', 'Djup'], ['steep', 'Branta kanter'], ['tops', 'Toppar & hålor'], ['veg', 'Växtkant'],
+    ['hard', 'Hård botten'], ['wind', 'Vindkant'], ['similar', 'Liknande']
+  ];
+  var AN_PRESETS = [
+    ['abborre', 'Abborre', 'toppar och kanter på 2–6 m, gärna nära hård botten'],
+    ['gadda', 'Gädda', 'växtkanten på 1–4 m och vindkanten'],
+    ['gos', 'Gös', 'branta kanter på 4–10 m nära hård botten']
+  ];
+  var AN_COLORS = { depth: null, steep: [255, 70, 200], tops: [255, 190, 40], veg: [200, 255, 120], hard: [240, 70, 10],
+                    wind: [255, 178, 63], similar: [255, 80, 160], abborre: [255, 210, 26], gadda: [120, 255, 120], gos: [255, 210, 26] };
+  var anSet = { mode: null, lo: 4, hi: 6, slope: 10, elo: 0, ehi: Math.ceil(LAKE.depth.max || 20), vlo: 1, vhi: 5, ref: null };
+  try { var sv = JSON.parse(localStorage.getItem(AN_KEY) || 'null'); if (sv) for (var k0 in sv) anSet[k0] = sv[k0]; } catch(e){}
+  var anShow = true;
+  try { anShow = localStorage.getItem(SHOW_AN_KEY) !== '0'; } catch(e){}
+  var anCanvas = document.getElementById('anLayer'), anCtx = anCanvas.getContext('2d');
+  var anPanel = document.getElementById('anPanel'), anBtn = document.getElementById('anBtn'), anLabelsEl = document.getElementById('anLabels');
+  var AN = null, anBottom = null, anBottomLoading = false, anRes = null, anView = null, anVer = 0;
+  function anSave(){ try { localStorage.setItem(AN_KEY, JSON.stringify(anSet)); } catch(e){} }
+
+  // weighted box blur (only water counts), radius r cells, twice ~ gaussian
+  function anBlur(val, wt, W, H, r){
+    var a = new Float32Array(W * H), w = new Float32Array(W * H), i;
+    for (i = 0; i < W * H; i++){ a[i] = val[i] * wt[i]; w[i] = wt[i]; }
+    function pass(src, horiz){
+      var out = new Float32Array(W * H), L1 = horiz ? W : H, L2 = horiz ? H : W;
+      for (var b = 0; b < L2; b++){
+        var s = 0;
+        for (var q = -r; q < L1 + r; q++){
+          var qi = q + r; if (qi < L1) s += src[horiz ? b * W + qi : qi * W + b];
+          var qo = q - r - 1; if (qo >= 0 && qo < L1) s -= src[horiz ? b * W + qo : qo * W + b];
+          if (q >= 0 && q < L1) out[horiz ? b * W + q : q * W + b] = s;
+        }
+      }
+      return out;
+    }
+    for (var t = 0; t < 2; t++){ a = pass(pass(a, true), false); w = pass(pass(w, true), false); }
+    var o = new Float32Array(W * H);
+    for (i = 0; i < W * H; i++) o[i] = w[i] > 1e-6 ? a[i] / w[i] : 0;
+    return o;
+  }
+  // the lake's grids: depth, water, slope (%), "higher/lower than around" (m), distance from land (m)
+  function anBase(){
+    if (AN) return AN;
+    var g = loadDepthGrid(); if (!g) return null;
+    var W = DEPTH_W, H = DEPTH_H, N = W * H, cell = WEB_METERS_PER_PX * IMG_W / W;
+    var dep = new Float32Array(N), wat = new Uint8Array(N), lake = new Uint8Array(N), i, x, y;
+    for (i = 0; i < N; i++){ var v = g[i]; lake[i] = v !== 255 ? 1 : 0; if (v <= 250){ wat[i] = 1; dep[i] = v * DEPTH_STEP; } }
+    var sm = anBlur(dep, wat, W, H, Math.max(1, Math.round(4 / cell)));
+    var slope = new Float32Array(N);
+    for (y = 1; y < H - 1; y++) for (x = 1; x < W - 1; x++){
+      i = y * W + x; if (!wat[i]) continue;
+      var gx = (sm[i + 1] - sm[i - 1]) / (2 * cell), gy = (sm[i + W] - sm[i - W]) / (2 * cell);
+      if (!wat[i + 1] || !wat[i - 1]) gx = 0;
+      if (!wat[i + W] || !wat[i - W]) gy = 0;
+      slope[i] = Math.sqrt(gx * gx + gy * gy) * 100;
+    }
+    var big = anBlur(dep, wat, W, H, Math.max(2, Math.round(28 / cell)));
+    var tpi = new Float32Array(N);
+    for (i = 0; i < N; i++) if (wat[i]) tpi[i] = big[i] - sm[i];       // + shallower than around, - deeper
+    // distance from land (m): two-pass chamfer
+    var dist = new Float32Array(N), INF = 1e9, D1 = cell, D2 = cell * 1.414;
+    for (i = 0; i < N; i++) dist[i] = lake[i] ? INF : 0;
+    for (y = 0; y < H; y++) for (x = 0; x < W; x++){ i = y * W + x; if (!dist[i]) continue; var m = dist[i];
+      if (x > 0) m = Math.min(m, dist[i - 1] + D1); if (y > 0){ m = Math.min(m, dist[i - W] + D1); if (x > 0) m = Math.min(m, dist[i - W - 1] + D2); if (x < W - 1) m = Math.min(m, dist[i - W + 1] + D2); } dist[i] = m; }
+    for (y = H - 1; y >= 0; y--) for (x = W - 1; x >= 0; x--){ i = y * W + x; if (!dist[i]) continue; var m2 = dist[i];
+      if (x < W - 1) m2 = Math.min(m2, dist[i + 1] + D1); if (y < H - 1){ m2 = Math.min(m2, dist[i + W] + D1); if (x < W - 1) m2 = Math.min(m2, dist[i + W + 1] + D2); if (x > 0) m2 = Math.min(m2, dist[i + W - 1] + D2); } dist[i] = m2; }
+    AN = { W: W, H: H, N: N, cell: cell, dep: dep, wat: wat, lake: lake, sm: sm, slope: slope, tpi: tpi, shore: dist };
+    return AN;
+  }
+  // vegetation (bit 3) + hardness 1..4 (bits 0-2) per depth cell, from Genesis (fetched when first needed)
+  function anLoadBottom(){
+    if (anBottom || anBottomLoading || !LAKE.bottom || typeof fetch !== 'function') return;
+    anBottomLoading = true;
+    fetch(LAKE_DIR + LAKE.bottom.file).then(function(r){ return r.ok ? r.text() : null; }).then(function(t){
+      anBottomLoading = false; if (!t) return;
+      var bin = atob(t.trim()), b = new Uint8Array(DEPTH_W * DEPTH_H), j = 0;
+      for (var i = 0; i < bin.length && j < b.length; i++){
+        var v = bin.charCodeAt(i);
+        if (v === 250){ j += bin.charCodeAt(i + 1) | (bin.charCodeAt(i + 2) << 8); i += 2; }
+        else b[j++] = v;
+      }
+      anBottom = b; anCompute();
+    }).catch(function(){ anBottomLoading = false; });
+  }
+  function anNeedsBottom(m){ return m === 'veg' || m === 'hard' || m === 'similar' || m === 'abborre' || m === 'gadda' || m === 'gos'; }
+  // connected groups of cells (4-neighbours) of a mask
+  function anBlobs(mask, W, H){
+    var lab = new Int32Array(W * H), out = [], st = [];
+    for (var s = 0; s < W * H; s++){
+      if (!mask[s] || lab[s]) continue;
+      var id = out.length + 1, cells = []; lab[s] = id; st.push(s);
+      while (st.length){ var c = st.pop(); cells.push(c); var cx = c % W;
+        if (cx > 0 && mask[c - 1] && !lab[c - 1]){ lab[c - 1] = id; st.push(c - 1); }
+        if (cx < W - 1 && mask[c + 1] && !lab[c + 1]){ lab[c + 1] = id; st.push(c + 1); }
+        if (c >= W && mask[c - W] && !lab[c - W]){ lab[c - W] = id; st.push(c - W); }
+        if (c < W * (H - 1) && mask[c + W] && !lab[c + W]){ lab[c + W] = id; st.push(c + W); } }
+      out.push(cells);
+    }
+    return out;
+  }
+  function anNear(mask, W, H, r){       // cells within r cells of the mask (square)
+    var o = new Uint8Array(W * H), rows = new Uint8Array(W * H), x, y, k;
+    for (y = 0; y < H; y++){ var last = -1e9;
+      for (x = 0; x < W; x++){ if (mask[y * W + x]) last = x; if (x - last <= r) rows[y * W + x] = 1; }
+      last = 1e9; for (x = W - 1; x >= 0; x--){ if (mask[y * W + x]) last = x; if (last - x <= r) rows[y * W + x] = 1; } }
+    for (x = 0; x < W; x++){ var l2 = -1e9;
+      for (y = 0; y < H; y++){ if (rows[y * W + x]) l2 = y; if (y - l2 <= r) o[y * W + x] = 1; }
+      l2 = 1e9; for (y = H - 1; y >= 0; y--){ if (rows[y * W + x]) l2 = y; if (l2 - y <= r) o[y * W + x] = 1; } }
+    return o;
+  }
+  function anVegEdge(A, lo, hi){
+    var W = A.W, N = A.N, veg = new Uint8Array(N), e = new Uint8Array(N), i;
+    for (i = 0; i < N; i++) veg[i] = (anBottom[i] & 8) && A.wat[i] ? 1 : 0;
+    var open = new Uint8Array(N); for (i = 0; i < N; i++) open[i] = A.wat[i] && !veg[i] ? 1 : 0;
+    var nearOpen = anNear(open, W, A.H, Math.max(1, Math.round(6 / A.cell)));
+    for (i = 0; i < N; i++) e[i] = veg[i] && nearOpen[i] && A.dep[i] >= lo && A.dep[i] <= hi ? 1 : 0;
+    return { edge: e, veg: veg };
+  }
+  function anHardNear(A, m){
+    var hard = new Uint8Array(A.N), any = false;
+    for (var i = 0; i < A.N; i++) if ((anBottom[i] & 7) >= 3 && A.wat[i]){ hard[i] = 1; any = true; }
+    return any ? anNear(hard, A.W, A.H, Math.max(1, Math.round(m / A.cell))) : null;
+  }
+  function anWindEdge(A){
+    var w = windNow(), R = routeGrid && routeGrid() ? RT : null;
+    if (!w || !R) return null;
+    var a = w.from * Math.PI / 180, dx = Math.sin(a), dy = -Math.cos(a), up = new Float32Array(R.w * R.h), dn = new Float32Array(R.w * R.h);
+    [[dx, dy, up], [-dx, -dy, dn]].forEach(function(t){
+      for (var cy = 0; cy < R.h; cy++) for (var cx = 0; cx < R.w; cx++){
+        var i = cy * R.w + cx; if (!R.water[i]) continue;
+        var s = 1;
+        for (; s < 120; s++){ var x = Math.round(cx + t[0] * s), y = Math.round(cy + t[1] * s); if (x < 0 || y < 0 || x >= R.w || y >= R.h || !R.water[y * R.w + x]) break; }
+        t[2][i] = s * R.cellM;
+      }
+    });
+    var out = new Uint8Array(A.N);
+    for (var y = 0; y < A.H; y++) for (var x = 0; x < A.W; x++){
+      var i2 = y * A.W + x; if (!A.wat[i2]) continue;
+      var rx = Math.min(R.w - 1, Math.floor(x / R.rf)), ry = Math.min(R.h - 1, Math.floor(y / R.rf)), ri = ry * R.w + rx;
+      if (R.water[ri] && up[ri] > 300 && dn[ri] < 60) out[i2] = 1;
+    }
+    return { mask: out, from: w.from, ms: w.ms };
+  }
+  function anCellOfImg(x, y){ var A = AN; return Math.min(A.H - 1, Math.max(0, Math.floor(y / IMG_H * A.H))) * A.W + Math.min(A.W - 1, Math.max(0, Math.floor(x / IMG_W * A.W))); }
+  function anImgOfCell(i){ var A = AN; return { x: ((i % A.W) + 0.5) / A.W * IMG_W, y: (Math.floor(i / A.W) + 0.5) / A.H * IMG_H }; }
+  function anSpots(){
+    return waypoints.filter(function(w){ var t = wpType(w); return t !== 'meet' && t !== 'fara' && !isExpired(w); })
+      .sort(function(a, b){ return (isMine(b) ? 1 : 0) - (isMine(a) ? 1 : 0); });
+  }
+  // the chosen filter -> a mask (1 = main colour, 2 = second colour), labels and a result text
+  function anCompute(){
+    anRes = null; anVer++;
+    var m = anSet.mode, A = anBase();
+    if (m && A && anNeedsBottom(m) && !anBottom){ anLoadBottom(); if (!anBottom){ anRes = { wait: true }; anRender(); return; } }
+    if (!m || !A){ anRender(); return; }
+    var N = A.N, M = new Uint8Array(N), i, n = 0, labels = [], list = null, text = '', note = '';
+    var wat = A.wat, dep = A.dep;
+    if (m === 'depth'){
+      for (i = 0; i < N; i++) if (wat[i] && dep[i] >= anSet.lo && dep[i] <= anSet.hi){ M[i] = 1; n++; }
+      text = '<b>' + fmtDepth(anSet.lo) + '–' + fmtDepth(anSet.hi) + ' m</b> · ' + anPct(n) + ' av sjön';
+    } else if (m === 'steep'){
+      for (i = 0; i < N; i++) if (wat[i] && A.slope[i] >= anSet.slope && dep[i] >= anSet.elo && dep[i] <= anSet.ehi){ M[i] = 1; n++; }
+      text = 'Lutning över <b>' + anSet.slope + ' %</b> på ' + fmtDepth(anSet.elo) + '–' + fmtDepth(anSet.ehi) + ' m · ' + anPct(n) + ' av sjön';
+    } else if (m === 'tops'){
+      var top = new Uint8Array(N), hole = new Uint8Array(N);
+      for (i = 0; i < N; i++){ if (!wat[i]) continue;
+        if (A.tpi[i] >= 1.0 && A.shore[i] >= 20 && dep[i] >= 0.5) top[i] = 1;
+        else if (A.tpi[i] <= -1.3) hole[i] = 1; }
+      var minCells = Math.max(3, Math.round(150 / (A.cell * A.cell)));
+      var tb = anBlobs(top, A.W, A.H).filter(function(c){ return c.length >= minCells; })
+        .map(function(c){ var best = c[0], p = 0; c.forEach(function(j){ if (A.tpi[j] > p) p = A.tpi[j]; if (dep[j] < dep[best]) best = j; }); return { c: c, i: best, p: p }; })
+        .sort(function(a, b){ return b.p - a.p; }).slice(0, 8);
+      var hb = anBlobs(hole, A.W, A.H).filter(function(c){ return c.length >= minCells; })
+        .map(function(c){ var best = c[0], p = 0; c.forEach(function(j){ if (-A.tpi[j] > p) p = -A.tpi[j]; if (dep[j] > dep[best]) best = j; }); return { c: c, i: best, p: p }; })
+        .sort(function(a, b){ return b.p - a.p; }).slice(0, 6);
+      tb.forEach(function(b){ b.c.forEach(function(j){ M[j] = 1; }); labels.push({ i: b.i, cls: '', txt: 'Topp ' + fmtDepth(dep[b.i]) + ' m' }); });
+      hb.forEach(function(b){ b.c.forEach(function(j){ M[j] = 2; }); labels.push({ i: b.i, cls: 'hole', txt: 'Håla ' + fmtDepth(dep[b.i]) + ' m' }); });
+      text = '<b>' + tb.length + '</b> toppar/grynnor (grundare än runt om) · <b>' + hb.length + '</b> hålor (djupare)';
+      note = 'Tryck på en etikett för att släppa lodet där.';
+    } else if (m === 'veg'){
+      var ve = anVegEdge(A, anSet.vlo, anSet.vhi);
+      for (i = 0; i < N; i++){ if (ve.edge[i]){ M[i] = 1; n++; } else if (ve.veg[i]) M[i] = 2; }
+      text = n ? 'Där växtligheten slutar, <b>' + fmtDepth(anSet.vlo) + '–' + fmtDepth(anSet.vhi) + ' m</b>' : 'Ingen växtlighet mätt här.';
+      note = 'Ljust grönt = kanten, mörkare = växtlighet (Genesis).';
+    } else if (m === 'hard'){
+      var meas = 0;
+      for (i = 0; i < N; i++){ var hv = anBottom[i] & 7; if (hv) meas++; if (hv >= 3 && wat[i]){ M[i] = 1; n++; } }
+      text = n ? '<b>Hård botten</b> (sten/grus) · ' + anPct(n) + ' av sjön' : 'Ingen hård botten mätt här.';
+      note = 'Bara där ekolodet mätt hårdhet (' + anPct(meas) + ' av sjön).';
+    } else if (m === 'wind'){
+      var we = anWindEdge(A);
+      if (!we){ text = 'Väntar på vinden (väder)…'; }
+      else { for (i = 0; i < N; i++) if (we.mask[i]){ M[i] = 1; n++; }
+        text = 'Vinden <b>' + wxNum(we.ms) + ' m/s från ' + wxCompass(we.from) + '</b> – där vågorna trycker in mot stranden'; note = 'Motsatsen till lä: maten driver dit.'; }
+    } else if (m === 'similar'){
+      var spots = anSpots(), ref = spots.filter(function(w){ return w.id === anSet.ref; })[0] || spots[0];
+      if (!ref){ text = 'Spara en fiskeplats först – sedan letar appen upp liknande ställen.'; }
+      else {
+        anSet.ref = ref.id;
+        var rp = latLonToImgPx(ref.lat, ref.lon), ri = anCellOfImg(rp.x, rp.y);
+        var f = function(j){ return [A.sm[j], Math.min(40, A.slope[j]), A.tpi[j], (anBottom[j] & 8) ? 3 : 0, (anBottom[j] & 7) >= 3 ? 3 : 0]; };
+        var sc = [1.5, 5, 1, 1, 1], r0 = f(ri);
+        var sim = new Float32Array(N), vals = [];
+        for (i = 0; i < N; i++){ if (!wat[i]) continue; var fi = f(i), d2 = 0; for (var q = 0; q < 5; q++){ var dd = (fi[q] - r0[q]) / sc[q]; d2 += dd * dd; } sim[i] = Math.exp(-d2); vals.push(sim[i]); }
+        vals.sort(function(a, b){ return b - a; });
+        var th = Math.max(0.3, vals[Math.floor(vals.length * 0.04)] || 1);
+        var rx = ri % A.W, ry = Math.floor(ri / A.W), away = 60 / A.cell;
+        for (i = 0; i < N; i++) if (sim[i] >= th){ var xx = i % A.W - rx, yy = Math.floor(i / A.W) - ry; if (xx * xx + yy * yy > away * away){ M[i] = 1; n++; } }
+        var blobs = anBlobs(M, A.W, A.H).map(function(c){ var best = c[0]; c.forEach(function(j){ if (sim[j] > sim[best]) best = j; }); return { c: c, i: best, s: sim[best] * Math.min(1, c.length / 6) }; })
+          .sort(function(a, b){ return b.s - a.s; }).slice(0, 5);
+        list = blobs.map(function(b, k){
+          var p = anImgOfCell(b.i), ll = imgPxToLatLon(p.x, p.y), dm = null;
+          if (lastOwnLatLon && lastFix && lastFix.onMap) dm = haversineKm(lastOwnLatLon.lat, lastOwnLatLon.lon, ll.lat, ll.lon) * 1000;
+          labels.push({ i: b.i, cls: 'sim', txt: String(k + 1) });
+          return { n: k + 1, x: p.x, y: p.y, dep: dep[b.i], slope: A.slope[b.i], dm: dm };
+        });
+        text = 'Som <b>' + escHtml(ref.name || 'platsen') + '</b>: ' + fmtDepth(r0[0]) + ' m, lutning ' + Math.round(r0[1]) + ' %' + (r0[3] ? ', växtlighet' : '') + (r0[4] ? ', hård botten' : '');
+      }
+    } else {                                             // presets (rules of thumb)
+      var hn, e2;
+      if (m === 'abborre'){
+        hn = anHardNear(A, 20);
+        for (i = 0; i < N; i++) if (wat[i] && dep[i] >= 2 && dep[i] <= 6 && (A.slope[i] >= 8 || (A.tpi[i] >= 0.6 && A.shore[i] >= 15)) && (!hn || hn[i])){ M[i] = 1; n++; }
+      } else if (m === 'gadda'){
+        e2 = anVegEdge(A, 1, 4); var wd = anWindEdge(A);
+        for (i = 0; i < N; i++) if (e2.edge[i] || (wd && wd.mask[i])){ M[i] = 1; n++; }
+      } else if (m === 'gos'){
+        hn = anHardNear(A, 15);
+        for (i = 0; i < N; i++) if (wat[i] && dep[i] >= 4 && dep[i] <= 10 && A.slope[i] >= 8 && (!hn || hn[i])){ M[i] = 1; n++; }
+      }
+      var pr = AN_PRESETS.filter(function(x){ return x[0] === m; })[0];
+      text = '<b>' + pr[1] + ':</b> ' + pr[2] + ' · ' + anPct(n) + ' av sjön';
+      note = 'Tumregler från vanliga fiskeråd – inte fångstdata. Fisken läser inte kartan 🙂';
+    }
+    anRes = { M: M, n: n, labels: labels, list: list, text: text, note: note, color: AN_COLORS[m], ver: anVer };
+    anRender();
+  }
+  function anPct(n){ var w = 0, A = AN; for (var i = 0; i < A.N; i++) w += A.wat[i]; var p = 100 * n / Math.max(1, w); return (p < 1 && p > 0 ? '<1' : Math.round(p)) + ' %'; }
+  function escHtml(t){ return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  // draw: toned down outside, lit (+ a light edge) inside; per screen point like the lee
+  function anDraw(){
+    var dpr = window.devicePixelRatio || 1, W = stage.clientWidth, H = stage.clientHeight;
+    var on = anShow && anSet.mode && anRes && anRes.M;
+    anCanvas.classList.toggle('on', !!on);
+    anLabelsEl.style.display = on ? '' : 'none';
+    if (!on) return;
+    if (anCanvas.width !== Math.round(W * dpr) || anCanvas.height !== Math.round(H * dpr)){ anCanvas.width = Math.round(W * dpr); anCanvas.height = Math.round(H * dpr); }
+    anCtx.setTransform(dpr, 0, 0, dpr, 0, 0); anCtx.clearRect(0, 0, W, H);
+    var STEP = 2, vw = Math.ceil(W / STEP), vh = Math.ceil(H / STEP), A = AN, R = anRes;
+    var key = originX.toFixed(1) + ',' + originY.toFixed(1) + ',' + scale.toFixed(5) + ',' + W + 'x' + H + ',' + R.ver;
+    if (!anView || anView.key !== key){
+      var cv = anView ? anView.cv : document.createElement('canvas');
+      if (cv.width !== vw || cv.height !== vh){ cv.width = vw; cv.height = vh; }
+      var c2 = cv.getContext('2d'), im = c2.createImageData(vw, vh), px = im.data, col = R.color;
+      var val = new Uint8Array(vw * vh);
+      for (var y = 0; y < vh; y++) for (var x = 0; x < vw; x++){
+        var ix = (x * STEP + 1 - originX) / scale, iy = (y * STEP + 1 - originY) / scale;
+        // the 4 nearest cells, weighted (smooth outlines instead of 5 m steps): the class with most weight
+        var fx = ix / IMG_W * A.W - 0.5, fy = iy / IMG_H * A.H - 0.5, x0 = Math.floor(fx), y0 = Math.floor(fy), tx = fx - x0, ty = fy - y0;
+        var w0 = 0, w1 = 0, w2 = 0;
+        for (var dy = 0; dy <= 1; dy++) for (var dx = 0; dx <= 1; dx++){
+          var cx = x0 + dx, cy = y0 + dy, wt = (dx ? tx : 1 - tx) * (dy ? ty : 1 - ty);
+          var cval = (cx >= 0 && cy >= 0 && cx < A.W && cy < A.H) ? R.M[cy * A.W + cx] : 0;
+          if (cval === 1) w1 += wt; else if (cval === 2) w2 += wt; else w0 += wt;
+        }
+        val[y * vw + x] = w1 >= w0 && w1 >= w2 ? 1 : (w2 > w0 ? 2 : 0);
+      }
+      for (var y2 = 0; y2 < vh; y2++) for (var x2 = 0; x2 < vw; x2++){
+        var i2 = y2 * vw + x2, v = val[i2], k = i2 * 4;
+        if (!v){ px[k] = 4; px[k + 1] = 10; px[k + 2] = 14; px[k + 3] = 165; continue; }       // toned down
+        var edge = (x2 > 0 && val[i2 - 1] !== v) || (x2 < vw - 1 && val[i2 + 1] !== v) || (y2 > 0 && val[i2 - vw] !== v) || (y2 < vh - 1 && val[i2 + vw] !== v);
+        var c = v === 2 ? (anSet.mode === 'tops' ? [60, 200, 255] : [70, 200, 60]) : col;
+        if (edge){ px[k] = 255; px[k + 1] = 255; px[k + 2] = 255; px[k + 3] = 210; }
+        else if (c){ px[k] = c[0]; px[k + 1] = c[1]; px[k + 2] = c[2]; px[k + 3] = v === 2 && anSet.mode !== 'tops' ? 60 : 105; }
+      }
+      c2.putImageData(im, 0, 0);
+      anView = { key: key, cv: cv };
+    }
+    anCtx.imageSmoothingEnabled = true;
+    anCtx.drawImage(anView.cv, 0, 0, vw * STEP, vh * STEP);
+    // labels (tops/holes, similar places)
+    Array.prototype.forEach.call(anLabelsEl.children, function(el){
+      var p = anImgOfCell(+el.getAttribute('data-i'));
+      el.style.left = (originX + p.x * scale) + 'px'; el.style.top = (originY + p.y * scale) + 'px';
+    });
+  }
+  function anRender(){
+    // chips + controls + result, labels; then draw
+    var m = anSet.mode;
+    anBtn.classList.toggle('on', !!m);
+    Array.prototype.forEach.call(document.querySelectorAll('#anChips button, #anPresets button'), function(b){ b.classList.toggle('on', b.getAttribute('data-m') === m); });
+    var R = anRes, res = document.getElementById('anResult');
+    if (!m) res.innerHTML = 'Välj vad du vill hitta. Det som matchar lyser, resten av kartan tonas ner.';
+    else if (!R) res.innerHTML = 'Djupdatan laddas…';
+    else if (R.wait) res.innerHTML = 'Hämtar bottendata…';
+    else {
+      res.innerHTML = R.text + (R.note ? '<span class="note">' + R.note + '</span>' : '') + (!anShow ? '<span class="note">(Dold – slå på Kartanalys i Filter.)</span>' : '') +
+        (R.list ? '<div class="anList">' + (R.list.length ? R.list.map(function(it){
+          return '<div class="li"><span class="n">' + it.n + '</span>' + fmtDepth(it.dep) + ' m · lutning ' + Math.round(it.slope) + ' %' +
+            '<button type="button" data-go="' + it.n + '">' + (it.dm != null ? fmtMeters(it.dm) + ' · ' : '') + 'Åk hit ›</button></div>';
+        }).join('') : '<div class="li">Inga tydliga träffar.</div>') + '</div>' : '');
+    }
+    anLabelsEl.innerHTML = (R && R.labels ? R.labels : []).map(function(l){
+      return '<div class="anLbl ' + l.cls + '" data-i="' + l.i + '">' + escHtml(l.txt) + '</div>';
+    }).join('');
+    anControls();
+    anView = null; anDraw();
+  }
+  function anRangeRow(id, label, min, max, step, val, fmt){
+    return '<div class="anRange"><label for="' + id + '">' + label + '</label><input type="range" id="' + id + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + val + '"><output>' + fmt(val) + '</output></div>';
+  }
+  var anCtlMode = '#';
+  function anControls(){
+    var m = anSet.mode, el = document.getElementById('anControls');
+    if (anCtlMode === m + (m === 'similar' ? anSpots().length : '')) return;      // (don't rebuild while dragging)
+    anCtlMode = m + (m === 'similar' ? anSpots().length : '');
+    var dmax = Math.max(2, Math.ceil(LAKE.depth.max || 20)), fm = function(v){ return fmtDepth(+v) + ' m'; };
+    var h = '';
+    if (m === 'depth') h = anRangeRow('anLo', 'Från', 0, dmax, 0.5, anSet.lo, fm) + anRangeRow('anHi', 'Till', 0, dmax, 0.5, anSet.hi, fm);
+    else if (m === 'steep') h = anRangeRow('anSlope', 'Lutning', 4, 30, 1, anSet.slope, function(v){ return v + ' %'; }) +
+      anRangeRow('anElo', 'Från', 0, dmax, 0.5, anSet.elo, fm) + anRangeRow('anEhi', 'Till', 0, dmax, 0.5, Math.min(anSet.ehi, dmax), fm);
+    else if (m === 'veg') h = anRangeRow('anVlo', 'Från', 0, dmax, 0.5, anSet.vlo, fm) + anRangeRow('anVhi', 'Till', 0, dmax, 0.5, anSet.vhi, fm);
+    else if (m === 'similar'){
+      var sp = anSpots();
+      h = sp.length ? '<select id="anRefSel" aria-label="Plats att jämföra med">' + sp.map(function(w){
+        return '<option value="' + escHtml(w.id) + '"' + (w.id === anSet.ref ? ' selected' : '') + '>' + escHtml(w.name || 'Plats') + (isMine(w) ? '' : ' (' + escHtml(w.by || '') + ')') + '</option>'; }).join('') + '</select>' : '';
+    }
+    el.innerHTML = h;
+  }
+  var anTimer = null;
+  document.getElementById('anControls').addEventListener('input', function(e){
+    var t = e.target, v = parseFloat(t.value);
+    var map = { anLo: 'lo', anHi: 'hi', anSlope: 'slope', anElo: 'elo', anEhi: 'ehi', anVlo: 'vlo', anVhi: 'vhi' };
+    if (map[t.id]){
+      anSet[map[t.id]] = v;
+      var pairs = [['lo', 'hi', 'anLo', 'anHi'], ['elo', 'ehi', 'anElo', 'anEhi'], ['vlo', 'vhi', 'anVlo', 'anVhi']];
+      pairs.forEach(function(pq){ if (anSet[pq[0]] > anSet[pq[1]]){
+        if (t.id === pq[2]) anSet[pq[1]] = anSet[pq[0]]; else anSet[pq[0]] = anSet[pq[1]];
+        var a = document.getElementById(pq[2]), b = document.getElementById(pq[3]);
+        if (a){ a.value = anSet[pq[0]]; a.nextSibling.textContent = fmtDepth(anSet[pq[0]]) + ' m'; }
+        if (b){ b.value = anSet[pq[1]]; b.nextSibling.textContent = fmtDepth(anSet[pq[1]]) + ' m'; } } });
+      t.nextSibling.textContent = t.id === 'anSlope' ? v + ' %' : fmtDepth(v) + ' m';
+      anSave(); clearTimeout(anTimer); anTimer = setTimeout(anCompute, 60);
+    }
+  });
+  document.getElementById('anControls').addEventListener('change', function(e){
+    if (e.target.id === 'anRefSel'){ anSet.ref = e.target.value; anSave(); anCompute(); }
+  });
+  function anSetMode(m){
+    anSet.mode = anSet.mode === m ? null : m; anSave(); anCtlMode = '#';
+    if (anSet.mode && !anShow){ anShow = true; toggleAnEl.checked = true; try { localStorage.setItem(SHOW_AN_KEY, '1'); } catch(e){} }
+    anCompute();
+  }
+  document.getElementById('anChips').innerHTML = AN_MODES.map(function(x){ return '<button type="button" data-m="' + x[0] + '">' + x[1] + '</button>'; }).join('');
+  document.getElementById('anPresets').innerHTML = AN_PRESETS.map(function(x){ return '<button type="button" data-m="' + x[0] + '">' + x[1] + '</button>'; }).join('');
+  anPanel.addEventListener('click', function(e){
+    var b = e.target.closest ? e.target.closest('button[data-m]') : null;
+    if (b){ anSetMode(b.getAttribute('data-m')); return; }
+    var g = e.target.closest ? e.target.closest('button[data-go]') : null;
+    if (g && anRes && anRes.list){ var it = anRes.list[+g.getAttribute('data-go') - 1]; if (it){ showAnPanel(false); startNav('Liknande #' + it.n, it.x, it.y); } }
+  });
+  anPanel.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
+  function showAnPanel(open){
+    anPanel.classList.toggle('show', open);
+    if (open){ if (typeof toggleMsgPop === 'function') toggleMsgPop(false); anCtlMode = '#'; if (!anRes) anCompute(); else anRender(); }
+  }
+  anBtn.addEventListener('click', function(e){ e.stopPropagation(); showAnPanel(!anPanel.classList.contains('show')); });
+  document.getElementById('anClose').addEventListener('click', function(){ showAnPanel(false); });
+  document.getElementById('anClear').addEventListener('click', function(){ anSet.mode = null; anSave(); anCtlMode = '#'; anCompute(); });
+  anLabelsEl.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
+  anLabelsEl.addEventListener('click', function(e){
+    var l = e.target.closest ? e.target.closest('.anLbl') : null; if (!l) return;
+    e.stopPropagation();
+    var p = anImgOfCell(+l.getAttribute('data-i'));
+    if (l.classList.contains('sim') && anRes && anRes.list){ var it = anRes.list[+l.textContent - 1]; if (it){ startNav('Liknande #' + it.n, it.x, it.y); return; } }
+    showAnPanel(false); setProbe({ x: p.x, y: p.y });
+  });
+  var toggleAnEl = document.getElementById('toggleAnalysis');
+  toggleAnEl.checked = anShow;
+  toggleAnEl.addEventListener('change', function(){
+    anShow = toggleAnEl.checked;
+    try { localStorage.setItem(SHOW_AN_KEY, anShow ? '1' : '0'); } catch(e){}
+    anRender();
+  });
+  // (the depth grid arrives a moment after start: work it out then)
+  var anWaitGrid = setInterval(function(){ if (loadDepthGrid()){ clearInterval(anWaitGrid); if (anSet.mode) anCompute(); else anRender(); } }, 400);
+  window.__ffAnalysis = function(){ var R = anRes; return { mode: anSet.mode, show: anShow, ready: !!(R && R.M), n: R ? R.n : 0, labels: R && R.labels ? R.labels.length : 0,
+    list: R && R.list ? R.list.length : 0, text: R ? (R.text || '').replace(/<[^>]+>/g, '') : '' }; };
+
+  /* ================= "Åk hit" -- navigate to a place =================
+     From a spot's sheet (or a place the analysis found): the lead line is dropped
+     there (its route by water, distance and time) and a card at the top shows the
+     name, an arrow along the route and the distance/time. ✕ or removing the lead
+     line ends it. */
+  var navTarget = null;
+  var navCard = document.getElementById('navCard');
+  function startNav(name, x, y){
+    navTarget = { name: name, x: x, y: y };
+    setProbe({ x: x, y: y });
+    updateNav();
+    // show both you and the place
+    if (lastFix && lastFix.onMap && typeof centerOnFix === 'function'){ /* keep the view: the arrow shows the way */ }
+  }
+  function updateNav(){
+    if (!navCard) return;
+    var on = !!(navTarget && probe && Math.abs(probe.x - navTarget.x) < 0.01 && Math.abs(probe.y - navTarget.y) < 0.01);
+    if (!on && navTarget && !probe) navTarget = null;
+    navCard.classList.toggle('show', on);
+    if (!on) return;
+    document.getElementById('navName').textContent = navTarget.name;
+    var have = !!(lastOwnLatLon && lastFix && lastFix.onMap), info;
+    if (!have) info = 'Du är inte vid sjön';
+    else {
+      var d = document.getElementById('probeDistTxt').textContent, t = probeEl.classList.contains('noTime') ? '' : document.getElementById('probeTime').textContent;
+      info = d === 'här' ? 'Du är framme!' : d + ' sjövägen' + (t ? ' · ' + t : '');
+    }
+    document.getElementById('navInfo').textContent = info;
+    // the arrow: towards the next bend of the route (map north up)
+    var to = navTarget, pts = probeRoute && probeRoute.pts;
+    if (have && pts && pts.length > 1){ for (var k = 1; k < pts.length; k++){ to = pts[k]; if (Math.hypot(pts[k].x - lastFix.px, pts[k].y - lastFix.py) * WEB_METERS_PER_PX > 25) break; } }
+    var a = have ? Math.atan2(to.x - lastFix.px, -(to.y - lastFix.py)) * 180 / Math.PI : 0;
+    document.querySelector('#navArrow svg').style.transform = 'rotate(' + Math.round(a) + 'deg)';
+  }
+  document.getElementById('navClose').addEventListener('click', function(){ navTarget = null; setProbe(null); updateNav(); });
+  document.getElementById('wpGo').addEventListener('click', function(){
+    var wp = waypoints.filter(function(w){ return w.id === editingId; })[0];
+    if (!wp) return;
+    var p = latLonToImgPx(wp.lat, wp.lon), name = wp.name || 'Platsen';
+    if (editingIsNew){ editingIsNew = false; }
+    closeSheet();
+    startNav(name, p.x, p.y);
+  });
+
+  /* ================= Åskvarning (lightning alarm) =================
+     Settings: Av / 5 / 10 / 20 km (default 10), sound, vibration. A new strike (under
+     5 min old) closer than that -> a big red warning, a beep and a buzz (vibration: not
+     on iPhone -- Safari has no vibration). Each strike warns once. */
+  var LT_ALARM_KEY = 'ffmap_lt_alarm_v1';
+  var ltAlarm = { km: 10, sound: true, vib: true };
+  try { var la = JSON.parse(localStorage.getItem(LT_ALARM_KEY) || 'null'); if (la) ltAlarm = la; } catch(e){}
+  var ltAlarmed = {}, ltAudio = null;
+  function ltAlarmSave(){ try { localStorage.setItem(LT_ALARM_KEY, JSON.stringify(ltAlarm)); } catch(e){} ltAlarmUi(); }
+  function ltAlarmUi(){
+    Array.prototype.forEach.call(document.querySelectorAll('#ltAlarmSeg button'), function(b){ var on = +b.getAttribute('data-km') === ltAlarm.km; b.classList.toggle('active', on); b.setAttribute('aria-checked', on ? 'true' : 'false'); });
+    document.getElementById('ltAlarmSound').checked = !!ltAlarm.sound; document.getElementById('ltAlarmVib').checked = !!ltAlarm.vib;
+  }
+  document.getElementById('ltAlarmSeg').addEventListener('click', function(e){ var b = e.target.closest ? e.target.closest('button[data-km]') : null; if (b){ ltAlarm.km = +b.getAttribute('data-km'); ltAlarmSave(); } });
+  document.getElementById('ltAlarmSound').addEventListener('change', function(e){ ltAlarm.sound = e.target.checked; ltAlarmSave(); });
+  document.getElementById('ltAlarmVib').addEventListener('change', function(e){ ltAlarm.vib = e.target.checked; ltAlarmSave(); });
+  ltAlarmUi();
+  // sound needs a first touch before the page may play it (iPhone): get it ready then
+  document.addEventListener('pointerdown', function(){
+    if (ltAudio || !(window.AudioContext || window.webkitAudioContext)) return;
+    try { ltAudio = new (window.AudioContext || window.webkitAudioContext)(); ltAudio.resume && ltAudio.resume(); } catch(e){}
+  }, true);
+  function ltBeep(){
+    if (!ltAudio) return;
+    try {
+      var t0 = ltAudio.currentTime;
+      [0, 0.28, 0.56].forEach(function(dt){
+        var o = ltAudio.createOscillator(), g = ltAudio.createGain();
+        o.type = 'square'; o.frequency.value = 880; o.connect(g); g.connect(ltAudio.destination);
+        g.gain.setValueAtTime(0.0001, t0 + dt); g.gain.exponentialRampToValueAtTime(0.25, t0 + dt + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dt + 0.2);
+        o.start(t0 + dt); o.stop(t0 + dt + 0.22);
+      });
+    } catch(e){}
+  }
+  function ltCheckAlarm(){
+    if (!ltOn || !ltAlarm.km) return;
+    var now = Date.now(), ref = ltRef(), hit = null;
+    ltStrikes.forEach(function(s){
+      if (ltAlarmed[s.k]) return;
+      ltAlarmed[s.k] = 1;
+      if (now - s.t > 5 * 60000) return;
+      var km = haversineKm(ref.lat, ref.lon, s.lat, s.lon);
+      if (km <= ltAlarm.km && (!hit || km < hit.km)) hit = { km: km, br: ltBearing(ref, s), age: (now - s.t) / 60000 };
+    });
+    if (!hit) return;
+    document.getElementById('ltAlarmMain').textContent = '⚡ Blixt ' + ltKm(hit.km) + ' km bort!';
+    document.getElementById('ltAlarmSub').textContent = wxCompass(hit.br) + ' · ' + (hit.age < 1 ? 'nyss' : 'för ' + Math.round(hit.age) + ' min sedan') + ' – sök skydd';
+    document.getElementById('ltAlarm').classList.add('show');
+    window.__ltAlarms = (window.__ltAlarms || 0) + 1;
+    if (ltAlarm.sound) ltBeep();
+    if (ltAlarm.vib && navigator.vibrate) try { navigator.vibrate([400, 200, 400, 200, 400]); } catch(e){}
+  }
+  document.getElementById('ltAlarmOk').addEventListener('click', function(){ document.getElementById('ltAlarm').classList.remove('show'); });
+
+  /* ================= Håll skärmen tänd (Wake Lock) -- Filter, off by default ================= */
+  var WAKE_KEY = 'ffmap_wakelock_v1';
+  var wakeOn = false, wakeLock = null;
+  try { wakeOn = localStorage.getItem(WAKE_KEY) === '1'; } catch(e){}
+  function applyWake(){
+    if (wakeOn && document.visibilityState === 'visible' && navigator.wakeLock && !wakeLock){
+      navigator.wakeLock.request('screen').then(function(l){
+        wakeLock = l; if (l.addEventListener) l.addEventListener('release', function(){ wakeLock = null; });
+        if (!wakeOn){ l.release(); wakeLock = null; }
+      }).catch(function(){});
+    }
+    if (!wakeOn && wakeLock){ try { wakeLock.release(); } catch(e){} wakeLock = null; }
+  }
+  var toggleWakeEl = document.getElementById('toggleWake');
+  toggleWakeEl.checked = wakeOn;
+  if (!('wakeLock' in navigator)) toggleWakeEl.closest('label').title = 'Stöds inte av den här webbläsaren (iPhone: iOS 18.4 eller senare)';
+  toggleWakeEl.addEventListener('change', function(){
+    wakeOn = toggleWakeEl.checked;
+    try { localStorage.setItem(WAKE_KEY, wakeOn ? '1' : '0'); } catch(e){}
+    applyWake();
+  });
+  document.addEventListener('visibilitychange', applyWake);
+  applyWake();
+  window.__ffWake = function(){ return { on: wakeOn, held: !!wakeLock }; };
+
+  /* ================= Snabbmeddelanden (quick messages) =================
+     A small button at the bottom: tap -> the choices; tap one -> it shows as a bubble at
+     your boat for everyone for 15 min (sent with your position, positions/<you>.msg).
+     Tap your own bubble to take it back; tap someone else's to hide it for you. */
+  var MSG_TEXTS = ['Hugg! 🎣', 'Kommer 🚤', 'Åker in 🏠', 'Fika? ☕', 'Behöver hjälp 🆘'];
+  var MSG_MS = 15 * 60000;
+  var ownMsg = null, msgHidden = {}, msgLayerEl = document.getElementById('msgLayer');
+  var msgBtn = document.getElementById('msgBtn'), msgPop = document.getElementById('msgPop');
+  msgPop.innerHTML = MSG_TEXTS.map(function(t){ return '<button type="button" data-t="' + t + '">' + t + '</button>'; }).join('');
+  function toggleMsgPop(open){ msgPop.classList.toggle('show', open); msgBtn.classList.toggle('open', open); }
+  msgBtn.addEventListener('click', function(e){ e.stopPropagation(); toggleMsgPop(!msgPop.classList.contains('show')); if (msgPop.classList.contains('show')) showAnPanel(false); });
+  msgPop.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
+  msgPop.addEventListener('click', function(e){
+    e.stopPropagation();
+    var b = e.target.closest ? e.target.closest('button[data-t]') : null; if (!b) return;
+    toggleMsgPop(false); sendMsg(b.getAttribute('data-t'));
+  });
+  document.addEventListener('click', function(e){ if (msgPop.classList.contains('show') && !msgPop.contains(e.target) && e.target !== msgBtn) toggleMsgPop(false); });
+  function writeMsg(text, at){
+    var ll = lastOwnLatLon;
+    if (!USE_FIREBASE || !posCol || !myUid || !ll) return;
+    addUsage('w', 1);
+    try {
+      posCol.doc(posDocId(myUid)).set({ lat: ll.lat, lon: ll.lon, name: userName || '', uid: myUid, lake: LAKE_ID, msg: text, msgAt: at,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true }).catch(function(e){ console.warn('meddelande', e); });
+    } catch(e){ console.warn('meddelande', e); }
+  }
+  function sendMsg(text){
+    if (!(lastOwnLatLon && lastFix && lastFix.onMap)){ showMsgToast('Snabbmeddelanden fungerar när du är vid sjön.'); return; }
+    ownMsg = { text: text, at: Date.now() };
+    writeMsg(text, ownMsg.at);
+    renderMessages();
+  }
+  var msgToastT = null;
+  function showMsgToast(t){
+    var el = document.getElementById('msgToast');
+    el.textContent = t; el.classList.add('show');
+    clearTimeout(msgToastT); msgToastT = setTimeout(function(){ el.classList.remove('show'); }, 2600);
+  }
+  function renderMessages(){
+    if (!msgLayerEl) return;
+    var now = Date.now(), items = [];
+    if (ownMsg && now - ownMsg.at < MSG_MS && lastOwnLatLon) items.push({ key: 'me', mine: true, text: ownMsg.text, who: 'du', lat: lastOwnLatLon.lat, lon: lastOwnLatLon.lon });
+    Object.keys(boatPositions || {}).forEach(function(id){
+      var b = boatPositions[id];
+      if (!b.msg || !b.msgAt || now - b.msgAt >= MSG_MS || msgHidden[id + '@' + b.msgAt]) return;
+      items.push({ key: id + '@' + b.msgAt, mine: false, text: b.msg, who: b.name, lat: b.lat, lon: b.lon });
+    });
+    var keep = {};
+    items.forEach(function(it){
+      keep[it.key] = 1;
+      var el = msgLayerEl.querySelector('[data-k="' + it.key.replace(/"/g, '') + '"]');
+      if (!el){ el = document.createElement('div'); el.className = 'msgBub' + (it.mine ? ' mine' : ''); el.setAttribute('data-k', it.key.replace(/"/g, '')); msgLayerEl.appendChild(el); }
+      var html = escHtml(it.text) + '<small>' + escHtml(it.who || '') + '</small>';
+      if (el.innerHTML !== html) el.innerHTML = html;
+      var p = latLonToImgPx(it.lat, it.lon);
+      el.style.left = (originX + p.x * scale) + 'px'; el.style.top = (originY + p.y * scale) + 'px';
+    });
+    Array.prototype.slice.call(msgLayerEl.children).forEach(function(el){ if (!keep[el.getAttribute('data-k')]) el.remove(); });
+  }
+  msgLayerEl.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
+  msgLayerEl.addEventListener('click', function(e){
+    var el = e.target.closest ? e.target.closest('.msgBub') : null; if (!el) return;
+    e.stopPropagation();
+    var k = el.getAttribute('data-k');
+    if (k === 'me'){ ownMsg = null; writeMsg(null, 0); }       // take yours back (for everyone)
+    else msgHidden[k] = true;                                     // someone else's: hidden for you
+    renderMessages();
+  });
+  setInterval(renderMessages, 20000);
+  window.__ffMsgs = function(){ return Array.prototype.map.call(msgLayerEl.children, function(el){ return { k: el.getAttribute('data-k'), t: el.textContent }; }); };
   ltRender(); ltTick();
 
   /* ---------------- init ---------------- */
@@ -6373,6 +7137,8 @@
         admin: document.getElementById('adminBody').scrollTop
       };
       st.menu = menuPanel.classList.contains('show');
+      st.an = anPanel.classList.contains('show');
+      if (navTarget) st.nav = navTarget;
       if (helpView.classList.contains('show')) st.help = helpLastPlace || helpPlace();
       st.wx = wxCard.classList.contains('show');
       st.probe = probe;
@@ -6418,6 +7184,8 @@
       if (r.menu) toggleMenu(true);
       if (r.wx) setWxOpen(true);
       if (r.probe && typeof r.probe.x === 'number'){ setProbe(r.probe); probeEl.classList.remove('drop'); }
+      if (r.nav && r.probe){ navTarget = r.nav; updateNav(); }
+      if (r.an) showAnPanel(true);
       if (r.sheet && r.sheet.id){
         pendingSheetRestore = { s: r.sheet, until: Date.now() + 10000 };
         tryRestoreSheet();
