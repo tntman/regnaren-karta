@@ -71,6 +71,11 @@
   /* "Blixtar": strikes on the map + an arrow at the edge towards the nearest (screen canvas) */
   #ltLayer{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;display:none;}
   #ltLayer.on{display:block;}
+  /* iPhone home-screen app, upright: the status bar is solid black (see src/head.html), so the
+     fade at the top starts in that same black -- no hard line between the bar and the map */
+  @media (orientation:portrait){
+    html.iosApp header{background:linear-gradient(to bottom, #000 0%, rgba(0,0,0,.82) 16%, rgba(6,20,28,.45) 60%, rgba(6,20,28,0) 100%);}
+  }
   #mapLoading{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:1;color:var(--text-muted);font-size:13px;pointer-events:none;display:none;}
   #mapLoading.show{display:block;}
 
@@ -1123,6 +1128,74 @@
   .speedUsed{font-size:12px;color:var(--offwhite);margin-top:10px;}
   .speedUsed b{color:var(--amber);}
   .sheetDistance{color:var(--amber);font-weight:600;}
+  /* ---- Hjälp (menu -> Hjälp; opens by itself after the name is chosen the first time) ---- */
+  #helpView{
+    position:absolute;inset:0;z-index:34;background:var(--navy);
+    display:none;flex-direction:column;
+  }
+  #helpView.show{display:flex;}
+  #helpHeader{
+    display:flex;align-items:center;gap:10px;
+    padding:calc(env(safe-area-inset-top,0px) + 14px) 18px 14px;
+    border-bottom:1px solid rgba(255,255,255,.1);flex:0 0 auto;
+  }
+  #helpHeader .kicker{font-size:19px;}
+  #helpBackBtn{
+    width:36px;height:36px;border-radius:50%;flex:0 0 auto;
+    background:rgba(255,255,255,.08);border:none;color:var(--offwhite);
+    display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;
+  }
+  #helpBackBtn svg{width:18px;height:18px;}
+  #helpBody{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;
+    padding:12px 14px calc(env(safe-area-inset-bottom,0px) + 24px);display:flex;flex-direction:column;gap:10px;}
+  .helpCard{background:var(--navy-glass);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:12px 14px;scroll-margin-top:10px;}
+  .helpCard h3{margin:0;font-size:15.5px;display:flex;align-items:center;gap:9px;color:var(--offwhite);}
+  .helpCard .hIc{width:28px;height:28px;border-radius:8px;background:rgba(232,163,61,.15);display:flex;align-items:center;justify-content:center;flex:0 0 auto;font-size:15px;}
+  .helpCard p,.helpCard li{font-size:13.5px;line-height:1.45;color:#dbe4e7;}
+  .helpCard p{margin:7px 0 0;}
+  .helpCard ul{margin:8px 0 0;padding-left:18px;}
+  .helpCard li{margin:3px 0;}
+  .hA{color:var(--amber);}
+  .helpWelcome{background:linear-gradient(135deg,rgba(232,163,61,.18),rgba(11,42,58,.7));border-color:rgba(232,163,61,.4);display:none;}
+  #helpView.first .helpWelcome{display:block;}
+  .helpToc{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+  .helpToc a{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:8px 9px;
+    font-size:13px;display:flex;align-items:center;gap:7px;color:var(--offwhite);text-decoration:none;-webkit-tap-highlight-color:transparent;}
+  .helpToc a:active{background:rgba(232,163,61,.18);}
+  .helpToc a span{font-size:14px;}
+  .helpNews{border-color:rgba(232,163,61,.45);}
+  .helpNewsItem{display:flex;gap:9px;margin-top:8px;font-size:13.5px;line-height:1.35;color:#dbe4e7;}
+  .helpNewsItem .date{flex:0 0 44px;color:var(--text-muted);font-size:11.5px;padding-top:2px;}
+  .helpNewsItem.old{display:none;}
+  .helpNews.all .helpNewsItem.old{display:flex;}
+  .helpNews.all .helpMore{display:none;}
+  .helpTag{display:inline-block;font-size:10px;font-weight:700;padding:1px 6px;border-radius:6px;margin-right:5px;vertical-align:1px;}
+  .helpTag.new{background:#E8A33D;color:#0B2A3A;}
+  .helpTag.better{background:rgba(127,212,127,.2);color:#9fe39f;}
+  .helpTag.fixed{background:rgba(124,196,255,.18);color:#a9d8ff;}
+  .helpMore{margin-top:8px;background:none;border:none;color:var(--amber);font:inherit;font-size:13px;padding:2px 0;cursor:pointer;}
+  .helpAnim{margin-top:10px;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,.12);background:#081c26;}
+  .helpAnim img{display:block;width:auto;max-width:100%;height:auto;max-height:470px;margin:0 auto;}   /* (whole-screen ones: narrower) */
+  .helpAnim.missing{display:none;}
+  .helpSub{margin:12px 0 0 !important;font-size:12px !important;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted) !important;}
+  .helpSeg{display:flex;gap:4px;margin-top:10px;background:rgba(255,255,255,.06);border-radius:10px;padding:3px;}
+  .helpSeg button{flex:1;border:none;background:none;color:var(--text-muted);font:inherit;font-size:12px;padding:6px 2px;border-radius:8px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+  .helpSeg button.on{background:var(--amber);color:#0B2A3A;font-weight:700;}
+  .helpSteps{display:none;}
+  .helpSteps.on{display:block;}
+  .helpStep{display:flex;gap:10px;align-items:flex-start;margin-top:9px;font-size:13.5px;line-height:1.4;color:#dbe4e7;}
+  .helpStep .num{width:22px;height:22px;border-radius:50%;background:rgba(232,163,61,.2);color:var(--amber);font-weight:700;display:flex;align-items:center;justify-content:center;flex:0 0 auto;font-size:12px;}
+  .shareIc{width:15px;height:15px;vertical-align:-2px;}
+  .helpInstallBtn{display:block;width:100%;margin-top:10px;padding:11px;border-radius:10px;border:none;background:var(--amber);color:#0B2A3A;font:inherit;font-weight:700;font-size:14.5px;cursor:pointer;}
+  .helpOk{margin-top:9px;background:rgba(127,212,127,.12);border:1px solid rgba(127,212,127,.35);border-radius:10px;padding:8px 10px;font-size:13px;color:#bff0bf;}
+  .helpWarn{margin-top:9px;font-size:12.5px;background:rgba(214,69,69,.12);border:1px solid rgba(214,69,69,.35);border-radius:8px;padding:7px 10px;color:#ffc9c9;}
+  .helpVer{font-size:11.5px !important;color:var(--text-muted) !important;}
+  /* the "something new in Hjälp" dot: on the menu button and on the menu item */
+  .newDot{position:absolute;width:9px;height:9px;border-radius:50%;background:var(--amber);border:1.5px solid var(--navy);display:none;}
+  #menuBtn .newDot{right:0;top:0;}
+  #menuItemHelp{position:relative;}
+  #menuItemHelp .newDot{position:static;margin-left:auto;}
+  body.helpNew .newDot{display:block;}
 </style>
 </head>
 <body>
@@ -1150,6 +1223,7 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M4 6h16M4 12h16M4 18h16"></path>
     </svg>
+    <span class="newDot"></span>
   </button>
   <div id="menuPanel">
     <div id="lakeList"></div>
@@ -1165,6 +1239,11 @@
     <button class="menuItem" data-view="settings" id="menuItemSettings">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
       Inställningar
+    </button>
+    <div class="menuSeparator"></div>
+    <button class="menuItem" id="menuItemHelp">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M9.5 9.3a2.6 2.6 0 0 1 5 .9c0 1.8-2.5 2.2-2.5 3.8"></path><path d="M12 17.2h.01"></path></svg>
+      Hjälp<span class="newDot"></span>
     </button>
   </div>
 
@@ -1579,6 +1658,222 @@
     <div class="demoBannerTimer" id="demoBannerTimer"></div>
   </div>
   <div id="ltRadar" aria-hidden="true"><canvas id="ltRadarCv" width="200" height="200"></canvas><span>30 km runt · FMI</span></div>
+  </div>
+
+  <!-- ---- Hjälp: how to use the app, what's new (menu -> Hjälp; opens by itself the first time) ---- -->
+  <div id="helpView" aria-label="Hjälp">
+    <div id="helpHeader">
+      <button id="helpBackBtn" aria-label="Tillbaka" title="Tillbaka">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+      </button>
+      <div style="flex:1 1 auto;">
+        <div class="kicker">HJÄLP</div>
+        <div class="sub">Så använder du FF Map</div>
+      </div>
+    </div>
+    <div id="helpBody">
+      <div class="helpCard helpWelcome" id="helpWelcome">
+        <h3><span>👋 Välkommen<span id="helpWelcomeName"></span>!</span></h3>
+        <p>Djupkarta, GPS och gruppens fiskeplatser och båtar – i realtid. Börja gärna med att lägga till appen på hemskärmen ↓</p>
+      </div>
+      <nav class="helpToc" id="helpToc">
+        <a href="#help-nytt"><span>✨</span>Nytt i appen</a><a href="#help-installera"><span>📲</span>Installera appen</a>
+        <a href="#help-kartan"><span>🗺️</span>Kartan</a><a href="#help-kartlagen"><span>🎨</span>Kartlägen</a>
+        <a href="#help-position"><span>📍</span>Din position</a><a href="#help-lodet"><span>⚓</span>Lodet</a>
+        <a href="#help-platser"><span>🐟</span>Fiskeplatser</a><a href="#help-fara"><span>⛔</span>Fara &amp; Träffpunkt</a>
+        <a href="#help-batar"><span>🚤</span>Båtarna</a><a href="#help-mat"><span>📏</span>Mätverktyget</a>
+        <a href="#help-vader"><span>🌬️</span>Väder, vind &amp; lä</a><a href="#help-blixtar"><span>⚡</span>Blixtar</a>
+        <a href="#help-filter"><span>🎚️</span>Filter</a><a href="#help-logg"><span>📖</span>Loggen &amp; spår</a>
+        <a href="#help-installningar"><span>⚙️</span>Inställningar</a><a href="#help-tips"><span>🛟</span>Tips &amp; felsökning</a>
+      </nav>
+
+      <section class="helpCard helpNews" id="help-nytt">
+        <h3><span class="hIc">✨</span>Nytt i appen</h3>
+        <div id="helpNewsList"></div>
+        <button type="button" class="helpMore" id="helpNewsMore">Visa äldre ▾</button>
+      </section>
+
+      <section class="helpCard" id="help-installera">
+        <h3><span class="hIc">📲</span>Installera appen</h3>
+        <p>På hemskärmen öppnas kartan i helskärm, utan adressfält, och startar snabbare.</p>
+        <div class="helpOk" id="helpInstalled" hidden>✓ Du använder redan hemskärmsappen – allt klart!</div>
+        <div id="helpInstallHow">
+          <div class="helpSeg" id="helpInstallSeg" role="tablist">
+            <button type="button" data-os="ios">iPhone Safari</button><button type="button" data-os="ioschrome">iPhone Chrome</button><button type="button" data-os="android">Android</button>
+          </div>
+          <div class="helpSteps" data-os="ios">
+            <div class="helpStep"><span class="num">1</span><span>Tryck på <b>Dela</b> <svg class="shareIc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 8l5-5 5 5M5 13v7h14v-7"></path></svg> i Safari (längst ner, eller vid adressfältet).</span></div>
+            <div class="helpStep"><span class="num">2</span><span>Välj <b>Lägg till på hemskärmen</b> (scrolla ner i listan om den inte syns).</span></div>
+            <div class="helpStep"><span class="num">3</span><span>Tryck <b>Lägg till</b> – öppna sedan FF Map från hemskärmen.</span></div>
+          </div>
+          <div class="helpSteps" data-os="ioschrome">
+            <div class="helpStep"><span class="num">1</span><span>Tryck på <b>Dela</b> <svg class="shareIc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 8l5-5 5 5M5 13v7h14v-7"></path></svg> uppe vid adressfältet i Chrome.</span></div>
+            <div class="helpStep"><span class="num">2</span><span>Välj <b>Lägg till på hemskärmen</b>.</span></div>
+            <div class="helpStep"><span class="num">3</span><span>Tryck <b>Lägg till</b> – öppna sedan FF Map från hemskärmen.</span></div>
+          </div>
+          <div class="helpSteps" data-os="android">
+            <button type="button" class="helpInstallBtn" id="helpInstallBtn" hidden>Installera FF Map</button>
+            <div class="helpStep"><span class="num">1</span><span>Tryck på menyn <b>⋮</b> uppe till höger i Chrome.</span></div>
+            <div class="helpStep"><span class="num">2</span><span>Välj <b>Installera app</b> (eller <b>Lägg till på startskärmen</b>).</span></div>
+          </div>
+        </div>
+        <div class="helpAnim"><img loading="lazy" width="432" height="935" src="help/installera.webp" alt="Så lägger du till appen på hemskärmen"></div>
+        <ul>
+          <li>Din position delas med gruppen bara medan appen är öppen.</li>
+        </ul>
+      </section>
+
+      <section class="helpCard" id="help-kartan">
+        <h3><span class="hIc">🗺️</span>Kartan</h3>
+        <div class="helpAnim"><img loading="lazy" width="432" height="713" src="help/kartan.webp" alt="Zooma och flytta kartan"></div>
+        <ul>
+          <li><b class="hA">Dra</b> för att flytta, <b class="hA">nyp</b> eller <b class="hA">dubbeltryck</b> för att zooma.</li>
+          <li>Ju närmare du zoomar, desto fler djupkurvor och djupsiffror (från C-MAP Genesis). Nere till vänster: t.ex. "Zoom 15,3 lager 15".</li>
+          <li>Färgskalan nere till vänster går från 0 m till sjöns maxdjup. Samma färg = samma djup i alla sjöar.</li>
+          <li>Byt sjö i menyn ☰ (Regnaren, Sjösjön, Vågsfjärden).</li>
+        </ul>
+      </section>
+
+      <section class="helpCard" id="help-kartlagen">
+        <h3><span class="hIc">🎨</span>Kartlägen</h3>
+        <div class="helpAnim"><img loading="lazy" width="432" height="620" src="help/kartlagen.webp" alt="Byt kartläge med snabbknappen"></div>
+        <ul>
+          <li><b class="hA">Tryck</b> på lagerknappen (bredvid Filter): Djupfärger → Förenklad → Bottenhårdhet → Vegetation.</li>
+          <li><b class="hA">Håll inne</b> knappen för alla kartlägen.</li>
+          <li><b>Djupfärger</b> med skuggad botten · <b>Förenklad</b> utan skuggor · <b>Sjökort</b> blå band · <b>Flygfoto + linjer</b> · <b>Blå relief</b> · <b>C-MAP original</b> med djupsiffror · <b>Vegetation</b> (grönt = växtlighet) · <b>Bottenhårdhet</b> (ljust mjukt → rött hårt).</li>
+        </ul>
+      </section>
+
+      <section class="helpCard" id="help-position">
+        <h3><span class="hIc">📍</span>Din position</h3>
+        <div class="helpAnim"><img loading="lazy" width="432" height="658" src="help/position.webp" alt="Din position på sjön"></div>
+        <ul>
+          <li>Pilen är du – den pekar åt det håll du åker.</li>
+          <li><b class="hA">Sikteknappen</b> nere till höger centrerar kartan på dig.</li>
+          <li>Nere till vänster: farten i knop och djupet under båten.</li>
+          <li>Är du inte vid sjön står det hur långt bort du är – GPS:en startar när du kommer dit.</li>
+        </ul>
+      </section>
+
+      <section class="helpCard" id="help-lodet">
+        <h3><span class="hIc">⚓</span>Lodet – djup, sträcka och restid</h3>
+        <div class="helpAnim"><img loading="lazy" width="432" height="665" src="help/lodet.webp" alt="Lodet visar djup, sträcka och restid"></div>
+        <ul>
+          <li><b class="hA">Tryck på kartan</b> – lodet visar djupet där.</li>
+          <li>Sträckan dit <b>sjövägen</b> (rutten ritas runt uddar och öar) och restiden – med din fart, eller marschfarten när du står still (Inställningar).</li>
+          <li>Tryck på lodet igen för att ta bort det.</li>
+        </ul>
+      </section>
+
+      <section class="helpCard" id="help-platser">
+        <h3><span class="hIc">🐟</span>Fiskeplatser och markeringar</h3>
+        <p class="helpSub">Lägg till</p>
+        <div class="helpAnim"><img loading="lazy" width="432" height="935" src="help/platser.webp" alt="Lägg till en markering och en fiskeplats"></div>
+        <ul>
+          <li><b class="hA">Håll fingret</b> på kartan där platsen ska vara.</li>
+          <li>Eller tryck <b class="hA">＋</b> (nere till höger) – platsen hamnar där du är.</li>
+          <li>Välj typ: <b>Markering</b> (neutral prick), <b>Abborre</b>, <b>Gädda</b> eller <b>Gös</b> – eller Fara/Träffpunkt (se nedan). Skriv ett namn och tryck <b>Spara</b>.</li>
+        </ul>
+        <p class="helpSub">Ändra och ta bort</p>
+        <div class="helpAnim"><img loading="lazy" width="432" height="935" src="help/andra.webp" alt="Ändra och ta bort en plats"></div>
+        <ul>
+          <li><b class="hA">Tryck</b> på en av dina platser: byt typ eller namn och tryck <b>Spara</b> – eller <b>Ta bort</b>.</li>
+          <li>Andras platser är mindre och bara färgade. Trycker du på dem ser du vem, när och hur långt bort.</li>
+        </ul>
+      </section>
+
+      <section class="helpCard" id="help-fara">
+        <h3><span class="hIc">⛔</span>Fara &amp; Träffpunkt</h3>
+        <div class="helpAnim"><img loading="lazy" width="432" height="935" src="help/fara.webp" alt="Fara och Träffpunkt"></div>
+        <ul>
+          <li><b>Fara</b> – röd stoppskylt för grund, stenar och annat att se upp för. Syns alltid för alla, döljs aldrig av filter.</li>
+          <li><b>Träffpunkt</b> – en fyr med ringar som alla ser (lunch på en ö …). Försvinner efter 1 timme, en per person.</li>
+          <li>Välj typen när du sparar en plats.</li>
+        </ul>
+      </section>
+
+      <section class="helpCard" id="help-batar">
+        <h3><span class="hIc">🚤</span>Båtarna i gruppen</h3>
+        <div class="helpAnim"><img loading="lazy" width="432" height="665" src="help/batar.webp" alt="Gruppens båtar på kartan"></div>
+        <ul>
+          <li>Allas båtar syns med namn och rör sig på kartan.</li>
+          <li>En båt blir grå när dess position är gammal, och försvinner efter ett tag.</li>
+          <li><b class="hA">Tryck</b> på en båt: när den senast syntes och hur långt bort den är.</li>
+        </ul>
+      </section>
+
+      <section class="helpCard" id="help-mat">
+        <h3><span class="hIc">📏</span>Mätverktyget</h3>
+        <div class="helpAnim"><img loading="lazy" width="432" height="935" src="help/mat.webp" alt="Mät en sträcka"></div>
+        <ul>
+          <li>Tryck på <b class="hA">linjalen</b>, sedan på kartan för varje punkt – sträcka och tid visas.</li>
+          <li>Ångra senaste punkten eller rensa. Tryck på linjalen igen för att sluta.</li>
+        </ul>
+      </section>
+
+      <section class="helpCard" id="help-vader">
+        <h3><span class="hIc">🌬️</span>Väder, vind &amp; lä</h3>
+        <div class="helpAnim"><img loading="lazy" width="432" height="720" src="help/vader.webp" alt="Väder, vind och lä"></div>
+        <ul>
+          <li>Väderraden: vind (byar) och riktning, lufttryck med trend, temperatur, regn snart. <b class="hA">Tryck</b> för timprognos och sol.</li>
+          <li><b>Vind och lä</b> (Filter): "kometerna" visar vinden över öppet vatten, den ljusa ytan är lä. Svag vind = stort lä.</li>
+        </ul>
+      </section>
+
+      <section class="helpCard" id="help-blixtar">
+        <h3><span class="hIc">⚡</span>Blixtar</h3>
+        <div class="helpAnim"><img loading="lazy" width="432" height="687" src="help/blixtar.webp" alt="Blixtnedslag på kartan"></div>
+        <ul>
+          <li>Blixtnedslag i realtid inom 30 km: varning med avstånd och riktning – <b style="color:#ff8a80">röd</b> under 10 km, <b style="color:#ffc27a">orange</b> inom 30 km.</li>
+          <li>Radar uppe till höger, ⚡ på kartan (gul = nyss, bleknar på 30 min), pil vid kanten mot närmaste.</li>
+          <li>Data från FMI, några minuters fördröjning. Kan stängas av i Filter.</li>
+        </ul>
+        <div class="helpWarn">Ersätter inte sunt förnuft – åk in vid åska.</div>
+      </section>
+
+      <section class="helpCard" id="help-filter">
+        <h3><span class="hIc">🎚️</span>Filter</h3>
+        <div class="helpAnim"><img loading="lazy" width="432" height="775" src="help/filter.webp" alt="Filter"></div>
+        <ul>
+          <li>Visa/dölj: Mina, Andras, Båtar, Namn, Djup, Spår, Väder, Vind och lä, Blixtar – och varje typ av plats.</li>
+          <li>Andras platser på 50 % eller 100 %. En prick på Filter betyder att något är dolt.</li>
+        </ul>
+      </section>
+
+      <section class="helpCard" id="help-logg">
+        <h3><span class="hIc">📖</span>Loggen &amp; spår</h3>
+        <div class="helpAnim"><img loading="lazy" width="432" height="935" src="help/logg.webp" alt="Loggen"></div>
+        <ul>
+          <li><b>Logg</b> i menyn: alla fiskeplatser, nyast först. <b class="hA">Tryck</b> för att hoppa dit på kartan.</li>
+          <li><b>Spår</b>: linjen efter din båt (av/på i Filter, hur länge den syns i Inställningar).</li>
+        </ul>
+      </section>
+
+      <section class="helpCard" id="help-installningar">
+        <h3><span class="hIc">⚙️</span>Inställningar</h3>
+        <div class="helpAnim"><img loading="lazy" width="432" height="935" src="help/installningar.webp" alt="Inställningar"></div>
+        <ul>
+          <li>Namn, storlek på fiskeplatser, kartstil och kartans färg, spår, pulserande ring, marschfart.</li>
+          <li><b>Ladda ner sjön för offline</b> – gör det hemma innan en tur med dålig täckning.</li>
+        </ul>
+      </section>
+
+      <section class="helpCard" id="help-tips">
+        <h3><span class="hIc">🛟</span>Tips &amp; felsökning</h3>
+        <ul>
+          <li><b>Ingen GPS?</b> Tillåt plats för Safari/Chrome/appen i telefonens inställningar.</li>
+          <li><b>Ser något gammalt ut?</b> Stäng appen helt och öppna igen.</li>
+          <li><b>Utan nät</b> fungerar kartan om sjön är nedladdad. Platser du sparar skickas när nätet är tillbaka.</li>
+          <li>Appen måste vara öppen för att din båt ska synas för de andra.</li>
+        </ul>
+      </section>
+
+      <section class="helpCard" id="help-om">
+        <h3><span class="hIc">ℹ️</span>Om appen</h3>
+        <p>Djup och kurvor: C-MAP Genesis Social Map. Stränder: OpenStreetMap. Flygfoto: Bing. Väder: Open-Meteo. Blixtar: FMI (CC BY 4.0).</p>
+        <p class="helpVer" id="helpVer"></p>
+      </section>
+    </div>
   </div>
 
   <div id="sheetBackdrop"></div>
@@ -2010,6 +2305,7 @@
 
   // True only for an iOS "Add to Home Screen" launch (no Safari chrome).
   var isStandaloneApp = !!window.navigator.standalone;
+  document.documentElement.classList.toggle('iosApp', isStandaloneApp);
 
   // Rotating the phone can, on some mobile browsers, leave a touch/pointer
   // sequence "stuck" mid-gesture (the OS interrupts it for the rotation, so
@@ -3753,6 +4049,127 @@
   logBackBtn.addEventListener('click', showMapView);
   settingsBackBtn.addEventListener('click', showMapView);
 
+  /* ---- Hjälp ----
+     How to use the app + what's new. Menu -> Hjälp; opens by itself (with a welcome)
+     right after the name is chosen the first time on a phone. A dot on the menu
+     button / the menu item while there's news you haven't seen. The animations are
+     made by tools/help_anim.py (docs/help/*.webp; one that's missing is just left out). */
+  // newest first. t: 'new' (NYTT), 'better' (BÄTTRE), 'fixed' (FIXAT)
+  var HELP_NEWS = [
+    { d: '2026-09-29', t: 'new',    x: '<b>Hjälp</b> – den här sidan, med animeringar för varje funktion' },
+    { d: '2026-09-29', t: 'new',    x: '<b>Blixtar i realtid</b> – varning, radar och ⚡ på kartan' },
+    { d: '2026-09-29', t: 'new',    x: '<b>Sjösjön</b> finns i menyn' },
+    { d: '2026-09-29', t: 'better', x: 'Fara är en röd stoppskylt och syns alltid, för alla' },
+    { d: '2026-09-29', t: 'better', x: 'Färgskalan går till sjöns eget maxdjup' },
+    { d: '2026-09-29', t: 'fixed',  x: 'Hemskärmsappen på iPhone fyller hela skärmen' },
+    { d: '2026-09-28', t: 'better', x: 'Jämn kant på lä-ytan på alla zoomnivåer' },
+    { d: '2026-09-28', t: 'new',    x: '<b>Vind och lä</b> i Filter' },
+    { d: '2026-09-28', t: 'new',    x: '<b>Ladda ner sjön för offline</b> i Inställningar' },
+    { d: '2026-09-28', t: 'better', x: 'Orange vindpil i väderraden' },
+    { d: '2026-09-28', t: 'new',    x: 'Nya kartor: fast djupskala, ny skuggning, 8 kartlägen, Regnaren ända till zoom 18' },
+    { d: '2026-09-28', t: 'new',    x: '<b>Fara</b> och <b>Träffpunkt</b> (1 h)' },
+    { d: '2026-09-28', t: 'new',    x: 'Lodet räknar sträcka <b>sjövägen</b> och restid' },
+    { d: '2026-09-28', t: 'new',    x: 'Snabbknapp för kartlägen' },
+    { d: '2026-09-28', t: 'new',    x: 'Zoomnivåer som på Genesis: fler kurvor och siffror när du zoomar in' },
+    { d: '2026-09-28', t: 'new',    x: '<b>Vågsfjärden</b> – flera sjöar i menyn' }
+  ];
+  var HELP_SEEN_KEY = 'ffmap_help_seen_v1';   // how many news items you've seen
+  var HELP_TAGS = { 'new': 'NYTT', better: 'BÄTTRE', fixed: 'FIXAT' };
+  var MONTHS_SV = ['jan', 'feb', 'mar', 'apr', 'maj', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
+  var helpView = document.getElementById('helpView');
+  var helpBody = document.getElementById('helpBody');
+  (function(){
+    document.getElementById('helpNewsList').innerHTML = HELP_NEWS.map(function(n, i){
+      var p = n.d.split('-');
+      return '<div class="helpNewsItem' + (i >= 5 ? ' old' : '') + '"><div class="date">' + (+p[2]) + ' ' + MONTHS_SV[+p[1] - 1] + '</div>' +
+             '<div><span class="helpTag ' + n.t + '">' + HELP_TAGS[n.t] + '</span>' + n.x + '</div></div>';
+    }).join('');
+    document.getElementById('helpNewsMore').hidden = HELP_NEWS.length <= 5;
+    document.getElementById('helpVer').textContent = 'Version ' + HELP_NEWS[0].d;
+    // an animation that isn't there (not made yet / offline): leave the frame out
+    Array.prototype.forEach.call(helpView.querySelectorAll('.helpAnim img'), function(im){
+      im.addEventListener('error', function(){ im.parentNode.classList.add('missing'); });
+    });
+  })();
+  document.getElementById('helpNewsMore').addEventListener('click', function(){ document.getElementById('help-nytt').classList.add('all'); });
+  function helpSeen(){ var n = 0; try { n = parseInt(localStorage.getItem(HELP_SEEN_KEY), 10) || 0; } catch(e){} return n; }
+  function updateHelpDot(){ document.body.classList.toggle('helpNew', helpSeen() < HELP_NEWS.length); }
+  // the table of contents: scroll inside the page (no # in the address)
+  document.getElementById('helpToc').addEventListener('click', function(e){
+    var a = e.target.closest ? e.target.closest('a') : null; if (!a) return;
+    e.preventDefault();
+    var t = document.getElementById(a.getAttribute('href').slice(1));
+    if (t) helpBody.scrollTop += t.getBoundingClientRect().top - helpBody.getBoundingClientRect().top - 10;
+  });
+  // installing: which phone/browser this is, and whether it's already the home-screen app
+  var helpInstallEvt = null;
+  window.addEventListener('beforeinstallprompt', function(e){
+    e.preventDefault(); helpInstallEvt = e;
+    document.getElementById('helpInstallBtn').hidden = false;
+  });
+  function helpPlatform(){
+    var ua = navigator.userAgent || '';
+    var ios = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    if (ios) return /CriOS/.test(ua) ? 'ioschrome' : 'ios';
+    if (/Android/.test(ua)) return 'android';
+    return 'ios';                                     // (a computer: show the iPhone steps)
+  }
+  function helpIsInstalled(){
+    return !!window.navigator.standalone || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+  }
+  function setHelpOs(os){
+    Array.prototype.forEach.call(document.querySelectorAll('#helpInstallSeg button'), function(b){ b.classList.toggle('on', b.getAttribute('data-os') === os); });
+    Array.prototype.forEach.call(document.querySelectorAll('#helpInstallHow .helpSteps'), function(s){ s.classList.toggle('on', s.getAttribute('data-os') === os); });
+  }
+  document.getElementById('helpInstallSeg').addEventListener('click', function(e){
+    var b = e.target.closest ? e.target.closest('button[data-os]') : null; if (b) setHelpOs(b.getAttribute('data-os'));
+  });
+  document.getElementById('helpInstallBtn').addEventListener('click', function(){
+    if (!helpInstallEvt) return;
+    helpInstallEvt.prompt();
+    helpInstallEvt = null; document.getElementById('helpInstallBtn').hidden = true;
+  });
+  function showHelpView(first){
+    var inst = helpIsInstalled();
+    document.getElementById('helpInstalled').hidden = !inst;
+    document.getElementById('helpInstallHow').hidden = inst;
+    setHelpOs(helpPlatform());
+    helpView.classList.toggle('first', !!first);
+    document.getElementById('helpWelcomeName').textContent = userName ? ', ' + userName : '';
+    helpView.classList.add('show');
+    helpW = helpBody.clientWidth; helpLastPlace = null;
+    toggleMenu(false);
+    try { localStorage.setItem(HELP_SEEN_KEY, String(HELP_NEWS.length)); } catch(e){}
+    updateHelpDot();
+  }
+  function hideHelpView(){ helpView.classList.remove('show', 'first'); }
+  // where you are on the page, as "which section + how far into it" (the pixels change
+  // when the phone is turned: other width, other line breaks)
+  function helpPlace(){
+    var bt = helpBody.getBoundingClientRect().top, best = null;
+    Array.prototype.forEach.call(helpBody.querySelectorAll('section[id]'), function(sec){
+      var t = sec.getBoundingClientRect().top - bt;
+      if (t <= 12 && (!best || t > best.t)) best = { id: sec.id, t: t, h: sec.offsetHeight };
+    });
+    return { first: helpView.classList.contains('first'), top: helpBody.scrollTop,
+             sec: best && best.id, frac: best ? Math.max(0, Math.min(1, -best.t / Math.max(1, best.h))) : 0 };
+  }
+  // remembered while you scroll -- when the phone is turned, the page has already been
+  // laid out again (other width) before the rotation is noticed, so measure before that
+  var helpLastPlace = null, helpW = 0;
+  helpBody.addEventListener('scroll', function(){
+    if (helpBody.clientWidth !== helpW){ helpW = helpBody.clientWidth; return; }   // (a turn, not you)
+    helpLastPlace = helpPlace();
+  }, { passive: true });
+  function helpGoTo(pl){
+    var sec = pl.sec && document.getElementById(pl.sec);
+    if (!sec){ helpBody.scrollTop = pl.top || 0; return; }
+    helpBody.scrollTop += sec.getBoundingClientRect().top - helpBody.getBoundingClientRect().top + (pl.frac || 0) * sec.offsetHeight - 10;
+  }
+  document.getElementById('menuItemHelp').addEventListener('click', function(){ helpBody.scrollTop = 0; showHelpView(false); });
+  document.getElementById('helpBackBtn').addEventListener('click', hideHelpView);
+  updateHelpDot();
+
   /* ---------------- Demo Mode ---------------- */
   var DEMO_KEY = 'regnaren_demo_mode_v1';
   var DEMO_LAT_KEY = 'lake_' + LAKE_ID + '_demo_lat_v1'; // per-lake: a demo spot only makes sense on its own map
@@ -4055,6 +4472,7 @@
       renderWaypoints();
     } else {
       continueBootAfterName();
+      if (!helpSeen()) showHelpView(true);   // the very first time on this phone: Hjälp, with a welcome
     }
   });
   nameInput.addEventListener('keydown', function(e){
@@ -4722,6 +5140,13 @@
     return { pts: img, meters: m };
   }
   function depthAtLatLon(lat, lon){ var p = latLonToImgPx(lat, lon); return depthAtImgPx(p.x, p.y); }
+  // (for the tests and tools/help_anim.py: depth / lake at a place, and screen <-> place)
+  window.__ffGeo = {
+    depthAt: depthAtLatLon,
+    lake: function(lat, lon){ var p = latLonToImgPx(lat, lon); return isLakeAtImgPx(p.x, p.y); },
+    screenOf: function(lat, lon){ var p = latLonToImgPx(lat, lon); return [originX + p.x * scale, originY + p.y * scale]; },
+    at: function(x, y){ return imgPxToLatLon((x - originX) / scale, (y - originY) / scale); }
+  };
   function fmtDepth(m){
     if (m == null) return '–';
     if (LAKE.depth.capped && m >= LAKE.depth.max - 0.05) return LAKE.depth.max + '+';
@@ -5896,6 +6321,7 @@
              nearKm: ltNear ? ltNear.km : null, pill: ltPill.classList.contains('show') ? ltPill.textContent : null,
              red: ltPill.classList.contains('red'), radar: ltRadar.classList.contains('show'), drawn: d.drawn, edge: d.edge };
   };
+  window.__ffLightningFetch = function(){ ltFetchedAt = 0; ltTick(); };   // (tests / tools/help_anim.py: fetch now)
   ltRender(); ltTick();
 
   /* ---------------- init ---------------- */
@@ -5973,6 +6399,7 @@
         admin: document.getElementById('adminBody').scrollTop
       };
       st.menu = menuPanel.classList.contains('show');
+      if (helpView.classList.contains('show')) st.help = helpLastPlace || helpPlace();
       st.wx = wxCard.classList.contains('show');
       st.probe = probe;
       if (editingId && wpSheet.classList.contains('show')){
@@ -6013,6 +6440,7 @@
           document.getElementById('adminBody').scrollTop = sc.admin || 0;
         }
       }
+      if (r.help){ showHelpView(r.help.first); helpGoTo(r.help); setTimeout(function(){ helpGoTo(r.help); }, 500); }
       if (r.menu) toggleMenu(true);
       if (r.wx) setWxOpen(true);
       if (r.probe && typeof r.probe.x === 'number'){ setProbe(r.probe); probeEl.classList.remove('drop'); }

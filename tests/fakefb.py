@@ -44,8 +44,11 @@ if not getattr(_Browser, '_ffGuarded', False):
     _orig_new_context = _Browser.new_context
     def _guarded_new_context(self, *a, **kw):
         kw.setdefault('service_workers', 'block')
+        help_seen = kw.pop('help_seen', True)
         ctx = block_real_firebase(_orig_new_context(self, *a, **kw))
         ctx.add_init_script(TEST_PIN_JS)
+        if help_seen:   # Hjälp opens by itself the first time -- tests start as if it's been read (test_help: help_seen=False)
+            ctx.add_init_script("try { if (!localStorage.getItem('ffmap_help_seen_v1')) localStorage.setItem('ffmap_help_seen_v1', '999'); } catch(e){}")
         return ctx
     _Browser.new_context = _guarded_new_context
     _Browser._ffGuarded = True
@@ -166,7 +169,7 @@ FAKE_FIREBASE_JS = r"""
 })();
 """
 
-def new_page(p, geo=None, perms=True, cfg=None, name='Testare', wakelock_stub=False, sw=False):
+def new_page(p, geo=None, perms=True, cfg=None, name='Testare', wakelock_stub=False, sw=False, help_seen=True):
     import json
     b = p.chromium.launch(**__import__('fakefb').LAUNCH)
     kw = dict(viewport={'width':390,'height':844}, has_touch=True, is_mobile=True,
@@ -175,6 +178,7 @@ def new_page(p, geo=None, perms=True, cfg=None, name='Testare', wakelock_stub=Fa
         kw['geolocation'] = {'latitude':geo[0], 'longitude':geo[1], 'accuracy':8}
     if perms:
         kw['permissions'] = ['geolocation']
+    kw['help_seen'] = help_seen
     ctx = b.new_context(**kw)
     ctx.add_init_script('window.__fakeCfg = ' + json.dumps(cfg or {}) + ';')
     if wakelock_stub:

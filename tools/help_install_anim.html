@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="sv"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Installera – animering</title>
+<!-- A drawn iPhone + Safari showing "Dela -> Lägg till på hemskärmen -> Lägg till" for the
+     Hjälp page (tools/help_anim.py records it; Safari's own menus can't be recorded). -->
+<style>
+  *{box-sizing:border-box;}
+  body{margin:0;width:390px;height:844px;overflow:hidden;background:#000;font-family:-apple-system,"Segoe UI",sans-serif;}
+  .scr{position:absolute;inset:0;}
+  #safari{background:#fff;}
+  .sbar{height:47px;display:flex;justify-content:space-between;align-items:center;padding:0 28px;font:600 15px "Segoe UI";}
+  #safari .sbar{color:#000;background:#fff;}
+  #page{position:absolute;top:47px;left:0;right:0;bottom:98px;background:#0B2A3A url(../docs/lakes/regnaren/map_v4_s1.jpg) 40% 50%/auto 140%;}
+  #page .t{position:absolute;left:18px;top:18px;color:#fff;font:700 22px Cambria,Georgia,serif;text-shadow:0 1px 6px rgba(0,0,0,.6);}
+  .tb{position:absolute;left:0;right:0;bottom:0;height:98px;background:#f7f7f8;border-top:1px solid #ddd;}
+  .url{margin:8px 14px 0;height:40px;border-radius:12px;background:#e9e9ec;display:flex;align-items:center;justify-content:center;font-size:15px;color:#222;}
+  .icons{display:flex;justify-content:space-around;margin-top:8px;color:#0a7aff;}
+  .icons svg{width:24px;height:24px;}
+  #sheet{position:absolute;left:0;right:0;bottom:0;height:520px;background:#f2f2f7;border-radius:14px 14px 0 0;transform:translateY(100%);transition:transform .45s cubic-bezier(.2,.8,.2,1);box-shadow:0 -6px 30px rgba(0,0,0,.25);}
+  body.s2 #sheet,body.s3 #sheet{transform:none;}
+  .sh-head{display:flex;gap:12px;align-items:center;padding:16px;}
+  .sh-head img{width:46px;height:46px;border-radius:10px;}
+  .sh-head b{font-size:15px;} .sh-head small{display:block;color:#888;font-size:12.5px;}
+  .apps{display:flex;gap:18px;padding:4px 16px 14px;}
+  .apps div{width:58px;height:58px;border-radius:14px;}
+  .rows{margin:0 16px;background:#fff;border-radius:12px;overflow:hidden;}
+  .row{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;font-size:16px;border-bottom:1px solid #e5e5ea;color:#000;}
+  .row:last-child{border-bottom:none;}
+  .row svg{width:22px;height:22px;color:#333;}
+  .row.hl{background:#e5e5ea;}
+  #add{background:#f2f2f7;transform:translateY(100%);transition:transform .45s cubic-bezier(.2,.8,.2,1);}
+  body.s4 #add,body.s5 #add{transform:none;}
+  .addbar{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;font-size:16px;margin-top:47px;}
+  .addbar b{font-size:16px;} .addbar span{color:#0a7aff;}
+  .addbar .ok{font-weight:700;}
+  .addcard{margin:10px 16px;background:#fff;border-radius:12px;padding:14px;display:flex;gap:14px;align-items:center;}
+  .addcard img{width:60px;height:60px;border-radius:13px;}
+  .addcard .nm{font-size:17px;border-bottom:1px solid #e5e5ea;padding-bottom:6px;flex:1;}
+  .addcard small{display:block;color:#888;font-size:12px;margin-top:6px;}
+  #home{background:linear-gradient(160deg,#1c4e6b,#0b2a3a 55%,#27324a);opacity:0;transition:opacity .5s;}
+  body.s6 #home{opacity:1;}
+  #home .sbar{color:#fff;}
+  .grid{display:grid;grid-template-columns:repeat(4,64px);gap:26px 22px;justify-content:center;margin-top:40px;}
+  .app{display:flex;flex-direction:column;align-items:center;gap:5px;color:#fff;font-size:11.5px;}
+  .app i{display:block;width:64px;height:64px;border-radius:15px;}
+  .app img{width:64px;height:64px;border-radius:15px;}
+  #newApp{transform:scale(0);transition:transform .45s cubic-bezier(.3,1.6,.5,1);}
+  body.s6 #newApp{transform:scale(1);}
+  body.s7 #newApp img{box-shadow:0 0 0 4px rgba(232,163,61,.8),0 0 24px rgba(232,163,61,.8);}
+  .cap{position:absolute;left:14px;right:14px;top:62px;background:rgba(11,42,58,.94);color:#fff;border:1px solid rgba(232,163,61,.6);border-radius:14px;padding:10px 14px;font:600 16px Calibri,"Segoe UI",sans-serif;text-align:center;opacity:0;transition:opacity .3s;z-index:5;}
+  .cap.on{opacity:1;}
+  #finger{position:absolute;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;background:rgba(40,40,40,.25);border:2px solid rgba(255,255,255,.95);box-shadow:0 0 0 3px rgba(0,0,0,.25);z-index:9;opacity:0;transition:opacity .15s,left .5s ease,top .5s ease;}
+</style></head><body>
+<div class="scr" id="safari">
+  <div class="sbar"><span>10:15</span><span>●●● ▮</span></div>
+  <div id="page"><div class="t">REGNAREN</div></div>
+  <div class="tb"><div class="url">🔒 github.io</div>
+    <div class="icons">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+      <svg id="shareBtn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 8l5-5 5 5M5 13v7h14v-7"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v14H4z"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="11" height="11" rx="2"/><rect x="9" y="9" width="11" height="11" rx="2"/></svg>
+    </div></div>
+  <div id="sheet">
+    <div class="sh-head"><img src="../docs/apple-touch-icon.png" alt=""><div><b>FF Map</b><small>github.io</small></div></div>
+    <div class="apps"><div style="background:#34c759"></div><div style="background:#0a7aff"></div><div style="background:#ff9500"></div><div style="background:#5856d6"></div></div>
+    <div class="rows">
+      <div class="row">Kopiera<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V4H4v12h4"/></svg></div>
+      <div class="row">Lägg till i läslista<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/></svg></div>
+      <div class="row">Lägg till bokmärke<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h7v14H4zM13 5h7v14h-7z"/></svg></div>
+      <div class="row" id="addRow">Lägg till på hemskärmen<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8v8M8 12h8"/></svg></div>
+      <div class="row">Markera<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20l4-1L19 8l-3-3L5 16z"/></svg></div>
+    </div>
+  </div>
+</div>
+<div class="scr" id="add">
+  <div class="addbar"><span>Avbryt</span><b>Lägg till på hemskärmen</b><span class="ok" id="addBtn">Lägg till</span></div>
+  <div class="addcard"><img src="../docs/apple-touch-icon.png" alt=""><div style="flex:1"><div class="nm">FF Map</div><small>github.io</small></div></div>
+</div>
+<div class="scr" id="home">
+  <div class="sbar"><span>10:16</span><span>●●● ▮</span></div>
+  <div class="grid">
+    <div class="app"><i style="background:#34c759"></i>Meddelanden</div><div class="app"><i style="background:#0a7aff"></i>Safari</div>
+    <div class="app"><i style="background:#ff9500"></i>Kamera</div><div class="app"><i style="background:#ff2d55"></i>Musik</div>
+    <div class="app"><i style="background:#5ac8fa"></i>Väder</div><div class="app"><i style="background:#8e8e93"></i>Inställningar</div>
+    <div class="app"><i style="background:#ffcc00"></i>Anteckn.</div><div class="app" id="newApp"><img src="../docs/apple-touch-icon.png" alt="">FF Map</div>
+  </div>
+</div>
+<div class="cap" id="cap"></div>
+<div id="finger"></div>
+<script>
+  // one run of the story; tools/help_anim.py calls play() and records while it runs
+  var F = document.getElementById('finger'), C = document.getElementById('cap');
+  function at(el){ var r = el.getBoundingClientRect(); F.style.left = (r.left + r.width / 2) + 'px'; F.style.top = (r.top + r.height / 2) + 'px'; }
+  function cap(t){ C.textContent = t; C.classList.toggle('on', !!t); }
+  function step(cls){ document.body.className = cls; }
+  window.play = function(){
+    var T = [
+      [0,    function(){ step('s1'); cap('1. Tryck på Dela'); F.style.left = '300px'; F.style.top = '560px'; }],
+      [600,  function(){ F.style.opacity = 1; at(document.getElementById('shareBtn')); }],
+      [1400, function(){ F.style.background = 'rgba(40,40,40,.5)'; }],
+      [1650, function(){ F.style.background = ''; F.style.opacity = 0; step('s2'); }],
+      [2300, function(){ cap('2. Lägg till på hemskärmen'); F.style.opacity = 1; at(document.getElementById('addRow')); }],
+      [3200, function(){ document.getElementById('addRow').classList.add('hl'); F.style.background = 'rgba(40,40,40,.5)'; }],
+      [3500, function(){ F.style.background = ''; F.style.opacity = 0; step('s4'); }],
+      [4200, function(){ cap('3. Tryck Lägg till'); F.style.opacity = 1; at(document.getElementById('addBtn')); }],
+      [5100, function(){ F.style.background = 'rgba(40,40,40,.5)'; }],
+      [5350, function(){ F.style.background = ''; F.style.opacity = 0; step('s6'); cap(''); }],
+      [6100, function(){ step('s6 s7'); cap('Klart – öppna FF Map från hemskärmen'); }],
+      [8200, function(){ window.done = true; }]
+    ];
+    T.forEach(function(s){ setTimeout(s[1], s[0]); });
+  };
+</script>
+</body></html>

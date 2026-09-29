@@ -38,6 +38,16 @@ All text i appen är på svenska. Svara Filip på svenska, kort och tydligt.
 - **iOS hemskärmsapp:** statusraden är `black` (src/head.html), INTE `black-translucent`: med
   translucent gör iOS 26 webbvyn en statusrad för kort – en död rand längst ner som ingen CSS
   når (WebKit-bugg 301108; testat 2026-09-29: utsträckning med negativ bottom klipptes bara av).
+  Toppens tona börjar i samma svart i stående hemskärmsapp (`html.iosApp`), annars hård kant.
+- **Hjälp** (menyn → Hjälp, `#helpView`; öppnas själv med välkomst efter första namnvalet):
+  alla funktioner + "Nytt i appen" (`HELP_NEWS`, nyast först, NYTT/BÄTTRE/FIXAT – **lägg till en rad
+  vid varje ny funktion/förbättring**; prick på menyn tills läst, `ffmap_help_seen_v1` = antal lästa).
+  Installera-avsnittet väljer flik efter telefon/webbläsare, "✓" i hemskärmsappen, Android-knapp via
+  beforeinstallprompt. Animeringar `docs/help/*.webp` görs av `py -3 tools/help_anim.py [namn …]`
+  (spelar in appen med låtsasdata, CDP-screencast, allt på Regnarens vatten – kontrolleras mot djupet;
+  skriver bildstorlek i src/app.html → bygg efteråt). Ändras något som syns i en animering: spela in
+  den igen. Testerna startar med Hjälp "läst" (fakefb, `help_seen=False` för test_help).
+  **Allt om Hjälp och hur animeringarna görs: `tools/HJALP.md`** – läs före ändringar, uppdatera efter.
 - **Ordning/hoisting:** många `var` deklareras långt ner i skriptet. Sätt checkbox-
   tillstånd som beror på sådana variabler i `boot()` (se toggleDepth/toggleTrack).
 - **Firebase-kvot** (gratis: 50k reads/dygn). Positioner delas var 20:e s vid rörelse

@@ -62,3 +62,5 @@ Alla sjöarna är byggda med Genesis-verktygen och djupet är kalibrerat mot
 Genesis egna djupsiffror. Regnaren har behållit sitt gamla utsnitt, så
 fiskeplatser hamnar rätt. Genesis har zoom 12–18 för alla sjöarna; i appen
 används 14 och uppåt (se tools/KARTOR.md).
+
+Hjälp-sidan i appen (funktioner, animeringar, "Nytt i appen"): se tools/HJALP.md.
