@@ -148,6 +148,7 @@
       var auth = firebase.auth();
       var fsdb = firebase.firestore();
       try { fsdb.enablePersistence({ synchronizeTabs:true }).catch(function(){}); } catch(e){}
+      catchDb = fsdb;                         // (the heat map's catches: 66-catches.js)
       fsCol = fsdb.collection('waypoints');
       posCol = fsdb.collection('positions');
       usageCol = fsdb.collection('usage');

@@ -28,13 +28,14 @@ specificitet.
 | `50-weather-settings.css` | väder, blixtvarning/radar, kartstil, offline, admin, fart, åsklarm, håll skärmen tänd (solen, notisen) |
 | `60-help.css` | Hjälp (+ sökrutan) |
 | `70-analysis.css` | Kartanalys och Liknande |
+| `72-heatmap.css` | Heatmap: lagren, skylten under väder, bottenrutan, fångstrutan |
 | `75-messages.css` | snabbmeddelanden (knappen, valen, egen text, bubblorna, rutan) |
 | `80-panels.css` | bottenpanelerna: greppremsan, dra mindre / skrolla (Kartanalys, meddelande, plats) |
 | `90-buttons.css` | de fyra knapparna nere till höger i 2 × 2 (sist: bestämmer storlek/plats över allt ovan) |
 | **html/** | |
-| `10-map.html` | `#app`, kartan och lagren (`#stage`, platser, båtar, bubblor, lodet) |
+| `10-map.html` | `#app`, kartan och lagren (`#stage`, platser, båtar, bubblor, lodet, heatmap) |
 | `20-menu-settings.html` | menyknapp, meny, Logg, Inställningar, Admin, PIN |
-| `30-map-ui.html` | rubrik, väderkort, mätpanel, knappar, meddelanden, Kartanalys-panel, Filter, radar |
+| `30-map-ui.html` | rubrik, väderkort, mätpanel, knappar, meddelanden, Kartanalys-panel, Heatmap-rutorna, Filter, radar |
 | `40-help.html` | Hjälp-sidan (bildstorlekarna skrivs av `tools/help_anim.py`) |
 | `50-sheets.html` | platsens ruta, namnrutan, båtinfo |
 | **js/** | |
@@ -66,5 +67,7 @@ specificitet.
 | `60-lightning-alarm.js` | åskvarning |
 | `62-wakelock.js` | håll skärmen tänd |
 | `64-messages.js` | snabbmeddelanden |
+| `66-catches.js` | fångsterna: format, källa (Firestore `catches/<lake>`), admins CSV-inläsning |
+| `68-heatmap.js` | Heatmap: ritning (värme, per art, rutor, prickar), bottenrutan, fångstrutan, tryck på kartan |
 | `90-boot.js` | start (`boot()`) |
 | `92-rotation.js` | vridning: spara/återställ läget, service worker-registrering, slutet på skriptet |

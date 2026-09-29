@@ -45,6 +45,7 @@ All text i appen är på svenska. Svara Filip på svenska, kort och tydligt.
 | Kartanalys, lodet, rutten, Åk hit, platsens ruta | `tools/NOTES_ANALYS.md` |
 | Snabbmeddelanden | `tools/NOTES_MEDDELANDEN.md` |
 | Väder, vind och lä, blixtar, åskvarning | `tools/NOTES_VADER.md` |
+| Heatmap (fångster: data, CSV-inläsning, framtida live-källa) | `tools/NOTES_HEATMAP.md` |
 
 Uppdatera rätt anteckning när något ändras.
 
@@ -103,6 +104,9 @@ Uppdatera rätt anteckning när något ändras.
   appen blir synlig. På = gul sol `#wakeBadge` vid namnet; tryck = av + notis `#wakeNote`.
 - **Hjälp** (menyn → Hjälp; öppnas själv efter första namnvalet): "Nytt i appen" = `HELP_NEWS`
   (`js/30-help.js`), animeringar av `tools/help_anim.py` – allt i `tools/HJALP.md`.
+- **Heatmap** (Kartlägen → Heatmap sist): fångster från tävlingarna, fyra stilar, egen bottenruta, inte
+  samtidigt som Kartanalys, "Heatmap"-skylt under väder. Data i Firestore `catches/<lake>` (admin läser in
+  CSV); byggd så att källan kan bytas mot en live-databas. Allt i `tools/NOTES_HEATMAP.md`.
 - **Pushnotiser**: inte gjort (kräver server/Firebase-betalplan).
 
 ## Firestore-regler (aktuella, i Firebase-konsolen)
@@ -110,6 +114,7 @@ waypoints: read auth; create kräver uid/name(≤60)/lat/lon; update/delete auth
 positions: read auth; write kräver lat, lon (number) och name (string).
 usage: read auth; write kräver day (string) och r/w/d (number).
 config/{lake}: read auth; write kräver posIntervalS i [10,20,30,60].
+catches/{lake}: read auth; write kräver rows (string) och n (number) – heatmapens fångster (NOTES_HEATMAP.md).
 
 ## Idéer som diskuterats men inte gjorts
 - Riktig iPhone-app via Capacitor + TestFlight (bakgrundsposition). Kräver Mac + Apple-konto.

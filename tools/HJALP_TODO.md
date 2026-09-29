@@ -22,6 +22,7 @@ kanter, Djup/Andras till Inställningar, panorera över markeringar).
 
 - [ ] 2026-09-29 – Vind och lä: lä är nu blått och tydligare, starkast vid kanten; snabbare panorering på dator. Hjälp: Väder, vind & lä (text: "den ljusa ytan" → "den blå ytan") + animering `vader`. Nyhet: "Tydligare lä-område, mjukare kanter i Kartanalys när man panorerar" (BÄTTRE)
 - [ ] 2026-09-29 – Rättat: efter vridning av telefonen kunde knapparna vara "förskjutna" och lä försvinna; statusraden i hemskärmsappen är appens blå, samma som bakgrunden (ingen kant). Hjälp: – . Nyhet: "Vridning av telefonen fungerar bättre" (FIXAT)
+- [ ] 2026-09-30 – NYTT: Heatmap över tävlingarnas fångster (Kartlägen → Heatmap): Värme / Per art / Rutor / Prickar, art- och tävlingsfilter, tryck på en fångst (vem, när, djup, placering, Åk hit, Liknande), "Heatmap"-skylt under väder. Hjälp: nytt avsnitt "Heatmap" (+ i Kartlägen) + ny animering `heatmap` (help_anim.py behöver låtsasfångster) + Inställningar/Admin nämner inte (admin står inte i Hjälp). Nyhet: "<b>Heatmap</b> – var fisken tagits i tävlingarna" (NYTT)
 
 <!-- mall:
 - [ ] ÅÅÅÅ-MM-DD – Vad som ändrats. Hjälp: avsnitt X (text) + animering `namn`. Nyhet: "…" (NYTT/BÄTTRE/FIXAT)

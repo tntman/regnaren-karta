@@ -51,6 +51,7 @@
       probeTimer = null;
       if (hadMenu || measureMode) return;
       if (typeof wpSheet !== 'undefined' && wpSheet.classList.contains('show')) return;
+      if (hmCanvas && hmTapAt(sx, sy)) return;     // (the heat map on: a tap where there are catches opens them)
       if (probe){ setProbe(null); return; }        // tap again = remove
       setProbe({ x: (sx - originX) / scale, y: (sy - originY) / scale });
     }, 360);
@@ -187,6 +188,7 @@
     if (windOn && windCanvas){ try { drawWind(); } catch(e){} }   // ("Vind och lä" -- set up further down; never stops the rest)
     if (ltOn && ltCanvas) ltDrawMap();      // ("Blixtar" -- also further down)
     if (anCanvas) anDraw();                  // (Kartanalys, further down)
+    if (hmCanvas) hmDraw();                  // (Heatmap, further down)
     if (msgLayerEl) renderMessages();         // (quick messages, further down)
     renderTrack();
     renderProbe();

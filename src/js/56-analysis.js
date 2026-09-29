@@ -215,9 +215,10 @@
   }
   function anCellOfImg(x, y){ var A = AN; return Math.min(A.H - 1, Math.max(0, Math.floor(y / IMG_H * A.H))) * A.W + Math.min(A.W - 1, Math.max(0, Math.floor(x / IMG_W * A.W))); }
   function anImgOfCell(i){ var A = AN; return { x: ((i % A.W) + 0.5) / A.W * IMG_W, y: (Math.floor(i / A.W) + 0.5) / A.H * IMG_H }; }
+  var anExtraRef = null;     // a place to compare with that isn't a spot (a catch from the heat map)
   function anSpots(){
-    return waypoints.filter(function(w){ var t = wpType(w); return t !== 'meet' && t !== 'fara' && t !== 'hem' && !isExpired(w); })
-      .sort(function(a, b){ return (isMine(b) ? 1 : 0) - (isMine(a) ? 1 : 0); });
+    return (anExtraRef ? [anExtraRef] : []).concat(waypoints.filter(function(w){ var t = wpType(w); return t !== 'meet' && t !== 'fara' && t !== 'hem' && !isExpired(w); })
+      .sort(function(a, b){ return (isMine(b) ? 1 : 0) - (isMine(a) ? 1 : 0); }));
   }
   // the chosen filter -> a mask (1 = main colour, 2 = second colour), labels and a result text
   function anCompute(){
@@ -551,6 +552,7 @@
   });
   function anSetMode(m){
     anSet.mode = anSet.mode === m ? null : m; anSave(); anCtlMode = '#';
+    if (anSet.mode && hmOn) hmSetOn(false);      // (not together with the heat map)
     if (anSet.mode && !anShow){ anShow = true; toggleAnEl.checked = true; try { localStorage.setItem(SHOW_AN_KEY, '1'); } catch(e){} }
     anCompute();
   }
@@ -573,7 +575,7 @@
   function showAnPanel(open){
     if (open && !anPanel.classList.contains('show') && anPanel._resetSize) anPanel._resetSize();
     anPanel.classList.toggle('show', open);
-    if (open){ if (typeof toggleMsgPop === 'function') toggleMsgPop(false); anCtlMode = '#'; if (!anRes) anCompute(); else anRender(); }
+    if (open){ if (typeof toggleMsgPop === 'function') toggleMsgPop(false); if (hmPanel) hmShowPanel(false); anCtlMode = '#'; if (!anRes) anCompute(); else anRender(); }
   }
   anBtn.addEventListener('click', function(e){ e.stopPropagation(); showAnPanel(!anPanel.classList.contains('show')); });
   document.getElementById('anClose').addEventListener('click', function(){ showAnPanel(false); });

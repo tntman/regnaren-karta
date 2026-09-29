@@ -25,6 +25,7 @@
   var USE_FIREBASE = false;
   var myUid = null;
   var fsCol = null;
+  var catchDb = null;       // (Firestore, for the heat map's catches -- set in 26-sync.js)
   var PIN_SIZE = 30;
   var PIN_TIP_OFFSET = PIN_SIZE * Math.SQRT1_2; // distance from box-center to the rotated pin's tip
 

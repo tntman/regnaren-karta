@@ -1362,6 +1362,48 @@
   .anChips .anClr:disabled{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);color:rgba(183,196,201,.4);font-weight:400;cursor:default;}
   .anChips .anClr:disabled::after{display:none;}
   @media (prefers-reduced-motion:reduce){ .anChips .anClr::after{animation:none;display:none;} }
+  /* ================= Heatmap (fångster): map-style list -> a bottom panel like Kartanalys ================= */
+  #hmLayer, #hmSat{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;display:none;}
+  #hmSat{mix-blend-mode:saturation;}
+  #hmLayer.on, #hmSat.on{display:block;}
+  /* the pill under the weather chip (like it): the heat map is on -- tap = its panel */
+  #hmPill{display:flex;align-items:center;gap:7px;margin:6px 0 0 -50px;pointer-events:auto;width:max-content;
+    background:rgba(11,42,58,.82);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:4px 11px 4px 8px;
+    font:600 12px Calibri,"Segoe UI",system-ui,sans-serif;color:var(--offwhite);box-shadow:0 4px 14px rgba(0,0,0,.3);cursor:pointer;-webkit-tap-highlight-color:transparent;}
+  #hmPill[hidden]{display:none;}
+  .hmDot{width:12px;height:12px;border-radius:50%;flex:0 0 auto;background:radial-gradient(circle,#e61e28 0,#ffe628 45%,#00dce6 75%,rgba(40,120,255,.6) 100%);}
+  /* in the map-style list: last, a bit special (opens a menu) */
+  #mapTypePop .styleOpt.hmOpt{border-color:rgba(255,122,26,.65);}
+  #mapTypePop .styleOpt.hmOpt.active{border-color:#FF7A1A;background:rgba(255,122,26,.14);}
+  .hmThumb{width:64px;height:38px;border-radius:8px;flex:0 0 auto;background:radial-gradient(circle at 35% 55%,#e61e28 0,#ffe628 14%,#00dce6 28%,rgba(40,120,255,.7) 42%,#0b2a3a 62%),#0b2a3a;}
+  .hmOpt .soDesc{display:block;}
+  .hmArrow{font-size:18px;color:#FF7A1A;flex:0 0 auto;padding:0 3px;}
+  #hmPanel{position:absolute;left:0;right:0;bottom:0;z-index:26;background:var(--navy);border-top:1px solid rgba(255,255,255,.14);border-radius:18px 18px 0 0;
+    padding:8px 14px calc(env(safe-area-inset-bottom,0px) + 16px);box-shadow:0 -10px 30px rgba(0,0,0,.45);transform:translateY(105%);transition:transform .25s ease;max-height:62vh;overflow-y:auto;}
+  #hmPanel.show{transform:none;}
+  #hmPanel.dragging, #hmCard.dragging{transition:none;}
+  #hmPanel .grab{margin:-8px -14px 4px;top:-8px;}
+  #hmPanel .anSeg{margin-top:6px;}
+  #hmLegend{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:11.5px;color:var(--text-muted);}
+  #hmLegend .bar{width:130px;height:8px;border-radius:4px;background:linear-gradient(90deg,rgba(40,120,255,.55),#00dce6,#ffe628,#ff7814,#e61e28);}
+  #hmLegend:empty{display:none;}
+  .hmSpDot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:0;}
+  #hmResult{margin-top:10px;font-size:13px;color:#dbe4e7;line-height:1.4;}
+  #hmResult b{color:var(--amber);}
+  #hmResult .note{display:block;color:var(--text-muted);font-size:11.5px;margin-top:3px;}
+  #hmOff{margin-top:4px;}
+  #hmCard{position:absolute;left:0;right:0;bottom:0;z-index:27;background:var(--navy);border-top:1px solid rgba(255,255,255,.14);border-radius:18px 18px 0 0;
+    padding:8px 16px calc(env(safe-area-inset-bottom,0px) + 16px);box-shadow:0 -10px 30px rgba(0,0,0,.45);transform:translateY(105%);transition:transform .25s ease;overflow-y:auto;}
+  #hmCard.show{transform:none;}
+  #hmCard .grab{margin:-8px -16px 4px;top:-8px;}
+  #hmCardKick{font-size:12px;letter-spacing:.06em;font-weight:700;color:var(--text-muted);}
+  #hmCardTitle{font-size:23px;font-weight:700;margin:4px 0 2px;}
+  #hmCard .wpTile b{font-size:13.5px;}
+  #hmCardNote{font-size:12.5px;color:var(--text-muted);margin:0 0 10px;}
+  #hmCardNav{display:flex;align-items:center;justify-content:center;gap:14px;margin:-2px 0 10px;font-size:13px;color:#dbe4e7;}
+  #hmCardNav[hidden]{display:none;}
+  #hmCardNav button{width:34px;height:30px;border-radius:9px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.07);color:var(--offwhite);font-size:18px;line-height:1;cursor:pointer;}
+  @media (orientation:landscape) and (max-height:520px){ #hmPanel, #hmCard{left:auto;width:420px;right:0;max-height:88vh;} }
   /* ================= Snabbmeddelanden (quick messages) ================= */
   /* ---- quick messages: a small button at the bottom, bubbles at the boats (15 min) ---- */
   #msgBtn{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 20px);transform:translateX(-50%);z-index:22;
@@ -1428,11 +1470,11 @@
   .msgBub:not(.mine) .mLine.mine{background:#FFE7B8;border-radius:7px;margin:0 -6px;padding:0 6px;}
   /* ================= bottom panels (Kartanalys, a message, a spot): see tools/UI.md ================= */
   /* ---- panels that can be dragged smaller: the grip always drags; once smaller, the rest scrolls ---- */
-  #anPanel, #wpSheet, #msgCard{touch-action:pan-y;}
+  #anPanel, #wpSheet, #msgCard, #hmPanel, #hmCard{touch-action:pan-y;}
   /* the grip strip (a bar in the middle): drag it = resize / flick it = close -- tools/UI.md */
-  #anPanel .grab, #msgCard .grab{position:sticky;z-index:3;height:30px;display:flex;align-items:center;justify-content:center;background:var(--navy);border-radius:18px 18px 0 0;cursor:grab;}
-  #anPanel .grab::before, #msgCard .grab::before{content:'';width:40px;height:5px;border-radius:3px;background:rgba(255,255,255,.3);}
-  #anPanel .grab, #wpSheet .sheetGrab, #msgCard .grab{touch-action:none;}
+  #anPanel .grab, #msgCard .grab, #hmPanel .grab, #hmCard .grab{position:sticky;z-index:3;height:30px;display:flex;align-items:center;justify-content:center;background:var(--navy);border-radius:18px 18px 0 0;cursor:grab;}
+  #anPanel .grab::before, #msgCard .grab::before, #hmPanel .grab::before, #hmCard .grab::before{content:'';width:40px;height:5px;border-radius:3px;background:rgba(255,255,255,.3);}
+  #anPanel .grab, #wpSheet .sheetGrab, #msgCard .grab, #hmPanel .grab, #hmCard .grab{touch-action:none;}
   #wpSheet{overflow-y:auto;max-height:88vh;}
   #anPanel .grab, #msgCard .grab{position:sticky;}
   /* ================= the four buttons bottom right: one 2 x 2 grid, all the same size =================
@@ -1461,6 +1503,8 @@
     <canvas id="windLayer" aria-hidden="true"></canvas>
     <canvas id="anSat" aria-hidden="true"></canvas>
     <canvas id="anLayer" aria-hidden="true"></canvas>
+    <canvas id="hmSat" aria-hidden="true"></canvas>
+    <canvas id="hmLayer" aria-hidden="true"></canvas>
     <canvas id="ltLayer" aria-hidden="true"></canvas>
     <div id="mapLoading">Laddar karta…</div>
   </div>
@@ -1749,6 +1793,15 @@
         <div class="adminNote">GPX går att läsa in i sjökortsplottrar (Garmin, Lowrance m.fl.), CSV öppnas i Excel. Bra som backup.</div>
       </div>
       <div class="adminCard">
+        <div class="settingsRowTitle">Fångster (heatmap)</div>
+        <div class="adminNote" style="margin-top:6px;">Läs in tävlingarnas fångster från en CSV-fil (kolumnerna timestamp, competitionId, name, species, cm, lat, lng, lake). Fångster i appens sjöar läggs till – de som redan finns hoppas över, så samma fil kan läsas in igen med nya rader.</div>
+        <div class="btnRowWrap">
+          <button id="adminCatchBtn" class="btnAdmin" type="button">Läs in CSV-fil…</button>
+          <input type="file" id="adminCatchFile" accept=".csv,text/csv,text/plain" hidden>
+        </div>
+        <div class="adminNote" id="adminCatchStatus" style="color:var(--offwhite);" hidden></div>
+      </div>
+      <div class="adminCard">
         <div class="settingsRowTitle">Båtar på kartan</div>
         <div class="btnRowWrap">
           <button id="adminHideStale" class="btnAdmin" type="button">Dölj grå båtar</button>
@@ -1791,6 +1844,7 @@
     <div id="headerUserRow"><div id="headerUser"></div><button type="button" id="wakeBadge" hidden aria-label="Skärmen hålls tänd – tryck för att stänga av" title="Skärmen hålls tänd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg></button></div>
     <button type="button" id="wxChip" aria-expanded="false" aria-controls="wxCard" aria-label="Väder och vind"></button>
     <div id="ltPill" role="status" aria-live="polite"><svg viewBox="0 0 24 24"><path d="M13.5 2 5 13.5h5.5L9 22l9.5-12.5H13z" fill="#FFF08C" stroke="#3a1d00" stroke-width="1.4" stroke-linejoin="round"></path></svg><div><b id="ltPillMain"></b><small id="ltPillSub"></small></div></div>
+    <button type="button" id="hmPill" hidden aria-label="Heatmap – öppna menyn"><span class="hmDot"></span>Heatmap</button>
     <div id="farAway"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11z"></path><circle cx="12" cy="10" r="2.2"></circle></svg><span class="farText" id="farText"></span></div>
     <div id="netBadge"><span class="netDot"></span><span class="netText" id="netText"></span></div>
   </header>
@@ -1856,6 +1910,26 @@
     <div class="anChips pre" id="anPresets"></div>
     <div id="anControls"></div>
     <div id="anResult"></div>
+  </div>
+  <div id="hmPanel" role="dialog" aria-label="Heatmap">
+    <div class="grab"><button type="button" id="hmClose" class="gripX" aria-label="Stäng">✕</button></div>
+    <div class="anSub" style="margin-top:0">Heatmap · fångster</div>
+    <div class="anSeg" id="hmStyleSeg"><button type="button" data-s="heat">Värme</button><button type="button" data-s="species">Per art</button><button type="button" data-s="hex">Rutor</button><button type="button" data-s="dots">Prickar</button></div>
+    <div id="hmLegend"></div>
+    <div class="anSub" id="hmSpHead">Art</div>
+    <div class="anChips" id="hmSp"></div>
+    <div class="anSub">Tävling</div>
+    <div class="anChips" id="hmComp"></div>
+    <div id="hmCtl"></div>
+    <div id="hmResult"></div>
+    <div class="anChips"><button type="button" id="hmOff" class="anClr">✕ Stäng av heatmap</button></div>
+  </div>
+  <div id="hmCard" role="dialog" aria-label="Fångst"><div class="grab"><button type="button" id="hmCardClose" class="gripX" aria-label="Stäng">✕</button></div>
+    <div id="hmCardKick"></div><div id="hmCardTitle"></div>
+    <div class="wpData" id="hmCardData"></div>
+    <div id="hmCardNote"></div>
+    <div id="hmCardNav"><button type="button" id="hmCardPrev" aria-label="Föregående">‹</button><span id="hmCardPos"></span><button type="button" id="hmCardNext" aria-label="Nästa">›</button></div>
+    <div class="msgCardBtns"><button type="button" id="hmCardGo" class="a">➤ Åk hit</button><button type="button" id="hmCardLike">🔎 Liknande</button></div>
   </div>
   <div id="wakeNote" role="status"><button type="button" id="wakeNoteClose" aria-label="Stäng">✕</button>
     <b>☀ Håll skärmen tänd är avstängd</b>
@@ -2448,6 +2522,7 @@
       probeTimer = null;
       if (hadMenu || measureMode) return;
       if (typeof wpSheet !== 'undefined' && wpSheet.classList.contains('show')) return;
+      if (hmCanvas && hmTapAt(sx, sy)) return;     // (the heat map on: a tap where there are catches opens them)
       if (probe){ setProbe(null); return; }        // tap again = remove
       setProbe({ x: (sx - originX) / scale, y: (sy - originY) / scale });
     }, 360);
@@ -2584,6 +2659,7 @@
     if (windOn && windCanvas){ try { drawWind(); } catch(e){} }   // ("Vind och lä" -- set up further down; never stops the rest)
     if (ltOn && ltCanvas) ltDrawMap();      // ("Blixtar" -- also further down)
     if (anCanvas) anDraw();                  // (Kartanalys, further down)
+    if (hmCanvas) hmDraw();                  // (Heatmap, further down)
     if (msgLayerEl) renderMessages();         // (quick messages, further down)
     renderTrack();
     renderProbe();
@@ -2922,6 +2998,7 @@
   var USE_FIREBASE = false;
   var myUid = null;
   var fsCol = null;
+  var catchDb = null;       // (Firestore, for the heat map's catches -- set in 26-sync.js)
   var PIN_SIZE = 30;
   var PIN_TIP_OFFSET = PIN_SIZE * Math.SQRT1_2; // distance from box-center to the rotated pin's tip
 
@@ -3276,7 +3353,10 @@
     mapTypePop.innerHTML = MAP_STYLES.map(function(st){
       return '<button type="button" class="styleOpt' + (st.id === mapStyle ? ' active' : '') + '" data-style="' + st.id + '"><img src="' + thumbFile(st.id) + '" alt="">' +
         '<span class="soText"><span class="soName">' + st.name + '</span></span><span class="soCheck"></span></button>';
-    }).join('');
+    }).join('') +
+      // last: the heat map of the catches -- not a map picture: it opens its own panel (68-heatmap.js)
+      '<button type="button" class="styleOpt hmOpt' + (hmOn ? ' active' : '') + '" data-heat="1"><span class="hmThumb"></span>' +
+      '<span class="soText"><span class="soName">Heatmap</span><span class="soDesc">' + (hmOn ? 'På · öppnar menyn' : 'Fångster · öppnar meny') + '</span></span><span class="hmArrow">›</span></button>';
   }
   mapTypeBtn.addEventListener('pointerdown', function(e){
     e.stopPropagation();
@@ -3301,6 +3381,7 @@
     e.stopPropagation();
     var b = e.target.closest ? e.target.closest('.styleOpt') : null;
     if (!b) return;
+    if (b.getAttribute('data-heat')){ openMapTypePop(false); hmShowPanel(true); return; }
     var id = b.getAttribute('data-style');
     openMapTypePop(false);
     if (id !== mapStyle) loadMapStyle(id, false);
@@ -4171,6 +4252,7 @@
       var auth = firebase.auth();
       var fsdb = firebase.firestore();
       try { fsdb.enablePersistence({ synchronizeTabs:true }).catch(function(){}); } catch(e){}
+      catchDb = fsdb;                         // (the heat map's catches: 66-catches.js)
       fsCol = fsdb.collection('waypoints');
       posCol = fsdb.collection('positions');
       usageCol = fsdb.collection('usage');
@@ -7068,9 +7150,10 @@
   }
   function anCellOfImg(x, y){ var A = AN; return Math.min(A.H - 1, Math.max(0, Math.floor(y / IMG_H * A.H))) * A.W + Math.min(A.W - 1, Math.max(0, Math.floor(x / IMG_W * A.W))); }
   function anImgOfCell(i){ var A = AN; return { x: ((i % A.W) + 0.5) / A.W * IMG_W, y: (Math.floor(i / A.W) + 0.5) / A.H * IMG_H }; }
+  var anExtraRef = null;     // a place to compare with that isn't a spot (a catch from the heat map)
   function anSpots(){
-    return waypoints.filter(function(w){ var t = wpType(w); return t !== 'meet' && t !== 'fara' && t !== 'hem' && !isExpired(w); })
-      .sort(function(a, b){ return (isMine(b) ? 1 : 0) - (isMine(a) ? 1 : 0); });
+    return (anExtraRef ? [anExtraRef] : []).concat(waypoints.filter(function(w){ var t = wpType(w); return t !== 'meet' && t !== 'fara' && t !== 'hem' && !isExpired(w); })
+      .sort(function(a, b){ return (isMine(b) ? 1 : 0) - (isMine(a) ? 1 : 0); }));
   }
   // the chosen filter -> a mask (1 = main colour, 2 = second colour), labels and a result text
   function anCompute(){
@@ -7404,6 +7487,7 @@
   });
   function anSetMode(m){
     anSet.mode = anSet.mode === m ? null : m; anSave(); anCtlMode = '#';
+    if (anSet.mode && hmOn) hmSetOn(false);      // (not together with the heat map)
     if (anSet.mode && !anShow){ anShow = true; toggleAnEl.checked = true; try { localStorage.setItem(SHOW_AN_KEY, '1'); } catch(e){} }
     anCompute();
   }
@@ -7426,7 +7510,7 @@
   function showAnPanel(open){
     if (open && !anPanel.classList.contains('show') && anPanel._resetSize) anPanel._resetSize();
     anPanel.classList.toggle('show', open);
-    if (open){ if (typeof toggleMsgPop === 'function') toggleMsgPop(false); anCtlMode = '#'; if (!anRes) anCompute(); else anRender(); }
+    if (open){ if (typeof toggleMsgPop === 'function') toggleMsgPop(false); if (hmPanel) hmShowPanel(false); anCtlMode = '#'; if (!anRes) anCompute(); else anRender(); }
   }
   anBtn.addEventListener('click', function(e){ e.stopPropagation(); showAnPanel(!anPanel.classList.contains('show')); });
   document.getElementById('anClose').addEventListener('click', function(){ showAnPanel(false); });
@@ -7768,6 +7852,501 @@
     return { k: ln.getAttribute('data-k'), t: ln.textContent, bubble: b.getAttribute('data-k'), o: +(b.style.opacity || 1) * +(ln.style.opacity || 1) }; }); };
   ltRender(); ltTick();
 
+  /* ================= Fångster (catches) for the heat map -- the data =================
+     Every catch, wherever it comes from, becomes the same small record (a "catch"):
+       { id, t (ms), comp, who, sp ('abborre' | 'gadda' | 'gos'), cm, lat, lon, px, py }
+     (px/py = its place on this lake's map picture). The heat map (68-heatmap.js) only ever sees
+     these -- so the SOURCE can change without touching it:
+       - now:    Firestore catches/<lake> = { rows: '<json [[t, comp, who, sp, cm, lat, lon], ...]>', n },
+                 filled by the admin from a CSV file (Inställningar -> Admin -> Fångster); one read.
+       - later:  a live database where the competitions register catches: write a new source with
+                 the same load(lakeId, cb) and point CATCH_SOURCE at it (tools/NOTES_HEATMAP.md).
+     Which lake a catch belongs to: its position (inside that lake's map) -- a lake name, when there
+     is one, must not say it's another lake (a lake next door inside the same map). */
+  var CATCH_CACHE_KEY = lakeKey('ffmap_catches_v1', 'catches_v1');
+  var catchData = null, catchLoading = false, catchErr = null, catchVer = 0, catchListeners = [];
+  function catchesChanged(){ catchVer++; catchListeners.forEach(function(f){ try { f(); } catch(e){} }); }
+
+  // --- turning anything into catches ---
+  function catchNum(v){ if (typeof v === 'number') return v; var n = parseFloat(String(v == null ? '' : v).trim().replace(',', '.')); return isFinite(n) ? n : null; }
+  function catchPlain(s){ return String(s || '').toLowerCase().replace(/[åä]/g, 'a').replace(/ö/g, 'o').replace(/[^a-z0-9]/g, ''); }
+  function catchSpecies(s){ var p = catchPlain(s); return p.indexOf('abbor') === 0 ? 'abborre' : p.indexOf('gad') === 0 ? 'gadda' : p.indexOf('gos') === 0 ? 'gos' : null; }
+  // one catch from a record with (more or less) these names -- the CSV's columns, or a future database's
+  function normCatch(o){
+    var g = function(){ for (var i = 0; i < arguments.length; i++){ var v = o[arguments[i]]; if (v !== undefined && v !== null && String(v).trim() !== '') return v; } return null; };
+    var t = g('t', 'timestamp', 'time', 'tid'), sp = catchSpecies(g('sp', 'species', 'art')), lat = catchNum(g('lat', 'latitude')), lon = catchNum(g('lon', 'lng', 'longitude'));
+    t = typeof t === 'number' ? t : Date.parse(String(t || ''));
+    if (!isFinite(t) || !sp || lat == null || lon == null || Math.abs(lat) > 90 || Math.abs(lon) > 180) return null;
+    var who = String(g('who', 'name', 'namn') || '').trim(), cm = catchNum(g('cm', 'length', 'langd')) || 0, comp = String(g('comp', 'competitionId', 'competition', 'tavling') || '').trim();
+    return { id: t + '|' + who + '|' + sp + '|' + cm, t: t, comp: comp, who: who, sp: sp, cm: cm, lat: lat, lon: lon, lake: String(g('lake', 'sjo') || '').trim() };
+  }
+  // a lake of the app whose map the place is inside (and whose name doesn't say otherwise)
+  function catchLakeOf(c){
+    for (var i = 0; i < LAKES.length; i++){
+      var L = LAKES[i], G = L.geo, N = Math.pow(2, G.zoom) * 256;
+      var x = (c.lon + 180) / 360 * N - G.originX, r = c.lat * Math.PI / 180;
+      var y = (1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2 * N - G.originY;
+      if (x < 0 || y < 0 || x >= G.fullW || y >= G.fullW * G.imgH / G.imgW) continue;
+      if (c.lake && catchPlain(c.lake) !== catchPlain(L.name) && catchPlain(c.lake) !== L.id) continue;
+      return L.id;
+    }
+    return null;
+  }
+  function catchPack(list){ return JSON.stringify(list.map(function(c){ return [c.t, c.comp, c.who, c.sp, c.cm, +c.lat.toFixed(6), +c.lon.toFixed(6)]; })); }
+  function catchUnpack(rows){
+    var a = []; try { a = JSON.parse(rows || '[]'); } catch(e){}
+    return a.map(function(r){ return normCatch({ t: r[0], comp: r[1], who: r[2], sp: r[3], cm: r[4], lat: r[5], lon: r[6] }); }).filter(Boolean);
+  }
+  function catchOnMap(list){
+    list.forEach(function(c){ var p = latLonToImgPx(c.lat, c.lon); c.px = p.x; c.py = p.y; });
+    return list.sort(function(a, b){ return a.t - b.t; });
+  }
+
+  // --- the source (now: Firestore catches/<lake>) ---
+  var CATCH_SOURCE = {
+    name: 'firestore',
+    load: function(lakeId, cb){
+      if (!USE_FIREBASE || !catchDb){ cb(new Error('offline')); return; }
+      catchDb.collection('catches').doc(lakeId).get().then(function(snap){
+        addUsage('r', 1);
+        cb(null, snap.exists ? catchUnpack(snap.data().rows) : []);
+      }).catch(function(err){ cb(err); });
+    }
+  };
+  function loadCatches(force){
+    if (catchLoading || (catchData && catchData.fresh && !force)) return;
+    if (!catchData){         // this phone's copy first (instant, and offline)
+      try { var c0 = JSON.parse(localStorage.getItem(CATCH_CACHE_KEY) || 'null'); if (c0){ catchData = { list: catchOnMap(catchUnpack(c0.rows)), fresh: false }; catchesChanged(); } } catch(e){}
+    }
+    catchLoading = true;
+    var tries = 0;
+    (function go(){
+      // (right after a start Firebase may not be signed in yet: wait a little)
+      if (!USE_FIREBASE && tries++ < 20){ setTimeout(go, 700); return; }
+      CATCH_SOURCE.load(LAKE_ID, function(err, list){
+        catchLoading = false;
+        if (err){ catchErr = err; if (!catchData) catchData = { list: [], fresh: false }; catchesChanged(); return; }
+        catchErr = null;
+        catchData = { list: catchOnMap(list), fresh: true };
+        try { localStorage.setItem(CATCH_CACHE_KEY, JSON.stringify({ at: Date.now(), rows: catchPack(list) })); } catch(e){}
+        catchesChanged();
+      });
+    })();
+  }
+
+  // --- the admin's CSV import: parse, sort into lakes, add the new ones (no duplicates) ---
+  function parseCsv(text){
+    var rows = [], row = [], f = '', q = false;
+    text = String(text).replace(/^\ufeff/, '');
+    var first = text.split(/\r?\n/)[0], delim = first.indexOf(';') > -1 && first.indexOf(',') < 0 ? ';' : ',';   // (Excel in Swedish saves with ;)
+    for (var i = 0; i < text.length; i++){
+      var ch = text[i];
+      if (q){ if (ch === '"'){ if (text[i + 1] === '"'){ f += '"'; i++; } else q = false; } else f += ch; continue; }
+      if (ch === '"') q = true;
+      else if (ch === delim){ row.push(f); f = ''; }
+      else if (ch === '\n' || ch === '\r'){ if (ch === '\r' && text[i + 1] === '\n') i++; row.push(f); rows.push(row); row = []; f = ''; }
+      else f += ch;
+    }
+    if (f !== '' || row.length){ row.push(f); rows.push(row); }
+    return rows;
+  }
+  // -> { byLake: { id: [catches] }, skipped: { noPos, otherLake, bad } }
+  function catchesFromCsv(text){
+    var rows = parseCsv(text), head = (rows.shift() || []).map(function(h){ return String(h).trim(); });
+    var out = { byLake: {}, skipped: { noPos: 0, otherLake: 0, bad: 0 }, total: 0 };
+    rows.forEach(function(r){
+      if (!r.some(function(v){ return String(v).trim() !== ''; })) return;
+      var o = {}; head.forEach(function(h, i){ if (h) o[h] = r[i]; });
+      out.total++;
+      var c = normCatch(o);
+      if (!c){ if (catchNum(o.lat) == null || catchNum(o.lng != null ? o.lng : o.lon) == null) out.skipped.noPos++; else out.skipped.bad++; return; }
+      var lk = catchLakeOf(c); if (!lk){ out.skipped.otherLake++; return; }
+      (out.byLake[lk] = out.byLake[lk] || []).push(c);
+    });
+    return out;
+  }
+  // add them to catches/<lake> (what's there + the new ones); cb(report lines)
+  function uploadCatches(parsed, cb){
+    var ids = Object.keys(parsed.byLake), lines = [], left = ids.length;
+    if (!ids.length){ cb(lines); return; }
+    if (!USE_FIREBASE || !catchDb){ cb(['Ingen anslutning till databasen – inget sparat.']); return; }
+    ids.forEach(function(id){
+      var name = (LAKES.filter(function(l){ return l.id === id; })[0] || {}).name || id, doc = catchDb.collection('catches').doc(id);
+      doc.get().then(function(snap){
+        addUsage('r', 1);
+        var have = snap.exists ? catchUnpack(snap.data().rows) : [], seen = {}, added = 0;
+        have.forEach(function(c){ seen[c.id] = 1; });
+        parsed.byLake[id].forEach(function(c){ if (!seen[c.id]){ seen[c.id] = 1; have.push(c); added++; } });
+        have.sort(function(a, b){ return a.t - b.t; });
+        if (!added){ lines.push(name + ': inga nya (' + have.length + ' sedan tidigare)'); return null; }
+        addUsage('w', 1);
+        return doc.set({ lake: id, n: have.length, rows: catchPack(have), updatedBy: userName || '', updatedAt: firebase.firestore.FieldValue.serverTimestamp() })
+          .then(function(){ lines.push(name + ': ' + added + ' nya (' + have.length + ' totalt)'); if (id === LAKE_ID){ catchData = null; loadCatches(true); } });
+      }).catch(function(err){
+        lines.push(name + ': kunde inte spara' + (err && err.code === 'permission-denied' ? ' – Firestore-reglerna saknar "catches"' : ' (' + ((err && err.code) || 'fel') + ')'));
+      }).then(function(){ if (--left === 0) cb(lines); });
+    });
+  }
+  var catchFileEl = document.getElementById('adminCatchFile'), catchStatusEl = document.getElementById('adminCatchStatus');
+  document.getElementById('adminCatchBtn').addEventListener('click', function(){ catchFileEl.value = ''; catchFileEl.click(); });
+  catchFileEl.addEventListener('change', function(){
+    var f = catchFileEl.files && catchFileEl.files[0]; if (!f) return;
+    catchStatusEl.hidden = false; catchStatusEl.textContent = 'Läser ' + f.name + '…';
+    var rd = new FileReader();
+    rd.onload = function(){
+      var p = catchesFromCsv(rd.result), n = 0; Object.keys(p.byLake).forEach(function(k){ n += p.byLake[k].length; });
+      var sk = p.skipped, skip = [];
+      if (sk.otherLake) skip.push(sk.otherLake + ' i sjöar som inte finns i appen');
+      if (sk.noPos) skip.push(sk.noPos + ' utan position');
+      if (sk.bad) skip.push(sk.bad + ' med okänd art eller tid');
+      catchStatusEl.textContent = p.total + ' rader, ' + n + ' i appens sjöar. Sparar…';
+      uploadCatches(p, function(lines){
+        catchStatusEl.innerHTML = lines.map(escHtml).join('<br>') + (skip.length ? '<br><span style="color:var(--text-muted)">Hoppade över: ' + escHtml(skip.join(', ')) + '.</span>' : '') +
+          (!lines.length ? 'Inga fångster i appens sjöar i filen.' : '');
+      });
+    };
+    rd.onerror = function(){ catchStatusEl.textContent = 'Kunde inte läsa filen.'; };
+    rd.readAsText(f, 'utf-8');
+  });
+  window.__ffCatches = function(){ return catchData ? catchData.list.map(function(c){ return { id: c.id, sp: c.sp, cm: c.cm, who: c.who, comp: c.comp }; }) : null; };
+  /* ================= Heatmap (fångster) =================
+     Last in the map-style list (hold the map-style button): a bottom panel like Kartanalys, the
+     map toned down the same way, and four ways to show the catches (66-catches.js):
+       Värme  -- a heat map (blue -> red), radius in metres + strength
+       Per art -- a heat map per species in its colour (abborre orange, gädda green, gös yellow)
+       Rutor  -- hexagons of 30/60/120 m on the map with the number of catches
+       Prickar -- a dot per catch (bigger fish = bigger dot), names if wanted
+     Filters: species, competition. A tap on the map where there are catches opens the catch
+     (who, when, depth, its place in the competition; ‹ › for the others there), with Åk hit and
+     Liknande. Not together with Kartanalys (both tone the map down). Off after a restart,
+     kept through a rotation. The panel closed: a "Heatmap" pill under the weather chip. */
+  var HM_KEY = lakeKey('ffmap_heatmap_v1', 'heatmap_v1');
+  var hmSet = { style: 'heat', sp: 'all', spOn: { abborre: 1, gadda: 1, gos: 1 }, comp: 'all', rad: 70, str: 50, hexM: 60, cnt: 1, big: 1, names: 0 };
+  try { var hsv = JSON.parse(localStorage.getItem(HM_KEY) || 'null'); if (hsv) for (var hk in hsv) hmSet[hk] = hsv[hk]; } catch(e){}
+  function hmSave(){ try { localStorage.setItem(HM_KEY, JSON.stringify(hmSet)); } catch(e){} }
+  var hmFitPending = false;  // (turned on by hand: show the catches if none is on screen)
+  var hmOn = false, hmHeatCache = null, hmHexCells = null, hmCardList = null, hmCardI = 0, hmPendingCard = null;
+  var hmCanvas = document.getElementById('hmLayer'), hmCtx = hmCanvas.getContext('2d');
+  var hmSatCanvas = document.getElementById('hmSat'), hmSatCtx = hmSatCanvas.getContext('2d');
+  var hmPanel = document.getElementById('hmPanel'), hmCard = document.getElementById('hmCard'), hmPill = document.getElementById('hmPill');
+  var HM_COL = { abborre: [255, 122, 26], gadda: [53, 210, 74], gos: [255, 210, 26] };
+  var HM_SP = [['abborre', 'Abborre', 'abborren'], ['gadda', 'Gädda', 'gäddan'], ['gos', 'Gös', 'gösen']];
+  var HM_MON = ['jan', 'feb', 'mar', 'apr', 'maj', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
+  function hmSpName(sp, i){ var s = HM_SP.filter(function(x){ return x[0] === sp; })[0]; return s ? s[i || 1] : sp; }
+
+  // "regnaren1" -> "Regnaren 1", "vagsfjarden4" -> "Vågsfjärden 4", "malarenOpen" -> "Malaren Open"
+  function hmCompName(id){
+    if (!id) return 'Utan tävling';
+    var m = /^(.*?)(\d+)$/.exec(id), base = m ? m[1] : id, num = m ? ' ' + m[2] : '';
+    var nice = (catchPlain(base) === LAKE_ID || catchPlain(base) === catchPlain(LAKE.name)) ? LAKE.name
+      : base.replace(/([a-zåäö])([A-ZÅÄÖ])/g, '$1 $2').replace(/^./, function(c){ return c.toUpperCase(); });
+    return nice + num;
+  }
+  function hmDateRange(list){
+    var t0 = Infinity, t1 = -Infinity; list.forEach(function(c){ t0 = Math.min(t0, c.t); t1 = Math.max(t1, c.t); });
+    var a = new Date(t0), b = new Date(t1);
+    if (a.toDateString() === b.toDateString()) return a.getDate() + ' ' + HM_MON[a.getMonth()];
+    if (a.getMonth() === b.getMonth()) return a.getDate() + '–' + b.getDate() + ' ' + HM_MON[a.getMonth()];
+    return a.getDate() + ' ' + HM_MON[a.getMonth()] + '–' + b.getDate() + ' ' + HM_MON[b.getMonth()];
+  }
+  function hmWhen(t){      // "26/9 13:00" (short: it's in a small tile); another year: "26/9 -25 13:00"
+    var d = new Date(t), y = d.getFullYear() !== new Date().getFullYear() ? ' -' + String(d.getFullYear()).slice(2) : '';
+    return d.getDate() + '/' + (d.getMonth() + 1) + y + ' ' + ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+  }
+  function hmAll(){ return catchData ? catchData.list : []; }
+  function hmComps(){
+    var by = {}; hmAll().forEach(function(c){ (by[c.comp] = by[c.comp] || []).push(c); });
+    return Object.keys(by).map(function(k){ return { id: k, list: by[k] }; }).sort(function(a, b){ return b.list[0].t - a.list[0].t; });
+  }
+  function hmInComp(c){ return hmSet.comp === 'all' || c.comp === hmSet.comp; }
+  function hmVisible(){
+    return hmAll().filter(function(c){
+      if (!hmInComp(c)) return false;
+      return hmSet.style === 'species' ? !!hmSet.spOn[c.sp] : (hmSet.sp === 'all' || c.sp === hmSet.sp);
+    });
+  }
+
+  // ---- on / off, the panel, the pill ----
+  function hmSetOn(on, openPanel, restoring){
+    var was = hmOn; hmOn = !!on;
+    if (hmOn){
+      if (!was && !restoring) hmFitPending = true;
+      loadCatches(false);
+      if (anSet.mode){ anSet.mode = null; anSave(); anCtlMode = '#'; anCompute(); }   // (not together with Kartanalys)
+      showAnPanel(false);
+    } else { hmShowPanel(false); hmCloseCard(); }
+    hmCanvas.classList.toggle('on', hmOn); hmSatCanvas.classList.toggle('on', hmOn);
+    hmPill.hidden = !hmOn;
+    hmHeatCache = null;
+    if (openPanel) hmShowPanel(true);
+    hmRenderPanel(); hmDraw(); hmFitIfNone();
+  }
+  // fewer than half of the catches on screen (above the panel)? Move the map so they all are
+  function hmFitIfNone(){
+    if (!hmFitPending || !hmOn || !catchData || !catchData.fresh && catchLoading) return;
+    var L = hmVisible(); if (!L.length){ if (catchData.fresh) hmFitPending = false; return; }
+    hmFitPending = false;
+    var top = 150, bot = hmPanel.classList.contains('show') ? Math.min(stageH * 0.62, hmPanel.offsetHeight || stageH * 0.5) + 20 : 200, side = 40;
+    var seen = L.filter(function(c){ var x = originX + c.px * scale, y = originY + c.py * scale; return x > 0 && x < stageW && y > top && y < stageH - bot; }).length;
+    if (seen >= L.length / 2) return;
+    var x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    L.forEach(function(c){ x0 = Math.min(x0, c.px); y0 = Math.min(y0, c.py); x1 = Math.max(x1, c.px); y1 = Math.max(y1, c.py); });
+    var sc = Math.min((stageW - 2 * side) / Math.max(1, x1 - x0), (stageH - top - bot) / Math.max(1, y1 - y0));
+    sc = Math.max(minScale, Math.min(maxScale, Math.min(sc, fitScale * 6)));
+    animateTo(sc, stageW / 2 - (x0 + x1) / 2 * sc, top + (stageH - top - bot) / 2 - (y0 + y1) / 2 * sc, 600);
+  }
+  function hmShowPanel(open){
+    if (open && !hmOn){ hmSetOn(true, true); return; }
+    if (open){
+      if (!hmPanel.classList.contains('show') && hmPanel._resetSize) hmPanel._resetSize();
+      showAnPanel(false); hmCloseCard();
+      if (typeof toggleMsgPop === 'function') toggleMsgPop(false);
+      hmRenderPanel();
+    }
+    hmPanel.classList.toggle('show', !!open);
+  }
+  hmPill.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
+  hmPill.addEventListener('click', function(e){ e.stopPropagation(); hmShowPanel(!hmPanel.classList.contains('show')); });
+
+  function hmRenderPanel(){
+    Array.prototype.forEach.call(hmPanel.querySelectorAll('#hmStyleSeg button'), function(b){ b.classList.toggle('on', b.getAttribute('data-s') === hmSet.style); });
+    var st = hmSet.style, comps = hmComps();
+    if (hmSet.comp !== 'all' && !comps.some(function(c){ return c.id === hmSet.comp; })) hmSet.comp = 'all';
+    document.getElementById('hmLegend').innerHTML = (st === 'heat' || st === 'hex') ? '<span>Få</span><span class="bar"></span><span>Många fångster</span>' : '';
+    var inComp = hmAll().filter(hmInComp), cnt = { abborre: 0, gadda: 0, gos: 0 };
+    inComp.forEach(function(c){ cnt[c.sp]++; });
+    var dot = function(sp){ return '<span class="hmSpDot" style="background:rgb(' + HM_COL[sp] + ')"></span>'; };
+    document.getElementById('hmSpHead').textContent = st === 'species' ? 'Arter (en färg var)' : 'Art';
+    document.getElementById('hmSp').innerHTML = st === 'species'
+      ? HM_SP.map(function(x){ return '<button type="button" data-spt="' + x[0] + '" class="' + (hmSet.spOn[x[0]] ? 'on' : '') + '">' + dot(x[0]) + x[1] + ' ' + cnt[x[0]] + '</button>'; }).join('')
+      : [['all', 'Alla']].concat(HM_SP).map(function(x){ return '<button type="button" data-sp="' + x[0] + '" class="' + (hmSet.sp === x[0] ? 'on' : '') + '">' + x[1] + '</button>'; }).join('');
+    document.getElementById('hmComp').innerHTML = '<button type="button" data-comp="all" class="' + (hmSet.comp === 'all' ? 'on' : '') + '">Alla</button>' +
+      comps.map(function(c){ return '<button type="button" data-comp="' + escHtml(c.id) + '" class="' + (hmSet.comp === c.id ? 'on' : '') + '">' + escHtml(hmCompName(c.id)) + ' · ' + hmDateRange(c.list) + '</button>'; }).join('');
+    var rng = function(k, l, min, max, stp){ return '<div class="anRange"><label>' + l + '</label><input type="range" data-r="' + k + '" min="' + min + '" max="' + max + '" step="' + stp + '" value="' + hmSet[k] + '"><output id="hmOut_' + k + '">' + hmOutTxt(k) + '</output></div>'; };
+    var tog = function(k, l){ return '<button type="button" data-t="' + k + '" class="' + (hmSet[k] ? 'on' : '') + '">' + (hmSet[k] ? '✓ ' : '') + l + '</button>'; };
+    document.getElementById('hmCtl').innerHTML =
+      st === 'heat' ? rng('rad', 'Radie', 20, 200, 10) + rng('str', 'Styrka', 0, 100, 5)
+      : st === 'species' ? rng('rad', 'Radie', 20, 200, 10)
+      : st === 'hex' ? '<div class="anSub">Rutans storlek</div><div class="anSeg">' + [30, 60, 120].map(function(m){ return '<button type="button" data-hx="' + m + '" class="' + (hmSet.hexM === m ? 'on' : '') + '">' + m + ' m</button>'; }).join('') + '</div><div class="anChips">' + tog('cnt', 'Visa antal') + '</div>'
+      : '<div class="anChips">' + tog('big', 'Större prick = större fisk') + tog('names', 'Visa namn') + '</div>';
+    var res = document.getElementById('hmResult'), all = hmAll();
+    if (!catchData) res.innerHTML = 'Hämtar fångster…';
+    else if (!all.length) res.innerHTML = catchErr ? 'Kunde inte hämta fångsterna (ingen anslutning?).' : 'Inga fångster i ' + escHtml(LAKE.name) + ' än.<span class="note">Admin läser in dem i Inställningar → Admin → Fångster.</span>';
+    else {
+      var v = hmVisible(), c2 = { abborre: 0, gadda: 0, gos: 0 }; v.forEach(function(c){ c2[c.sp]++; });
+      res.innerHTML = '<b>' + v.length + ' fångster</b> i ' + escHtml(LAKE.name) + ' · ' + HM_SP.map(function(x){ return c2[x[0]] + ' ' + x[1].toLowerCase(); }).join(', ') +
+        '<span class="note">' + (st === 'dots' ? 'Tryck på en prick för allt om fångsten.' : st === 'hex' ? 'Tryck på en ruta för fångsterna i den.' : 'Tryck på kartan där det är färg för fångsterna där.') + '</span>';
+    }
+  }
+  function hmOutTxt(k){ return k === 'rad' ? hmSet.rad + ' m' : hmSet.str < 34 ? 'Svag' : hmSet.str < 67 ? 'Mellan' : 'Stark'; }
+  hmPanel.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
+  hmPanel.addEventListener('click', function(e){
+    var t = e.target.closest ? e.target.closest('button') : null; if (!t) return;
+    var a;
+    if ((a = t.getAttribute('data-s'))) hmSet.style = a;
+    else if ((a = t.getAttribute('data-sp'))) hmSet.sp = a;
+    else if ((a = t.getAttribute('data-spt'))) hmSet.spOn[a] = hmSet.spOn[a] ? 0 : 1;
+    else if ((a = t.getAttribute('data-comp'))) hmSet.comp = a;
+    else if ((a = t.getAttribute('data-hx'))) hmSet.hexM = +a;
+    else if ((a = t.getAttribute('data-t'))) hmSet[a] = hmSet[a] ? 0 : 1;
+    else return;
+    hmSave(); hmHeatCache = null; hmRenderPanel(); hmDraw();
+  });
+  hmPanel.addEventListener('input', function(e){
+    var k = e.target.getAttribute && e.target.getAttribute('data-r'); if (!k) return;
+    hmSet[k] = +e.target.value; hmSave();
+    var o = document.getElementById('hmOut_' + k); if (o) o.textContent = hmOutTxt(k);
+    hmHeatCache = null; hmDraw();
+  });
+  document.getElementById('hmClose').addEventListener('click', function(){ hmShowPanel(false); });
+  document.getElementById('hmOff').addEventListener('click', function(){ hmSetOn(false); });
+  sheetSwipe(hmPanel, function(){ hmShowPanel(false); });
+
+  // ---- drawing (a screen canvas like Kartanalys: the map toned down, the catches on top) ----
+  function hmRamp(v){   // transparent blue -> cyan -> yellow -> orange -> red
+    var S = [[0, [40, 90, 255, 0]], [0.12, [40, 120, 255, 110]], [0.3, [0, 220, 230, 170]], [0.55, [255, 230, 40, 205]], [0.8, [255, 120, 20, 225]], [1, [230, 30, 40, 240]]];
+    for (var k = 1; k < S.length; k++) if (v <= S[k][0]){
+      var t = (v - S[k - 1][0]) / (S[k][0] - S[k - 1][0]), A = S[k - 1][1], B = S[k][1];
+      return [A[0] + (B[0] - A[0]) * t, A[1] + (B[1] - A[1]) * t, A[2] + (B[2] - A[2]) * t, A[3] + (B[3] - A[3]) * t];
+    }
+    return S[S.length - 1][1];
+  }
+  // a heat layer (every STEP css px, see viewStep): soft spots of `rad` metres, coloured by pal(0..1)
+  function hmHeatLayer(pts, W, H, STEP, mpp, pal){
+    var vw = Math.ceil(W / STEP), vh = Math.ceil(H / STEP), cv = document.createElement('canvas'); cv.width = vw; cv.height = vh;
+    var o = cv.getContext('2d'), R = Math.max(6, hmSet.rad / mpp) / STEP, a = 0.12 + 0.43 * hmSet.str / 100;
+    pts.forEach(function(s){
+      var x = s.x / STEP, y = s.y / STEP; if (x < -R || y < -R || x > vw + R || y > vh + R) return;
+      var g = o.createRadialGradient(x, y, 0, x, y, R); g.addColorStop(0, 'rgba(0,0,0,' + a + ')'); g.addColorStop(1, 'rgba(0,0,0,0)');
+      o.fillStyle = g; o.fillRect(x - R, y - R, 2 * R, 2 * R);
+    });
+    var im = o.getImageData(0, 0, vw, vh), d = im.data;
+    for (var i = 0; i < d.length; i += 4){
+      var v = d[i + 3] / 255; if (v < 0.02){ d[i + 3] = 0; continue; }
+      var c = pal(v); d[i] = c[0]; d[i + 1] = c[1]; d[i + 2] = c[2]; d[i + 3] = c[3];
+    }
+    o.putImageData(im, 0, 0);
+    return cv;
+  }
+  function hmHexOf(xm, ym, R){           // map metres -> the hexagon (axial q, r) it's in
+    var q = (Math.sqrt(3) / 3 * xm - ym / 3) / R, r = (2 / 3 * ym) / R, s = -q - r;
+    var rq = Math.round(q), rr = Math.round(r), rs = Math.round(s), dq = Math.abs(rq - q), dr = Math.abs(rr - r), ds = Math.abs(rs - s);
+    if (dq > dr && dq > ds) rq = -rr - rs; else if (dr > ds) rr = -rq - rs;
+    return { q: rq, r: rr };
+  }
+  function hmDraw(){
+    var dpr = window.devicePixelRatio || 1, W = stage.clientWidth, H = stage.clientHeight;
+    [hmCanvas, hmSatCanvas].forEach(function(c){ if (c.width !== Math.round(W * dpr) || c.height !== Math.round(H * dpr)){ c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); } });
+    hmCtx.setTransform(dpr, 0, 0, dpr, 0, 0); hmCtx.clearRect(0, 0, W, H);
+    hmSatCtx.setTransform(dpr, 0, 0, dpr, 0, 0); hmSatCtx.clearRect(0, 0, W, H);
+    hmHexCells = null;
+    if (!hmOn || !(W >= 2 && H >= 2)) return;
+    // the map toned down and greyed like in Kartanalys (Inställningar "Mörkare")
+    hmSatCtx.fillStyle = 'rgba(128,128,128,' + Math.min(1, anSet.dim + 0.2) + ')'; hmSatCtx.fillRect(0, 0, W, H);
+    hmCtx.fillStyle = 'rgba(6,14,20,' + anSet.dim + ')'; hmCtx.fillRect(0, 0, W, H);
+    var L = hmVisible(); if (!L.length) return;
+    var mpp = WEB_METERS_PER_PX / scale, st = hmSet.style;
+    var P = L.map(function(c){ return { c: c, x: originX + c.px * scale, y: originY + c.py * scale }; });
+    if (st === 'heat' || st === 'species'){
+      var STEP = viewStep(W, H), key = [originX.toFixed(1), originY.toFixed(1), scale.toFixed(5), W, H, STEP, catchVer, JSON.stringify(hmSet)].join('|');
+      if (!hmHeatCache || hmHeatCache.key !== key){
+        var cv;
+        if (st === 'heat') cv = hmHeatLayer(P, W, H, STEP, mpp, hmRamp);
+        else {
+          cv = document.createElement('canvas'); cv.width = Math.ceil(W / STEP); cv.height = Math.ceil(H / STEP);
+          var o = cv.getContext('2d'); o.globalCompositeOperation = 'lighter';
+          HM_SP.forEach(function(x){
+            var col = HM_COL[x[0]], S2 = P.filter(function(p){ return p.c.sp === x[0]; }); if (!S2.length) return;
+            o.drawImage(hmHeatLayer(S2, W, H, STEP, mpp, function(v){ var k = Math.min(1, v * 1.6); return [col[0], col[1], col[2], 60 + 180 * k]; }), 0, 0);
+          });
+        }
+        hmHeatCache = { key: key, cv: cv, STEP: STEP };
+      }
+      hmCtx.imageSmoothingEnabled = true;
+      hmCtx.drawImage(hmHeatCache.cv, 0, 0, hmHeatCache.cv.width * hmHeatCache.STEP, hmHeatCache.cv.height * hmHeatCache.STEP);
+    } else if (st === 'hex'){
+      var R = hmSet.hexM / Math.sqrt(3), mI = WEB_METERS_PER_PX, cells = {}, mx = 0;
+      L.forEach(function(c){ var h = hmHexOf(c.px * mI, c.py * mI, R), k = h.q + ',' + h.r; (cells[k] = cells[k] || { q: h.q, r: h.r, list: [] }).list.push(c); });
+      for (var k in cells) mx = Math.max(mx, cells[k].list.length);
+      var Rpx = R / mI * scale;
+      hmCtx.textAlign = 'center'; hmCtx.textBaseline = 'middle'; hmCtx.font = '700 ' + Math.max(8, Math.min(13, Rpx * 0.75)) + 'px Calibri,"Segoe UI",sans-serif';
+      for (var k2 in cells){
+        var h2 = cells[k2], cx = originX + R * Math.sqrt(3) * (h2.q + h2.r / 2) / mI * scale, cy = originY + R * 1.5 * h2.r / mI * scale;
+        h2.x = cx; h2.y = cy;
+        if (cx < -Rpx || cy < -Rpx || cx > W + Rpx || cy > H + Rpx) continue;
+        var col = hmRamp(0.2 + 0.8 * Math.sqrt(h2.list.length / mx));
+        hmCtx.beginPath();
+        for (var a = 0; a < 6; a++){ var an = Math.PI / 180 * (60 * a - 30); hmCtx.lineTo(cx + Math.max(1, Rpx - 1) * Math.cos(an), cy + Math.max(1, Rpx - 1) * Math.sin(an)); }
+        hmCtx.closePath();
+        hmCtx.fillStyle = 'rgba(' + (col[0] | 0) + ',' + (col[1] | 0) + ',' + (col[2] | 0) + ',0.75)'; hmCtx.fill();
+        hmCtx.lineWidth = 1; hmCtx.strokeStyle = 'rgba(255,255,255,0.55)'; hmCtx.stroke();
+        if (hmSet.cnt && Rpx >= 8){ hmCtx.fillStyle = '#0B2A3A'; hmCtx.fillText(String(h2.list.length), cx, cy + 0.5); }
+      }
+      hmHexCells = { R: R, cells: cells, rpx: Rpx };
+    } else {
+      P.slice().sort(function(a, b){ return b.c.cm - a.c.cm; }).forEach(function(p){
+        if (p.x < -20 || p.y < -20 || p.x > W + 20 || p.y > H + 20) return;
+        var col = HM_COL[p.c.sp], r = hmDotR(p.c);
+        hmCtx.beginPath(); hmCtx.arc(p.x, p.y, r, 0, 7); hmCtx.fillStyle = 'rgba(' + col + ',0.9)'; hmCtx.fill();
+        hmCtx.lineWidth = 1.3; hmCtx.strokeStyle = 'rgba(11,42,58,0.9)'; hmCtx.stroke();
+        if (hmSet.names && p.c.who){
+          hmCtx.font = '600 11px Calibri,"Segoe UI",sans-serif'; hmCtx.textAlign = 'left'; hmCtx.textBaseline = 'middle';
+          hmCtx.lineWidth = 3; hmCtx.strokeStyle = 'rgba(6,14,20,0.85)'; hmCtx.strokeText(p.c.who, p.x + r + 3, p.y);
+          hmCtx.fillStyle = '#fff'; hmCtx.fillText(p.c.who, p.x + r + 3, p.y);
+        }
+      });
+    }
+    // the catch that's open: a white ring
+    var sel = hmCardList && hmCard.classList.contains('show') ? hmCardList[hmCardI] : null;
+    if (sel){
+      var sx = originX + sel.px * scale, sy = originY + sel.py * scale;
+      hmCtx.beginPath(); hmCtx.arc(sx, sy, (st === 'dots' ? hmDotR(sel) : 6) + 6, 0, 7);
+      hmCtx.lineWidth = 3; hmCtx.strokeStyle = '#fff'; hmCtx.stroke();
+    }
+  }
+  function hmDotR(c){ return hmSet.big ? Math.max(3.5, Math.min(11, 3 + c.cm / 14)) : 5.5; }
+
+  // ---- a tap on the map: the catches there (from scheduleProbeTap) ----
+  function hmTapAt(sx, sy){
+    if (!hmOn || !catchData) return false;
+    var list = [], L = hmVisible();
+    if (hmSet.style === 'hex' && hmHexCells){
+      var mI = WEB_METERS_PER_PX, h = hmHexOf((sx - originX) / scale * mI, (sy - originY) / scale * mI, hmHexCells.R), cell = hmHexCells.cells[h.q + ',' + h.r];
+      if (cell) list = cell.list.slice().sort(function(a, b){ return b.cm - a.cm; });
+    } else {
+      var best = null, bd = Infinity;
+      L.forEach(function(c){ var d = Math.hypot(originX + c.px * scale - sx, originY + c.py * scale - sy); if (d < bd){ bd = d; best = c; } });
+      var lim = hmSet.style === 'dots' ? hmDotR(best || { cm: 0 }) + 12 : 30;
+      if (best && bd <= lim){
+        // it and the others within 50 m of it, nearest the finger first
+        list = L.filter(function(c){ return hmMetres(c, best) <= 50; }).sort(function(a, b){
+          return Math.hypot(originX + a.px * scale - sx, originY + a.py * scale - sy) - Math.hypot(originX + b.px * scale - sx, originY + b.py * scale - sy); });
+      }
+    }
+    if (!list.length){
+      if (hmCard.classList.contains('show')){ hmCloseCard(); return true; }   // (a tap beside: just closes the catch)
+      return false;
+    }
+    hmOpenCard(list, 0);
+    return true;
+  }
+  function hmMetres(a, b){ return Math.hypot(a.px - b.px, a.py - b.py) * WEB_METERS_PER_PX; }
+
+  // ---- the catch panel ----
+  function hmOpenCard(list, i){
+    hmCardList = list; hmCardI = i || 0;
+    hmPanel.classList.remove('show');
+    if (!hmCard.classList.contains('show') && hmCard._resetSize) hmCard._resetSize();
+    hmFillCard(); hmCard.classList.add('show'); hmDraw();
+  }
+  function hmCloseCard(){ var was = hmCard.classList.contains('show'); hmCard.classList.remove('show'); hmCardList = null; if (was) hmDraw(); }
+  function hmOrdinal(n){ return n + ((n % 10 === 1 || n % 10 === 2) && n % 100 !== 11 && n % 100 !== 12 ? ':a' : ':e'); }
+  function hmFillCard(){
+    var c = hmCardList[hmCardI]; if (!c) return;
+    var same = hmAll().filter(function(x){ return x.comp === c.comp && x.sp === c.sp; }).sort(function(a, b){ return b.cm - a.cm; });
+    var rank = 1; same.forEach(function(x){ if (x.cm > c.cm) rank++; });
+    var near = hmAll().filter(function(x){ return x !== c && x.comp === c.comp && hmMetres(x, c) <= 50; }).length;
+    var dep = depthAtLatLon(c.lat, c.lon);
+    document.getElementById('hmCardKick').textContent = 'FÅNGST · ' + hmCompName(c.comp).toUpperCase();
+    document.getElementById('hmCardTitle').innerHTML = '<span class="hmSpDot" style="width:13px;height:13px;background:rgb(' + HM_COL[c.sp] + ')"></span>' + hmSpName(c.sp) + (c.cm ? ' ' + String(c.cm).replace('.', ',') + ' cm' : '');
+    document.getElementById('hmCardData').innerHTML = [['Vem', c.who || '–'], ['När', hmWhen(c.t)], ['Djup', dep != null ? fmtDepth(dep) + ' m' : '–'], ['Plats', rank + ' av ' + same.length]]
+      .map(function(t){ return '<div class="wpTile"><i>' + t[0] + '</i><b>' + escHtml(t[1]) + '</b></div>'; }).join('');
+    document.getElementById('hmCardNote').textContent = (rank === 1 ? 'Största ' : hmOrdinal(rank) + ' största ') + hmSpName(c.sp, 2) + ' i tävlingen' +
+      ' · ' + (near ? near + ' fångster till inom 50 m' : 'inga andra fångster inom 50 m');
+    document.getElementById('hmCardNav').hidden = hmCardList.length < 2;
+    document.getElementById('hmCardPos').textContent = (hmCardI + 1) + ' av ' + hmCardList.length + ' här';
+  }
+  hmCard.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
+  sheetSwipe(hmCard, hmCloseCard);
+  document.getElementById('hmCardClose').addEventListener('click', hmCloseCard);
+  document.getElementById('hmCardPrev').addEventListener('click', function(){ if (!hmCardList) return; hmCardI = (hmCardI - 1 + hmCardList.length) % hmCardList.length; hmFillCard(); hmDraw(); });
+  document.getElementById('hmCardNext').addEventListener('click', function(){ if (!hmCardList) return; hmCardI = (hmCardI + 1) % hmCardList.length; hmFillCard(); hmDraw(); });
+  document.getElementById('hmCardGo').addEventListener('click', function(){
+    var c = hmCardList && hmCardList[hmCardI]; if (!c) return;
+    hmCloseCard(); startNav(hmSpName(c.sp) + ' ' + c.cm + ' cm', c.px, c.py);
+  });
+  document.getElementById('hmCardLike').addEventListener('click', function(){
+    var c = hmCardList && hmCardList[hmCardI]; if (!c) return;
+    // Liknande (Kartanalys) with the catch as the place to compare with -- the heat map goes off
+    anExtraRef = { id: 'catch:' + c.id, name: 'Fångst: ' + hmSpName(c.sp) + ' ' + c.cm + ' cm', by: c.who, lat: c.lat, lon: c.lon, type: 'mark' };
+    hmSetOn(false); anLikeSpot(anExtraRef);
+  });
+
+  catchListeners.push(function(){
+    hmHeatCache = null; hmRenderPanel(); hmDraw(); hmFitIfNone();
+    if (hmPendingCard && catchData && catchData.list.length){       // (a catch that was open before a rotation)
+      var ids = hmPendingCard.ids, L = hmAll().filter(function(c){ return ids.indexOf(c.id) >= 0; });
+      L.sort(function(a, b){ return ids.indexOf(a.id) - ids.indexOf(b.id); });
+      if (L.length) hmOpenCard(L, Math.min(hmPendingCard.i || 0, L.length - 1));
+      hmPendingCard = null;
+    }
+  });
+  window.__ffHeat = function(){
+    return { on: hmOn, style: hmSet.style, hexR: hmHexCells ? hmHexCells.rpx : null, panel: hmPanel.classList.contains('show'), pill: !hmPill.hidden, n: catchData ? hmVisible().length : null,
+      hex: hmHexCells ? Object.keys(hmHexCells.cells).map(function(k){ var h = hmHexCells.cells[k]; return { n: h.list.length, x: h.x, y: h.y }; }) : null,
+      card: hmCard.classList.contains('show') && hmCardList ? { i: hmCardI, n: hmCardList.length, id: hmCardList[hmCardI].id } : null };
+  };
+  window.__ffHeatScreen = function(id){ var c = hmAll().filter(function(x){ return x.id === id; })[0]; return c ? [originX + c.px * scale, originY + c.py * scale] : null; };
   /* ---------------- init ---------------- */
   var appStarted = false; // true once geolocation + Firebase have been started for this page load
   function continueBootAfterName(){
@@ -7844,6 +8423,7 @@
       };
       st.menu = menuPanel.classList.contains('show');
       st.an = anPanel.classList.contains('show');
+      if (hmOn) st.hm = { panel: hmPanel.classList.contains('show'), card: hmCardList && hmCard.classList.contains('show') ? { ids: hmCardList.map(function(c){ return c.id; }), i: hmCardI } : null };
       if (helpView.classList.contains('show')) st.help = helpLastPlace || helpPlace();
       st.wx = wxCard.classList.contains('show');
       st.probe = probe;
@@ -7890,6 +8470,7 @@
       if (r.wx) setWxOpen(true);
       if (r.probe && typeof r.probe.x === 'number'){ setProbe(r.probe); probeEl.classList.remove('drop'); }
       if (r.an) showAnPanel(true);
+      if (r.hm){ hmSetOn(true, r.hm.panel, true); if (r.hm.card) hmPendingCard = r.hm.card; }
       if (r.sheet && r.sheet.id){
         pendingSheetRestore = { s: r.sheet, until: Date.now() + 10000 };
         tryRestoreSheet();

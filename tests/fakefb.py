@@ -158,10 +158,16 @@ FAKE_FIREBASE_JS = r"""
       if (window.__cfgDenied){ var e = new Error('denied'); e.code = 'permission-denied'; return Promise.reject(e); }
       window.__setCfg(Object.assign({}, window.__cfgDoc || {}, { posIntervalS: d.posIntervalS })); return Promise.resolve();
     } }; } };
+  // catches/<lake> (the heat map's catches): cfg.catches = { regnaren: { rows: '<json>', n: 88 }, ... }
+  window.__catchDocs = JSON.parse(JSON.stringify(cfg.catches || {})); window.__catchSets = []; window.__catchGets = 0;
+  var catchesCol = { doc: function(id){ return {
+    get: function(){ window.__catchGets++; var d = window.__catchDocs[id]; return Promise.resolve({ exists: !!d, data: function(){ return d; }, metadata: { fromCache: false } }); },
+    set: function(d){ window.__catchSets.push({ id: id, n: d.n }); window.__catchDocs[id] = JSON.parse(JSON.stringify(Object.assign({}, d, { updatedAt: null }))); return Promise.resolve(); }
+  }; } };
   var fake = {
     initializeApp: function(){ return {}; },
     auth: function(){ return { signInAnonymously: function(){ return Promise.resolve(); }, onAuthStateChanged: function(cb){ cb({ uid:'anon' }); } }; },
-    firestore: function(){ return { collection: function(n){ return n === 'positions' ? posCol : (n === 'usage' ? usageCol : (n === 'config' ? configCol : wpCol)); }, enablePersistence: function(){ return Promise.resolve(); } }; }
+    firestore: function(){ return { collection: function(n){ return n === 'positions' ? posCol : (n === 'usage' ? usageCol : (n === 'config' ? configCol : (n === 'catches' ? catchesCol : wpCol))); }, enablePersistence: function(){ return Promise.resolve(); } }; }
   };
   fake.firestore.FieldValue = { serverTimestamp: function(){ return {}; } };
   fake.firestore.Timestamp = { fromMillis: function(ms){ return { __epoch: true, ms: ms }; } };

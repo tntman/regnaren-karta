@@ -128,7 +128,10 @@
     mapTypePop.innerHTML = MAP_STYLES.map(function(st){
       return '<button type="button" class="styleOpt' + (st.id === mapStyle ? ' active' : '') + '" data-style="' + st.id + '"><img src="' + thumbFile(st.id) + '" alt="">' +
         '<span class="soText"><span class="soName">' + st.name + '</span></span><span class="soCheck"></span></button>';
-    }).join('');
+    }).join('') +
+      // last: the heat map of the catches -- not a map picture: it opens its own panel (68-heatmap.js)
+      '<button type="button" class="styleOpt hmOpt' + (hmOn ? ' active' : '') + '" data-heat="1"><span class="hmThumb"></span>' +
+      '<span class="soText"><span class="soName">Heatmap</span><span class="soDesc">' + (hmOn ? 'På · öppnar menyn' : 'Fångster · öppnar meny') + '</span></span><span class="hmArrow">›</span></button>';
   }
   mapTypeBtn.addEventListener('pointerdown', function(e){
     e.stopPropagation();
@@ -153,6 +156,7 @@
     e.stopPropagation();
     var b = e.target.closest ? e.target.closest('.styleOpt') : null;
     if (!b) return;
+    if (b.getAttribute('data-heat')){ openMapTypePop(false); hmShowPanel(true); return; }
     var id = b.getAttribute('data-style');
     openMapTypePop(false);
     if (id !== mapStyle) loadMapStyle(id, false);
