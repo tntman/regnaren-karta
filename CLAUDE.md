@@ -77,7 +77,7 @@ All text i appen är på svenska. Svara Filip på svenska, kort och tydligt.
 - **Lodet** visar djup · sträcka SJÖVÄGEN · restid. Rutt: grovt rutnät (~9 m), Dijkstra från
   lodet (en gång per lod) → sedan "gå nedför" från båten vid varje GPS-fix; håller avstånd
   från land; räta ut med siktlinjer. Fart: aktuell om ≥1,5 kn, annars snitt/marschfart.
-- **Typer:** Markering, Abborre, Gädda, Gös, Fara (röd stoppskylt/8-kant med vitt X, `.wpFara`,
+- **Typer:** Markering, Abborre, Gädda, Gös, Hem (blått hus `--t-hem`, hemmet/bryggan; inte i Liknande), Fara (röd stoppskylt/8-kant med vitt X, `.wpFara`,
   likadan för allas, ~andras storlek + lite, centrerad, ALDRIG dold av filter – ingen Fara-rad i Filter), Träffpunkt (`meet`:
   fyr med ringar, `expiresAt` = +1 h, en per person, bara ägaren/admin tar bort; utgångna
   döljs och ägarens app raderar dem).
@@ -109,9 +109,16 @@ All text i appen är på svenska. Svara Filip på svenska, kort och tydligt.
   Toppar & hålor, Växtkant, Hård botten, Vindkant, Liknande + förinställt Abborre/Gädda/Gös
   (tumregler från vanliga fiskeråd, INTE data). Djupreglage = stapel i djupfärgerna med två handtag
   (`anDualRow`), "Mörkare" (standard 72 %) + gråtoning (`#anSat`, mix-blend-mode saturation),
-  reglage för toppar/hålor och hård botten (hårdhet + djup), "Växter" = var det finns växter.
+  reglage för hård botten (hårdhet + djup), "Växter" = var det finns växter. **Toppar & hålor =
+  prominens** (`anDome`: h-dome med morfologisk rekonstruktion, bucket-kö i cm; land räknas HÖGT
+  för toppar och LÅGT för hålor så grunda hyllor längs land inte blir toppar): "kapsyler" ≥ 0,25 m
+  vars topp reser sig ≥ reglaget (standard 0,6 m / hålor 0,8 m). Samma färger/etiketter som förut.
+  "Mörkare" ligger i Inställningar (`#anDimSet`), inte i panelen.
   Liknande: välj vad som jämförs (djup, lutning, botten, växter, topp/håla) och område (bara
-  platsen/25/50/100 m, `anSimFeatures`). Panelen dras ner för att stänga. Räknas i telefonen på djupnätet (`anBase`: lutning,
+  platsen/25/50/100 m = snittet inom radien, `anSimFeatures`), med förklaring. Platsen själv lyser
+  och får en rosa ring (`.anLbl.simRef`), men står inte i listan (inget inom 60 m); listan = de 5
+  områden med mest lika ställe (små områden lite lägre). "Gå till" (`#anRefGo`) visar platsen.
+  Panelen: dra = mindre, snärt/hela vägen = stäng (`sheetSwipe`, tools/UI.md). Räknas i telefonen på djupnätet (`anBase`: lutning,
   "högre/lägre än runt om" ~28 m, avstånd till land) + `docs/lakes/<id>/bottom_v<V>.txt`
   (vegetation bit 3, hårdhet 1–4 bit 0–2, RLE 250 n n; görs av genesis_render, även `grid`) + vinden.
   Canvas `#anLayer` per skärmpunkt (som lä), etiketter i `#anLabels`. Val per sjö (`lakeKey`).
@@ -123,9 +130,11 @@ All text i appen är på svenska. Svara Filip på svenska, kort och tydligt.
   (Åk hit, 🔎 Hitta liknande → Kartanalys "Liknande" för platsen).
 - **UI-byggstenar** (bottenpanel + dra-för-att-stänga `sheetSwipe`, chips, reglage med två handtag,
   faktarutor, knapprutnätet nere till höger, notiser): **`tools/UI.md`** – följ den för nya delar.
-- **Snabbmeddelanden** (`#msgBtn` längst ner i mitten): skickas med din position
-  (`positions/<du>.msg/msgAt`), bubbla vid båten 15 min; tryck egen = ta bort (för alla),
-  andras = dölj för dig. Bara vid sjön.
+- **Snabbmeddelanden** (`#msgBtn` längst ner i mitten): Fisk!!!, Kommer, Åker in, Mat?, Allt är
+  problem, Bajs. Skickas med din position (`positions/<du>.msg/msgAt`), bubbla vid båten 15 min,
+  tonas till ~45 %; de första 5 min en snurrande regnbågskant (`.msgRb`, SVG-mask av bubblans form
+  inkl. flärpen – `msgRainbow`). Tryck = rutan `#msgCard` (skrivet kl, försvinner om, Åk hit = lodet
+  på båten, Dölj för mig / Ta bort för egna). Bara vid sjön.
 - **Åskvarning** (Inställningar: Av/5/10/20 km, ljud, vibration; standard 10 km): nytt nedslag
   < 5 min och inom avståndet → `#ltAlarm` + pip (WebAudio, låses upp vid första tryck) +
   vibration (finns inte på iPhone). Varje nedslag larmar en gång.

@@ -398,11 +398,12 @@ def s_meddelanden(p):
     b, ctx, pg = open_app(p, boats=[{'uid': 'kalle', 'name': 'Calle', 'lat': c[0], 'lon': c[1], 'ageMin': 0}])
     check_water(pg, c)
     bring(pg, mix(ME, c, 0.5), (195, 470))
-    rec = Rec(pg, Y(250, 844)); rec.hold(600)
+    rec = Rec(pg); rec.hold(600)
     tap_el(pg, rec, '#msgBtn', after=900)
-    tap_el(pg, rec, '#msgPop button:has-text("Hugg")', after=1600)
-    pg.evaluate("c => __addPos({ uid: 'kalle', name: 'Calle', lat: c[0], lon: c[1], msg: 'Kommer 🚤' })", list(c)); rec.hold(2200)
-    tap_el(pg, rec, '.msgBub.mine', after=1500)
+    tap_el(pg, rec, '#msgPop button:has-text("Fisk")', after=1600)
+    pg.evaluate("c => __addPos({ uid: 'kalle', name: 'Calle', lat: c[0], lon: c[1], msg: 'Mat? 🍔', msgAgeMin: 6 })", list(c)); rec.hold(2000)
+    tap_el(pg, rec, '.msgBub:not(.mine)', after=2000)                 # Calle's: when, how long left, Åk hit
+    tap_el(pg, rec, '#msgCardGo', after=2000)
     rec.save('meddelanden'); b.close()
 
 def s_installera(p):

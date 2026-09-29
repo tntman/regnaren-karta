@@ -18,10 +18,15 @@ Exempel: platsens ruta `#wpSheet`, Kartanalys `#anPanel`.
   och en `transition` på ~0,25 s.
 - Ett litet grepp överst: `<div class="grab">` (38 × 5 px, ljus, rundad).
 - Bottenmarginal: `calc(env(safe-area-inset-bottom,0px) + 16px)`.
-- **Dra ner för att stänga:** `sheetSwipe(panel, stäng)` (i skriptet). Panelen följer
-  fingret nedåt; släpps den långt nog (eller snärtas) stängs den, annars studsar den
-  tillbaka. Fält, knappar, reglage och `.noSwipe` startar ingen dragning. Lägg till
-  `.dragging{transition:none}` för panelen.
+- **Dra för att ändra storlek / stänga:** `sheetSwipe(panel, stäng)` (i skriptet).
+  Dra lugnt nedåt = panelen blir **mindre** och innehållet skrollar (klassen `.scrolls`);
+  dra uppåt = större igen (högst sin naturliga höjd). **Snärt** nedåt, eller dra den
+  nästan hela vägen ner (< 130 px kvar) = **stäng**. Greppet (`.grab`/`.sheetGrab`) drar
+  alltid; resten av panelen bara när inget i den behöver skrollas. Fält, knappar,
+  reglage och `.noSwipe` startar ingen dragning. `panel._resetSize()` = full storlek
+  igen (görs när den öppnas). CSS: `.dragging{transition:none}`, `touch-action:none`
+  (`pan-y` när `.scrolls`), greppet alltid `touch-action:none`.
+  Används av Kartanalys `#anPanel`, platsens ruta `#wpSheet` och meddelanderutan `#msgCard`.
 - `pointerdown` på panelen ska `stopPropagation()` (annars tolkas det som ett tryck på kartan).
 - Liggande läge: panelen till höger, `width:420px`.
 

@@ -380,6 +380,7 @@
   .visSwatch.ws-gos{background-color:var(--t-gos);}
   .visSwatch.ws-fara{background-color:var(--t-fara);color:#fff;}
   .visSwatch.ws-meet{background-color:var(--t-meet);}
+  .visSwatch.ws-hem{background-color:var(--t-hem);color:#fff;}
   /* others' spots (log list + the "Andras" toggle): same look as their pins */
   .visSwatch--other{border-color:rgba(10,20,26,.75);}
   .visSwatch--other svg{display:none;}
@@ -662,7 +663,7 @@
      Gädda, Gös (fish). Owner = the edge: dark on your own, white on others'. */
   /* strong, saturated colours that stand out from the depth colours (the
      white outline + dark edge separate them even over the shallows) */
-  :root{ --t-mark:#E4E9EC; --t-abborre:#FF7A1A; --t-gadda:#35D24A; --t-gos:#FFD21A; --t-fara:#E5322D; --t-meet:#FFB23F; }
+  :root{ --t-mark:#E4E9EC; --t-abborre:#FF7A1A; --t-gadda:#35D24A; --t-gos:#FFD21A; --t-fara:#E5322D; --t-meet:#FFB23F; --t-hem:#3A86FF; }
   /* "Fara": a red stop sign with a white X -- not a drop like the other spots, the same
      for everyone's, never hidden by a filter, on top of the other spots. About the size
      of others' pins, a bit bigger; follows "Storlek på fiskeplatser". Centred on the spot. */
@@ -689,6 +690,8 @@
   .wpPin--abborre{background-color:var(--t-abborre);}
   .wpPin--gadda{background-color:var(--t-gadda);}
   .wpPin--gos{background-color:var(--t-gos);}
+  .wpPin--hem{background-color:var(--t-hem);}
+  .wpPin--hem .pinHead svg{color:#fff;width:17px;height:17px;}
   .wpPin--mark .pinHead svg{width:15px;height:15px;}
   /* OTHERS' spots: the same drop and style as your own, but 70 % of the size
      and with no icon -- just the type colour. Drawn under your own. (Outline
@@ -780,6 +783,8 @@
   .typeSeg button[data-type="fara"]{--tc:var(--t-fara);}
   .typeSeg button[data-type="fara"].active{color:#fff;}
   .typeSeg button[data-type="meet"]{--tc:var(--t-meet);}
+  .typeSeg button[data-type="hem"]{--tc:var(--t-hem);}
+  .typeSeg button[data-type="hem"].active{color:#fff;}
   .typeSeg button.active{background:var(--tc);border-color:var(--tc);color:var(--ink);}
   .typeSeg button:disabled{opacity:.45;cursor:default;}
   .typeSeg button.active:disabled{opacity:1;}
@@ -1282,10 +1287,11 @@
   .sheetRow--go .btnGhost{flex:1;}
   /* ---- "Håll skärmen tänd" on: a yellow sun by your name; tap = off (+ a note) ---- */
   #headerUserRow{display:flex;align-items:center;gap:7px;}
-  #wakeBadge{pointer-events:auto;width:22px;height:22px;padding:0;border-radius:50%;border:1.5px solid #FFD21A;background:rgba(255,210,26,.18);color:#FFD21A;
+  #wakeBadge{pointer-events:auto;width:17px;height:17px;padding:0;border-radius:50%;border:1.5px solid #FFD21A;background:rgba(255,210,26,.18);color:#FFD21A;
     display:flex;align-items:center;justify-content:center;margin-top:1px;box-shadow:0 0 8px rgba(255,210,26,.5);-webkit-tap-highlight-color:transparent;cursor:pointer;}
   #wakeBadge[hidden]{display:none;}
-  #wakeBadge svg{width:14px;height:14px;}
+  #wakeBadge svg{width:11px;height:11px;}
+  @media (orientation:landscape) and (max-height:520px){ #wakeNote{top:calc(env(safe-area-inset-top,0px) + 110px);} }
   #wakeNote{position:absolute;left:14px;right:14px;top:calc(env(safe-area-inset-top,0px) + 96px);z-index:30;max-width:400px;display:none;
     background:rgba(11,42,58,.96);border:1px solid rgba(255,210,26,.6);border-radius:14px;padding:11px 40px 11px 14px;color:var(--offwhite);
     box-shadow:0 8px 24px rgba(0,0,0,.5);font-size:13px;line-height:1.4;transition:opacity .8s;}
@@ -1346,6 +1352,46 @@
   .helpCard li.hit{animation:helpHit 2.2s ease;}
   @keyframes helpHit{0%,40%{background:rgba(232,163,61,.35);}100%{background:transparent;}}
   .helpDefs li{margin:4px 0;}
+
+  /* ---- quick messages: fading, the rainbow edge while new, the panel when tapped ---- */
+  .msgBub{transition:opacity 1s;}
+  .msgRb{position:absolute;left:-3px;top:-3px;pointer-events:none;
+    background:conic-gradient(from var(--rba, 0deg),#ff004c,#ff9f00,#ffee00,#27e23f,#00c8ff,#6a5cff,#ff00c8,#ff004c);
+    -webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;animation:rbSpin 2.2s linear infinite;}
+  @property --rba{syntax:'<angle>';initial-value:0deg;inherits:false;}
+  @keyframes rbSpin{to{--rba:360deg;}}
+  #msgCard{position:absolute;left:0;right:0;bottom:0;z-index:27;background:var(--navy);border-top:1px solid rgba(255,255,255,.14);border-radius:18px 18px 0 0;
+    padding:8px 16px calc(env(safe-area-inset-bottom,0px) + 16px);box-shadow:0 -10px 30px rgba(0,0,0,.45);transform:translateY(105%);transition:transform .25s ease;overflow-y:auto;touch-action:none;}
+  #msgCard.show{transform:none;}
+  #msgCard.dragging{transition:none;}
+  #msgCard .grab{width:38px;height:5px;border-radius:3px;background:rgba(255,255,255,.25);margin:0 auto 10px;}
+  #msgCardClose{position:absolute;right:10px;top:10px;width:30px;height:30px;border-radius:50%;border:none;background:rgba(255,255,255,.08);color:var(--offwhite);font-size:15px;cursor:pointer;}
+  #msgCardWho{font-size:12px;letter-spacing:.06em;font-weight:700;color:var(--text-muted);}
+  #msgCardTxt{font-size:23px;font-weight:700;margin:4px 0 8px;}
+  .msgCardMeta{display:flex;justify-content:space-between;gap:8px;font-size:13.5px;color:#dbe4e7;}
+  .msgCardBar{height:5px;border-radius:3px;background:rgba(255,255,255,.12);margin:7px 0 12px;overflow:hidden;}
+  .msgCardBar i{display:block;height:100%;background:var(--amber);}
+  .msgCardBtns{display:flex;gap:8px;}
+  .msgCardBtns button{flex:1;padding:10px;border-radius:11px;border:none;font:inherit;font-weight:700;font-size:14px;background:rgba(255,255,255,.08);color:var(--offwhite);cursor:pointer;}
+  .msgCardBtns button.a{background:var(--amber);color:var(--navy);}
+  .msgCardBtns button[hidden]{display:none;}
+  @media (orientation:landscape) and (max-height:520px){ #msgCard{left:auto;width:420px;} }
+  /* ---- panels that can be dragged smaller: the grip always drags; once smaller, the rest scrolls ---- */
+  #anPanel, #wpSheet{touch-action:none;}
+  #anPanel.scrolls, #wpSheet.scrolls, #msgCard.scrolls{touch-action:pan-y;}
+  #anPanel .grab, #wpSheet .sheetGrab, #msgCard .grab{touch-action:none;}
+  #wpSheet{overflow-y:auto;max-height:88vh;}
+  /* ---- Liknande: the spot you start from (a pink ring spreading out), "Gå till", what "area" means ---- */
+  .anRefRow{display:flex;gap:8px;align-items:center;margin-top:8px;}
+  .anRefRow #anRefSel{margin-top:0;flex:1;min-width:0;}
+  #anRefGo{flex:0 0 auto;border:1px solid rgba(255,80,160,.7);background:rgba(255,80,160,.18);color:#fff;border-radius:9px;padding:8px 12px;font:inherit;font-weight:700;font-size:13px;cursor:pointer;}
+  .anNote{font-size:11.5px;color:var(--text-muted);line-height:1.4;margin-top:8px;}
+  .anNote b{color:#dbe4e7;} .anNote i{font-style:italic;}
+  .anLbl.simRef{width:0;height:0;padding:0;border:none;background:none;box-shadow:none;pointer-events:none;}
+  .anLbl.simRef::before, .anLbl.simRef::after{content:'';position:absolute;left:-26px;top:-26px;width:52px;height:52px;border-radius:50%;border:3px solid #ff50a0;
+    animation:simRing 2s ease-out infinite;box-sizing:border-box;}
+  .anLbl.simRef::after{animation-delay:1s;}
+  @keyframes simRing{0%{transform:scale(.25);opacity:1;}100%{transform:scale(1.6);opacity:0;}}
 </style>
 </head>
 <body>
@@ -1453,6 +1499,13 @@
         </div>
         <div class="styleList" id="mapStyleList" role="radiogroup" aria-label="Kartstil"></div>
         <div class="styleMsg" id="mapStyleMsg" hidden></div>
+      </div>
+      <div class="settingsRow" style="flex-direction:column;align-items:stretch;" id="anDimRow">
+        <div class="settingsRowText">
+          <div class="settingsRowTitle">Kartanalys: tona ner resten av kartan</div>
+          <div class="settingsRowDesc">Hur mörk och grå kartan blir utanför det Kartanalys hittar.</div>
+        </div>
+        <div class="anRange"><label for="anDimSet">Mörkare</label><input type="range" id="anDimSet" min="0.3" max="0.92" step="0.02"><output id="anDimOut"></output></div>
       </div>
       <div class="settingsRow" style="flex-direction:column;align-items:stretch;" id="ltAlarmRow">
         <div class="settingsRowText">
@@ -1712,6 +1765,13 @@
   </button>
   <div id="msgPop" role="menu" aria-label="Skicka snabbmeddelande"></div>
   <div id="msgToast" role="status"></div>
+  <div id="msgCard" role="dialog" aria-label="Meddelande"><div class="grab"></div>
+    <button type="button" id="msgCardClose" aria-label="Stäng">✕</button>
+    <div id="msgCardWho"></div><div id="msgCardTxt"></div>
+    <div class="msgCardMeta"><span id="msgCardWhen"></span><span id="msgCardLeft"></span></div>
+    <div class="msgCardBar"><i id="msgCardBar"></i></div>
+    <div class="msgCardBtns"><button type="button" id="msgCardGo" class="a">➤ Åk hit</button><button type="button" id="msgCardDrop">Dölj för mig</button></div>
+  </div>
   <div id="anPanel" role="dialog" aria-label="Kartanalys">
     <div class="grab"></div>
     <div class="anHead"><span>KARTANALYS – HITTA STÄLLEN</span><button type="button" id="anClear">Rensa</button><button type="button" id="anClose" aria-label="Stäng">✕</button></div>
@@ -1976,7 +2036,7 @@
         <ul>
           <li><b class="hA">Håll fingret</b> på kartan där platsen ska vara.</li>
           <li>Eller tryck <b class="hA">＋</b> (nere till höger) – platsen hamnar där du är.</li>
-          <li>Välj typ: <b>Markering</b> (neutral prick), <b>Abborre</b>, <b>Gädda</b> eller <b>Gös</b> – eller Fara/Träffpunkt (se nedan). Skriv ett namn och tryck <b>Spara</b>.</li>
+          <li>Välj typ: <b>Markering</b> (neutral prick), <b>Abborre</b>, <b>Gädda</b>, <b>Gös</b> eller <b>Hem</b> (blått hus – hemmet eller bryggan) – eller Fara/Träffpunkt (se nedan). Skriv ett namn och tryck <b>Spara</b>.</li>
         </ul>
         <p class="helpSub">Ändra och ta bort</p>
         <div class="helpAnim"><img loading="lazy" width="432" height="935" src="help/andra.webp" alt="Ändra och ta bort en plats"></div>
@@ -2042,10 +2102,10 @@
         <div class="helpAnim"><img loading="lazy" width="432" height="935" src="help/analys.webp" alt="Kartanalys"></div>
         <ul>
           <li><b class="hA">Tryck</b> på förstoringsglaset nere till höger. Välj vad du vill hitta – det som matchar lyser, resten av kartan tonas ner.</li>
-          <li><b>Djup</b> – ett djupintervall (dra i reglagen). <b>Branta kanter</b> – där botten sluttar mest, valfritt djup. <b>Toppar &amp; hålor</b> – grynnor mitt i sjön och gropar; tryck på en etikett för lodet.</li>
+          <li><b>Djup</b> – ett djupintervall (dra i reglagen). <b>Branta kanter</b> – där botten sluttar mest, valfritt djup. <b>Toppar &amp; hålor</b> – grynnor mitt i sjön och gropar: hur mycket en topp reser sig över den lägsta "sadeln" runt den (grunda hyllor längs land räknas inte); reglagen ställer hur många meter. Tryck på en etikett för lodet.</li>
           <li><b>Växter</b> – där ekolodet sett växtlighet. <b>Hård botten</b> – välj hur hård och på vilket djup. <b>Vindkant</b> – stränder vinden blåser mot just nu. Toppar &amp; hålor har reglage för hur mycket högre/lägre än runt om.</li>
-          <li><b>Liknande</b> – välj en fiskeplats (eller <b>🔎 Hitta liknande</b> i platsens ruta) och vad som jämförs: djup, lutning, botten, växter, topp/håla – bara platsen eller ett område runt den (25–100 m). Träffarna får <b>Åk hit</b>.</li>
-          <li><b>Mörkare</b> ställer hur mycket resten av kartan tonas ner. Dra ner panelen för att stänga den.</li>
+          <li><b>Liknande</b> – välj en fiskeplats (eller <b>🔎 Hitta liknande</b> i platsens ruta) och vad som jämförs: djup, lutning, botten, växter, topp/håla. <b>Bara platsen</b> = det som finns under pinnen; <b>25–100 m</b> = snittet inom den radien (liknande omgivningar). Platsen själv får en rosa ring (<b>Gå till</b> visar den), listan visar de mest lika områdena, bäst först – med <b>Åk hit</b>.</li>
+          <li>Hur mycket resten av kartan tonas ner ställer du i <b>Inställningar</b>. Dra panelen nedåt för att göra den mindre (resten skrollar), snärta eller dra hela vägen ner för att stänga.</li>
           <li><b>Abborre, Gädda, Gös</b> – förinställda kombinationer. De bygger på vanliga fiskeråd (tumregler), inte på fångster – se dem som tips.</li>
           <li>Visa/dölj med <b>Kartanalys</b> i Filter. <b>Rensa</b> tar bort den.</li>
         </ul>
@@ -2063,11 +2123,11 @@
 
       <section class="helpCard" id="help-meddelanden">
         <h3><span class="hIc">💬</span>Snabbmeddelanden</h3>
-        <div class="helpAnim"><img loading="lazy" width="432" height="658" src="help/meddelanden.webp" alt="Snabbmeddelanden"></div>
+        <div class="helpAnim"><img loading="lazy" width="432" height="935" src="help/meddelanden.webp" alt="Snabbmeddelanden"></div>
         <ul>
-          <li><b class="hA">Tryck</b> på pratbubblan längst ner och välj: Hugg!, Kommer, Åker in, Fika? eller Behöver hjälp.</li>
-          <li>Meddelandet syns vid din båt för alla i 15 minuter.</li>
-          <li>Tryck på din bubbla för att ta bort den. Trycker du på någon annans döljs den för dig.</li>
+          <li><b class="hA">Tryck</b> på pratbubblan längst ner och välj: Fisk!!!, Kommer, Åker in, Mat?, Allt är problem eller Bajs.</li>
+          <li>Meddelandet syns vid din båt för alla i 15 minuter och tonas sakta bort. De första 5 minuterna snurrar en tunn regnbågskant runt det – då är det nytt.</li>
+          <li><b class="hA">Tryck</b> på ett meddelande: när det skrevs och när det försvinner, <b>➤ Åk hit</b> (lodet på båten) och <b>Dölj för mig</b> – eller <b>Ta bort</b> om det är ditt.</li>
           <li>Fungerar när du är vid sjön.</li>
         </ul>
       </section>
@@ -2095,7 +2155,7 @@
           <li><b>Blixtar</b> – blixtnedslag i realtid, varning och radar.</li>
           <li><b>Kartanalys</b> – visar/döljer det du valt i Kartanalys (inställningen finns kvar).</li>
           <li><b>Håll skärmen tänd</b> – telefonen somnar inte medan appen är öppen.</li>
-          <li><b>Typer</b> – visa/dölj Markering, Abborre, Gädda, Gös, Träffpunkt (Fara syns alltid).</li>
+          <li><b>Typer</b> – visa/dölj Markering, Abborre, Gädda, Gös, Träffpunkt, Hem (Fara syns alltid).</li>
           <li><b>Andras 50 % / 100 %</b> – hur tydligt andras platser syns.</li>
           <li>En orange prick på Filter betyder att något är dolt.</li>
         </ul>
@@ -2114,7 +2174,7 @@
         <h3><span class="hIc">⚙️</span>Inställningar</h3>
         <div class="helpAnim"><img loading="lazy" width="432" height="935" src="help/installningar.webp" alt="Inställningar"></div>
         <ul>
-          <li>Namn, storlek på fiskeplatser, kartstil och kartans färg, spår, pulserande ring, marschfart, <b>åskvarning</b> (avstånd, ljud, vibration).</li>
+          <li>Namn, storlek på fiskeplatser, kartstil och kartans färg, spår, pulserande ring, marschfart, <b>åskvarning</b> (avstånd, ljud, vibration), hur mörk kartan blir i <b>Kartanalys</b>.</li>
           <li><b>Ladda ner sjön för offline</b> – gör det hemma innan en tur med dålig täckning.</li>
         </ul>
       </section>
@@ -2151,6 +2211,7 @@
       <button type="button" data-type="gos" role="radio"><span class="typeDot"></span>Gös</button>
       <button type="button" data-type="fara" role="radio"><span class="typeDot"></span>Fara</button>
       <button type="button" data-type="meet" role="radio"><span class="typeDot"></span>Träffpunkt 1 h</button>
+      <button type="button" data-type="hem" role="radio"><span class="typeDot"></span>Hem</button>
     </div>
     <div class="sheetRow sheetRow--go">
       <button id="wpGo" class="btnGhost" type="button">➤ Åk hit</button>
@@ -2856,7 +2917,8 @@
     gadda:   { label: 'Gädda' },
     gos:     { label: 'Gös' },
     fara:    { label: 'Fara' },          // a shoal, a rock ... something to steer clear of
-    meet:    { label: 'Träffpunkt' }     // a beacon for everyone (lunch on an island ...), gone after an hour
+    meet:    { label: 'Träffpunkt' },    // a beacon for everyone (lunch on an island ...), gone after an hour
+    hem:     { label: 'Hem' }            // home / the jetty
   };
   var MEET_MS = 60 * 60 * 1000;
   function isExpired(wp){ return wpType(wp) === 'meet' && wp.expiresAt && Date.now() > wp.expiresAt; }
@@ -2874,7 +2936,8 @@
   var FARA_SIGN = '<svg viewBox="0 0 24 24"><path d="M8 1.6h8l6.4 6.4v8L16 22.4H8L1.6 16V8z" fill="#E5322D" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"></path>' +
     '<path d="M8.2 8.2l7.6 7.6M15.8 8.2l-7.6 7.6" stroke="#fff" stroke-width="3" stroke-linecap="round"></path></svg>';
   var MEET_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"><path d="M6 21V4"></path><path d="M6 4h11l-2.5 4L17 12H6"></path></svg>'; // flag
-  function wpIconSvg(type){ return type === 'mark' ? MARK_SVG : type === 'fara' ? FARA_SVG : type === 'meet' ? MEET_SVG : FISH_SVG; }
+  var HOME_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"><path d="M4 11.5 12 5l8 6.5"></path><path d="M6.5 10v8.5h11V10"></path><path d="M10.5 18.5v-4.5h3v4.5"></path></svg>'; // a house
+  function wpIconSvg(type){ return type === 'mark' ? MARK_SVG : type === 'fara' ? FARA_SVG : type === 'meet' ? MEET_SVG : type === 'hem' ? HOME_SVG : FISH_SVG; }
 
   function loadLocalWaypoints(){
     try {
@@ -3778,6 +3841,7 @@
   });
 
   function openSheetForWp(wp, isNew){
+    if (wpSheet._resetSize && !wpSheet.classList.contains('show')) wpSheet._resetSize();
     editingId = wp.id;
     editingIsNew = !!isNew;
     editingType = wpType(wp);
@@ -3791,7 +3855,7 @@
     showEditingType();
     // "Åk hit" / "Hitta liknande": for a spot that's already there (not one you're just adding)
     document.querySelector('.sheetRow--go').hidden = !!isNew;
-    document.getElementById('wpLike').hidden = wpType(wp) === 'meet' || wpType(wp) === 'fara';
+    document.getElementById('wpLike').hidden = wpType(wp) === 'meet' || wpType(wp) === 'fara' || wpType(wp) === 'hem';
     if (!pinEls[wp.id]) renderWaypoints(); // draw it even if a filter (Mina / Andras / type) hides it
     editingWpInfo = { lat: wp.lat, lon: wp.lon, mine: mine, by: wp.by, createdAt: wp.createdAt };
     refreshSheetMeta();
@@ -3861,42 +3925,7 @@
      sheet follows the finger (only downwards); let go after pulling it
      far enough -- or with a quick flick -- and it closes, otherwise it
      springs back. */
-  var sheetDrag = null;
-  wpSheet.addEventListener('pointerdown', function(e){
-    if (!wpSheet.classList.contains('show')) return;
-    if (e.target.closest && e.target.closest('input, button, textarea')) return;
-    sheetDrag = { id: e.pointerId, y0: e.clientY, dy: 0, t0: performance.now(), lastY: e.clientY, lastT: performance.now(), v: 0 };
-    try { wpSheet.setPointerCapture(e.pointerId); } catch(err){}
-    wpSheet.classList.add('dragging');
-    sheetBackdrop.classList.add('dragging');
-  });
-  wpSheet.addEventListener('pointermove', function(e){
-    if (!sheetDrag || e.pointerId !== sheetDrag.id) return;
-    var now = performance.now();
-    var dy = Math.max(0, e.clientY - sheetDrag.y0);
-    if (now > sheetDrag.lastT) sheetDrag.v = (e.clientY - sheetDrag.lastY) / (now - sheetDrag.lastT); // px/ms, + = down
-    sheetDrag.lastY = e.clientY; sheetDrag.lastT = now;
-    sheetDrag.dy = dy;
-    wpSheet.style.transform = 'translateY(' + dy + 'px)';
-    var h = wpSheet.offsetHeight || 1;
-    sheetBackdrop.style.opacity = String(Math.max(0, 1 - dy / h));
-  });
-  function endSheetDrag(e){
-    if (!sheetDrag || e.pointerId !== sheetDrag.id) return;
-    var d = sheetDrag;
-    sheetDrag = null;
-    wpSheet.classList.remove('dragging');
-    sheetBackdrop.classList.remove('dragging');
-    var h = wpSheet.offsetHeight || 1;
-    var close = d.dy > Math.min(110, h * 0.3) || (d.v > 0.6 && d.dy > 20);
-    // clearing the inline styles lets the normal transition take over from
-    // wherever the finger left the sheet: back up, or on down and away
-    wpSheet.style.transform = '';
-    sheetBackdrop.style.opacity = '';
-    if (close) cancelSheet();
-  }
-  wpSheet.addEventListener('pointerup', endSheetDrag);
-  wpSheet.addEventListener('pointercancel', endSheetDrag);
+  sheetSwipe(wpSheet, function(){ cancelSheet(); });   // (drag = smaller, flick / all the way = close -- tools/UI.md)
 
   function applySnapshotDocs(snap){
     waypoints = [];
@@ -4311,6 +4340,11 @@
      made by tools/help_anim.py (docs/help/*.webp; one that's missing is just left out). */
   // newest first. t: 'new' (NYTT), 'better' (BÄTTRE), 'fixed' (FIXAT)
   var HELP_NEWS = [
+    { d: '2026-09-29', t: 'better', x: 'Snabbmeddelanden: Fisk!!!, Mat?, Allt är problem, Bajs; tryck för tid och <b>Åk hit</b>; tonas bort, regnbågskant när de är nya' },
+    { d: '2026-09-29', t: 'new',    x: 'Ny typ av plats: <b>Hem</b> (hemmet eller bryggan)' },
+    { d: '2026-09-29', t: 'better', x: 'Toppar &amp; hålor räknas som hur mycket de reser sig över omgivningen – hittar grynnorna mitt i sjön' },
+    { d: '2026-09-29', t: 'better', x: 'Liknande: platsen själv markerad med rosa ring, "Gå till", förklaring av område' },
+    { d: '2026-09-29', t: 'better', x: 'Rutor nertill: dra = mindre, snärta = stäng. "Mörkare" för Kartanalys i Inställningar' },
     { d: '2026-09-29', t: 'new',    x: '<b>Sök</b> i hjälpen, och varje filter förklarat' },
     { d: '2026-09-29', t: 'better', x: 'Platsens ruta visar vad som finns under: djup, lutning, botten, växter, topp/håla' },
     { d: '2026-09-29', t: 'better', x: 'Kartanalys: djupreglage som skalan, mörkare/ljusare karta, reglage för toppar/hålor och hård botten, dra ner för att stänga' },
@@ -6646,12 +6680,20 @@
      follows the finger (down only); let go far enough down -- or with a quick flick --
      and it closes, otherwise it springs back. */
   function sheetSwipe(el, close){
+    // Drag the panel down: it gets smaller and what's in it scrolls; drag it back up: bigger again.
+    // A quick flick down -- or dragging it (almost) all the way down -- closes it.
+    // (From its grip anywhere; from the rest of it only while nothing in it needs scrolling.)
     var d = null;
+    el._resetSize = function(){ el.style.height = ''; el.style.maxHeight = ''; el.classList.remove('scrolls'); };
     el.addEventListener('pointerdown', function(e){
       if (!el.classList.contains('show')) return;
-      if (e.target.closest && e.target.closest('input, button, textarea, select, .anDual, .noSwipe')) return;
-      if (el.scrollTop > 0) return;                                    // (scrolled inside: that's scrolling)
-      d = { id: e.pointerId, y0: e.clientY, dy: 0, lastY: e.clientY, lastT: performance.now(), v: 0 };
+      var grip = e.target.closest && e.target.closest('.grab, .sheetGrab');
+      if (!grip && e.target.closest && e.target.closest('input, button, textarea, select, .anDual, .noSwipe')) return;
+      if (!grip && el.scrollHeight > el.clientHeight + 2) return;             // (it scrolls: that's scrolling)
+      var h0 = el.getBoundingClientRect().height;
+      el.style.maxHeight = 'none';
+      var natural = Math.min(el.scrollHeight, window.innerHeight * 0.88);
+      d = { id: e.pointerId, y0: e.clientY, h0: h0, max: Math.max(h0, natural), dy: 0, lastY: e.clientY, lastT: performance.now(), v: 0 };
       try { el.setPointerCapture(e.pointerId); } catch(err){}
       el.classList.add('dragging');
     });
@@ -6659,15 +6701,16 @@
       if (!d || e.pointerId !== d.id) return;
       var now = performance.now();
       if (now > d.lastT) d.v = (e.clientY - d.lastY) / (now - d.lastT);
-      d.lastY = e.clientY; d.lastT = now;
-      d.dy = Math.max(0, e.clientY - d.y0);
-      el.style.transform = 'translateY(' + d.dy + 'px)';
+      d.lastY = e.clientY; d.lastT = now; d.dy = e.clientY - d.y0;
+      el.style.height = Math.max(40, Math.min(d.max, d.h0 - d.dy)) + 'px';
     });
     function end(e){
       if (!d || e.pointerId !== d.id) return;
-      var h = el.offsetHeight || 1, shut = d.dy > Math.min(110, h * 0.3) || (d.v > 0.6 && d.dy > 20);
-      d = null; el.classList.remove('dragging'); el.style.transform = '';
-      if (shut) close();
+      var h = el.getBoundingClientRect().height, dd = d;
+      d = null; el.classList.remove('dragging');
+      if ((dd.v > 0.7 && dd.dy > 25) || h < 130){ close(); setTimeout(el._resetSize, 320); return; }
+      if (h >= dd.max - 2){ el._resetSize(); return; }                      // (back to full size)
+      el.classList.toggle('scrolls', el.scrollHeight > el.clientHeight + 2);
     }
     el.addEventListener('pointerup', end);
     el.addEventListener('pointercancel', end);
@@ -6698,7 +6741,43 @@
   var AN_DMAX = parseFloat(String((LAKE.legendTicks || []).slice(-1)[0] || '').replace(',', '.')) || Math.ceil(LAKE.depth.max || 20);
   var AN_SIMF = [['d', 'Djup'], ['s', 'Lutning'], ['h', 'Botten'], ['v', 'Växter'], ['t', 'Topp/håla']];
   var AN_SIMR = [0, 25, 50, 100];                       // m round the spot (0 = right under it)
-  var anSet = { simF: { d: 1, s: 1, h: 1, v: 1, t: 1 }, simR: 0, mode: null, lo: 4, hi: 6, slope: 10, elo: 0, ehi: AN_DMAX, topH: 1.0, holeD: 1.3, hmin: 3, hlo: 0, hhi: AN_DMAX, dim: 0.72, ref: null };
+  // how far a top rises above the lowest "saddle" towards anything higher (the h-dome, by
+  // morphological reconstruction): f in cm, marker = f - H grown back under f; dome = f - rec.
+  // Tops: f = -depth, land counts as HIGH (shore shelves belong to the shore, not tops).
+  // Holes: f = depth, land counts as LOW. Bucket queue (whole cm): fast enough on the phone.
+  function anDome(f, W, H, hcm){
+    var N = W * H, rec = new Int32Array(N), lo = 1e9, hi = -1e9, i, p, q, v, x;
+    for (i = 0; i < N; i++){ v = rec[i] = f[i] - hcm; if (v < lo) lo = v; if (v > hi) hi = v; }
+    var bk = new Array(hi - lo + 1);
+    for (i = 0; i < N; i++){ v = rec[i] - lo; (bk[v] || (bk[v] = [])).push(i); }
+    for (var lv = hi - lo; lv >= 0; lv--){
+      var qu = bk[lv]; if (!qu) continue; bk[lv] = null;
+      for (var k = 0; k < qu.length; k++){
+        p = qu[k]; if (rec[p] - lo !== lv) continue;
+        x = p % W;
+        for (var t = 0; t < 4; t++){
+          q = t === 0 ? (x > 0 ? p - 1 : -1) : t === 1 ? (x < W - 1 ? p + 1 : -1) : t === 2 ? p - W : p + W;
+          if (q < 0 || q >= N) continue;
+          v = rec[p] < f[q] ? rec[p] : f[q];
+          if (v > rec[q]){ rec[q] = v; if (v - lo === lv) qu.push(q); else (bk[v - lo] || (bk[v - lo] = [])).push(q); }
+        }
+      }
+    }
+    var d = new Float32Array(N); for (i = 0; i < N; i++) d[i] = (f[i] - rec[i]) / 100;
+    return d;
+  }
+  function anDomes(A){
+    if (A.domeTop) return A;
+    var N = A.N, ft = new Int32Array(N), fh = new Int32Array(N);
+    for (var i = 0; i < N; i++){
+      if (A.wat[i]){ ft[i] = -Math.round(A.sm[i] * 100); fh[i] = Math.round(A.sm[i] * 100); }
+      else if (A.lake[i]){ ft[i] = -50; fh[i] = 50; }            // (lake without depth data: shallow)
+      else { ft[i] = 500; fh[i] = -500; }                          // land: high for tops, low for holes
+    }
+    A.domeTop = anDome(ft, A.W, A.H, 300); A.domeHole = anDome(fh, A.W, A.H, 300);
+    return A;
+  }
+  var anSet = { simF: { d: 1, s: 1, h: 1, v: 1, t: 1 }, simR: 0, mode: null, lo: 4, hi: 6, slope: 10, elo: 0, ehi: AN_DMAX, topP: 0.6, holeP: 0.8, hmin: 3, hlo: 0, hhi: AN_DMAX, dim: 0.72, ref: null };
   try { var sv = JSON.parse(localStorage.getItem(AN_KEY) || 'null'); if (sv) for (var k0 in sv) anSet[k0] = sv[k0]; } catch(e){}
   var anShow = true;
   try { anShow = localStorage.getItem(SHOW_AN_KEY) !== '0'; } catch(e){}
@@ -6853,7 +6932,7 @@
   function anCellOfImg(x, y){ var A = AN; return Math.min(A.H - 1, Math.max(0, Math.floor(y / IMG_H * A.H))) * A.W + Math.min(A.W - 1, Math.max(0, Math.floor(x / IMG_W * A.W))); }
   function anImgOfCell(i){ var A = AN; return { x: ((i % A.W) + 0.5) / A.W * IMG_W, y: (Math.floor(i / A.W) + 0.5) / A.H * IMG_H }; }
   function anSpots(){
-    return waypoints.filter(function(w){ var t = wpType(w); return t !== 'meet' && t !== 'fara' && !isExpired(w); })
+    return waypoints.filter(function(w){ var t = wpType(w); return t !== 'meet' && t !== 'fara' && t !== 'hem' && !isExpired(w); })
       .sort(function(a, b){ return (isMine(b) ? 1 : 0) - (isMine(a) ? 1 : 0); });
   }
   // the chosen filter -> a mask (1 = main colour, 2 = second colour), labels and a result text
@@ -6871,21 +6950,20 @@
       for (i = 0; i < N; i++) if (wat[i] && A.slope[i] >= anSet.slope && dep[i] >= anSet.elo && dep[i] <= anSet.ehi){ M[i] = 1; n++; }
       text = 'Lutning över <b>' + anSet.slope + ' %</b> på ' + fmtDepth(anSet.elo) + '–' + fmtDepth(anSet.ehi) + ' m · ' + anPct(n) + ' av sjön';
     } else if (m === 'tops'){
-      var top = new Uint8Array(N), hole = new Uint8Array(N);
-      for (i = 0; i < N; i++){ if (!wat[i]) continue;
-        if (A.tpi[i] >= anSet.topH && A.shore[i] >= 20 && dep[i] >= 0.5) top[i] = 1;
-        else if (A.tpi[i] <= -anSet.holeD) hole[i] = 1; }
-      var minCells = Math.max(3, Math.round(150 / (A.cell * A.cell)));
-      var tb = anBlobs(top, A.W, A.H).filter(function(c){ return c.length >= minCells; })
-        .map(function(c){ var best = c[0], p = 0; c.forEach(function(j){ if (A.tpi[j] > p) p = A.tpi[j]; if (dep[j] < dep[best]) best = j; }); return { c: c, i: best, p: p }; })
-        .sort(function(a, b){ return b.p - a.p; }).slice(0, 8);
-      var hb = anBlobs(hole, A.W, A.H).filter(function(c){ return c.length >= minCells; })
-        .map(function(c){ var best = c[0], p = 0; c.forEach(function(j){ if (-A.tpi[j] > p) p = -A.tpi[j]; if (dep[j] > dep[best]) best = j; }); return { c: c, i: best, p: p }; })
-        .sort(function(a, b){ return b.p - a.p; }).slice(0, 6);
-      tb.forEach(function(b){ b.c.forEach(function(j){ M[j] = 1; }); labels.push({ i: b.i, cls: '', txt: 'Topp ' + fmtDepth(dep[b.i]) + ' m' }); });
-      hb.forEach(function(b){ b.c.forEach(function(j){ M[j] = 2; }); labels.push({ i: b.i, cls: 'hole', txt: 'Håla ' + fmtDepth(dep[b.i]) + ' m' }); });
-      text = '<b>' + tb.length + '</b> toppar/grynnor (minst ' + fmtDepth(anSet.topH) + ' m grundare än runt om) · <b>' + hb.length + '</b> hålor (minst ' + fmtDepth(anSet.holeD) + ' m djupare)';
-      note = 'Tryck på en etikett för att släppa lodet där.';
+      anDomes(A);
+      // the "caps" of the tops (and the bottoms of the holes), then only those that rise (sink)
+      // at least the chosen number of metres above (below) their saddle
+      var capT = new Uint8Array(N), capH = new Uint8Array(N);
+      for (i = 0; i < N; i++){ if (!wat[i] || A.shore[i] < 10) continue;
+        if (A.domeTop[i] >= 0.25) capT[i] = 1; else if (A.domeHole[i] >= 0.25) capH[i] = 1; }
+      var tb = anBlobs(capT, A.W, A.H).map(function(c){ var best = c[0], p = 0; c.forEach(function(j){ if (A.domeTop[j] > p) p = A.domeTop[j]; if (dep[j] < dep[best]) best = j; }); return { c: c, i: best, p: p }; })
+        .filter(function(b){ return b.p >= anSet.topP; }).sort(function(a, b){ return b.p - a.p; });
+      var hb = anBlobs(capH, A.W, A.H).map(function(c){ var best = c[0], p = 0; c.forEach(function(j){ if (A.domeHole[j] > p) p = A.domeHole[j]; if (dep[j] > dep[best]) best = j; }); return { c: c, i: best, p: p }; })
+        .filter(function(b){ return b.p >= anSet.holeP; }).sort(function(a, b){ return b.p - a.p; });
+      tb.forEach(function(b, k){ b.c.forEach(function(j){ M[j] = 1; }); if (k < 14) labels.push({ i: b.i, cls: '', txt: 'Topp ' + fmtDepth(dep[b.i]) + ' m' }); });
+      hb.forEach(function(b, k){ b.c.forEach(function(j){ M[j] = 2; }); if (k < 8) labels.push({ i: b.i, cls: 'hole', txt: 'Håla ' + fmtDepth(dep[b.i]) + ' m' }); });
+      text = '<b>' + tb.length + '</b> toppar/grynnor (reser sig minst ' + fmtDepth(anSet.topP) + ' m) · <b>' + hb.length + '</b> hålor (minst ' + fmtDepth(anSet.holeP) + ' m djupa)';
+      note = 'Hur mycket en topp reser sig över den lägsta "sadeln" runt den – grunda hyllor längs land räknas inte. Tryck på en etikett för lodet.';
     } else if (m === 'veg'){
       for (i = 0; i < N; i++) if ((anBottom[i] & 8) && wat[i]){ M[i] = 1; n++; }
       text = n ? '<b>Växter</b> (vass, näckrosor, bottenväxter) · ' + anPct(n) + ' av sjön' : 'Ingen växtlighet mätt här.';
@@ -6914,9 +6992,13 @@
         vals.sort(function(a, b){ return b - a; });
         var th = Math.max(0.3, vals[Math.floor(vals.length * 0.04)] || 1);
         var rx = ri % A.W, ry = Math.floor(ri / A.W), away = 60 / A.cell;
-        for (i = 0; i < N; i++) if (sim[i] >= th){ var xx = i % A.W - rx, yy = Math.floor(i / A.W) - ry; if (xx * xx + yy * yy > away * away){ M[i] = 1; n++; } }
-        var blobs = anBlobs(M, A.W, A.H).map(function(c){ var best = c[0]; c.forEach(function(j){ if (sim[j] > sim[best]) best = j; }); return { c: c, i: best, s: sim[best] * Math.min(1, c.length / 6) }; })
+        for (i = 0; i < N; i++) if (sim[i] >= th){ M[i] = 1; n++; }          // (the spot's own surroundings lit too)
+        // the list: the areas ranked by their most similar place (tiny ones count a bit less),
+        // not the spot itself (anything within 60 m of it)
+        var blobs = anBlobs(M, A.W, A.H).filter(function(c){ return !c.some(function(j){ var xx = j % A.W - rx, yy = Math.floor(j / A.W) - ry; return xx * xx + yy * yy <= away * away; }); })
+          .map(function(c){ var best = c[0]; c.forEach(function(j){ if (sim[j] > sim[best]) best = j; }); return { c: c, i: best, s: sim[best] * Math.min(1, c.length / 6) }; })
           .sort(function(a, b){ return b.s - a.s; }).slice(0, 5);
+        labels.push({ i: ri, cls: 'simRef', txt: '' });
         list = blobs.map(function(b, k){
           var p = anImgOfCell(b.i), ll = imgPxToLatLon(p.x, p.y), dm = null;
           if (lastOwnLatLon && lastFix && lastFix.onMap) dm = haversineKm(lastOwnLatLon.lat, lastOwnLatLon.lon, ll.lat, ll.lon) * 1000;
@@ -7051,29 +7133,35 @@
     var fm = function(v){ return fmtDepth(+v) + ' m'; }, h = '';
     if (m === 'depth') h = anDualRow('depth');
     else if (m === 'steep') h = anRangeRow('anSlope', 'Lutning', 4, 30, 1, anSet.slope, function(v){ return v + ' %'; }) + anDualRow('steep');
-    else if (m === 'tops') h = anRangeRow('anTopH', 'Toppar', 0.4, 3, 0.1, anSet.topH, function(v){ return '≥ ' + fmtDepth(+v) + ' m'; }) +
-      anRangeRow('anHoleD', 'Hålor', 0.5, 4, 0.1, anSet.holeD, function(v){ return '≥ ' + fmtDepth(+v) + ' m'; });
+    else if (m === 'tops') h = anRangeRow('anTopP', 'Toppar', 0.3, 2.5, 0.1, anSet.topP, function(v){ return '≥ ' + fmtDepth(+v) + ' m'; }) +
+      anRangeRow('anHoleP', 'Hålor', 0.3, 2.5, 0.1, anSet.holeP, function(v){ return '≥ ' + fmtDepth(+v) + ' m'; });
     else if (m === 'hard') h = anRangeRow('anHmin', 'Minst', 1, 4, 1, anSet.hmin, function(v){ return AN_HARD[v - 1]; }) + anDualRow('hard');
     else if (m === 'similar'){
       var sp = anSpots();
-      h = sp.length ? '<select id="anRefSel" aria-label="Plats att jämföra med">' + sp.map(function(w){
+      h = sp.length ? '<div class="anRefRow"><select id="anRefSel" aria-label="Plats att jämföra med">' + sp.map(function(w){
         return '<option value="' + escHtml(w.id) + '"' + (w.id === anSet.ref ? ' selected' : '') + '>' + escHtml(w.name || 'Plats') + (isMine(w) ? '' : ' (' + escHtml(w.by || '') + ')') + '</option>'; }).join('') + '</select>' +
+        '<button type="button" id="anRefGo" title="Visa platsen på kartan">Gå till</button></div>' +
         '<div class="anLbl2">Jämför</div><div class="anFactors" id="anSimF">' + AN_SIMF.map(function(x){ return '<button type="button" data-f="' + x[0] + '" class="' + (anSet.simF[x[0]] ? 'on' : '') + '">' + x[1] + '</button>'; }).join('') + '</div>' +
-        '<div class="anLbl2">Område runt platsen</div><div class="anSeg" id="anSimR">' + AN_SIMR.map(function(r){ return '<button type="button" data-r="' + r + '" class="' + (anSet.simR === r ? 'on' : '') + '">' + (r ? r + ' m' : 'Bara platsen') + '</button>'; }).join('') + '</div>' : '';
+        '<div class="anLbl2">Område runt platsen</div><div class="anSeg" id="anSimR">' + AN_SIMR.map(function(r){ return '<button type="button" data-r="' + r + '" class="' + (anSet.simR === r ? 'on' : '') + '">' + (r ? r + ' m' : 'Bara platsen') + '</button>'; }).join('') + '</div>' +
+        '<div class="anNote"><b>Bara platsen</b> jämför det som finns precis under pinnen (en ruta på ca 5 × 5 m). <b>25–100 m</b> jämför i stället <b>snittet</b> inom den radien – både runt din plats och runt varje ställe i sjön. Då hittar du liknande <i>omgivningar</i> (t.ex. en kant med växter), inte bara en likadan punkt.<br>Listan: områdena som är mest lika, bäst först (inte slump). Platsen själv lyser men står inte i listan.</div>' : '';
     }
-    if (m) h += anRangeRow('anDim', 'Mörkare', 0.3, 0.92, 0.02, anSet.dim, function(v){ return Math.round(v * 100) + ' %'; });
     el.innerHTML = h;
     anDualPlace();
   }
+  var anDimSet = document.getElementById('anDimSet');
+  anDimSet.value = anSet.dim; document.getElementById('anDimOut').textContent = Math.round(anSet.dim * 100) + ' %';
+  anDimSet.addEventListener('input', function(){
+    anSet.dim = parseFloat(anDimSet.value); document.getElementById('anDimOut').textContent = Math.round(anSet.dim * 100) + ' %';
+    anSave(); anView = null; anDraw();
+  });
   var anTimer = null;
   function anLater(){ anSave(); clearTimeout(anTimer); anTimer = setTimeout(anCompute, 60); }
   document.getElementById('anControls').addEventListener('input', function(e){
     var t = e.target, v = parseFloat(t.value);
-    var map = { anSlope: 'slope', anTopH: 'topH', anHoleD: 'holeD', anHmin: 'hmin', anDim: 'dim' };
+    var map = { anSlope: 'slope', anTopP: 'topP', anHoleP: 'holeP', anHmin: 'hmin' };
     if (!map[t.id]) return;
     anSet[map[t.id]] = v;
-    t.nextSibling.textContent = t.id === 'anSlope' ? v + ' %' : t.id === 'anHmin' ? AN_HARD[v - 1] : t.id === 'anDim' ? Math.round(v * 100) + ' %' : '≥ ' + fmtDepth(v) + ' m';
-    if (t.id === 'anDim'){ anSave(); anView = null; anDraw(); return; }       // (just darker/lighter: nothing to work out)
+    t.nextSibling.textContent = t.id === 'anSlope' ? v + ' %' : t.id === 'anHmin' ? AN_HARD[v - 1] : '≥ ' + fmtDepth(v) + ' m';
     anLater();
   });
   // dragging a handle of a depth range (either handle; they can't cross)
@@ -7099,6 +7187,11 @@
   document.getElementById('anControls').addEventListener('pointerup', anDragEnd);
   document.getElementById('anControls').addEventListener('pointercancel', anDragEnd);
   document.getElementById('anControls').addEventListener('click', function(e){
+    if (e.target.id === 'anRefGo'){
+      var wp = anSpots().filter(function(w){ return w.id === anSet.ref; })[0];
+      if (wp){ showAnPanel(false); centerOnWaypoint(wp); }
+      return;
+    }
     var f = e.target.closest ? e.target.closest('#anSimF button') : null, r = e.target.closest ? e.target.closest('#anSimR button') : null;
     if (f){ var k = f.getAttribute('data-f'); anSet.simF[k] = anSet.simF[k] ? 0 : 1; f.classList.toggle('on', !!anSet.simF[k]); anLater(); }
     if (r){ anSet.simR = +r.getAttribute('data-r'); Array.prototype.forEach.call(r.parentNode.children, function(b){ b.classList.toggle('on', b === r); }); anLater(); }
@@ -7127,6 +7220,7 @@
     showAnPanel(true); anCompute();
   }
   function showAnPanel(open){
+    if (open && !anPanel.classList.contains('show') && anPanel._resetSize) anPanel._resetSize();
     anPanel.classList.toggle('show', open);
     if (open){ if (typeof toggleMsgPop === 'function') toggleMsgPop(false); anCtlMode = '#'; if (!anRes) anCompute(); else anRender(); }
   }
@@ -7300,7 +7394,8 @@
      A small button at the bottom: tap -> the choices; tap one -> it shows as a bubble at
      your boat for everyone for 15 min (sent with your position, positions/<you>.msg).
      Tap your own bubble to take it back; tap someone else's to hide it for you. */
-  var MSG_TEXTS = ['Hugg! 🎣', 'Kommer 🚤', 'Åker in 🏠', 'Fika? ☕', 'Behöver hjälp 🆘'];
+  var MSG_TEXTS = ['Fisk!!! 🎣', 'Kommer 🚤', 'Åker in 🏠', 'Mat? 🍔', 'Allt är problem 😩', 'Bajs 💩'];
+  var MSG_NEW_MS = 5 * 60000;          // the first 5 min: a thin rainbow edge running round the bubble
   var MSG_MS = 15 * 60000;
   var ownMsg = null, msgHidden = {}, msgLayerEl = document.getElementById('msgLayer');
   var msgBtn = document.getElementById('msgBtn'), msgPop = document.getElementById('msgPop');
@@ -7335,22 +7430,41 @@
     el.textContent = t; el.classList.add('show');
     clearTimeout(msgToastT); msgToastT = setTimeout(function(){ el.classList.remove('show'); }, 2600);
   }
+  // the rainbow edge follows the bubble's outline, its little tail included: an SVG outline of the
+  // shape is the mask of a spinning rainbow (conic gradient)
+  function msgRainbow(el){
+    var w = el.offsetWidth, h = el.offsetHeight, r = 14, P = 3, rb = el.querySelector('.msgRb'); if (!rb || !w) return;
+    var d = 'M' + (P + r) + ' ' + P + 'H' + (P + w - r) + 'A' + r + ' ' + r + ' 0 0 1 ' + (P + w) + ' ' + (P + r) + 'V' + (P + h - r) +
+      'A' + r + ' ' + r + ' 0 0 1 ' + (P + w - r) + ' ' + (P + h) + 'H' + (P + 26) + 'L' + (P + 19) + ' ' + (P + h + 7) + 'L' + (P + 12) + ' ' + (P + h) +
+      'H' + (P + r) + 'A' + r + ' ' + r + ' 0 0 1 ' + P + ' ' + (P + h - r) + 'V' + (P + r) + 'A' + r + ' ' + r + ' 0 0 1 ' + (P + r) + ' ' + P + 'Z';
+    var svg = 'url("data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="' + (w + 2 * P) + '" height="' + (h + 7 + 2 * P) + '"><path d="' + d + '" fill="none" stroke="#000" stroke-width="3.2" stroke-linejoin="round"/></svg>') + '")';
+    rb.style.width = (w + 2 * P) + 'px'; rb.style.height = (h + 7 + 2 * P) + 'px';
+    rb.style.webkitMaskImage = svg; rb.style.maskImage = svg;
+  }
+  var msgItems = {};
   function renderMessages(){
     if (!msgLayerEl) return;
     var now = Date.now(), items = [];
-    if (ownMsg && now - ownMsg.at < MSG_MS && lastOwnLatLon) items.push({ key: 'me', mine: true, text: ownMsg.text, who: 'du', lat: lastOwnLatLon.lat, lon: lastOwnLatLon.lon });
+    if (ownMsg && now - ownMsg.at < MSG_MS && lastOwnLatLon) items.push({ key: 'me', mine: true, text: ownMsg.text, who: 'du', at: ownMsg.at, lat: lastOwnLatLon.lat, lon: lastOwnLatLon.lon });
     Object.keys(boatPositions || {}).forEach(function(id){
       var b = boatPositions[id];
       if (!b.msg || !b.msgAt || now - b.msgAt >= MSG_MS || msgHidden[id + '@' + b.msgAt]) return;
-      items.push({ key: id + '@' + b.msgAt, mine: false, text: b.msg, who: b.name, lat: b.lat, lon: b.lon });
+      items.push({ key: id + '@' + b.msgAt, mine: false, text: b.msg, who: b.name, at: b.msgAt, lat: b.lat, lon: b.lon });
     });
     var keep = {};
     items.forEach(function(it){
       keep[it.key] = 1;
       var el = msgLayerEl.querySelector('[data-k="' + it.key.replace(/"/g, '') + '"]');
       if (!el){ el = document.createElement('div'); el.className = 'msgBub' + (it.mine ? ' mine' : ''); el.setAttribute('data-k', it.key.replace(/"/g, '')); msgLayerEl.appendChild(el); }
+      var isNew = now - it.at < MSG_NEW_MS;
       var html = escHtml(it.text) + '<small>' + escHtml(it.who || '') + '</small>';
-      if (el.innerHTML !== html) el.innerHTML = html;
+      if (el.getAttribute('data-h') !== html + isNew){
+        el.setAttribute('data-h', html + isNew);
+        el.innerHTML = html + (isNew ? '<i class="msgRb"></i>' : '');
+        if (isNew) msgRainbow(el);
+      }
+      el.style.opacity = (1 - 0.55 * Math.min(1, (now - it.at) / MSG_MS)).toFixed(2);   // fades over the 15 min
+      msgItems[el.getAttribute('data-k')] = it;
       var p = latLonToImgPx(it.lat, it.lon);
       el.style.left = (originX + p.x * scale) + 'px'; el.style.top = (originY + p.y * scale) + 'px';
     });
@@ -7360,8 +7474,35 @@
   msgLayerEl.addEventListener('click', function(e){
     var el = e.target.closest ? e.target.closest('.msgBub') : null; if (!el) return;
     e.stopPropagation();
-    var k = el.getAttribute('data-k');
-    if (k === 'me'){ ownMsg = null; writeMsg(null, 0); }       // take yours back (for everyone)
+    openMsgCard(el.getAttribute('data-k'));
+  });
+  var msgCard = document.getElementById('msgCard'), msgCardK = null, msgCardT = null;
+  function fmtClock(ms){ var d = new Date(ms); return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2); }
+  function openMsgCard(k){
+    var it = msgItems[k]; if (!it) return;
+    msgCardK = k; if (msgCard._resetSize) msgCard._resetSize();
+    var now = Date.now(), age = Math.max(0, now - it.at), left = Math.max(0, MSG_MS - age);
+    document.getElementById('msgCardWho').textContent = (it.mine ? 'DU' : String(it.who || '').toUpperCase()) + ' · MEDDELANDE';
+    document.getElementById('msgCardTxt').textContent = it.text;
+    document.getElementById('msgCardWhen').innerHTML = 'Skrivet <b>' + fmtClock(it.at) + '</b> · ' + (age < 60000 ? 'nyss' : Math.round(age / 60000) + ' min sedan');
+    document.getElementById('msgCardLeft').innerHTML = 'Försvinner om <b>' + Math.max(1, Math.ceil(left / 60000)) + ' min</b>';
+    document.getElementById('msgCardBar').style.width = (100 * left / MSG_MS).toFixed(1) + '%';
+    document.getElementById('msgCardGo').hidden = !!it.mine;
+    document.getElementById('msgCardDrop').textContent = it.mine ? 'Ta bort (för alla)' : 'Dölj för mig';
+    msgCard.classList.add('show');
+    clearTimeout(msgCardT); msgCardT = setTimeout(function(){ if (msgCard.classList.contains('show') && msgItems[msgCardK]) openMsgCard(msgCardK); }, 20000);
+  }
+  function closeMsgCard(){ msgCard.classList.remove('show'); msgCardK = null; clearTimeout(msgCardT); }
+  msgCard.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
+  sheetSwipe(msgCard, closeMsgCard);
+  document.getElementById('msgCardClose').addEventListener('click', closeMsgCard);
+  document.getElementById('msgCardGo').addEventListener('click', function(){
+    var it = msgItems[msgCardK]; if (!it) return;
+    closeMsgCard(); var p = latLonToImgPx(it.lat, it.lon); startNav(it.who, p.x, p.y);   // the lead line on their boat
+  });
+  document.getElementById('msgCardDrop').addEventListener('click', function(){
+    var k = msgCardK; closeMsgCard();
+    if (k === 'me'){ ownMsg = null; writeMsg(null, 0); }       // yours: taken back for everyone
     else msgHidden[k] = true;                                     // someone else's: hidden for you
     renderMessages();
   });
