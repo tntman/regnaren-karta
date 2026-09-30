@@ -20,7 +20,8 @@ All text i appen är på svenska. Svara Filip på svenska, kort och tydligt.
   låtsas vara Firebase). Kör alltid testerna efter ändringar och lägg till tester för ny funktion.
   Parallellt (6 åt gången, `TEST_JOBS`), ~3,5 min, mot `tests/serve.py` (egen webbserver med lång
   anslutningskö). Tester får inte ändra filer i `docs/` – blockera i webbläsaren (`pg.route`).
-  **Urval:** `testsun_all.ps1 heatmap filter` kör bara `test_*heatmap*.py` och `test_*filter*.py`.
+  **Urval:** `tests
+un_all.ps1 heatmap filter` kör bara `test_*heatmap*.py` och `test_*filter*.py`.
   Ordning: under arbetet bara områdets tester → när allt är byggt HELA sviten → rätta, kör om →
   först när alla går igenom säga "klart" + GitHub Desktop-text (Filip gör commit; allt i `docs/` ska
   vara testat i sin helhet). Allt är ett skript – en ändring kan bryta tester i helt andra filer.
@@ -102,7 +103,8 @@ Uppdatera rätt anteckning när något ändras.
   "ladda ner igen". Regnaren ~1 200 bitar / 66 MB.
 - **Filter**: två grupper – **Markeringar** (Mina, Andras, Båtar + typerna som en rad prickar
   `.visDot`: ifylld = visas, grå ring = dold) och **Lager** (Spår, Väder, Vind och lä, Blixtar,
-  Kartanalys, Heatmap `#toggleHeatmap`). "Djup" (`#toggleDepth`), "Andras fiskeplatser 50/100 %" och
+  Kartanalys, Heatmap `#toggleHeatmap`). Kartanalys och Heatmap i Filter visar/döljer bara –
+  påslaget/avslaget sker i deras egna rutor. "Djup" (`#toggleDepth`), "Andras fiskeplatser 50/100 %" och
   "Håll skärmen tänd" ligger i Inställningar. Knapparna nere till höger = 2 × 2-rutnät (`--bb`).
 - **Panorera över markeringar**: ett finger som börjar på en plats, båt, bubbla eller etikett
   panorerar kartan (`mapPointerDown(e, true)`: ingen långtryckning/lod); bara ett tryck utan att

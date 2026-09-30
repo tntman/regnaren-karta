@@ -8325,6 +8325,9 @@
   try { var hsv = JSON.parse(localStorage.getItem(HM_KEY) || 'null'); if (hsv) for (var hk in hsv) hmSet[hk] = hsv[hk]; } catch(e){}
   function hmSave(){ try { localStorage.setItem(HM_KEY, JSON.stringify(hmSet)); } catch(e){} }
   var hmFitPending = false;  // (turned on by hand: show the catches if none is on screen)
+  // hmOn = chosen (map-style list / its panel); hmShow = shown on the map (Filter → Lager → Heatmap, like Kartanalys)
+  var HM_SHOW_KEY = 'ffmap_show_heatmap_v1', hmShow = true;
+  try { hmShow = localStorage.getItem(HM_SHOW_KEY) !== '0'; } catch(e){}
   var hmOn = false, hmHeatCache = null, hmHexCells = null, hmCardList = null, hmCardI = 0, hmPendingCard = null;
   var hmCanvas = document.getElementById('hmLayer'), hmCtx = hmCanvas.getContext('2d');
   var hmSatCanvas = document.getElementById('hmSat'), hmSatCtx = hmSatCanvas.getContext('2d');
@@ -8371,12 +8374,12 @@
     var was = hmOn; hmOn = !!on;
     if (hmOn){
       if (!was && !restoring) hmFitPending = true;
+      if (!restoring && !hmShow) hmSetShow(true);   // (turned on by hand: shown, like choosing a Kartanalys mode)
       loadCatches(false);
       if (anSet.mode){ anSet.mode = null; anSave(); anCtlMode = '#'; anCompute(); }   // (not together with Kartanalys)
       showAnPanel(false);
     } else { hmShowPanel(false); hmCloseCard(); }
-    hmCanvas.classList.toggle('on', hmOn); hmSatCanvas.classList.toggle('on', hmOn);
-    hmPill.hidden = !hmOn; toggleHmEl.checked = hmOn;
+    hmShowUi();
     hmHeatCache = null;
     if (openPanel) hmShowPanel(true);
     hmRenderPanel(); hmDraw(); hmFitIfNone();
@@ -8406,8 +8409,20 @@
     hmPanel.classList.toggle('show', !!open);
   }
   hmPill.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
-  // Filter → Lager → Heatmap: on = on with its panel open, off = off
-  toggleHmEl.addEventListener('change', function(){ hmSetOn(toggleHmEl.checked, toggleHmEl.checked); });
+  // Filter → Lager → Heatmap: only shows / hides it on the map, like Kartanalys (on / off is in its own panel)
+  function hmShowUi(){
+    var vis = hmOn && hmShow;
+    hmCanvas.classList.toggle('on', vis); hmSatCanvas.classList.toggle('on', vis);
+    hmPill.hidden = !vis;                               // (the pill: something is shown on the map)
+    toggleHmEl.checked = hmShow;
+  }
+  function hmSetShow(show){
+    hmShow = !!show; try { localStorage.setItem(HM_SHOW_KEY, hmShow ? '1' : '0'); } catch(e){}
+    if (!hmShow) hmCloseCard();
+    hmShowUi(); hmHeatCache = null; hmRenderPanel(); hmDraw();
+  }
+  toggleHmEl.addEventListener('change', function(){ hmSetShow(toggleHmEl.checked); });
+  hmShowUi();
   hmPill.addEventListener('click', function(e){ e.stopPropagation(); hmShowPanel(!hmPanel.classList.contains('show')); });
 
   function hmRenderPanel(){
@@ -8438,7 +8453,8 @@
     else {
       var v = hmVisible(), c2 = { abborre: 0, gadda: 0, gos: 0 }; v.forEach(function(c){ c2[c.sp]++; });
       res.innerHTML = '<b>' + v.length + ' fångster</b> i ' + escHtml(LAKE.name) + ' · ' + HM_SP.map(function(x){ return c2[x[0]] + ' ' + x[1].toLowerCase(); }).join(', ') +
-        '<span class="note">' + (st === 'dots' ? 'Tryck på en prick för allt om fångsten.' : st === 'hex' ? 'Tryck på en ruta för fångsterna i den.' : 'Tryck på kartan där det är färg för fångsterna där.') + '</span>';
+        '<span class="note">' + (st === 'dots' ? 'Tryck på en prick för allt om fångsten.' : st === 'hex' ? 'Tryck på en ruta för fångsterna i den.' : 'Tryck på kartan där det är färg för fångsterna där.') + '</span>' +
+        (!hmShow ? '<span class="note">(Dold – slå på Heatmap i Filter.)</span>' : '');
     }
   }
   function hmOutTxt(k){ return k === 'rad' ? hmSet.rad + ' m' : hmSet.str < 34 ? 'Svag' : hmSet.str < 67 ? 'Mellan' : 'Stark'; }
@@ -8504,7 +8520,7 @@
     hmCtx.setTransform(dpr, 0, 0, dpr, 0, 0); hmCtx.clearRect(0, 0, W, H);
     hmSatCtx.setTransform(dpr, 0, 0, dpr, 0, 0); hmSatCtx.clearRect(0, 0, W, H);
     hmHexCells = null;
-    if (!hmOn || !(W >= 2 && H >= 2)) return;
+    if (!hmOn || !hmShow || !(W >= 2 && H >= 2)) return;
     // the map toned down and greyed like in Kartanalys (Inställningar "Mörkare")
     hmSatCtx.fillStyle = 'rgba(128,128,128,' + Math.min(1, anSet.dim + 0.2) + ')'; hmSatCtx.fillRect(0, 0, W, H);
     hmCtx.fillStyle = 'rgba(6,14,20,' + anSet.dim + ')'; hmCtx.fillRect(0, 0, W, H);
@@ -8609,7 +8625,7 @@
 
   // ---- a tap on the map: the catches there (from scheduleProbeTap) ----
   function hmTapAt(sx, sy){
-    if (!hmOn || !catchData) return false;
+    if (!hmOn || !hmShow || !catchData) return false;
     var list = [], L = hmVisible();
     if (hmSet.style === 'hex' && hmHexCells){
       var mI = WEB_METERS_PER_PX, h = hmHexOf((sx - originX) / scale * mI, (sy - originY) / scale * mI, hmHexCells.R), cell = hmHexCells.cells[h.q + ',' + h.r];
@@ -8683,7 +8699,7 @@
     }
   });
   window.__ffHeat = function(){
-    return { on: hmOn, style: hmSet.style, hexR: hmHexCells ? hmHexCells.rpx : null, panel: hmPanel.classList.contains('show'), pill: !hmPill.hidden, n: catchData ? hmVisible().length : null,
+    return { on: hmOn, show: hmShow, style: hmSet.style, hexR: hmHexCells ? hmHexCells.rpx : null, panel: hmPanel.classList.contains('show'), pill: !hmPill.hidden, n: catchData ? hmVisible().length : null,
       hex: hmHexCells ? Object.keys(hmHexCells.cells).map(function(k){ var h = hmHexCells.cells[k]; return { n: h.list.length, x: h.x, y: h.y }; }) : null,
       card: hmCard.classList.contains('show') && hmCardList ? { i: hmCardI, n: hmCardList.length, id: hmCardList[hmCardI].id } : null };
   };
