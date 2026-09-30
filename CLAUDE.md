@@ -38,6 +38,7 @@ All text i appen är på svenska. Svara Filip på svenska, kort och tydligt.
 ## Anteckningar per område – läs den som berörs
 | Område | Fil |
 |---|---|
+| Vilka som använder appen, när och varför (produktfakta för design, `/impeccable`) | `PRODUCT.md` |
 | Vilken källfil innehåller vad | `src/README.md` |
 | Kartor (Genesis, zoomnivåer, djup, relief, OpenStreetMap, ny sjö) | `tools/KARTOR.md` |
 | UI-byggstenar (bottenpaneler, chips, reglage, faktarutor, notiser) | `tools/UI.md` |
