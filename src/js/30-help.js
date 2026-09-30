@@ -5,6 +5,15 @@
      made by tools/help_anim.py (docs/help/*.webp; one that's missing is just left out). */
   // newest first. t: 'new' (NYTT), 'better' (BÄTTRE), 'fixed' (FIXAT)
   var HELP_NEWS = [
+    { d: '2026-09-30', t: 'new',    x: '<b>Heatmap</b> – var fisken tagits i tävlingarna (håll inne kartlägesknappen, sist i listan)' },
+    { d: '2026-09-30', t: 'new',    x: 'Kartanalys <b>Fångster</b>: hitta ställen som liknar där abborre, gädda och gös tagits' },
+    { d: '2026-09-30', t: 'better', x: 'Åskvarningen gäller alltid (även med Blixtar av i Filter) och säger till när <b>åskan dragit förbi</b>' },
+    { d: '2026-09-30', t: 'better', x: '<b>Ångra</b> i 6 sekunder när du tar bort en plats – papperskorgen ligger längst till vänster' },
+    { d: '2026-09-30', t: 'better', x: 'Kartanalys: välj kategori först; <b>Stäng av</b> och <b>Återställ</b> längst ner; skylt under vädret när den är på' },
+    { d: '2026-09-30', t: 'better', x: 'Enklare <b>Filter</b> (Markeringar och Lager, typerna som prickar) och <b>Inställningar</b> i avsnitt' },
+    { d: '2026-09-30', t: 'new',    x: 'Solnedgången i väderraden de sista 45 minuterna; skylten <b>Täckning igen</b> när nätet är tillbaka' },
+    { d: '2026-09-30', t: 'better', x: 'Tydligare lä (blått), vädret stängs med ett tryck på kartan, nya platser landar på kartan, större knappar i rutorna' },
+    { d: '2026-09-30', t: 'fixed',  x: 'Vridning av telefonen: inga "förskjutna" knappar, lä försvinner inte' },
     { d: '2026-09-29', t: 'better', x: 'Lättare att dra kartan – även när fingret börjar på en plats, båt eller bubbla' },
     { d: '2026-09-29', t: 'better', x: '<b>Djup</b> under båten och <b>Andras 50/100 %</b> finns nu i Inställningar' },
     { d: '2026-09-29', t: 'better', x: 'Flera meddelanden från samma båt samlas i en bubbla' },

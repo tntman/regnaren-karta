@@ -40,13 +40,13 @@ animeringarna igen.
 | Mätverktyget (`help-mat`) | `mat` | `s_mat` |
 | Väder, vind & lä (`help-vader`) | `vader` | `s_vader` |
 | Blixtar (`help-blixtar`) | `blixtar` | `s_blixtar` |
-| Kartanalys (`help-analys`) | `analys` | `s_analys` |
+| Kartanalys (`help-analys`) | `analys` (djup, grynnor, tumregel, Fångster) | `s_analys` |
+| Heatmap (`help-heatmap`) | `heatmap` (kartlägeslistan → Heatmap, fyra stilar, tryck på en fångst) | `s_heatmap` (låtsasfångster `catch_rows()`, bara på vattnet: `water_catches()`) |
 | Åk hit (`help-akhit`) | `akhit` | `s_akhit` |
 | Snabbmeddelanden (`help-meddelanden`) | `meddelanden` (skicka + Calle och Pia i samma båt = en bubbla → tryck på Calles rad → rutan → Åk hit) | `s_meddelanden` |
-| Håll skärmen tänd (`help-skarm`) | – (bara text) | – |
 | Filter (`help-filter`) | `filter` | `s_filter` |
 | Loggen & spår (`help-logg`) | `logg` | `s_logg` |
-| Inställningar (`help-installningar`) | `installningar` | `s_installningar` |
+| Inställningar (`help-installningar`) – även Håll skärmen tänd | `installningar` (avsnitten; som "Calle" – Filip har Admin-raden) | `s_installningar` |
 | Tips & felsökning (`help-tips`) | – (bara text) | – |
 | Om appen (`help-om`) | – (källor + version) | – |
 
@@ -75,7 +75,7 @@ Filip väljer det (påminn honom när listan har ≥ 5 rader eller är > 1 vecka
    korta punkter. `<b class="hA">…</b>` = orange (det man ska göra, t.ex. "Tryck").
    Flera animeringar i ett avsnitt: rubrik över varje med `<p class="helpSub">…</p>`.
 2. Lägg till en länk i innehållsförteckningen `#helpToc`: `<a href="#help-…"><span>EMOJI</span>Titel</a>`.
-   (Håll antalet jämnt – två kolumner, nu 20. test_help räknar länkarna och animeringarna (18): uppdatera siffrorna.)
+   (Håll antalet jämnt – två kolumner, nu 20. test_help räknar länkarna och animeringarna (19): uppdatera siffrorna.)
 3. Animering: `<div class="helpAnim"><img loading="lazy" src="help/NAMN.webp" alt="…"></div>`
    och en scen i `tools/help_anim.py` (se nedan). Verktyget skriver in `width`/`height`.
 4. Uppdatera tabellen i avsnitt 2 här, och antalet animeringar i test_help.
@@ -116,6 +116,8 @@ särskilt att inget hamnat på land och att inget ligger i vägen.
 - **Installera** kan inte spelas in (Safaris menyer är inte en webbsida): en ritad
   telefon i `tools/help_install_anim.html` med en tidslinje i `play()`.
 
+- **Inställningar börjar med alla avsnitt stängda** i verktyget (`open_app` sätter `ffmap_settings_open_v1` = `[]`;
+  testerna öppnar alla via fakefb) – scenen öppnar dem själv.
 - Blixtar-scenen har nedslag nära båten → **åsklarmet** poppar upp; scenen trycker OK.
   Ändras något som täcker kartan (larm, rutor) – kontrollera att scenerna fortfarande visar det de ska.
 - Byts en knapp i appen (t.ex. uppdatera → förstoringsglaset) syns den i nästan alla

@@ -119,11 +119,15 @@ def set_size_in_page(name, w, h):
     if s2 != s:
         with open(p, 'w', encoding='utf-8') as f: f.write(s2)   # (text mode: keeps the file's CRLF on Windows)
 
-def open_app(p, geo=ME, spots=SPOTS, boats=BOATS, wind=(3.2, 225), fmi=None, name='Filip'):
+def open_app(p, geo=ME, spots=SPOTS, boats=BOATS, wind=(3.2, 225), fmi=None, name='Filip', catches=None):
     b = p.chromium.launch(**fakefb.LAUNCH)
     ctx = b.new_context(viewport={'width': 390, 'height': 844}, device_scale_factor=2, has_touch=True, is_mobile=True,
                         geolocation={'latitude': geo[0], 'longitude': geo[1], 'accuracy': 6}, permissions=['geolocation'])
-    ctx.add_init_script('window.__fakeCfg = ' + json.dumps({'waypoints': spots, 'positions': boats}) + ';')
+    cfg = {'waypoints': spots, 'positions': boats}
+    if catches: cfg['catches'] = {'regnaren': {'rows': json.dumps(catches), 'n': len(catches)}}
+    ctx.add_init_script('window.__fakeCfg = ' + json.dumps(cfg) + ';')
+    # Inställningar as a new user sees it: every section closed (the tests open them all -- fakefb)
+    ctx.add_init_script("try { localStorage.setItem('ffmap_settings_open_v1', '[]'); } catch(e){}")
     ctx.add_init_script(FINGER_JS)
     ctx.add_init_script(fakefb.FAKE_FIREBASE_JS)
     wx = test_weather.wx_json(); wx['current']['wind_speed_10m'], wx['current']['wind_direction_10m'] = wind
@@ -174,6 +178,27 @@ def zoom_at(pg, ll, clicks, to=None):
 def typ(pg, rec, sel, text):
     pg.fill(sel, '')
     for ch in text: pg.type(sel, ch); rec.snap()
+
+# made-up competition catches for Heatmap / Kartanalys "Fångster" -- rows [t, comp, who, sp, cm, lat, lon],
+# along stretches of water the scenes already use, a little spread; each checked on the water (water_catches)
+def catch_rows():
+    import random
+    rnd = random.Random(7); rows = []
+    t0 = int(time.mktime((2026, 9, 26, 9, 0, 0, 0, 0, -1))) * 1000
+    who = ['Calle', 'Pia', 'Olle', 'Filip']
+    for sp, n, segs, cm in (('abborre', 22, [(P['B4'], P['B5']), (P['B1'], P['B4'])], (22, 41)),
+                            ('gadda', 14, [(P['B1'], P['B2']), (ME, P['B1'])], (55, 92)),
+                            ('gos', 11, [(P['E1'], P['B4'])], (40, 68))):
+        for i in range(n):
+            a, b = segs[i % len(segs)]; ll = mix(a, b, rnd.uniform(0.1, 0.9))
+            ll = (ll[0] + rnd.uniform(-0.00012, 0.00012), ll[1] + rnd.uniform(-0.0002, 0.0002))
+            rows.append([t0 + rnd.randint(0, 30) * 3600000 + i * 60000, 'regnaren1' if i % 3 else 'regnaren2', who[i % 4], sp, rnd.randint(*cm), round(ll[0], 6), round(ll[1], 6)])
+    return rows
+def water_catches(p):
+    """only the made-up catches that are on the water (>= 1.5 m deep)"""
+    b, ctx, pg = open_app(p)
+    ok = [r for r in catch_rows() if (pg.evaluate('([a, b]) => __ffGeo.depthAt(a, b)', [r[5], r[6]]) or 0) >= 1.5]
+    b.close(); return ok
 
 # ---------------------------------------------------------------- the scenes
 def s_kartan(p):
@@ -243,7 +268,8 @@ def s_andra(p):
     typ(pg, rec, '#wpName', 'Gösgropen'); rec.hold(300)
     tap_el(pg, rec, '#wpSave', after=1500)
     x, y = scr(pg, P['B4']); tap(pg, rec, x, y - 8, after=1100)
-    tap_el(pg, rec, '#wpDelete', after=1800)
+    tap_el(pg, rec, '#wpDelete', after=1600)                        # the bin: gone -- "Ångra" for 6 s
+    tap_el(pg, rec, '#undoBtn', after=1800)                         # ... and back
     rec.save('andra'); b.close()
 
 def s_fara(p):
@@ -335,6 +361,8 @@ def s_filter(p):
     tap_el(pg, rec, 'label:has(#toggleBoats) .toggle', after=1100)
     tap_el(pg, rec, 'label:has(#toggleOthers) .toggle', after=700)
     tap_el(pg, rec, 'label:has(#toggleBoats) .toggle', after=900)
+    tap_el(pg, rec, '#visTypes label:has(input[data-type="abborre"])', after=1300)   # a type: its dot -> grey ring
+    tap_el(pg, rec, '#visTypes label:has(input[data-type="abborre"])', after=900)
     tap_el(pg, rec, '#visMoreBtn', after=1200)
     rec.save('filter'); b.close()
 
@@ -347,23 +375,23 @@ def s_logg(p):
     rec.save('logg'); b.close()
 
 def s_installningar(p):
-    b, ctx, pg = open_app(p)
+    b, ctx, pg = open_app(p, name='Calle')         # (as the group sees it: "Filip" also has the Admin row)
     rec = Rec(pg); rec.hold(400)
     tap_el(pg, rec, '#menuBtn', after=600)
-    tap_el(pg, rec, '#menuItemSettings', after=1000)
+    tap_el(pg, rec, '#menuItemSettings', after=1600)               # the sections, closed: a line each of what's chosen
+    tap_el(pg, rec, '.setSec[data-sec="map"] summary', after=900)  # Kartan
     tap_el(pg, rec, '#wpSizeSeg button[data-size="1"]', after=900)
     tap_el(pg, rec, '#wpSizeSeg button[data-size="0.7"]', after=700)
-    goal = pg.evaluate("(() => { var b = document.getElementById('settingsBody'), r = document.getElementById('othersOpacitySeg'); return r.getBoundingClientRect().top - b.getBoundingClientRect().top + b.scrollTop - 330; })()")
-    for i in range(1, 19):                                          # past the offline download to Andras / Djup
-        pg.evaluate("t => document.getElementById('settingsBody').scrollTop = t", goal * i / 18); rec.snap()
-    rec.hold(900)
-    tap_el(pg, rec, '#othersOpacitySeg button[data-op="0.5"]', after=900)
-    tap_el(pg, rec, '#othersOpacitySeg button[data-op="1"]', after=1600)
+    tap_el(pg, rec, '.setSec[data-sec="map"] summary', after=900)  # closed again
+    tap_el(pg, rec, '.setSec[data-sec="boat"] summary', after=1400)
+    tap_el(pg, rec, 'label:has(#toggleWake) .toggle', after=900)   # Håll skärmen tänd
+    tap_el(pg, rec, '.setSec[data-sec="boat"] summary', after=700)
+    tap_el(pg, rec, '.setSec[data-sec="warn"] summary', after=2000)
     rec.save('installningar'); b.close()
 
 def s_analys(p):
-    """Kartanalys: depth range (drag), tops & holes (tap a label -> lead line), a preset"""
-    b, ctx, pg = open_app(p)
+    """Kartanalys: depth range (drag), tops & holes (tap a label -> lead line), a preset, from the catches"""
+    b, ctx, pg = open_app(p, catches=water_catches(p))
     bring(pg, P['B1'], (195, 300))
     rec = Rec(pg); rec.hold(500)
     tap_el(pg, rec, '#anBtn', after=700)
@@ -382,8 +410,28 @@ def s_analys(p):
     tap_el(pg, rec, '#anBtn', after=600)
     tap_el(pg, rec, '#anCatSeg button[data-cat="rule"]', after=500)
     tap_el(pg, rec, '#anPanel button[data-m="gos"]', after=1800)
-    tap_el(pg, rec, '#anClose', after=1500)
+    tap_el(pg, rec, '#anCatSeg button[data-cat="data"]', after=500)   # Fångster: where abborre was caught
+    tap_el(pg, rec, '#anDataChips button:not([disabled])', after=2400)
+    tap_el(pg, rec, '#anClose', after=1500)                            # the "Kartanalys" pill under the weather
     rec.save('analys'); b.close()
+
+def s_heatmap(p):
+    """Heatmap: hold the map-style button -> Heatmap; the four styles; tap a catch -> its card"""
+    rows = water_catches(p)
+    b, ctx, pg = open_app(p, catches=rows)
+    bring(pg, P['B1'], (195, 330))
+    rec = Rec(pg); rec.hold(500)
+    bb = pg.locator('#mapTypeBtn').bounding_box()
+    press(pg, rec, bb['x'] + 20, bb['y'] + 20, ms=900, after=900)
+    tap_el(pg, rec, '#mapTypePop .hmOpt', after=2200)                  # Värme
+    for s in ('species', 'hex', 'dots'):
+        tap_el(pg, rec, '#hmStyleSeg button[data-s="%s"]' % s, after=1700)
+    tap_el(pg, rec, '#hmClose', after=700)
+    big = max((r for r in rows if r[3] == 'gadda'), key=lambda r: r[4])
+    xy = pg.evaluate('(id) => window.__ffHeatScreen(id)', '%d|%s|%s|%s' % (big[0], big[2], big[3], big[4]))
+    if xy and 120 < xy[1] < 700 and 10 < xy[0] < 380: tap(pg, rec, xy[0], xy[1], after=2600)
+    if pg.is_visible('#hmCard'): tap_el(pg, rec, '#hmCardClose', after=900)
+    rec.save('heatmap'); b.close()
 
 def s_akhit(p):
     """tap a spot -> Åk hit -> the card; the boat moves, the distance/time follow"""
@@ -423,7 +471,7 @@ def s_installera(p):
 SCENES = [('installera', s_installera), ('kartan', s_kartan), ('kartlagen', s_kartlagen), ('position', s_position),
           ('lodet', s_lodet), ('platser', s_platser), ('andra', s_andra), ('fara', s_fara), ('batar', s_batar), ('mat', s_mat),
           ('vader', s_vader), ('blixtar', s_blixtar), ('filter', s_filter), ('logg', s_logg), ('installningar', s_installningar),
-          ('analys', s_analys), ('akhit', s_akhit), ('meddelanden', s_meddelanden)]
+          ('analys', s_analys), ('heatmap', s_heatmap), ('akhit', s_akhit), ('meddelanden', s_meddelanden)]
 
 if __name__ == '__main__':
     want = sys.argv[1:] or [n for n, f in SCENES]
