@@ -31,7 +31,7 @@ specificitet.
 | `72-heatmap.css` | Heatmap: lagren, skylten under väder, bottenrutan, fångstrutan |
 | `75-messages.css` | snabbmeddelanden (knappen, valen, egen text, bubblorna, rutan) |
 | `80-panels.css` | bottenpanelerna: greppremsan, dra mindre / skrolla (Kartanalys, meddelande, plats) |
-| `85-touch.css` | stora tryckytor i bottenrutorna (blöta fingrar): chips 40, kategorirad 42, knapprader 46 px – kartans egna knappar orörda; läsbar småtext i rutorna (≥ 11 px), Inställningar som spalt på bred skärm, fokusring |
+| `85-touch.css` | stora tryckytor i bottenrutorna (blöta fingrar): chips 40, kategorirad 42, knapprader 46 px – kartans egna knappar orörda; läsbar småtext i rutorna (≥ 11 px), Inställningar som spalt på bred skärm, fokusring, "Reducera rörelse" för panelernas rörelser |
 | `90-buttons.css` | de fyra knapparna nere till höger i 2 × 2 (sist: bestämmer storlek/plats över allt ovan) |
 | **html/** | |
 | `10-map.html` | `#app`, kartan och lagren (`#stage`, platser, båtar, bubblor, lodet, heatmap) |

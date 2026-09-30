@@ -20,3 +20,10 @@
 
   /* keyboard focus (computer): an amber ring on whatever has it */
   :focus-visible{outline:2px solid var(--amber);outline-offset:2px;}
+
+  /* "Reducera rörelse": nothing moves -- the same things fade in instead */
+  @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+  @media (prefers-reduced-motion:reduce){
+    .setSec[open] > .setSecBody, .mapPill:not([hidden]), #ltOffPill:not([hidden]), #undoToast.show{animation-name:fadeIn;}
+    .visDot .visSwatch, .visDot input:not(:checked) ~ .visSwatch, .visDot:active .visSwatch{transform:none;}
+  }

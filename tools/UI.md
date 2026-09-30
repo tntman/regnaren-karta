@@ -81,6 +81,8 @@ Liggande står de bredvid varandra.
 
 Inställningar = avsnitt `<details class="setSec" data-sec="…">` med `<summary>` (rubrik + `.setSecSum`,
 fylls av `setSums()`) och `.setSecBody` med raderna (platta, tunn linje emellan – inget kort i kort).
+Rörelser: se DESIGN.md (Do's) – nya panelrörelser får en tonings-variant under "Reducera rörelse" i `85-touch.css`.
+
 Ny inställning: lägg raden i rätt avsnitt och lägg till den i `setSums()` om den ska synas stängd.
 
 `<label class="visRow">` med ikon (`.visSwatch`), text (`.visLabel`) och

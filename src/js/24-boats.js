@@ -391,8 +391,26 @@
       renderWaypoints();
     }
   }
+  // the one authored moment: a new spot "lands" -- the pin drops onto the map and a thin ring in its
+  // colour spreads from the tip, exactly where the spot is (like the lead weight hitting the water)
+  function landPin(id){
+    var el = pinEls[id], wp = waypoints.filter(function(w){ return w.id === id; })[0];
+    if (!el || !wp || !el.animate) return;
+    var calm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    el.animate(calm ? [{ opacity: 0 }, { opacity: 1 }] : [{ translate: '0 -30px', opacity: 0 }, { opacity: 1, offset: 0.45 }, { translate: '0 0', opacity: 1 }],
+      { duration: calm ? 200 : 440, easing: 'cubic-bezier(.16,1,.3,1)' });
+    if (calm) return;
+    var p = latLonToImgPx(wp.lat, wp.lon), s = document.createElement('span'), col = getComputedStyle(el).backgroundColor;
+    s.className = 'pinSplash';
+    s.style.left = (originX + p.x * scale) + 'px'; s.style.top = (originY + p.y * scale) + 'px';
+    s.style.borderColor = /rgba\(0, 0, 0, 0\)|transparent/.test(col) ? '#fff' : col;
+    waypointsLayer.appendChild(s);
+    s.animate([{ transform: 'scale(.2)', opacity: 1 }, { opacity: 0.9, offset: 0.45 }, { transform: 'scale(1)', opacity: 0 }],
+      { duration: 650, delay: 260, easing: 'cubic-bezier(.16,1,.3,1)', fill: 'both' }).onfinish = function(){ s.remove(); };
+  }
   wpSaveBtn.addEventListener('click', function(){
     if (!editingId) { closeSheet(); return; }
+    if (editingIsNew){ var landId = editingId; setTimeout(function(){ landPin(landId); }, 0); }
     var v = wpNameInput.value.trim();
     var upd = { type: editingType };
     if (hiddenTypes[editingType]) setTypeHidden(editingType, false); // don't let the spot you just saved vanish

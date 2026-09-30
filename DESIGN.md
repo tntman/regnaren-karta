@@ -279,6 +279,7 @@ Mjukt rundade former utan skarpa hörn. Rundknappar över kartan är helt runda 
 - **Do** ge statusraden, bakgrunden och toningarna samma nattvatten.
 - **Do** håll småtexten i rutorna läsbar i sol: minst 11 px (faktarutornas rubriker 11, rutornas små rubriker 11,5). Kartans egen skala och zoomtext är undantag.
 - **Do** låt kort över kartan (vädret) stängas med ett tryck på kartan – men inte när kartan dras.
+- **Do** håll rörelser korta och meningsfulla: tryck 100–150 ms, lägesbyten 150–300 ms, rutor 250–450 ms, mjuk inbromsning (`cubic-bezier(.16,1,.3,1)`), ingen studs, inget som loopar i panelerna. Det enda "stora" ögonblicket är när en **ny plats landar**: nålen faller ner och en tunn ring i typens färg sprider sig exakt vid spetsen (`landPin`). Skyltar glider fram ur väderchipet, avsnitt i Inställningar glider fram när de öppnas (stängs direkt), dolda typprickar krymper till en grå ring. Med "Reducera rörelse" rör sig inget – det tonas bara in.
 - **Do** visa tangentbordsfokus med en 2 px bärnstensring (`:focus-visible`). Inställningar är en spalt på högst 600 px på breda skärmar.
 
 ### Don't:
