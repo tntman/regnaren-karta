@@ -39,6 +39,7 @@ All text i appen är på svenska. Svara Filip på svenska, kort och tydligt.
 | Område | Fil |
 |---|---|
 | Vilka som använder appen, när och varför (produktfakta för design, `/impeccable`) | `PRODUCT.md` |
+| Utseendet: färger, typsnitt, former, komponenter, regler ("Sjökortet i handen") | `DESIGN.md` (+ `.impeccable/design.json`) |
 | Vilken källfil innehåller vad | `src/README.md` |
 | Kartor (Genesis, zoomnivåer, djup, relief, OpenStreetMap, ny sjö) | `tools/KARTOR.md` |
 | UI-byggstenar (bottenpaneler, chips, reglage, faktarutor, notiser) | `tools/UI.md` |

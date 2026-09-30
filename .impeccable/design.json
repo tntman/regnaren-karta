@@ -1,0 +1,444 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-30T09:57:51Z",
+  "title": "Design System: FF Map",
+  "extensions": {
+    "colorMeta": {
+      "sjokortsbla": {
+        "role": "neutral",
+        "displayName": "Sjökortsblå",
+        "canonical": "oklch(27.1% 0.047 234.9)",
+        "tonalRamp": [
+          "#000D18",
+          "#102835",
+          "#2B4655",
+          "#486677",
+          "#68879A",
+          "#8CAABC",
+          "#B2CEDF",
+          "#D9F3FF"
+        ]
+      },
+      "nattvatten": {
+        "role": "neutral",
+        "displayName": "Nattvatten",
+        "canonical": "oklch(18.3% 0.026 234.6)",
+        "tonalRamp": [
+          "#040C12",
+          "#1B272E",
+          "#36444D",
+          "#54646E",
+          "#74858F",
+          "#98A8B2",
+          "#BCCCD5",
+          "#E2F1FA"
+        ]
+      },
+      "barnsten": {
+        "role": "primary",
+        "displayName": "Bärnsten",
+        "canonical": "oklch(76.5% 0.140 72.9)",
+        "tonalRamp": [
+          "#220000",
+          "#441400",
+          "#683200",
+          "#8E5100",
+          "#B27300",
+          "#D49740",
+          "#F7BD70",
+          "#FFE49D"
+        ]
+      },
+      "morgondimma": {
+        "role": "neutral",
+        "displayName": "Morgondimma",
+        "canonical": "oklch(97.4% 0.003 219.5)",
+        "tonalRamp": [
+          "#0A0B0C",
+          "#242526",
+          "#404243",
+          "#5F6262",
+          "#808384",
+          "#A3A5A6",
+          "#C7C9CA",
+          "#EDEFF0"
+        ]
+      },
+      "vassgra": {
+        "role": "neutral",
+        "displayName": "Vassgrå",
+        "canonical": "oklch(81.2% 0.016 222.7)",
+        "tonalRamp": [
+          "#060C0F",
+          "#1E272A",
+          "#3A4448",
+          "#586368",
+          "#798589",
+          "#9CA7AC",
+          "#C0CBCF",
+          "#E6F0F4"
+        ]
+      },
+      "blacksvart": {
+        "role": "neutral",
+        "displayName": "Becksvart",
+        "canonical": "oklch(20.7% 0.010 248.3)",
+        "tonalRamp": [
+          "#090B0E",
+          "#222529",
+          "#3E4247",
+          "#5D6267",
+          "#7E8388",
+          "#A1A6AB",
+          "#C5CACE",
+          "#EBEFF3"
+        ]
+      },
+      "signalrod": {
+        "role": "signal",
+        "displayName": "Signalröd",
+        "canonical": "oklch(59.7% 0.182 24.5)",
+        "tonalRamp": [
+          "#310000",
+          "#5A0000",
+          "#83000C",
+          "#AF2329",
+          "#D74C4A",
+          "#FB7671",
+          "#FFA098",
+          "#FFC9C0"
+        ]
+      },
+      "art-markering": {
+        "role": "signal",
+        "displayName": "Markering",
+        "canonical": "oklch(93.1% 0.007 233.6)",
+        "tonalRamp": [
+          "#090C0D",
+          "#222627",
+          "#3F4345",
+          "#5E6264",
+          "#7F8386",
+          "#A1A6A8",
+          "#C6CACC",
+          "#EBEFF1"
+        ]
+      },
+      "art-abborre": {
+        "role": "signal",
+        "displayName": "Abborre",
+        "canonical": "oklch(72.4% 0.187 48.9)",
+        "tonalRamp": [
+          "#300000",
+          "#580000",
+          "#810800",
+          "#AC3000",
+          "#D35700",
+          "#F68036",
+          "#FFA869",
+          "#FFD197"
+        ]
+      },
+      "art-gadda": {
+        "role": "signal",
+        "displayName": "Gädda",
+        "canonical": "oklch(75.8% 0.219 144.8)",
+        "tonalRamp": [
+          "#001700",
+          "#003600",
+          "#005800",
+          "#007C00",
+          "#00A011",
+          "#3FC34D",
+          "#74E77A",
+          "#A3FFA7"
+        ]
+      },
+      "art-gos": {
+        "role": "signal",
+        "displayName": "Gös",
+        "canonical": "oklch(87.7% 0.176 92.7)",
+        "tonalRamp": [
+          "#1E0200",
+          "#3D1C00",
+          "#5F3A00",
+          "#835A00",
+          "#A67C00",
+          "#C8A100",
+          "#EAC648",
+          "#FFEC7F"
+        ]
+      },
+      "art-fara": {
+        "role": "signal",
+        "displayName": "Fara",
+        "canonical": "oklch(60.2% 0.215 27.7)",
+        "tonalRamp": [
+          "#370000",
+          "#610000",
+          "#8D0000",
+          "#BB0006",
+          "#E43A33",
+          "#FF6B5D",
+          "#FF9687",
+          "#FFC1B1"
+        ]
+      },
+      "art-traffpunkt": {
+        "role": "signal",
+        "displayName": "Träffpunkt",
+        "canonical": "oklch(81.8% 0.153 72.8)",
+        "tonalRamp": [
+          "#240000",
+          "#471100",
+          "#6B2F00",
+          "#924E00",
+          "#B67100",
+          "#D99630",
+          "#FBBC65",
+          "#FFE295"
+        ]
+      },
+      "art-hem": {
+        "role": "signal",
+        "displayName": "Hem",
+        "canonical": "oklch(63.7% 0.195 259.5)",
+        "tonalRamp": [
+          "#000048",
+          "#001371",
+          "#00379C",
+          "#0959C9",
+          "#347DF1",
+          "#5FA3FF",
+          "#88C9FF",
+          "#B2F0FF"
+        ]
+      },
+      "greppglod": {
+        "role": "signal",
+        "displayName": "Greppglöd",
+        "canonical": "oklch(74.6% 0.140 245.8)",
+        "tonalRamp": [
+          "#000534",
+          "#002558",
+          "#00447F",
+          "#0065A8",
+          "#2C88CD",
+          "#5CACEF",
+          "#87D1FF",
+          "#B2F6FF"
+        ]
+      },
+      "sjokortsbla-glas": {
+        "role": "neutral",
+        "displayName": "Sjökortsblått glas",
+        "canonical": "rgba(11,42,58,.72)",
+        "tonalRamp": [
+          "#000D18",
+          "#102835",
+          "#2B4655",
+          "#486677",
+          "#68879A",
+          "#8CAABC",
+          "#B2CEDF",
+          "#D9F3FF"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Sjöns namn",
+        "purpose": "Bara sjöns namn uppe till vänster (serif, som ett tryckt sjökort)."
+      },
+      "title": {
+        "displayName": "Rubrik i ruta",
+        "purpose": "Platsens namn, fångstens art och längd."
+      },
+      "body": {
+        "displayName": "Brödtext",
+        "purpose": "Resultattexter, beskrivningar, inställningar."
+      },
+      "label": {
+        "displayName": "Etikett",
+        "purpose": "Chips, knappar, segment."
+      },
+      "overline": {
+        "displayName": "Överrubrik",
+        "purpose": "Versala rubriker i rutor och i faktarutor."
+      }
+    },
+    "shadows": [
+      {
+        "name": "svavande-kontroll",
+        "value": "0 4px 14px rgba(0,0,0,.35)",
+        "purpose": "Rundknappar, Filter och chips över kartan."
+      },
+      {
+        "name": "bottenruta",
+        "value": "0 -10px 30px rgba(0,0,0,.45)",
+        "purpose": "Bottenrutor (Kartanalys, Heatmap, meddelande, fångst)."
+      },
+      {
+        "name": "dialog",
+        "value": "0 10px 30px rgba(0,0,0,.5)",
+        "purpose": "Väderkort, larm och notiser."
+      },
+      {
+        "name": "greppglod",
+        "value": "0 -10px 30px rgba(0,0,0,.45), 0 -2px 14px rgba(88,180,255,.9)",
+        "purpose": "Överkanten medan en bottenruta dras."
+      }
+    ],
+    "motion": [
+      {
+        "name": "sheet",
+        "value": "transform .25s ease",
+        "purpose": "Bottenrutor glider upp och ner."
+      },
+      {
+        "name": "sheet-spot",
+        "value": "transform .28s cubic-bezier(.32,.72,0,1)",
+        "purpose": "Platsens ruta."
+      },
+      {
+        "name": "press",
+        "value": "scale(.92–.97) på :active",
+        "purpose": "Knappar trycks ner lätt."
+      },
+      {
+        "name": "sweep",
+        "value": "ljusstråk 2.6–2.8 s ease-in-out, oändligt",
+        "purpose": "Valt typpiller och aktiv Stäng av-knapp; av vid reducerad rörelse."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "smal",
+        "value": "max-width: 420px"
+      },
+      {
+        "name": "liggande",
+        "value": "orientation: landscape and max-height: 520px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Rundknapp över kartan",
+      "kind": "button",
+      "refersTo": "button-map",
+      "description": "Svävande glasknapp över kartan (Kartanalys, mätverktyg); aktiv = bärnstenskant.",
+      "html": "<div class=\"ds-row\"><button class=\"ds-map-btn\" aria-label=\"Kartanalys\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\"><circle cx=\"10.5\" cy=\"10.5\" r=\"6.5\"/><path d=\"M15.5 15.5 21 21\"/></svg></button><button class=\"ds-map-btn on\" aria-label=\"Kartanalys på\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\"><circle cx=\"10.5\" cy=\"10.5\" r=\"6.5\"/><path d=\"M15.5 15.5 21 21\"/></svg></button></div>",
+      "css": ":host{--sjokortsbla:#0B2A3A;--glas:rgba(11,42,58,.72);--barnsten:#E8A33D;--dimma:#F4F7F8;--vass:#B7C4C9;} .ds-row{display:flex;gap:12px;padding:16px;background:#1d4f63;} .ds-map-btn{width:48px;height:48px;border-radius:50%;background:var(--glas);backdrop-filter:blur(6px);color:var(--dimma);border:1px solid rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.35);padding:0;cursor:pointer;transition:transform .15s;} .ds-map-btn svg{width:21px;height:21px;} .ds-map-btn:active{transform:scale(.92);} .ds-map-btn:focus-visible{outline:2px solid var(--barnsten);outline-offset:2px;} .ds-map-btn.on{border-color:var(--barnsten);color:var(--barnsten);}"
+    },
+    {
+      "name": "Sikteknappen",
+      "kind": "button",
+      "refersTo": "button-locate",
+      "description": "Den viktigaste knappen: centrerar kartan på dig. Helt bärnsten.",
+      "html": "<div class=\"ds-row\"><button class=\"ds-locate\" aria-label=\"Centrera på min position\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\"><circle cx=\"12\" cy=\"12\" r=\"7\"/><circle cx=\"12\" cy=\"12\" r=\"2.5\" fill=\"currentColor\"/><path d=\"M12 2v3M12 19v3M2 12h3M19 12h3\"/></svg></button></div>",
+      "css": ":host{--sjokortsbla:#0B2A3A;--glas:rgba(11,42,58,.72);--barnsten:#E8A33D;--dimma:#F4F7F8;--vass:#B7C4C9;} .ds-row{padding:16px;background:#1d4f63;} .ds-locate{width:48px;height:48px;border-radius:50%;background:var(--barnsten);color:var(--sjokortsbla);border:none;display:flex;align-items:center;justify-content:center;box-shadow:0 5px 16px rgba(0,0,0,.45);cursor:pointer;transition:transform .15s;} .ds-locate svg{width:24px;height:24px;} .ds-locate:active{transform:scale(.93);} .ds-locate:focus-visible{outline:2px solid #fff;outline-offset:2px;}"
+    },
+    {
+      "name": "Chips",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Val i en ruta; valt = bärnsten. Grå/halvgenomskinlig när den inte går att välja.",
+      "html": "<div class=\"ds-chips\"><button class=\"ds-chip on\">Djup</button><button class=\"ds-chip\">Branta kanter</button><button class=\"ds-chip\">Grynnor &amp; hålor</button><button class=\"ds-chip\" disabled>Gös 0 · för få</button></div>",
+      "css": ":host{--sjokortsbla:#0B2A3A;--glas:rgba(11,42,58,.72);--barnsten:#E8A33D;--dimma:#F4F7F8;--vass:#B7C4C9;} .ds-chips{display:flex;flex-wrap:wrap;gap:6px;padding:14px;background:var(--sjokortsbla);} .ds-chip{font-family:Calibri,\"Segoe UI\",system-ui,-apple-system,sans-serif;font-size:12.5px;padding:6px 10px;border-radius:14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:var(--dimma);cursor:pointer;white-space:nowrap;} .ds-chip:hover{background:rgba(255,255,255,.12);} .ds-chip:focus-visible{outline:2px solid var(--barnsten);outline-offset:1px;} .ds-chip.on{background:var(--barnsten);color:var(--sjokortsbla);font-weight:700;border-color:var(--barnsten);} .ds-chip:disabled{opacity:.45;cursor:default;}"
+    },
+    {
+      "name": "Segmentrad",
+      "kind": "nav",
+      "refersTo": "segmented",
+      "description": "Kategori/stil överst i Kartanalys och Heatmap; valt segment i bärnsten.",
+      "html": "<div class=\"ds-wrap\"><div class=\"ds-seg\"><button class=\"on\">Kartdata</button><button>Tumregler</button><button>Fångster</button><button>Liknande</button></div></div>",
+      "css": ":host{--sjokortsbla:#0B2A3A;--glas:rgba(11,42,58,.72);--barnsten:#E8A33D;--dimma:#F4F7F8;--vass:#B7C4C9;} .ds-wrap{padding:14px;background:var(--sjokortsbla);} .ds-seg{display:flex;gap:4px;background:rgba(255,255,255,.06);border-radius:10px;padding:3px;} .ds-seg button{flex:1;border:none;background:none;color:var(--vass);font-family:Calibri,\"Segoe UI\",system-ui,-apple-system,sans-serif;font-size:12px;padding:6px 2px;border-radius:8px;cursor:pointer;} .ds-seg button:hover{color:var(--dimma);} .ds-seg button:focus-visible{outline:2px solid var(--barnsten);} .ds-seg button.on{background:var(--barnsten);color:var(--sjokortsbla);font-weight:700;}"
+    },
+    {
+      "name": "Bottenruta med greppremsa",
+      "kind": "card",
+      "refersTo": "sheet",
+      "description": "Signaturformen för allt som öppnas: greppremsa med streck och ✕, overline-rubrik, innehåll; glöder blått när den dras (hovra för att se).",
+      "html": "<div class=\"ds-stage\"><div class=\"ds-sheet\"><div class=\"ds-grab\"><span class=\"ds-x\">✕</span></div><div class=\"ds-over\">Heatmap · fångster</div><p class=\"ds-text\"><b>88 fångster</b> i Regnaren · 50 abborre, 37 gädda, 1 gös</p><div class=\"ds-bottom\"><button class=\"ds-off\">✕ Stäng av heatmap</button><button class=\"ds-reset\">↺ Återställ</button></div></div></div>",
+      "css": ":host{--sjokortsbla:#0B2A3A;--glas:rgba(11,42,58,.72);--barnsten:#E8A33D;--dimma:#F4F7F8;--vass:#B7C4C9;} .ds-stage{height:230px;background:#1d4f63;position:relative;overflow:hidden;} .ds-sheet{position:absolute;left:0;right:0;bottom:0;background:var(--sjokortsbla);border-top:1px solid rgba(255,255,255,.14);border-radius:18px 18px 0 0;padding:0 14px 16px;box-shadow:0 -10px 30px rgba(0,0,0,.45);color:var(--dimma);font-family:Calibri,\"Segoe UI\",system-ui,-apple-system,sans-serif;transition:box-shadow .2s,border-color .2s;} .ds-sheet:hover{border-top-color:#58b4ff;box-shadow:0 -10px 30px rgba(0,0,0,.45),0 -2px 14px rgba(88,180,255,.9);} .ds-grab{position:relative;height:30px;margin:0 -14px;display:flex;align-items:center;justify-content:center;} .ds-grab::before{content:\"\";width:40px;height:5px;border-radius:3px;background:rgba(255,255,255,.3);} .ds-sheet:hover .ds-grab::before{background:#fff;box-shadow:0 0 12px 2px #4aa3ff;} .ds-x{position:absolute;right:18px;top:5px;font-size:16px;color:rgba(255,255,255,.3);} .ds-over{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--vass);} .ds-text{font-size:13px;color:#dbe4e7;margin:10px 0;} .ds-text b{color:var(--barnsten);} .ds-bottom{display:flex;gap:6px;} .ds-bottom button{font-family:Calibri,\"Segoe UI\",system-ui,-apple-system,sans-serif;font-size:12.5px;padding:6px 10px;border-radius:14px;cursor:pointer;} .ds-off{background:rgba(232,163,61,.16);border:1.5px solid var(--barnsten);color:#fff;font-weight:700;} .ds-reset{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:var(--dimma);}"
+    },
+    {
+      "name": "Handlingsrad",
+      "kind": "button",
+      "refersTo": "action-save",
+      "description": "Lika breda knappar längst ner i platsens ruta: neutral, Ta bort (röd), Spara (bärnsten).",
+      "html": "<div class=\"ds-acts\"><button>➤ Åk hit</button><button>Liknande</button><button class=\"del\">Ta bort</button><button class=\"save\">Spara</button></div>",
+      "css": ":host{--sjokortsbla:#0B2A3A;--glas:rgba(11,42,58,.72);--barnsten:#E8A33D;--dimma:#F4F7F8;--vass:#B7C4C9;} .ds-acts{display:flex;gap:7px;padding:14px;background:var(--sjokortsbla);} .ds-acts button{flex:1 1 0;min-width:0;border:none;border-radius:10px;padding:8px 2px;font-family:Calibri,\"Segoe UI\",system-ui,-apple-system,sans-serif;font-size:13.5px;font-weight:700;background:rgba(255,255,255,.08);color:var(--dimma);cursor:pointer;transition:transform .12s;} .ds-acts button:active{transform:scale(.97);} .ds-acts button:focus-visible{outline:2px solid var(--barnsten);outline-offset:1px;} .ds-acts .del{background:#D64545;color:#fff;} .ds-acts .save{background:var(--barnsten);color:var(--sjokortsbla);}"
+    },
+    {
+      "name": "Faktarutor",
+      "kind": "custom",
+      "refersTo": "fact-tile",
+      "description": "Fyra rutor med vad som finns under en plats eller fångst.",
+      "html": "<div class=\"ds-tiles\"><div><i>Djup</i><b>9,0 m</b></div><div><i>Lutning</i><b>2 %</b></div><div><i>Botten</i><b>Medel</b></div><div><i>Växter</i><b>Inga</b></div></div>",
+      "css": ":host{--sjokortsbla:#0B2A3A;--glas:rgba(11,42,58,.72);--barnsten:#E8A33D;--dimma:#F4F7F8;--vass:#B7C4C9;} .ds-tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:14px;background:var(--sjokortsbla);font-family:Calibri,\"Segoe UI\",system-ui,-apple-system,sans-serif;} .ds-tiles div{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:5px 8px 6px;} .ds-tiles i{display:block;font-style:normal;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--vass);} .ds-tiles b{display:block;font-size:15px;color:var(--dimma);margin-top:1px;}"
+    },
+    {
+      "name": "Textfält",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Fält i en ruta (platsens namn); 16 px så att iPhone inte zoomar.",
+      "html": "<div class=\"ds-wrap\"><input class=\"ds-input\" placeholder=\"Namn, t.ex. Gösvik\"></div>",
+      "css": ":host{--sjokortsbla:#0B2A3A;--glas:rgba(11,42,58,.72);--barnsten:#E8A33D;--dimma:#F4F7F8;--vass:#B7C4C9;} .ds-wrap{padding:14px;background:var(--sjokortsbla);} .ds-input{width:100%;box-sizing:border-box;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:11px 12px;color:var(--dimma);font-size:16px;font-family:Calibri,\"Segoe UI\",system-ui,-apple-system,sans-serif;outline:none;transition:border-color .15s;} .ds-input::placeholder{color:var(--vass);} .ds-input:focus-visible{border-color:var(--barnsten);}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Sjökortet i handen",
+    "overview": "Kartan är allt. FF Map ska kännas som ett modernt sjökort som man håller i båten: djupfärgerna, kurvorna och vattnet fyller hela skärmen, och allt annat är diskreta instrument ovanpå. Knappar, chips och rutor är halvgenomskinliga i sjökortsblått, svävar över kartan med mjuk skugga och tar så lite plats som möjligt tills de behövs. Då blir de tydliga: en panel glider upp nerifrån, ett val lyser bärnstensorange och greppremsan glöder blått när man håller i den.\n\nFärgen i appen kommer från kartan och från fiskarna. Gränssnittet håller sig själv mörkt och dämpat, sjökortsblått, dimvitt och vassgrått, så att djupfärgerna och artfärgerna syns. Det enda gränssnittet får lysa med är bärnsten, och bara för det som är valt eller påslaget. När kartan ska tolkas (Kartanalys, Heatmap) tonas den ner och gråtonas, och det som hittats lyser igenom med en tunn vit kant.\n\nTäthet och tempo följer tävlingsdagen: allt viktigt nås med en hand, texter är korta och svenska, och inget kräver precision. Ytor och linjer är mjuka och kantutjämnade, aldrig pixliga eller trappiga.",
+    "keyCharacteristics": [
+      "Kartan fyller hela skärmen; gränssnittet svävar som mörkt, halvgenomskinligt glas ovanpå.",
+      "Bärnsten är enda gränssnittsaccenten och betyder alltid \"valt / på\".",
+      "Artfärger (abborre orange, gädda grön, gös gul, fara röd, hem blå) är signaler på kartan, inte dekoration.",
+      "Bottenrutor med greppremsa är den gemensamma formen för allt som öppnas.",
+      "Mjuka toningar i över- och underkant (nattvatten) i stället för hårda kanter mot kartan."
+    ],
+    "rules": [
+      {
+        "name": "The Bärnsten Means On Rule",
+        "body": "Bärnsten används bara för det som är valt, påslaget eller är huvudhandlingen (Spara). Aldrig som dekoration, aldrig för varningar.",
+        "section": "colors"
+      },
+      {
+        "name": "The Map Owns Color Rule",
+        "body": "Gränssnittet självt är sjökortsblått, dimvitt och grått. Färgstarka ytor hör till kartan (djup, lä, analys, heatmap) och till arterna.",
+        "section": "colors"
+      },
+      {
+        "name": "The Species Is Its Color Rule",
+        "body": "Abborre är alltid orange (#FF7A1A), gädda grön (#35D24A), gös gul (#FFD21A), fara röd, hem blå – på pinnar, prickar, chips och skalor.",
+        "section": "colors"
+      },
+      {
+        "name": "The Serif Is The Lake Rule",
+        "body": "Serifen används bara för sjöns namn. Allt annat är sans-serif.",
+        "section": "typography"
+      },
+      {
+        "name": "The Glass Over Chart Rule",
+        "body": "Kontroller ovanpå kartan är alltid halvgenomskinligt sjökortsblått med oskärpa och mjuk skugga – aldrig helt täckande plattor som skär bort kartan.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** låt kartan synas: kontroller är glas (72 % sjökortsblått med 6 px oskärpa) och tar så lite plats som möjligt.",
+      "**Do** använd bärnsten (#E8A33D) för exakt det som är valt eller på, och sjökortsblå text på den.",
+      "**Do** öppna allt nytt som en bottenruta med greppremsa, ✕ och blå glöd när den dras – och lägg nya rutor i glöd- och greppreglerna.",
+      "**Do** rita linjer och kanter på kartan kantutjämnade och aldrig tunnare än en ritad punkt (se lä och Kartanalys).",
+      "**Do** håll tryckytor stora nog för blöta fingrar (rundknappar 48 px, greppremsa 30 px hög) och text läsbar i sol.",
+      "**Do** ge statusraden, bakgrunden och toningarna samma nattvatten."
+    ],
+    "donts": [
+      "**Don't** rita egna djupkurvor eller djupsiffror – bara Genesis kartbilder.",
+      "**Don't** använd bärnsten för varningar eller dekoration; varningar är orange (#DE8012) eller röda.",
+      "**Don't** låt en art byta färg mellan vyer.",
+      "**Don't** lägg helt täckande plattor över kartan eller hårda kanter mot statusraden.",
+      "**Don't** låt Fara eller åskvarning gå att dölja med filter eller val."
+    ]
+  }
+}
