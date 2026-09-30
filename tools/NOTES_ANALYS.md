@@ -46,8 +46,13 @@ svepande ljus), en knapprad: Åk hit, Liknande → Kartanalys "Liknande", Ta bor
   still, grövre medan man drar (och på stora skärmar); steget ingår i cache-nyckeln.
 - **Av efter omstart** (kvar vid vridning, `rotState`); inget att visa (t.ex. Liknande innan
   platserna laddats) = ingen gråtoning.
-- Panelen: ingen rubrik, ✕ i greppremsan, "Rensa" efter en avskiljare, grå utan val, tydlig
-  med ljussvep när något är valt. Dra = mindre, snärt/hela vägen = stäng (`sheetSwipe`, tools/UI.md).
+- Panelen (som heatmapens): rubrik "Kartanalys · hitta ställen", **kategorirad** överst (`#anCatSeg`:
+  Kartdata / Tumregler / Fångster / Liknande – `anSet.cat`, `anCatOf(mode)`; kategorin med det som är på
+  får en amber understrykning), sedan bara den kategorins knappar. Liknande = kategorin själv (inget extra
+  val). Längst ner: **✕ Stäng av kartanalys** (`#anClear`, grå när inget är på) och **↺ Återställ**
+  (`#anReset`: alla inställningar i panelen tillbaka till start – `AN_DEFAULTS`; läget som visas och
+  "Mörkare" i Inställningar behålls; grå när allt redan är som från start). Tumreglerna ser ut som
+  vanliga knappar. Dra = mindre, snärt/hela vägen = stäng (`sheetSwipe`, tools/UI.md).
 - **Liknande**: välj vad som jämförs (djup, lutning, botten, växter, grynna/håla) och område
   (bara platsen/25/50/100 m = snittet inom radien, `anSimFeatures`), med förklaring. Platsen
   själv lyser och får en rosa ring (`.anLbl.simRef`), men står inte i listan (inget inom 60 m);

@@ -64,13 +64,14 @@
   </div>
   <div id="anPanel" role="dialog" aria-label="Kartanalys">
     <div class="grab"><button type="button" id="anClose" class="gripX" aria-label="Stäng">✕</button></div>
+    <div class="anSub" style="margin-top:0">Kartanalys · hitta ställen</div>
+    <div class="anSeg" id="anCatSeg"><button type="button" data-cat="map">Kartdata</button><button type="button" data-cat="rule">Tumregler</button><button type="button" data-cat="data">Fångster</button><button type="button" data-cat="similar">Liknande</button></div>
     <div class="anChips" id="anChips"></div>
-    <div class="anSub">Förinställt (tumregler)</div>
-    <div class="anChips pre" id="anPresets"></div>
-    <div class="anSub" id="anDataHead" hidden>Från fångsterna (data)</div>
-    <div class="anChips" id="anDataChips" hidden></div>
+    <div class="anChips" id="anPresets"></div>
+    <div class="anChips" id="anDataChips"></div>
     <div id="anControls"></div>
     <div id="anResult"></div>
+    <div class="anChips anBottom"><button type="button" id="anClear" class="anClr" disabled>✕ Stäng av kartanalys</button><button type="button" id="anReset">↺ Återställ</button></div>
   </div>
   <div id="hmPanel" role="dialog" aria-label="Heatmap">
     <div class="grab"><button type="button" id="hmClose" class="gripX" aria-label="Stäng">✕</button></div>
@@ -83,7 +84,7 @@
     <div class="anChips" id="hmComp"></div>
     <div id="hmCtl"></div>
     <div id="hmResult"></div>
-    <div class="anChips"><button type="button" id="hmOff" class="anClr">✕ Stäng av heatmap</button></div>
+    <div class="anChips anBottom"><button type="button" id="hmOff" class="anClr">✕ Stäng av heatmap</button><button type="button" id="hmReset">↺ Återställ</button></div>
   </div>
   <div id="hmCard" role="dialog" aria-label="Fångst"><div class="grab"><button type="button" id="hmCardClose" class="gripX" aria-label="Stäng">✕</button></div>
     <div id="hmCardKick"></div><div id="hmCardTitle"></div>

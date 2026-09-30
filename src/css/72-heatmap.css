@@ -27,7 +27,6 @@
   #hmResult{margin-top:10px;font-size:13px;color:#dbe4e7;line-height:1.4;}
   #hmResult b{color:var(--amber);}
   #hmResult .note{display:block;color:var(--text-muted);font-size:11.5px;margin-top:3px;}
-  #hmOff{margin-top:4px;}
   #hmCard{position:absolute;left:0;right:0;bottom:0;z-index:27;background:var(--navy);border-top:1px solid rgba(255,255,255,.14);border-radius:18px 18px 0 0;
     padding:8px 16px calc(env(safe-area-inset-bottom,0px) + 16px);box-shadow:0 -10px 30px rgba(0,0,0,.45);transform:translateY(105%);transition:transform .25s ease;overflow-y:auto;}
   #hmCard.show{transform:none;}

@@ -11,6 +11,7 @@
      kept through a rotation. The panel closed: a "Heatmap" pill under the weather chip. */
   var HM_KEY = lakeKey('ffmap_heatmap_v1', 'heatmap_v1');
   var hmSet = { style: 'heat', sp: 'all', spOn: { abborre: 1, gadda: 1, gos: 1 }, comp: 'all', rad: 70, str: 50, hexM: 60, cnt: 1, big: 1, names: 0 };
+  var HM_DEFAULTS = JSON.stringify(hmSet);   // (for "Återställ")
   try { var hsv = JSON.parse(localStorage.getItem(HM_KEY) || 'null'); if (hsv) for (var hk in hsv) hmSet[hk] = hsv[hk]; } catch(e){}
   function hmSave(){ try { localStorage.setItem(HM_KEY, JSON.stringify(hmSet)); } catch(e){} }
   var hmFitPending = false;  // (turned on by hand: show the catches if none is on screen)
@@ -99,6 +100,7 @@
 
   function hmRenderPanel(){
     Array.prototype.forEach.call(hmPanel.querySelectorAll('#hmStyleSeg button'), function(b){ b.classList.toggle('on', b.getAttribute('data-s') === hmSet.style); });
+    document.getElementById('hmReset').disabled = JSON.stringify(hmSet) === HM_DEFAULTS;
     var st = hmSet.style, comps = hmComps();
     if (hmSet.comp !== 'all' && !comps.some(function(c){ return c.id === hmSet.comp; })) hmSet.comp = 'all';
     document.getElementById('hmLegend').innerHTML = (st === 'heat' || st === 'hex') ? '<span>Få</span><span class="bar"></span><span>Många fångster</span>' : '';
@@ -149,6 +151,7 @@
   });
   document.getElementById('hmClose').addEventListener('click', function(){ hmShowPanel(false); });
   document.getElementById('hmOff').addEventListener('click', function(){ hmSetOn(false); });
+  document.getElementById('hmReset').addEventListener('click', function(){ hmSet = JSON.parse(HM_DEFAULTS); hmSave(); hmHeatCache = null; hmRenderPanel(); hmDraw(); });
   sheetSwipe(hmPanel, function(){ hmShowPanel(false); });
 
   // ---- drawing (a screen canvas like Kartanalys: the map toned down, the catches on top) ----
@@ -193,8 +196,10 @@
     // the map toned down and greyed like in Kartanalys (Inställningar "Mörkare")
     hmSatCtx.fillStyle = 'rgba(128,128,128,' + Math.min(1, anSet.dim + 0.2) + ')'; hmSatCtx.fillRect(0, 0, W, H);
     hmCtx.fillStyle = 'rgba(6,14,20,' + anSet.dim + ')'; hmCtx.fillRect(0, 0, W, H);
-    var L = hmVisible(); if (!L.length) return;
-    var mpp = WEB_METERS_PER_PX / scale, st = hmSet.style;
+    var L = hmVisible(), st = hmSet.style;
+    if (st !== 'heat' && st !== 'species' || !L.length) hmDrawShore(W, H);
+    if (!L.length) return;
+    var mpp = WEB_METERS_PER_PX / scale;
     var P = L.map(function(c){ return { c: c, x: originX + c.px * scale, y: originY + c.py * scale }; });
     if (st === 'heat' || st === 'species'){
       var STEP = viewStep(W, H), key = [originX.toFixed(1), originY.toFixed(1), scale.toFixed(5), W, H, STEP, catchVer, JSON.stringify(hmSet)].join('|');
@@ -213,6 +218,7 @@
       }
       hmCtx.imageSmoothingEnabled = true;
       hmCtx.drawImage(hmHeatCache.cv, 0, 0, hmHeatCache.cv.width * hmHeatCache.STEP, hmHeatCache.cv.height * hmHeatCache.STEP);
+      hmDrawShore(W, H);
     } else if (st === 'hex'){
       var R = hmSet.hexM / Math.sqrt(3), mI = WEB_METERS_PER_PX, cells = {}, mx = 0;
       L.forEach(function(c){ var h = hmHexOf(c.px * mI, c.py * mI, R), k = h.q + ',' + h.r; (cells[k] = cells[k] || { q: h.q, r: h.r, list: [] }).list.push(c); });
@@ -252,6 +258,40 @@
       hmCtx.beginPath(); hmCtx.arc(sx, sy, (st === 'dots' ? hmDotR(sel) : 6) + 6, 0, 7);
       hmCtx.lineWidth = 3; hmCtx.strokeStyle = '#fff'; hmCtx.stroke();
     }
+  }
+  // the lake's edge: a thin white line at 50 %, drawn exactly like Kartanalys' (the lake field smoothed
+  // to about one drawn point, the line where it crosses 0,5 -- see anField / edgeW)
+  var hmShoreBox = { p: null }, hmShoreCache = null, HM_NOMASK = null;
+  function hmShoreLayer(W, H){
+    var A = anBase(); if (!A) return null;
+    var STEP = viewStep(W, H), key = [originX.toFixed(1), originY.toFixed(1), scale.toFixed(5), W, H, STEP].join('|');
+    if (hmShoreCache && hmShoreCache.key === key) return hmShoreCache;
+    if (!HM_NOMASK || HM_NOMASK.length !== A.N) HM_NOMASK = new Uint8Array(A.N);
+    var vw = Math.ceil(W / STEP), vh = Math.ceil(H / STEP), fp = A.W / IMG_W / scale * STEP;
+    var Lf = anField({ ver: 'shore', M: HM_NOMASK, G: null }, A, Math.max(0, Math.round(Math.log(Math.max(1, fp)) / Math.LN2)), hmShoreBox);
+    var g = Lf.f[2], LW2 = Lf.w, LH2 = Lf.h, kx = A.W / IMG_W / (1 << Lf.lv), ky = A.H / IMG_H / (1 << Lf.lv), fl = new Float32Array(vw * vh);
+    for (var y = 0; y < vh; y++) for (var x = 0; x < vw; x++){
+      var fx = (x * STEP + 1 - originX) / scale * kx - 0.5, fy = (y * STEP + 1 - originY) / scale * ky - 0.5, x0 = Math.floor(fx), y0 = Math.floor(fy), tx = fx - x0, ty = fy - y0, a = 0;
+      for (var dy = 0; dy <= 1; dy++) for (var dx = 0; dx <= 1; dx++){
+        var cx = x0 + dx, cy = y0 + dy; if (cx < 0 || cy < 0 || cx >= LW2 || cy >= LH2) continue;
+        a += g[cy * LW2 + cx] * (dx ? tx : 1 - tx) * (dy ? ty : 1 - ty);
+      }
+      fl[y * vw + x] = a;
+    }
+    var cv = document.createElement('canvas'); cv.width = vw; cv.height = vh;
+    var o = cv.getContext('2d'), im = o.createImageData(vw, vh), d = im.data, ES = edgeW(STEP, 0.9);
+    for (var y2 = 0; y2 < vh; y2++) for (var x2 = 0; x2 < vw; x2++){
+      var q = y2 * vw + x2;
+      var gx = (fl[x2 < vw - 1 ? q + 1 : q] - fl[x2 > 0 ? q - 1 : q]) / 2, gy = (fl[y2 < vh - 1 ? q + vw : q] - fl[y2 > 0 ? q - vw : q]) / 2;
+      var es = Math.max(0, Math.min(1, 1 - Math.abs((fl[q] - 0.5) / (Math.sqrt(gx * gx + gy * gy) + 1e-3)) / ES[0])) * ES[1];
+      if (es > 0){ var k = q * 4; d[k] = d[k + 1] = d[k + 2] = 255; d[k + 3] = 128 * es; }
+    }
+    o.putImageData(im, 0, 0);
+    return (hmShoreCache = { key: key, cv: cv, STEP: STEP });
+  }
+  function hmDrawShore(W, H){
+    var sh = hmShoreLayer(W, H); if (!sh) return;
+    hmCtx.imageSmoothingEnabled = true; hmCtx.drawImage(sh.cv, 0, 0, sh.cv.width * sh.STEP, sh.cv.height * sh.STEP);
   }
   function hmDotR(c){ return hmSet.big ? Math.max(3.5, Math.min(11, 3 + c.cm / 14)) : 5.5; }
 

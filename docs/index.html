@@ -746,9 +746,9 @@
     font-size:16px;line-height:30px;cursor:pointer;-webkit-tap-highlight-color:transparent;color:rgba(255,255,255,.3);}
   .gripX:active{color:#fff;}
   /* holding the grip: the top edge lights up blue + a soft blue spotlight, the bar white and glowing */
-  #wpSheet.dragging, #anPanel.dragging, #msgCard.dragging{border-top-color:#58b4ff;box-shadow:0 -10px 30px rgba(0,0,0,.45),0 -2px 14px rgba(88,180,255,.9);}
-  #wpSheet.dragging .sheetGrab, #anPanel.dragging .grab, #msgCard.dragging .grab{background:radial-gradient(ellipse 60% 140% at 50% 0%,rgba(80,170,255,.45),rgba(80,170,255,0) 70%),var(--navy);}
-  #wpSheet.dragging .sheetHandle, #anPanel.dragging .grab::before, #msgCard.dragging .grab::before{background:#fff;box-shadow:0 0 12px 2px #4aa3ff;}
+  #wpSheet.dragging, #anPanel.dragging, #msgCard.dragging, #hmPanel.dragging, #hmCard.dragging{border-top-color:#58b4ff;box-shadow:0 -10px 30px rgba(0,0,0,.45),0 -2px 14px rgba(88,180,255,.9);}
+  #wpSheet.dragging .sheetGrab, #anPanel.dragging .grab, #msgCard.dragging .grab, #hmPanel.dragging .grab, #hmCard.dragging .grab{background:radial-gradient(ellipse 60% 140% at 50% 0%,rgba(80,170,255,.45),rgba(80,170,255,0) 70%),var(--navy);}
+  #wpSheet.dragging .sheetHandle, #anPanel.dragging .grab::before, #msgCard.dragging .grab::before, #hmPanel.dragging .grab::before, #hmCard.dragging .grab::before{background:#fff;box-shadow:0 0 12px 2px #4aa3ff;}
   /* type picker in the spot sheet */
   .typeSeg{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 12px;}
   .typeSeg[hidden]{display:none;}
@@ -1268,7 +1268,6 @@
   .anChips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;}
   .anChips button{font:inherit;font-size:12.5px;padding:6px 10px;border-radius:14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:var(--offwhite);cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent;}
   .anChips button.on{background:var(--amber);color:var(--navy);font-weight:700;border-color:var(--amber);}
-  .anChips.pre button{border-color:rgba(232,163,61,.45);}
   .anSub{margin-top:11px;font-size:10.5px;font-weight:700;letter-spacing:.08em;color:var(--text-muted);text-transform:uppercase;}
   #anControls{margin-top:6px;}
   .anRange{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12.5px;color:#dbe4e7;}
@@ -1319,6 +1318,9 @@
     animation:simRing 2s ease-out infinite;box-sizing:border-box;}
   .anLbl.simRef::after{animation-delay:1s;}
   @keyframes simRing{0%{transform:scale(.25);opacity:1;}100%{transform:scale(1.6);opacity:0;}}
+  .anBottom{margin-top:12px;}
+  #anCatSeg{margin-top:6px;}
+  #anCatSeg button.has{box-shadow:inset 0 -2px 0 var(--amber);}      /* (what's on is in this category) */
   .anSep{width:1.5px;align-self:stretch;background:rgba(255,255,255,.3);border-radius:1px;margin:3px 3px;}
   .anChips .anClr{position:relative;overflow:hidden;background:rgba(232,163,61,.16);border:1.5px solid var(--amber);color:#fff;font-weight:700;}
   .anChips .anClr::after{content:'';position:absolute;top:0;bottom:0;left:-60%;width:50%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.45),transparent);animation:clrSweep 2.6s ease-in-out infinite;}
@@ -1355,7 +1357,6 @@
   #hmResult{margin-top:10px;font-size:13px;color:#dbe4e7;line-height:1.4;}
   #hmResult b{color:var(--amber);}
   #hmResult .note{display:block;color:var(--text-muted);font-size:11.5px;margin-top:3px;}
-  #hmOff{margin-top:4px;}
   #hmCard{position:absolute;left:0;right:0;bottom:0;z-index:27;background:var(--navy);border-top:1px solid rgba(255,255,255,.14);border-radius:18px 18px 0 0;
     padding:8px 16px calc(env(safe-area-inset-bottom,0px) + 16px);box-shadow:0 -10px 30px rgba(0,0,0,.45);transform:translateY(105%);transition:transform .25s ease;overflow-y:auto;}
   #hmCard.show{transform:none;}
@@ -1868,13 +1869,14 @@
   </div>
   <div id="anPanel" role="dialog" aria-label="Kartanalys">
     <div class="grab"><button type="button" id="anClose" class="gripX" aria-label="Stäng">✕</button></div>
+    <div class="anSub" style="margin-top:0">Kartanalys · hitta ställen</div>
+    <div class="anSeg" id="anCatSeg"><button type="button" data-cat="map">Kartdata</button><button type="button" data-cat="rule">Tumregler</button><button type="button" data-cat="data">Fångster</button><button type="button" data-cat="similar">Liknande</button></div>
     <div class="anChips" id="anChips"></div>
-    <div class="anSub">Förinställt (tumregler)</div>
-    <div class="anChips pre" id="anPresets"></div>
-    <div class="anSub" id="anDataHead" hidden>Från fångsterna (data)</div>
-    <div class="anChips" id="anDataChips" hidden></div>
+    <div class="anChips" id="anPresets"></div>
+    <div class="anChips" id="anDataChips"></div>
     <div id="anControls"></div>
     <div id="anResult"></div>
+    <div class="anChips anBottom"><button type="button" id="anClear" class="anClr" disabled>✕ Stäng av kartanalys</button><button type="button" id="anReset">↺ Återställ</button></div>
   </div>
   <div id="hmPanel" role="dialog" aria-label="Heatmap">
     <div class="grab"><button type="button" id="hmClose" class="gripX" aria-label="Stäng">✕</button></div>
@@ -1887,7 +1889,7 @@
     <div class="anChips" id="hmComp"></div>
     <div id="hmCtl"></div>
     <div id="hmResult"></div>
-    <div class="anChips"><button type="button" id="hmOff" class="anClr">✕ Stäng av heatmap</button></div>
+    <div class="anChips anBottom"><button type="button" id="hmOff" class="anClr">✕ Stäng av heatmap</button><button type="button" id="hmReset">↺ Återställ</button></div>
   </div>
   <div id="hmCard" role="dialog" aria-label="Fångst"><div class="grab"><button type="button" id="hmCardClose" class="gripX" aria-label="Stäng">✕</button></div>
     <div id="hmCardKick"></div><div id="hmCardTitle"></div>
@@ -6882,7 +6884,7 @@
   var SHOW_AN_KEY = 'ffmap_show_analysis_v1';
   var AN_MODES = [
     ['depth', 'Djup'], ['steep', 'Branta kanter'], ['tops', 'Grynnor & hålor'], ['veg', 'Växter'],
-    ['hard', 'Hård botten'], ['wind', 'Vindkant'], ['similar', 'Liknande']
+    ['hard', 'Hård botten'], ['wind', 'Vindkant']
   ];
   var AN_PRESETS = [
     ['abborre', 'Abborre', 'grynnor och kanter på 2–6 m, gärna nära hård botten'],
@@ -6936,6 +6938,8 @@
   }
   var anSet = { simF: { d: 1, s: 1, h: 1, v: 1, t: 1 }, simR: 0, mode: null, lo: 4, hi: 6, slope: 10, elo: 0, ehi: AN_DMAX, topP: 0.6, holeP: 0.8, hmin: 3, hlo: 0, hhi: AN_DMAX, dim: 0.72, ref: null,
                cF: { d: 1, s: 1, h: 1, v: 1, l: 1, t: 1 }, cCov: 7, cView: 'area' };   // (c* = "Från fångsterna", 57-an-catches.js)
+  var AN_DEFAULTS = JSON.stringify(anSet);   // (for "Återställ")
+  anSet.cat = 'map';                            // the category shown: map / rule / data / similar
   try { var sv = JSON.parse(localStorage.getItem(AN_KEY) || 'null'); if (sv) for (var k0 in sv) anSet[k0] = sv[k0]; } catch(e){}
   if (!rotState) anSet.mode = null;          // a new start of the app: off (turning the phone keeps it)
   var anShow = true;
@@ -7202,14 +7206,15 @@
   // never had that: it's drawn from a smooth field. So the same here: halve the grid (averaging)
   // until a cell is about one drawn point, then soften with a 1-2-1 filter. Cached per result and
   // level; the edge is then found in this smooth field exactly like the lee's.
-  var anPyr = null;
-  function anField(R, A, lv){
-    if (!anPyr || anPyr.ver !== R.ver || anPyr.A !== A){
+  var anPyrBox = { p: null };          // (one cache per user: Kartanalys here, the heat map's shore line its own)
+  function anField(R, A, lv, box){
+    box = box || anPyrBox;
+    if (!box.p || box.p.ver !== R.ver || box.p.A !== A){
       var N0 = A.W * A.H, f0 = [new Float32Array(N0), new Float32Array(N0), new Float32Array(N0), R.G ? new Float32Array(R.G) : new Float32Array(N0)];
       for (var i0 = 0; i0 < N0; i0++){ var v0 = R.M[i0]; if (v0 === 1) f0[0][i0] = 1; else if (v0 === 2) f0[1][i0] = 1; if (A.lake[i0]) f0[2][i0] = 1; }
-      anPyr = { ver: R.ver, A: A, raw: [{ w: A.W, h: A.H, f: f0 }], soft: [] };
+      box.p = { ver: R.ver, A: A, raw: [{ w: A.W, h: A.H, f: f0 }], soft: [] };
     }
-    var P = anPyr;
+    var P = box.p;
     while (P.raw.length <= lv){
       var pr = P.raw[P.raw.length - 1], w2 = Math.ceil(pr.w / 2), h2 = Math.ceil(pr.h / 2), g = [];
       if (pr.w < 4 || pr.h < 4){ lv = P.raw.length - 1; break; }
@@ -7325,9 +7330,16 @@
     anBtn.classList.toggle('on', !!m);
     document.getElementById('anClear').disabled = !m;      // (only when there's something to clear)
     anDataRow();
+    var cat = anSet.cat || 'map';
+    Array.prototype.forEach.call(document.querySelectorAll('#anCatSeg button'), function(b){ b.classList.toggle('on', b.getAttribute('data-cat') === cat); b.classList.toggle('has', b.getAttribute('data-cat') === anCatOf(m) && cat !== anCatOf(m)); });
+    document.getElementById('anChips').hidden = cat !== 'map';
+    document.getElementById('anPresets').hidden = cat !== 'rule';
+    document.getElementById('anDataChips').hidden = cat !== 'data';
+    document.getElementById('anReset').disabled = anIsDefault();
     Array.prototype.forEach.call(document.querySelectorAll('#anChips button[data-m], #anPresets button[data-m], #anDataChips button[data-m]'), function(b){ b.classList.toggle('on', b.getAttribute('data-m') === m); });
     var R = anRes, res = document.getElementById('anResult');
-    if (!m) res.innerHTML = 'Välj vad du vill hitta. Det som matchar lyser, resten av kartan tonas ner.';
+    if (!m) res.innerHTML = { map: 'Välj vad du vill hitta på kartan. Det som matchar lyser, resten tonas ner.', rule: 'Tumregler från vanliga fiskeråd – inte fångstdata.',
+      data: 'Var arten liknar platserna där den togs i tävlingarna.', similar: 'Välj en fiskeplats att jämföra med.' }[cat] || '';
     else if (!R) res.innerHTML = 'Djupdatan laddas…';
     else if (R.wait) res.innerHTML = 'Hämtar bottendata…';
     else {
@@ -7346,10 +7358,8 @@
   // a slider with one handle: label, the bar, the value
   // "Från fångsterna (data)": a button per species with its number of catches here (< 10: can't be chosen)
   function anDataRow(){
-    var head = document.getElementById('anDataHead'), row = document.getElementById('anDataChips');
-    var L = catchData ? catchData.list : [];
-    head.hidden = row.hidden = !L.length;
-    if (!L.length) return;
+    var row = document.getElementById('anDataChips'), L = catchData ? catchData.list : [];
+    if (!L.length){ row.innerHTML = '<span class="anNote" style="margin-top:2px">' + (catchData ? 'Inga fångster från tävlingarna i ' + escHtml(LAKE.name) + ' än.' : 'Hämtar fångsterna…') + '</span>'; return; }
     row.innerHTML = [['abborre', 'Abborre'], ['gadda', 'Gädda'], ['gos', 'Gös']].map(function(x){
       var n = L.filter(function(c){ return c.sp === x[0]; }).length;
       return '<button type="button" data-m="c_' + x[0] + '"' + (n < AN_CMIN ? ' disabled' : '') + '>' + x[1] + ' ' + n + (n < AN_CMIN ? ' · för få' : '') + '</button>';
@@ -7456,15 +7466,23 @@
     if (e.target.id === 'anRefSel'){ anSet.ref = e.target.value; anSave(); anCompute(); }
   });
   function anSetMode(m){
-    anSet.mode = anSet.mode === m ? null : m; anSave(); anCtlMode = '#';
+    anSet.mode = anSet.mode === m ? null : m; if (anSet.mode) anSet.cat = anCatOf(anSet.mode); anSave(); anCtlMode = '#';
     if (anSet.mode && hmOn) hmSetOn(false);      // (not together with the heat map)
     if (anSet.mode && !anShow){ anShow = true; toggleAnEl.checked = true; try { localStorage.setItem(SHOW_AN_KEY, '1'); } catch(e){} }
     anCompute();
   }
   document.getElementById('anChips').innerHTML = AN_MODES.map(function(x){ return '<button type="button" data-m="' + x[0] + '">' + x[1] + '</button>'; }).join('');
-  document.getElementById('anPresets').innerHTML = AN_PRESETS.map(function(x){ return '<button type="button" data-m="' + x[0] + '">' + x[1] + '</button>'; }).join('') +
-    '<span class="anSep"></span><button type="button" id="anClear" class="anClr" disabled>✕ Rensa</button>';
+  document.getElementById('anPresets').innerHTML = AN_PRESETS.map(function(x){ return '<button type="button" data-m="' + x[0] + '">' + x[1] + '</button>'; }).join('');
+  // which category a mode is in (the row on top of the panel)
+  function anCatOf(m){ return !m ? null : m === 'similar' ? 'similar' : m.indexOf('c_') === 0 ? 'data' : AN_PRESETS.some(function(x){ return x[0] === m; }) ? 'rule' : 'map'; }
   anPanel.addEventListener('click', function(e){
+    var ct = e.target.closest ? e.target.closest('#anCatSeg button[data-cat]') : null;
+    if (ct){
+      anSet.cat = ct.getAttribute('data-cat'); anSave();
+      if (anSet.cat === 'similar' && anSet.mode !== 'similar') anSetMode('similar');   // (Liknande: one thing -- straight on)
+      else anRender();
+      return;
+    }
     var b = e.target.closest ? e.target.closest('button[data-m]') : null;
     if (b){ anSetMode(b.getAttribute('data-m')); return; }
     var g = e.target.closest ? e.target.closest('button[data-go]') : null;
@@ -7473,7 +7491,7 @@
   anPanel.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
   sheetSwipe(anPanel, function(){ showAnPanel(false); });
   function anLikeSpot(wp){
-    anSet.mode = 'similar'; anSet.ref = wp.id; anSave(); anCtlMode = '#';
+    anSet.mode = 'similar'; anSet.cat = 'similar'; anSet.ref = wp.id; anSave(); anCtlMode = '#';
     if (!anShow){ anShow = true; toggleAnEl.checked = true; try { localStorage.setItem(SHOW_AN_KEY, '1'); } catch(e){} }
     showAnPanel(true); anCompute();
   }
@@ -7485,6 +7503,12 @@
   anBtn.addEventListener('click', function(e){ e.stopPropagation(); showAnPanel(!anPanel.classList.contains('show')); });
   document.getElementById('anClose').addEventListener('click', function(){ showAnPanel(false); });
   document.getElementById('anClear').addEventListener('click', function(){ anSet.mode = null; anSave(); anCtlMode = '#'; anCompute(); });
+  // "Återställ": every setting in the panel back to how it was from the start (what's shown stays; "Mörkare" is in Inställningar)
+  function anIsDefault(){ var d = JSON.parse(AN_DEFAULTS); return Object.keys(d).every(function(k){ return k === 'mode' || k === 'dim' || JSON.stringify(anSet[k]) === JSON.stringify(d[k]); }); }
+  document.getElementById('anReset').addEventListener('click', function(){
+    var d = JSON.parse(AN_DEFAULTS); Object.keys(d).forEach(function(k){ if (k !== 'mode' && k !== 'dim') anSet[k] = d[k]; });
+    anExtraRef = null; anSave(); anCtlMode = '#'; anCompute();
+  });
   anLabelsEl.addEventListener('pointerdown', function(e){ e.stopPropagation(); if (e.target.closest && e.target.closest('.anLbl')) mapPointerDown(e, true); });
   anLabelsEl.addEventListener('click', function(e){
     var l = e.target.closest ? e.target.closest('.anLbl') : null; if (!l) return;
@@ -8123,6 +8147,7 @@
      kept through a rotation. The panel closed: a "Heatmap" pill under the weather chip. */
   var HM_KEY = lakeKey('ffmap_heatmap_v1', 'heatmap_v1');
   var hmSet = { style: 'heat', sp: 'all', spOn: { abborre: 1, gadda: 1, gos: 1 }, comp: 'all', rad: 70, str: 50, hexM: 60, cnt: 1, big: 1, names: 0 };
+  var HM_DEFAULTS = JSON.stringify(hmSet);   // (for "Återställ")
   try { var hsv = JSON.parse(localStorage.getItem(HM_KEY) || 'null'); if (hsv) for (var hk in hsv) hmSet[hk] = hsv[hk]; } catch(e){}
   function hmSave(){ try { localStorage.setItem(HM_KEY, JSON.stringify(hmSet)); } catch(e){} }
   var hmFitPending = false;  // (turned on by hand: show the catches if none is on screen)
@@ -8211,6 +8236,7 @@
 
   function hmRenderPanel(){
     Array.prototype.forEach.call(hmPanel.querySelectorAll('#hmStyleSeg button'), function(b){ b.classList.toggle('on', b.getAttribute('data-s') === hmSet.style); });
+    document.getElementById('hmReset').disabled = JSON.stringify(hmSet) === HM_DEFAULTS;
     var st = hmSet.style, comps = hmComps();
     if (hmSet.comp !== 'all' && !comps.some(function(c){ return c.id === hmSet.comp; })) hmSet.comp = 'all';
     document.getElementById('hmLegend').innerHTML = (st === 'heat' || st === 'hex') ? '<span>Få</span><span class="bar"></span><span>Många fångster</span>' : '';
@@ -8261,6 +8287,7 @@
   });
   document.getElementById('hmClose').addEventListener('click', function(){ hmShowPanel(false); });
   document.getElementById('hmOff').addEventListener('click', function(){ hmSetOn(false); });
+  document.getElementById('hmReset').addEventListener('click', function(){ hmSet = JSON.parse(HM_DEFAULTS); hmSave(); hmHeatCache = null; hmRenderPanel(); hmDraw(); });
   sheetSwipe(hmPanel, function(){ hmShowPanel(false); });
 
   // ---- drawing (a screen canvas like Kartanalys: the map toned down, the catches on top) ----
@@ -8305,8 +8332,10 @@
     // the map toned down and greyed like in Kartanalys (Inställningar "Mörkare")
     hmSatCtx.fillStyle = 'rgba(128,128,128,' + Math.min(1, anSet.dim + 0.2) + ')'; hmSatCtx.fillRect(0, 0, W, H);
     hmCtx.fillStyle = 'rgba(6,14,20,' + anSet.dim + ')'; hmCtx.fillRect(0, 0, W, H);
-    var L = hmVisible(); if (!L.length) return;
-    var mpp = WEB_METERS_PER_PX / scale, st = hmSet.style;
+    var L = hmVisible(), st = hmSet.style;
+    if (st !== 'heat' && st !== 'species' || !L.length) hmDrawShore(W, H);
+    if (!L.length) return;
+    var mpp = WEB_METERS_PER_PX / scale;
     var P = L.map(function(c){ return { c: c, x: originX + c.px * scale, y: originY + c.py * scale }; });
     if (st === 'heat' || st === 'species'){
       var STEP = viewStep(W, H), key = [originX.toFixed(1), originY.toFixed(1), scale.toFixed(5), W, H, STEP, catchVer, JSON.stringify(hmSet)].join('|');
@@ -8325,6 +8354,7 @@
       }
       hmCtx.imageSmoothingEnabled = true;
       hmCtx.drawImage(hmHeatCache.cv, 0, 0, hmHeatCache.cv.width * hmHeatCache.STEP, hmHeatCache.cv.height * hmHeatCache.STEP);
+      hmDrawShore(W, H);
     } else if (st === 'hex'){
       var R = hmSet.hexM / Math.sqrt(3), mI = WEB_METERS_PER_PX, cells = {}, mx = 0;
       L.forEach(function(c){ var h = hmHexOf(c.px * mI, c.py * mI, R), k = h.q + ',' + h.r; (cells[k] = cells[k] || { q: h.q, r: h.r, list: [] }).list.push(c); });
@@ -8364,6 +8394,40 @@
       hmCtx.beginPath(); hmCtx.arc(sx, sy, (st === 'dots' ? hmDotR(sel) : 6) + 6, 0, 7);
       hmCtx.lineWidth = 3; hmCtx.strokeStyle = '#fff'; hmCtx.stroke();
     }
+  }
+  // the lake's edge: a thin white line at 50 %, drawn exactly like Kartanalys' (the lake field smoothed
+  // to about one drawn point, the line where it crosses 0,5 -- see anField / edgeW)
+  var hmShoreBox = { p: null }, hmShoreCache = null, HM_NOMASK = null;
+  function hmShoreLayer(W, H){
+    var A = anBase(); if (!A) return null;
+    var STEP = viewStep(W, H), key = [originX.toFixed(1), originY.toFixed(1), scale.toFixed(5), W, H, STEP].join('|');
+    if (hmShoreCache && hmShoreCache.key === key) return hmShoreCache;
+    if (!HM_NOMASK || HM_NOMASK.length !== A.N) HM_NOMASK = new Uint8Array(A.N);
+    var vw = Math.ceil(W / STEP), vh = Math.ceil(H / STEP), fp = A.W / IMG_W / scale * STEP;
+    var Lf = anField({ ver: 'shore', M: HM_NOMASK, G: null }, A, Math.max(0, Math.round(Math.log(Math.max(1, fp)) / Math.LN2)), hmShoreBox);
+    var g = Lf.f[2], LW2 = Lf.w, LH2 = Lf.h, kx = A.W / IMG_W / (1 << Lf.lv), ky = A.H / IMG_H / (1 << Lf.lv), fl = new Float32Array(vw * vh);
+    for (var y = 0; y < vh; y++) for (var x = 0; x < vw; x++){
+      var fx = (x * STEP + 1 - originX) / scale * kx - 0.5, fy = (y * STEP + 1 - originY) / scale * ky - 0.5, x0 = Math.floor(fx), y0 = Math.floor(fy), tx = fx - x0, ty = fy - y0, a = 0;
+      for (var dy = 0; dy <= 1; dy++) for (var dx = 0; dx <= 1; dx++){
+        var cx = x0 + dx, cy = y0 + dy; if (cx < 0 || cy < 0 || cx >= LW2 || cy >= LH2) continue;
+        a += g[cy * LW2 + cx] * (dx ? tx : 1 - tx) * (dy ? ty : 1 - ty);
+      }
+      fl[y * vw + x] = a;
+    }
+    var cv = document.createElement('canvas'); cv.width = vw; cv.height = vh;
+    var o = cv.getContext('2d'), im = o.createImageData(vw, vh), d = im.data, ES = edgeW(STEP, 0.9);
+    for (var y2 = 0; y2 < vh; y2++) for (var x2 = 0; x2 < vw; x2++){
+      var q = y2 * vw + x2;
+      var gx = (fl[x2 < vw - 1 ? q + 1 : q] - fl[x2 > 0 ? q - 1 : q]) / 2, gy = (fl[y2 < vh - 1 ? q + vw : q] - fl[y2 > 0 ? q - vw : q]) / 2;
+      var es = Math.max(0, Math.min(1, 1 - Math.abs((fl[q] - 0.5) / (Math.sqrt(gx * gx + gy * gy) + 1e-3)) / ES[0])) * ES[1];
+      if (es > 0){ var k = q * 4; d[k] = d[k + 1] = d[k + 2] = 255; d[k + 3] = 128 * es; }
+    }
+    o.putImageData(im, 0, 0);
+    return (hmShoreCache = { key: key, cv: cv, STEP: STEP });
+  }
+  function hmDrawShore(W, H){
+    var sh = hmShoreLayer(W, H); if (!sh) return;
+    hmCtx.imageSmoothingEnabled = true; hmCtx.drawImage(sh.cv, 0, 0, sh.cv.width * sh.STEP, sh.cv.height * sh.STEP);
   }
   function hmDotR(c){ return hmSet.big ? Math.max(3.5, Math.min(11, 3 + c.cm / 14)) : 5.5; }
 

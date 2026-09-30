@@ -32,9 +32,10 @@ with sync_playwright() as p:
     pg.evaluate("(d) => { window.__catchDocs.regnaren = d; }", {'rows': json.dumps(rows), 'n': len(rows)})
     check('made-up catches: 25 gädda at 2-3 m', len(sh) == 25, len(sh))
     pg.click('#anBtn'); pg.wait_for_timeout(1500)
+    pg.click('#anCatSeg button[data-cat="data"]'); pg.wait_for_timeout(300)
     chips = pg.eval_on_selector_all('#anDataChips button', 'e => e.map(x => [x.textContent, x.disabled])')
     check('Kartanalys: "Från fångsterna (data)" -- Abborre 3 (för få, can\'t be chosen), Gädda 25, Gös 0',
-          pg.is_visible('#anDataHead') and chips == [['Abborre 3 · för få', True], ['Gädda 25', False], ['Gös 0 · för få', True]], chips)
+          pg.is_visible('#anDataChips') and chips == [['Abborre 3 · för få', True], ['Gädda 25', False], ['Gös 0 · för få', True]], chips)
     pg.click('#anDataChips button[data-m="c_gadda"]'); pg.wait_for_timeout(2500)
     a = an(pg); res = pg.inner_text('#anResult')
     check('Gädda (data): what stands out, incl. the depth (averaged within 25 m: "…–3 m")', a['mode'] == 'c_gadda' and a['ready'] and 'Gädda togs oftast' in res and re.search(r'\d–3 m', res), res)

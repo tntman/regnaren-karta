@@ -54,6 +54,19 @@ with sync_playwright() as p:
     check('the panel: 19 catches, 12 abborre, 6 gädda, 1 gös', '19 fångster' in res and '12 abborre' in res and '6 gädda' in res and '1 gös' in res, res)
     comps = pg.eval_on_selector_all('#hmComp button', 'e => e.map(x => x.textContent)')
     check('competitions: Alla, "Regnaren 1 · 25–26 sep", "Fiskfisk Open · 20 sep"', comps == ['Alla', 'Regnaren 1 · 25–26 sep', 'Fiskfisk Open · 20 sep'], comps)
+    g = pg.evaluate("(() => { var r = document.querySelector('#hmPanel .grab').getBoundingClientRect(); return [r.left + r.width / 2, r.top + 12]; })()")
+    pg.mouse.move(g[0], g[1]); pg.mouse.down(); pg.mouse.move(g[0], g[1] + 25, steps=4); pg.wait_for_timeout(100)
+    glow = pg.evaluate("getComputedStyle(document.getElementById('hmPanel')).borderTopColor")
+    pg.mouse.move(g[0], g[1], steps=3); pg.mouse.up(); pg.wait_for_timeout(300)
+    check('holding the grip of the panel: the top edge glows blue like the other panels', glow == 'rgb(88, 180, 255)', glow)
+    edge = pg.evaluate("""() => { var c = document.getElementById('hmLayer'), d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data, n = 0;
+      for (var i = 0; i < d.length; i += 4) if (d[i] > 120 && d[i + 1] > 120 && d[i + 2] > 120 && Math.abs(d[i] - d[i + 2]) < 20 && d[i + 3] > 200) n++; return n; }""")
+    check('the edge of the lake: a thin white line, like in Kartanalys', edge > 100, edge)
+    pg.evaluate("(() => { var e = document.querySelector('#hmCtl input[data-r=rad]'); e.value = 150; e.dispatchEvent(new Event('input', { bubbles: true })); })()"); pg.wait_for_timeout(300)
+    pg.click('#hmStyleSeg button[data-s="hex"]'); pg.wait_for_timeout(200); pg.click('#hmStyleSeg button[data-s="heat"]'); pg.wait_for_timeout(200)
+    check('settings changed: "Återställ" next to "Stäng av heatmap"', pg.is_enabled('#hmReset') and pg.inner_text('#hmReset') == '↺ Återställ')
+    pg.click('#hmReset'); pg.wait_for_timeout(300)
+    check('..."Återställ": back to the start (radius 70 m), still on; then greyed out', pg.inner_text('#hmOut_rad') == '70 m' and heat(pg)['on'] and pg.is_disabled('#hmReset'), pg.inner_text('#hmOut_rad'))
     check('the "Heatmap" pill under the weather chip', pg.is_visible('#hmPill') and pg.inner_text('#hmPill').strip() == 'Heatmap' and
           pg.evaluate("document.getElementById('hmPill').getBoundingClientRect().top > document.getElementById('wxChip').getBoundingClientRect().bottom - 1"))
     pg.screenshot(path='shot_heat_heat.png')
@@ -110,7 +123,7 @@ with sync_playwright() as p:
     # ---- not together with Kartanalys ----
     pg.click('#anBtn'); pg.wait_for_timeout(300)
     check('opening Kartanalys closes the heat map panel', pg.eval_on_selector('#anPanel', 'e => e.classList.contains("show")') and not heat(pg)['panel'])
-    pg.click('#anPanel button[data-m="depth"]'); pg.wait_for_timeout(800)
+    pg.click('#anCatSeg button[data-cat="map"]'); pg.click('#anPanel button[data-m="depth"]'); pg.wait_for_timeout(800)
     check('choosing something in Kartanalys: the heat map goes off (and its pill)', not heat(pg)['on'] and not pg.is_visible('#hmPill') and pg.evaluate('window.__ffAnalysis().mode') == 'depth')
     pg.click('#anClose'); pg.wait_for_timeout(300)
     open_heat(pg)

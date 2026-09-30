@@ -36,7 +36,8 @@ Exempel: platsens ruta `#wpSheet`, Kartanalys `#anPanel`.
 (`.gripX`, bara tecknet – ingen ram, 16 px, samma grå som strecket) i remsans högra hörn; tryckytan 46 × 30 px. Ingen rubrik,
 ingen Avbryt-knapp. ✕ startar ingen dragning (`sheetSwipe` hoppar över `.gripX`).
 **Håller man i remsan** (`.dragging`): överkanten lyser blå + en mjuk blå strålkastare i remsan,
-strecket vitt och lysande.
+strecket vitt och lysande. **Ny bottenruta:** lägg till dess id i glöd-reglerna (`css/40-spots-boats.css`,
+`.dragging`) och i greppremsans regler (`css/80-panels.css`) – annars saknas glöden (hände heatmapen).
 
 ## Knapprad i en ruta
 

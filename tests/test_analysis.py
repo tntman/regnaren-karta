@@ -13,8 +13,12 @@ B3 = (58.887269, 15.772629)                      # on Regnaren's water (south ba
 cfg = {'waypoints': [{'lat': 58.88651, 'lon': 15.777774, 'name': 'Djupa hålet', 'uid': 'filip', 'by': 'Filip', 'type': 'abborre'}]}
 
 def an(pg): return pg.evaluate('window.__ffAnalysis()')
+CAT = {'abborre': 'rule', 'gadda': 'rule', 'gos': 'rule', 'similar': 'similar'}
 def pick(pg, m, wait=1300):
-    pg.click('#anPanel button[data-m="%s"]' % m); pg.wait_for_timeout(wait); return an(pg)
+    # the category first (the row on top), then the choice in it (Liknande: the category is the choice)
+    pg.click('#anCatSeg button[data-cat="%s"]' % CAT.get(m, 'map')); pg.wait_for_timeout(150)
+    if m != 'similar': pg.click('#anPanel button[data-m="%s"]' % m)
+    pg.wait_for_timeout(wait); return an(pg)
 def lit(pg):
     return pg.evaluate("""() => { var c = document.getElementById('anLayer'); if (!c.classList.contains('on')) return 0;
       var d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data, n = 0; for (var i = 3; i < d.length; i += 4) if (d[i] > 0) n++; return n; }""")
@@ -30,8 +34,14 @@ with sync_playwright() as p:
     pg.click('#visMoreBtn'); pg.wait_for_timeout(200)
     check('nothing chosen yet: nothing drawn', an(pg)['mode'] is None and lit(pg) == 0)
     pg.click('#anBtn'); pg.wait_for_timeout(400)
+    cats = pg.eval_on_selector_all('#anCatSeg button', 'e => e.map(x => x.textContent)')
     chips = pg.eval_on_selector_all('#anChips button', 'e => e.map(x => x.textContent)') + pg.eval_on_selector_all('#anPresets button[data-m]', 'e => e.map(x => x.textContent)')
-    check('one panel with every analysis + the presets', pg.is_visible('#anPanel') and chips == ['Djup', 'Branta kanter', 'Grynnor & hålor', 'Växter', 'Hård botten', 'Vindkant', 'Liknande', 'Abborre', 'Gädda', 'Gös'], chips)
+    check('the panel: categories on top (Kartdata / Tumregler / Fångster / Liknande), Kartdata shown', cats == ['Kartdata', 'Tumregler', 'Fångster', 'Liknande'] and pg.is_visible('#anChips') and not pg.is_visible('#anPresets'), cats)
+    check('...every analysis + the rules of thumb', chips == ['Djup', 'Branta kanter', 'Grynnor & hålor', 'Växter', 'Hård botten', 'Vindkant', 'Abborre', 'Gädda', 'Gös'], chips)
+    pg.click('#anCatSeg button[data-cat="rule"]'); pg.wait_for_timeout(150)
+    check('...Tumregler: its three, like any other button (no orange edge)', pg.is_visible('#anPresets') and not pg.is_visible('#anChips') and
+          pg.eval_on_selector('#anPresets button', 'e => getComputedStyle(e).borderTopColor') == pg.eval_on_selector('#anChips button', 'e => getComputedStyle(e).borderTopColor'))
+    pg.click('#anCatSeg button[data-cat="map"]'); pg.wait_for_timeout(150)
     a = pick(pg, 'depth')
     check('Djup 4–6 m: a share of the lake lit, the rest toned down', a['ready'] and a['n'] > 1000 and '4,0–6,0 m' in a['text'] and lit(pg) > 10000, a)
     n46 = a['n']
@@ -98,7 +108,7 @@ with sync_playwright() as p:
     check('drag inside the panel: no resizing (only scrolling)', abs(panel()[0] - h1) < 2 and panel()[1], (h1, panel()))
     # scrolling works when the finger starts on anything in it (a chip, a button), not just empty space
     pg.eval_on_selector('#anPanel', 'e => e.scrollTop = 0'); pg.wait_for_timeout(100)
-    ch = pg.eval_on_selector('#anChips button', 'e => { var r = e.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; }')
+    ch = pg.eval_on_selector('#anCatSeg button', 'e => { var r = e.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; }')
     touch(ch[0], ch[1], ch[1] - 120, 12, 25)
     check('scrolling from a chip (finger on a button) scrolls the panel', pg.eval_on_selector('#anPanel', 'e => e.scrollTop') > 20, pg.eval_on_selector('#anPanel', 'e => e.scrollTop'))
     pg.eval_on_selector('#anPanel', 'e => e.scrollTop = 0')
@@ -121,11 +131,19 @@ with sync_playwright() as p:
     pg.reload(); pg.wait_for_timeout(3000)
     check('after a restart of the app: Kartanalys off (no grey map)', an(pg)['mode'] is None and lit(pg) == 0, an(pg))
     pg.click('#anBtn'); pg.wait_for_timeout(300)
-    check('the panel: no heading, ✕ in the grip strip; "Rensa" greyed out with nothing to clear', pg.is_visible('#anPanel .grab #anClose') and pg.is_disabled('#anClear') and not pg.eval_on_selector('#anClear', 'e => e.classList.contains("on")') and 'KARTANALYS' not in pg.inner_text('#anPanel'))
+    check('the panel: ✕ in the grip strip; at the bottom "Stäng av kartanalys" (greyed out with nothing on) + "Återställ"', pg.is_visible('#anPanel .grab #anClose') and pg.is_disabled('#anClear') and
+          pg.inner_text('#anClear') == '✕ Stäng av kartanalys' and pg.inner_text('#anReset') == '↺ Återställ' and not pg.eval_on_selector('#anClear', 'e => e.classList.contains("on")'))
     a = pick(pg, 'gos')
-    check('...something chosen: "Rensa" active (never the amber "chosen" look)', pg.is_enabled('#anClear') and not pg.eval_on_selector('#anClear', 'e => e.classList.contains("on")'))
+    check('...something chosen: "Stäng av kartanalys" active (never the amber "chosen" look)', pg.is_enabled('#anClear') and not pg.eval_on_selector('#anClear', 'e => e.classList.contains("on")'))
     pg.click('#anClear'); pg.wait_for_timeout(300)
-    check('"Rensa": nothing chosen, nothing drawn', an(pg)['mode'] is None and lit(pg) == 0)
+    check('"Stäng av kartanalys": nothing chosen, nothing drawn', an(pg)['mode'] is None and lit(pg) == 0)
+    # Återställ: every setting back to the start (what's on stays on)
+    a = pick(pg, 'steep')
+    pg.evaluate("(() => { var e = document.getElementById('anSlope'); e.value = 22; e.dispatchEvent(new Event('input', { bubbles: true })); })()"); pg.wait_for_timeout(900)
+    check('a setting changed: "Återställ" can be pressed', pg.is_enabled('#anReset'))
+    pg.click('#anReset'); pg.wait_for_timeout(1200)
+    check('..."Återställ": back to the start (lutning 10 %), still showing Branta kanter; then greyed out', an(pg)['mode'] == 'steep' and 'över 10 %' in an(pg)['text'] and pg.is_disabled('#anReset'), an(pg)['text'])
+    pg.click('#anClear'); pg.wait_for_timeout(300)
     # a spot's sheet: "Hitta liknande" opens the analysis on "Liknande" for that spot
     pg.evaluate("n => { var id = Object.keys(window.__wpDocs).filter(k => window.__wpDocs[k].name === n)[0]; document.querySelector('#waypoints [data-id=' + JSON.stringify(id) + ']').click(); }", 'Djupa hålet')
     pg.wait_for_timeout(400)

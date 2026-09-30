@@ -27,7 +27,6 @@
   .anChips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;}
   .anChips button{font:inherit;font-size:12.5px;padding:6px 10px;border-radius:14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:var(--offwhite);cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent;}
   .anChips button.on{background:var(--amber);color:var(--navy);font-weight:700;border-color:var(--amber);}
-  .anChips.pre button{border-color:rgba(232,163,61,.45);}
   .anSub{margin-top:11px;font-size:10.5px;font-weight:700;letter-spacing:.08em;color:var(--text-muted);text-transform:uppercase;}
   #anControls{margin-top:6px;}
   .anRange{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12.5px;color:#dbe4e7;}
@@ -78,6 +77,9 @@
     animation:simRing 2s ease-out infinite;box-sizing:border-box;}
   .anLbl.simRef::after{animation-delay:1s;}
   @keyframes simRing{0%{transform:scale(.25);opacity:1;}100%{transform:scale(1.6);opacity:0;}}
+  .anBottom{margin-top:12px;}
+  #anCatSeg{margin-top:6px;}
+  #anCatSeg button.has{box-shadow:inset 0 -2px 0 var(--amber);}      /* (what's on is in this category) */
   .anSep{width:1.5px;align-self:stretch;background:rgba(255,255,255,.3);border-radius:1px;margin:3px 3px;}
   .anChips .anClr{position:relative;overflow:hidden;background:rgba(232,163,61,.16);border:1.5px solid var(--amber);color:#fff;font-weight:700;}
   .anChips .anClr::after{content:'';position:absolute;top:0;bottom:0;left:-60%;width:50%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.45),transparent);animation:clrSweep 2.6s ease-in-out infinite;}

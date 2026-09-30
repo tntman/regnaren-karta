@@ -9,7 +9,7 @@
   var SHOW_AN_KEY = 'ffmap_show_analysis_v1';
   var AN_MODES = [
     ['depth', 'Djup'], ['steep', 'Branta kanter'], ['tops', 'Grynnor & hålor'], ['veg', 'Växter'],
-    ['hard', 'Hård botten'], ['wind', 'Vindkant'], ['similar', 'Liknande']
+    ['hard', 'Hård botten'], ['wind', 'Vindkant']
   ];
   var AN_PRESETS = [
     ['abborre', 'Abborre', 'grynnor och kanter på 2–6 m, gärna nära hård botten'],
@@ -63,6 +63,8 @@
   }
   var anSet = { simF: { d: 1, s: 1, h: 1, v: 1, t: 1 }, simR: 0, mode: null, lo: 4, hi: 6, slope: 10, elo: 0, ehi: AN_DMAX, topP: 0.6, holeP: 0.8, hmin: 3, hlo: 0, hhi: AN_DMAX, dim: 0.72, ref: null,
                cF: { d: 1, s: 1, h: 1, v: 1, l: 1, t: 1 }, cCov: 7, cView: 'area' };   // (c* = "Från fångsterna", 57-an-catches.js)
+  var AN_DEFAULTS = JSON.stringify(anSet);   // (for "Återställ")
+  anSet.cat = 'map';                            // the category shown: map / rule / data / similar
   try { var sv = JSON.parse(localStorage.getItem(AN_KEY) || 'null'); if (sv) for (var k0 in sv) anSet[k0] = sv[k0]; } catch(e){}
   if (!rotState) anSet.mode = null;          // a new start of the app: off (turning the phone keeps it)
   var anShow = true;
@@ -329,14 +331,15 @@
   // never had that: it's drawn from a smooth field. So the same here: halve the grid (averaging)
   // until a cell is about one drawn point, then soften with a 1-2-1 filter. Cached per result and
   // level; the edge is then found in this smooth field exactly like the lee's.
-  var anPyr = null;
-  function anField(R, A, lv){
-    if (!anPyr || anPyr.ver !== R.ver || anPyr.A !== A){
+  var anPyrBox = { p: null };          // (one cache per user: Kartanalys here, the heat map's shore line its own)
+  function anField(R, A, lv, box){
+    box = box || anPyrBox;
+    if (!box.p || box.p.ver !== R.ver || box.p.A !== A){
       var N0 = A.W * A.H, f0 = [new Float32Array(N0), new Float32Array(N0), new Float32Array(N0), R.G ? new Float32Array(R.G) : new Float32Array(N0)];
       for (var i0 = 0; i0 < N0; i0++){ var v0 = R.M[i0]; if (v0 === 1) f0[0][i0] = 1; else if (v0 === 2) f0[1][i0] = 1; if (A.lake[i0]) f0[2][i0] = 1; }
-      anPyr = { ver: R.ver, A: A, raw: [{ w: A.W, h: A.H, f: f0 }], soft: [] };
+      box.p = { ver: R.ver, A: A, raw: [{ w: A.W, h: A.H, f: f0 }], soft: [] };
     }
-    var P = anPyr;
+    var P = box.p;
     while (P.raw.length <= lv){
       var pr = P.raw[P.raw.length - 1], w2 = Math.ceil(pr.w / 2), h2 = Math.ceil(pr.h / 2), g = [];
       if (pr.w < 4 || pr.h < 4){ lv = P.raw.length - 1; break; }
@@ -452,9 +455,16 @@
     anBtn.classList.toggle('on', !!m);
     document.getElementById('anClear').disabled = !m;      // (only when there's something to clear)
     anDataRow();
+    var cat = anSet.cat || 'map';
+    Array.prototype.forEach.call(document.querySelectorAll('#anCatSeg button'), function(b){ b.classList.toggle('on', b.getAttribute('data-cat') === cat); b.classList.toggle('has', b.getAttribute('data-cat') === anCatOf(m) && cat !== anCatOf(m)); });
+    document.getElementById('anChips').hidden = cat !== 'map';
+    document.getElementById('anPresets').hidden = cat !== 'rule';
+    document.getElementById('anDataChips').hidden = cat !== 'data';
+    document.getElementById('anReset').disabled = anIsDefault();
     Array.prototype.forEach.call(document.querySelectorAll('#anChips button[data-m], #anPresets button[data-m], #anDataChips button[data-m]'), function(b){ b.classList.toggle('on', b.getAttribute('data-m') === m); });
     var R = anRes, res = document.getElementById('anResult');
-    if (!m) res.innerHTML = 'Välj vad du vill hitta. Det som matchar lyser, resten av kartan tonas ner.';
+    if (!m) res.innerHTML = { map: 'Välj vad du vill hitta på kartan. Det som matchar lyser, resten tonas ner.', rule: 'Tumregler från vanliga fiskeråd – inte fångstdata.',
+      data: 'Var arten liknar platserna där den togs i tävlingarna.', similar: 'Välj en fiskeplats att jämföra med.' }[cat] || '';
     else if (!R) res.innerHTML = 'Djupdatan laddas…';
     else if (R.wait) res.innerHTML = 'Hämtar bottendata…';
     else {
@@ -473,10 +483,8 @@
   // a slider with one handle: label, the bar, the value
   // "Från fångsterna (data)": a button per species with its number of catches here (< 10: can't be chosen)
   function anDataRow(){
-    var head = document.getElementById('anDataHead'), row = document.getElementById('anDataChips');
-    var L = catchData ? catchData.list : [];
-    head.hidden = row.hidden = !L.length;
-    if (!L.length) return;
+    var row = document.getElementById('anDataChips'), L = catchData ? catchData.list : [];
+    if (!L.length){ row.innerHTML = '<span class="anNote" style="margin-top:2px">' + (catchData ? 'Inga fångster från tävlingarna i ' + escHtml(LAKE.name) + ' än.' : 'Hämtar fångsterna…') + '</span>'; return; }
     row.innerHTML = [['abborre', 'Abborre'], ['gadda', 'Gädda'], ['gos', 'Gös']].map(function(x){
       var n = L.filter(function(c){ return c.sp === x[0]; }).length;
       return '<button type="button" data-m="c_' + x[0] + '"' + (n < AN_CMIN ? ' disabled' : '') + '>' + x[1] + ' ' + n + (n < AN_CMIN ? ' · för få' : '') + '</button>';
@@ -583,15 +591,23 @@
     if (e.target.id === 'anRefSel'){ anSet.ref = e.target.value; anSave(); anCompute(); }
   });
   function anSetMode(m){
-    anSet.mode = anSet.mode === m ? null : m; anSave(); anCtlMode = '#';
+    anSet.mode = anSet.mode === m ? null : m; if (anSet.mode) anSet.cat = anCatOf(anSet.mode); anSave(); anCtlMode = '#';
     if (anSet.mode && hmOn) hmSetOn(false);      // (not together with the heat map)
     if (anSet.mode && !anShow){ anShow = true; toggleAnEl.checked = true; try { localStorage.setItem(SHOW_AN_KEY, '1'); } catch(e){} }
     anCompute();
   }
   document.getElementById('anChips').innerHTML = AN_MODES.map(function(x){ return '<button type="button" data-m="' + x[0] + '">' + x[1] + '</button>'; }).join('');
-  document.getElementById('anPresets').innerHTML = AN_PRESETS.map(function(x){ return '<button type="button" data-m="' + x[0] + '">' + x[1] + '</button>'; }).join('') +
-    '<span class="anSep"></span><button type="button" id="anClear" class="anClr" disabled>✕ Rensa</button>';
+  document.getElementById('anPresets').innerHTML = AN_PRESETS.map(function(x){ return '<button type="button" data-m="' + x[0] + '">' + x[1] + '</button>'; }).join('');
+  // which category a mode is in (the row on top of the panel)
+  function anCatOf(m){ return !m ? null : m === 'similar' ? 'similar' : m.indexOf('c_') === 0 ? 'data' : AN_PRESETS.some(function(x){ return x[0] === m; }) ? 'rule' : 'map'; }
   anPanel.addEventListener('click', function(e){
+    var ct = e.target.closest ? e.target.closest('#anCatSeg button[data-cat]') : null;
+    if (ct){
+      anSet.cat = ct.getAttribute('data-cat'); anSave();
+      if (anSet.cat === 'similar' && anSet.mode !== 'similar') anSetMode('similar');   // (Liknande: one thing -- straight on)
+      else anRender();
+      return;
+    }
     var b = e.target.closest ? e.target.closest('button[data-m]') : null;
     if (b){ anSetMode(b.getAttribute('data-m')); return; }
     var g = e.target.closest ? e.target.closest('button[data-go]') : null;
@@ -600,7 +616,7 @@
   anPanel.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
   sheetSwipe(anPanel, function(){ showAnPanel(false); });
   function anLikeSpot(wp){
-    anSet.mode = 'similar'; anSet.ref = wp.id; anSave(); anCtlMode = '#';
+    anSet.mode = 'similar'; anSet.cat = 'similar'; anSet.ref = wp.id; anSave(); anCtlMode = '#';
     if (!anShow){ anShow = true; toggleAnEl.checked = true; try { localStorage.setItem(SHOW_AN_KEY, '1'); } catch(e){} }
     showAnPanel(true); anCompute();
   }
@@ -612,6 +628,12 @@
   anBtn.addEventListener('click', function(e){ e.stopPropagation(); showAnPanel(!anPanel.classList.contains('show')); });
   document.getElementById('anClose').addEventListener('click', function(){ showAnPanel(false); });
   document.getElementById('anClear').addEventListener('click', function(){ anSet.mode = null; anSave(); anCtlMode = '#'; anCompute(); });
+  // "Återställ": every setting in the panel back to how it was from the start (what's shown stays; "Mörkare" is in Inställningar)
+  function anIsDefault(){ var d = JSON.parse(AN_DEFAULTS); return Object.keys(d).every(function(k){ return k === 'mode' || k === 'dim' || JSON.stringify(anSet[k]) === JSON.stringify(d[k]); }); }
+  document.getElementById('anReset').addEventListener('click', function(){
+    var d = JSON.parse(AN_DEFAULTS); Object.keys(d).forEach(function(k){ if (k !== 'mode' && k !== 'dim') anSet[k] = d[k]; });
+    anExtraRef = null; anSave(); anCtlMode = '#'; anCompute();
+  });
   anLabelsEl.addEventListener('pointerdown', function(e){ e.stopPropagation(); if (e.target.closest && e.target.closest('.anLbl')) mapPointerDown(e, true); });
   anLabelsEl.addEventListener('click', function(e){
     var l = e.target.closest ? e.target.closest('.anLbl') : null; if (!l) return;

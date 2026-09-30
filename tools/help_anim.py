@@ -380,6 +380,7 @@ def s_analys(p):
         if (r.top > 110 && r.bottom < 480 && r.left > 10 && r.right < 380 && !best) best = [r.left + r.width / 2, r.top + r.height / 2]; }); return best; }""")
     if lbl: tap(pg, rec, lbl[0], lbl[1], after=1500)
     tap_el(pg, rec, '#anBtn', after=600)
+    tap_el(pg, rec, '#anCatSeg button[data-cat="rule"]', after=500)
     tap_el(pg, rec, '#anPanel button[data-m="gos"]', after=1800)
     tap_el(pg, rec, '#anClose', after=1500)
     rec.save('analys'); b.close()
