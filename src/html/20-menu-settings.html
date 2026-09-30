@@ -57,6 +57,9 @@
         <div id="settingsNameDisplay"></div>
         <button id="logoutBtn" class="btnLogout" type="button">Logga ut (Byt namn)</button>
       </div>
+      <details class="setSec" data-sec="map">
+        <summary><span class="setSecText"><span class="setSecTitle">Kartan</span><span class="setSecSum" id="setSum-map"></span></span><svg class="setSecChev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></summary>
+        <div class="setSecBody">
       <div class="settingsRow" style="flex-direction:column;align-items:stretch;">
         <div class="settingsRowHead">
           <div class="settingsRowText">
@@ -79,40 +82,6 @@
         <div class="styleList" id="mapStyleList" role="radiogroup" aria-label="Kartstil"></div>
         <div class="styleMsg" id="mapStyleMsg" hidden></div>
       </div>
-      <div class="settingsRow" style="flex-direction:column;align-items:stretch;" id="anDimRow">
-        <div class="settingsRowText">
-          <div class="settingsRowTitle">Kartanalys: tona ner resten av kartan</div>
-          <div class="settingsRowDesc">Hur mörk och grå kartan blir utanför det Kartanalys hittar.</div>
-        </div>
-        <div class="anRange"><label for="anDimSet">Mörkare</label><input type="range" id="anDimSet" min="0.3" max="0.92" step="0.02"><output id="anDimOut"></output></div>
-      </div>
-      <div class="settingsRow" style="flex-direction:column;align-items:stretch;" id="ltAlarmRow">
-        <div class="settingsRowText">
-          <div class="settingsRowTitle">Åskvarning</div>
-          <div class="settingsRowDesc">Larm när en blixt slår ner närmare än så här (kräver Blixtar i Filter). Vibration fungerar inte på iPhone.</div>
-        </div>
-        <div class="segmented" id="ltAlarmSeg" role="radiogroup" aria-label="Åskvarning">
-          <button type="button" data-km="0" role="radio">Av</button>
-          <button type="button" data-km="5" role="radio">5 km</button>
-          <button type="button" data-km="10" role="radio">10 km</button>
-          <button type="button" data-km="20" role="radio">20 km</button>
-        </div>
-        <label class="adminToggleRow" style="display:flex;align-items:center;gap:12px;margin-top:10px;"><div style="flex:1 1 auto;font-size:13.5px;">Ljud</div>
-          <span class="toggle"><input type="checkbox" id="ltAlarmSound"><span class="toggleTrack"><span class="toggleThumb"></span></span></span></label>
-        <label class="adminToggleRow" style="display:flex;align-items:center;gap:12px;margin-top:8px;"><div style="flex:1 1 auto;font-size:13.5px;">Vibration</div>
-          <span class="toggle"><input type="checkbox" id="ltAlarmVib"><span class="toggleTrack"><span class="toggleThumb"></span></span></span></label>
-      </div>
-      <div class="settingsRow" style="flex-direction:column;align-items:stretch;" id="offlineRow">
-        <div class="offRow">
-          <div class="settingsRowText">
-            <div class="settingsRowTitle" id="offTitle">Ladda ner sjön för offline</div>
-            <div class="settingsRowDesc" id="offDesc">Alla zoomnivåer för de fyra kartlägena i knappen (Djupfärger, Förenklad, Bottenhårdhet, Vegetation), så att kartan fungerar utan täckning. Helst på wifi.</div>
-          </div>
-          <button type="button" class="offBtn" id="offBtn">Ladda ner</button>
-        </div>
-        <div class="offBar" id="offBar" hidden><i id="offBarFill"></i></div>
-        <div class="offStatus" id="offStatus"></div>
-      </div>
       <div class="settingsRow" style="flex-direction:column;align-items:stretch;">
         <div class="settingsRowText">
           <div class="settingsRowTitle">Kartans färg</div>
@@ -121,23 +90,6 @@
         <div class="satRow">
           <input type="range" class="satSlider" id="mapSatSlider" min="0" max="100" step="5" value="80" aria-label="Kartans färgmättnad">
           <span class="satVal" id="mapSatVal">80 %</span>
-        </div>
-      </div>
-      <div class="settingsRow">
-        <div class="settingsRowText">
-          <div class="settingsRowTitle">Spår</div>
-          <div class="settingsRowDesc">Din rutt ritas som en streckad linje på kartan (visa/dölj under Filter). "Börja om" suddar spåret hittills – det fortsätter sedan från där du är nu. Sparas bara på den här telefonen och börjar om varje morgon kl 06:00.</div>
-        </div>
-        <button id="trackClearBtn" class="btnAdmin small" type="button">Börja om</button>
-      </div>
-      <div class="settingsRow" style="flex-direction:column;align-items:stretch;">
-        <div class="settingsRowText">
-          <div class="settingsRowTitle">Spårets synlighet</div>
-          <div class="settingsRowDesc">Hur tydligt spåret syns på kartan.</div>
-        </div>
-        <div class="satRow">
-          <input type="range" class="satSlider trkSlider" id="trackOpSlider" min="10" max="100" step="5" value="60" aria-label="Spårets synlighet">
-          <span class="satVal" id="trackOpVal">60 %</span>
         </div>
       </div>
       <div class="settingsRow" style="flex-direction:column;align-items:stretch;">
@@ -150,6 +102,11 @@
           <button type="button" data-op="1" role="radio">100 %</button>
         </div>
       </div>
+        </div>
+      </details>
+      <details class="setSec" data-sec="boat">
+        <summary><span class="setSecText"><span class="setSecTitle">Båten</span><span class="setSecSum" id="setSum-boat"></span></span><svg class="setSecChev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></summary>
+        <div class="setSecBody">
       <label class="settingsRow" for="toggleDepth">
         <div class="settingsRowText">
           <div class="settingsRowTitle">Djupet under båten</div>
@@ -170,6 +127,33 @@
           <span class="toggleTrack"><span class="toggleThumb"></span></span>
         </span>
       </label>
+      <label class="settingsRow" for="toggleWake">
+        <div class="settingsRowText">
+          <div class="settingsRowTitle">Håll skärmen tänd</div>
+          <div class="settingsRowDesc">Telefonen somnar inte medan appen är öppen (drar mer batteri). En gul sol vid ditt namn visar att den är på.</div>
+        </div>
+        <span class="toggle">
+          <input type="checkbox" id="toggleWake">
+          <span class="toggleTrack"><span class="toggleThumb"></span></span>
+        </span>
+      </label>
+      <div class="settingsRow">
+        <div class="settingsRowText">
+          <div class="settingsRowTitle">Spår</div>
+          <div class="settingsRowDesc">Din rutt ritas som en streckad linje på kartan (visa/dölj under Filter). "Börja om" suddar spåret hittills – det fortsätter sedan från där du är nu. Sparas bara på den här telefonen och börjar om varje morgon kl 06:00.</div>
+        </div>
+        <button id="trackClearBtn" class="btnAdmin small" type="button">Börja om</button>
+      </div>
+      <div class="settingsRow" style="flex-direction:column;align-items:stretch;">
+        <div class="settingsRowText">
+          <div class="settingsRowTitle">Spårets synlighet</div>
+          <div class="settingsRowDesc">Hur tydligt spåret syns på kartan.</div>
+        </div>
+        <div class="satRow">
+          <input type="range" class="satSlider trkSlider" id="trackOpSlider" min="10" max="100" step="5" value="60" aria-label="Spårets synlighet">
+          <span class="satVal" id="trackOpVal">60 %</span>
+        </div>
+      </div>
       <div class="settingsRow" style="flex-direction:column;align-items:stretch;">
         <div class="settingsRowText">
           <div class="settingsRowTitle">Fart för mätverktyget</div>
@@ -189,6 +173,60 @@
         <div class="speedUsed" id="speedUsedNote"></div>
         <div class="btnRowWrap"><button id="avgResetBtn" class="btnAdmin small" type="button">Nollställ snittfart</button></div>
       </div>
+        </div>
+      </details>
+      <details class="setSec" data-sec="warn">
+        <summary><span class="setSecText"><span class="setSecTitle">Varningar</span><span class="setSecSum" id="setSum-warn"></span></span><svg class="setSecChev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></summary>
+        <div class="setSecBody">
+      <div class="settingsRow" style="flex-direction:column;align-items:stretch;" id="ltAlarmRow">
+        <div class="settingsRowText">
+          <div class="settingsRowTitle">Åskvarning</div>
+          <div class="settingsRowDesc">Larm när en blixt slår ner närmare än så här – även när Blixtar är av i Filter. Vibration fungerar inte på iPhone.</div>
+        </div>
+        <div class="segmented" id="ltAlarmSeg" role="radiogroup" aria-label="Åskvarning">
+          <button type="button" data-km="0" role="radio">Av</button>
+          <button type="button" data-km="5" role="radio">5 km</button>
+          <button type="button" data-km="10" role="radio">10 km</button>
+          <button type="button" data-km="20" role="radio">20 km</button>
+        </div>
+        <label class="adminToggleRow" style="display:flex;align-items:center;gap:12px;margin-top:10px;"><div style="flex:1 1 auto;font-size:13.5px;">Ljud</div>
+          <span class="toggle"><input type="checkbox" id="ltAlarmSound"><span class="toggleTrack"><span class="toggleThumb"></span></span></span></label>
+        <label class="adminToggleRow" style="display:flex;align-items:center;gap:12px;margin-top:8px;"><div style="flex:1 1 auto;font-size:13.5px;">Vibration</div>
+          <span class="toggle"><input type="checkbox" id="ltAlarmVib"><span class="toggleTrack"><span class="toggleThumb"></span></span></span></label>
+      </div>
+        </div>
+      </details>
+      <details class="setSec" data-sec="an">
+        <summary><span class="setSecText"><span class="setSecTitle">Kartanalys</span><span class="setSecSum" id="setSum-an"></span></span><svg class="setSecChev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></summary>
+        <div class="setSecBody">
+      <div class="settingsRow" style="flex-direction:column;align-items:stretch;" id="anDimRow">
+        <div class="settingsRowText">
+          <div class="settingsRowTitle">Kartanalys: tona ner resten av kartan</div>
+          <div class="settingsRowDesc">Hur mörk och grå kartan blir utanför det Kartanalys hittar.</div>
+        </div>
+        <div class="anRange"><label for="anDimSet">Mörkare</label><input type="range" id="anDimSet" min="0.3" max="0.92" step="0.02"><output id="anDimOut"></output></div>
+      </div>
+        </div>
+      </details>
+      <details class="setSec" data-sec="off">
+        <summary><span class="setSecText"><span class="setSecTitle">Offline</span><span class="setSecSum" id="setSum-off"></span></span><svg class="setSecChev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></summary>
+        <div class="setSecBody">
+      <div class="settingsRow" style="flex-direction:column;align-items:stretch;" id="offlineRow">
+        <div class="offRow">
+          <div class="settingsRowText">
+            <div class="settingsRowTitle" id="offTitle">Ladda ner sjön för offline</div>
+            <div class="settingsRowDesc" id="offDesc">Alla zoomnivåer för de fyra kartlägena i knappen (Djupfärger, Förenklad, Bottenhårdhet, Vegetation), så att kartan fungerar utan täckning. Helst på wifi.</div>
+          </div>
+          <button type="button" class="offBtn" id="offBtn">Ladda ner</button>
+        </div>
+        <div class="offBar" id="offBar" hidden><i id="offBarFill"></i></div>
+        <div class="offStatus" id="offStatus"></div>
+      </div>
+        </div>
+      </details>
+      <details class="setSec" data-sec="adv">
+        <summary><span class="setSecText"><span class="setSecTitle">Avancerat</span><span class="setSecSum" id="setSum-adv"></span></span><svg class="setSecChev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></summary>
+        <div class="setSecBody">
       <div class="settingsRow" id="adminRow" hidden>
         <div class="settingsRowText">
           <div class="settingsRowTitle">Admin</div>
@@ -228,6 +266,8 @@
           <span class="toggleTrack"><span class="toggleThumb"></span></span>
         </span>
       </label>
+        </div>
+      </details>
     </div>
   </div>
 

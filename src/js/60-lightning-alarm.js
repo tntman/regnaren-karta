@@ -6,11 +6,19 @@
   var ltAlarm = { km: 10, sound: true, vib: true };
   try { var la = JSON.parse(localStorage.getItem(LT_ALARM_KEY) || 'null'); if (la) ltAlarm = la; } catch(e){}
   var ltAlarmed = {}, ltAudio = null;
-  function ltAlarmSave(){ try { localStorage.setItem(LT_ALARM_KEY, JSON.stringify(ltAlarm)); } catch(e){} ltAlarmUi(); }
+  function ltAlarmSave(){ try { localStorage.setItem(LT_ALARM_KEY, JSON.stringify(ltAlarm)); } catch(e){} ltAlarmUi(); ltTick(); }
   function ltAlarmUi(){
     Array.prototype.forEach.call(document.querySelectorAll('#ltAlarmSeg button'), function(b){ var on = +b.getAttribute('data-km') === ltAlarm.km; b.classList.toggle('active', on); b.setAttribute('aria-checked', on ? 'true' : 'false'); });
     document.getElementById('ltAlarmSound').checked = !!ltAlarm.sound; document.getElementById('ltAlarmVib').checked = !!ltAlarm.vib;
+    // the warning switched off: a red pill under the weather (tap = Inställningar at the warning)
+    document.getElementById('ltOffPill').hidden = !!ltAlarm.km;
   }
+  document.getElementById('ltOffPill').addEventListener('pointerdown', function(e){ e.stopPropagation(); });
+  document.getElementById('ltOffPill').addEventListener('click', function(e){
+    e.stopPropagation(); showSettingsView(); openSettingsSec('warn');
+    var row = document.getElementById('ltAlarmRow'), body = document.getElementById('settingsBody');
+    setTimeout(function(){ body.scrollTop += row.getBoundingClientRect().top - body.getBoundingClientRect().top - 12; }, 50);
+  });
   document.getElementById('ltAlarmSeg').addEventListener('click', function(e){ var b = e.target.closest ? e.target.closest('button[data-km]') : null; if (b){ ltAlarm.km = +b.getAttribute('data-km'); ltAlarmSave(); } });
   document.getElementById('ltAlarmSound').addEventListener('change', function(e){ ltAlarm.sound = e.target.checked; ltAlarmSave(); });
   document.getElementById('ltAlarmVib').addEventListener('change', function(e){ ltAlarm.vib = e.target.checked; ltAlarmSave(); });
@@ -33,7 +41,7 @@
     } catch(e){}
   }
   function ltCheckAlarm(){
-    if (!ltOn || !ltAlarm.km) return;
+    if (!ltAlarm.km) return;                   // (NOT tied to the map layer: see ltWatch)
     var now = Date.now(), ref = ltRef(), hit = null;
     ltStrikes.forEach(function(s){
       if (ltAlarmed[s.k]) return;

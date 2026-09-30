@@ -423,10 +423,26 @@
     closeSheet();
   }
   wpCancelBtn.addEventListener('click', cancelSheet);
+  // Ta bort: the spot disappears at once, but is only really deleted (for everyone) after 6 s -- "Ångra"
+  // brings it back. Leaving the app (or turning the phone: a reload) in between deletes it then.
+  var undoToast = document.getElementById('undoToast'), undoT = null, undoPending = null;
+  function flushDelete(){ if (!undoPending) return; var id = undoPending.id; undoPending = null; clearTimeout(undoT); undoToast.classList.remove('show'); deleteWaypointById(id); }
   wpDeleteBtn.addEventListener('click', function(){
     if (!editingId) return;
-    deleteWaypointById(editingId);
-    closeSheet();
+    flushDelete();                                           // (an earlier one still waiting: delete it now)
+    var wp = waypoints.filter(function(w){ return w.id === editingId; })[0];
+    undoPending = { id: editingId };
+    closeSheet(); renderWaypoints();
+    document.getElementById('undoTxt').innerHTML = '<b>' + escHtml((wp && wp.name) || 'Platsen') + '</b> borttagen';
+    var ring = undoToast.querySelectorAll('circle')[1]; ring.classList.remove('run'); void ring.getBoundingClientRect(); ring.classList.add('run');
+    undoToast.classList.add('show');
+    undoT = setTimeout(flushDelete, 6000);
   });
+  document.getElementById('undoBtn').addEventListener('click', function(){
+    undoPending = null; clearTimeout(undoT); undoToast.classList.remove('show'); renderWaypoints(); if (typeof renderLogList === 'function' && logView.classList.contains('show')) renderLogList();
+  });
+  undoToast.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
+  window.addEventListener('pagehide', flushDelete);
+  function isUndoPending(id){ return !!(undoPending && undoPending.id === id); }
   sheetBackdrop.addEventListener('click', cancelSheet);
 

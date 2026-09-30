@@ -32,12 +32,15 @@
     }
     return out;
   }
+  // strikes are fetched while they're shown on the map OR the alarm is on (the alarm never depends on the
+  // "Blixtar" switch in Filter -- that only shows / hides them on the map)
+  function ltWatch(){ return ltOn || !!ltAlarm.km; }
   function ltFetch(){
-    if (!ltOn || ltFetching || typeof fetch !== 'function') return;
+    if (!ltWatch() || ltFetching || typeof fetch !== 'function') return;
     ltFetching = true;
     fetch(ltUrl()).then(function(r){ return r.ok ? r.text() : null; }).then(function(x){
       ltFetching = false;
-      if (x == null || !ltOn) return;
+      if (x == null || !ltWatch()) return;
       var had = {}, first = !ltFetchedAt, fresh = {}, n = 0;
       ltStrikes.forEach(function(s){ had[s.k] = 1; });
       ltStrikes = ltParse(x); ltFetchedAt = Date.now();
@@ -172,7 +175,7 @@
     if (Date.now() - ltFlash.from < 2600) ltAnim = requestAnimationFrame(ltPulse);
   }
   function ltTick(){
-    if (!ltOn || document.visibilityState === 'hidden') return;
+    if (!ltWatch() || document.visibilityState === 'hidden') return;
     if (Date.now() - ltFetchedAt >= LT_POLL_MS) ltFetch();
     ltRender();                                                     // (the ages move on)
   }
@@ -181,7 +184,7 @@
   toggleLtEl.addEventListener('change', function(){
     ltOn = toggleLtEl.checked;
     try { localStorage.setItem(SHOW_LT_KEY, ltOn ? '1' : '0'); } catch(e){}
-    if (!ltOn){ ltStrikes = []; ltFetchedAt = 0; }
+    if (!ltWatch()){ ltStrikes = []; ltFetchedAt = 0; }
     ltRender(); ltTick();
   });
   setInterval(ltTick, 15000);

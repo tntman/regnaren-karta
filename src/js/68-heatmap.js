@@ -18,7 +18,7 @@
   var hmOn = false, hmHeatCache = null, hmHexCells = null, hmCardList = null, hmCardI = 0, hmPendingCard = null;
   var hmCanvas = document.getElementById('hmLayer'), hmCtx = hmCanvas.getContext('2d');
   var hmSatCanvas = document.getElementById('hmSat'), hmSatCtx = hmSatCanvas.getContext('2d');
-  var hmPanel = document.getElementById('hmPanel'), hmCard = document.getElementById('hmCard'), hmPill = document.getElementById('hmPill');
+  var hmPanel = document.getElementById('hmPanel'), hmCard = document.getElementById('hmCard'), hmPill = document.getElementById('hmPill'), toggleHmEl = document.getElementById('toggleHeatmap');
   var HM_COL = { abborre: [255, 122, 26], gadda: [53, 210, 74], gos: [255, 210, 26] };
   var HM_SP = [['abborre', 'Abborre', 'abborren'], ['gadda', 'Gädda', 'gäddan'], ['gos', 'Gös', 'gösen']];
   var HM_MON = ['jan', 'feb', 'mar', 'apr', 'maj', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
@@ -66,7 +66,7 @@
       showAnPanel(false);
     } else { hmShowPanel(false); hmCloseCard(); }
     hmCanvas.classList.toggle('on', hmOn); hmSatCanvas.classList.toggle('on', hmOn);
-    hmPill.hidden = !hmOn;
+    hmPill.hidden = !hmOn; toggleHmEl.checked = hmOn;
     hmHeatCache = null;
     if (openPanel) hmShowPanel(true);
     hmRenderPanel(); hmDraw(); hmFitIfNone();
@@ -96,6 +96,8 @@
     hmPanel.classList.toggle('show', !!open);
   }
   hmPill.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
+  // Filter → Lager → Heatmap: on = on with its panel open, off = off
+  toggleHmEl.addEventListener('change', function(){ hmSetOn(toggleHmEl.checked, toggleHmEl.checked); });
   hmPill.addEventListener('click', function(e){ e.stopPropagation(); hmShowPanel(!hmPanel.classList.contains('show')); });
 
   function hmRenderPanel(){
@@ -155,8 +157,8 @@
   sheetSwipe(hmPanel, function(){ hmShowPanel(false); });
 
   // ---- drawing (a screen canvas like Kartanalys: the map toned down, the catches on top) ----
-  function hmRamp(v){   // transparent blue -> cyan -> yellow -> orange -> red
-    var S = [[0, [40, 90, 255, 0]], [0.12, [40, 120, 255, 110]], [0.3, [0, 220, 230, 170]], [0.55, [255, 230, 40, 205]], [0.8, [255, 120, 20, 225]], [1, [230, 30, 40, 240]]];
+  function hmRamp(v){   // "glöd": transparent dark violet -> magenta -> orange -> amber -> warm white
+    var S = [[0, [60, 10, 90, 0]], [0.12, [90, 20, 130, 120]], [0.35, [190, 40, 140, 185]], [0.6, [245, 110, 60, 215]], [0.85, [255, 190, 70, 235]], [1, [255, 245, 200, 245]]];
     for (var k = 1; k < S.length; k++) if (v <= S[k][0]){
       var t = (v - S[k - 1][0]) / (S[k][0] - S[k - 1][0]), A = S[k - 1][1], B = S[k][1];
       return [A[0] + (B[0] - A[0]) * t, A[1] + (B[1] - A[1]) * t, A[2] + (B[2] - A[2]) * t, A[3] + (B[3] - A[3]) * t];
@@ -235,7 +237,7 @@
         hmCtx.closePath();
         hmCtx.fillStyle = 'rgba(' + (col[0] | 0) + ',' + (col[1] | 0) + ',' + (col[2] | 0) + ',0.75)'; hmCtx.fill();
         hmCtx.lineWidth = 1; hmCtx.strokeStyle = 'rgba(255,255,255,0.55)'; hmCtx.stroke();
-        if (hmSet.cnt && Rpx >= 8){ hmCtx.fillStyle = '#0B2A3A'; hmCtx.fillText(String(h2.list.length), cx, cy + 0.5); }
+        if (hmSet.cnt && Rpx >= 8){ hmCtx.fillStyle = col[0] * 0.3 + col[1] * 0.59 + col[2] * 0.11 < 140 ? '#fff' : '#0B2A3A'; hmCtx.fillText(String(h2.list.length), cx, cy + 0.5); }
       }
       hmHexCells = { R: R, cells: cells, rpx: Rpx };
     } else {

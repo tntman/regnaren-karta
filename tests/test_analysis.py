@@ -30,7 +30,7 @@ with sync_playwright() as p:
     pg.evaluate("localStorage.removeItem('ffmap_weather_v1')"); pg.reload(); pg.wait_for_timeout(600); fakefb.login(pg, 'Filip'); pg.wait_for_timeout(2500)
     check('the analysis button is where "uppdatera" was; that one is gone', pg.is_visible('#anBtn') and pg.query_selector('#refreshBtn') is None)
     pg.click('#visMoreBtn'); pg.wait_for_timeout(200)
-    check('Filter: "Kartanalys" (on) and "Håll skärmen tänd" (off)', pg.is_checked('#toggleAnalysis') and not pg.is_checked('#toggleWake'))
+    check('Filter: "Kartanalys" (on), "Heatmap" (off)', pg.is_checked('#toggleAnalysis') and not pg.is_checked('#toggleHeatmap'))
     pg.click('#visMoreBtn'); pg.wait_for_timeout(200)
     check('nothing chosen yet: nothing drawn', an(pg)['mode'] is None and lit(pg) == 0)
     pg.click('#anBtn'); pg.wait_for_timeout(400)

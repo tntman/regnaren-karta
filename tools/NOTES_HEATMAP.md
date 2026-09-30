@@ -19,7 +19,10 @@ bottenrutan, fångstrutan, tryck på kartan), `src/css/72-heatmap.css`, HTML i `
 - **Inte samtidigt som Kartanalys**: heatmap på → Kartanalys-läget av; ett Kartanalys-läge valt → heatmap av.
 - Längst ner: **✕ Stäng av heatmap** och **↺ Återställ** (`HM_DEFAULTS`, grå när allt är som från start).
 - Sjöns kant: tunn vit linje 50 % som i Kartanalys (`hmShoreLayer`: `anField` med egen cache, `edgeW`).
-- Rutan stängd: skylten **Heatmap** under väderchipet (`#hmPill`) öppnar den igen.
+- Rutan stängd: skylten **Heatmap** under väderchipet (`#hmPill`, klass `.mapPill` som Kartanalys `#anPill`) öppnar den igen.
+- Även i **Filter → Lager → Heatmap** (`#toggleHeatmap`): på = på + rutan öppen, av = av; följer `hmOn`.
+- Färgskalan **"glöd"** (`hmRamp`): mörklila → magenta → orange → bärnsten → varmvitt – aldrig djupskalans
+  blå/cyan/grön. Samma i teckenförklaringen, `.hmDot` och `.hmThumb`. Siffran i Rutor blir vit på mörka rutor.
 - **Av efter omstart** (som Kartanalys), kvar vid vridning (`rotState.hm`: på, rutan, öppen fångst).
   Inställningarna sparas per sjö (`lakeKey('ffmap_heatmap_v1', …)`).
 - Slås den på för hand och mindre än hälften av fångsterna syns ovanför rutan: kartan flyttas så alla syns.

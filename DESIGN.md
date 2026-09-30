@@ -18,6 +18,10 @@ colors:
   art-traffpunkt: "#FFB23F"
   art-hem: "#3A86FF"
   greppglod: "#58B4FF"
+  glod-lag: "#5A1482"
+  glod-mitt: "#BE288C"
+  glod-hog: "#F56E3C"
+  glod-topp: "#FFF5C8"
 typography:
   display:
     fontFamily: "Cambria, Georgia, \"Times New Roman\", serif"
@@ -39,7 +43,7 @@ typography:
     fontWeight: 600
   overline:
     fontFamily: "Calibri, \"Segoe UI\", system-ui, -apple-system, sans-serif"
-    fontSize: "10.5px"
+    fontSize: "11.5px"
     fontWeight: 700
     letterSpacing: ".08em"
 rounded:
@@ -95,10 +99,10 @@ components:
     rounded: "{rounded.sm}"
     padding: "8px 2px"
   action-delete:
-    backgroundColor: "{colors.signalrod}"
-    textColor: "#FFFFFF"
+    backgroundColor: "rgba(214,69,69,.12)"
+    textColor: "#FF8A80"
     rounded: "{rounded.sm}"
-    padding: "8px 2px"
+    width: "48px"
   action-neutral:
     backgroundColor: "rgba(255,255,255,.08)"
     textColor: "{colors.morgondimma}"
@@ -109,6 +113,21 @@ components:
     textColor: "{colors.morgondimma}"
     rounded: "{rounded.sm}"
     padding: "5px 8px 6px"
+  map-pill:
+    backgroundColor: "rgba(11,42,58,.82)"
+    textColor: "{colors.morgondimma}"
+    rounded: "{rounded.md}"
+    padding: "4px 11px 4px 8px"
+  type-dot:
+    backgroundColor: "{colors.art-abborre}"
+    textColor: "{colors.sjokortsbla}"
+    rounded: "{rounded.round}"
+    size: "24px"
+  settings-section:
+    backgroundColor: "{colors.sjokortsbla-glas}"
+    textColor: "{colors.morgondimma}"
+    rounded: "{rounded.md}"
+    padding: "12px 14px"
   input:
     backgroundColor: "rgba(255,255,255,.08)"
     textColor: "{colors.morgondimma}"
@@ -153,9 +172,10 @@ Ett mörkt, kallt sjökortsgränssnitt med en enda varm accent, där all övrig 
 
 ### Signal Colors (kartans och artens färger)
 - **Artfärgerna** markering, abborre, gädda, gös, fara, träffpunkt och hem gäller för fiskeplatser, typpiller, heatmapens per art-läge och Kartanalys "Från fångsterna". Samma art har alltid samma färg överallt.
-- **Signalröd** (signalrod): Ta bort, fel och "Fara"-nivåer i gränssnittet; blixtlarm (rött) och blixtvarning (orange `#DE8012`) är egna varningsytor.
+- **Signalröd** (signalrod): Ta bort, fel och "Fara"-nivåer i gränssnittet (Fara-text på sjökortsblått i ljusare röd `#FF6B63` för att gå att läsa); blixtlarm (rött) och blixtvarning (orange `#DE8012`) är egna varningsytor.
 - **Greppglöd** (greppglod): blått sken i greppremsan och överkanten medan en bottenruta hålls och dras.
-- **Kartanalysens och heatmapens skalor** (blått, cyan, gult, orange, rött) används bara i kartlager, aldrig i knappar.
+- **Kartanalysens skala** (blått, cyan, gult, orange, rött) används bara i kartlagret, aldrig i knappar.
+- **Glöd** (glod-lag → glod-mitt → glod-hog → glod-topp): heatmapens egen skala, mörklila → magenta → orange → bärnsten → varmvitt. Krockar aldrig med djupskalans blå/cyan/grön; samma i kartlagret, teckenförklaringen och Heatmap-pricken.
 
 ### Named Rules
 **The Bärnsten Means On Rule.** Bärnsten används bara för det som är valt, påslaget eller är huvudhandlingen (Spara). Aldrig som dekoration, aldrig för varningar.
@@ -173,10 +193,11 @@ Ett mörkt, kallt sjökortsgränssnitt med en enda varm accent, där all övrig 
 
 ### Hierarchy
 - **Display** (700, 22px, spärrad .02em, textskugga): bara sjöns namn uppe till vänster (REGNAREN). 19 px på smala skärmar.
+- **View title** (700, 17px, versaler, spärrad .08em, sans-serif): rubriken överst i Inställningar, Logg, Hjälp och Admin; dialogrubriker 18 px.
 - **Title** (700, 17px): namnet på en fiskeplats i dess ruta, stora värden (23 px för ett snabbmeddelande).
 - **Body** (400, 13–14px, radavstånd 1.4): resultattexter, beskrivningar, inställningsrader.
 - **Label** (600–700, 12–13.5px): chips, knappar, segment, värden i faktarutor (15 px).
-- **Overline** (700, 10–10.5px, versaler, spärrad .06–.08em): rubriker i rutor ("HEATMAP · FÅNGSTER", "ART", "TÄVLING") och etiketter i faktarutor (DJUP, NÄR).
+- **Overline** (700, 11–11.5px, versaler, spärrad .06–.08em): rubriker i rutor ("HEATMAP · FÅNGSTER", "ART", "TÄVLING") och etiketter i faktarutor (DJUP, NÄR).
 
 ### Named Rules
 **The Serif Is The Lake Rule.** Serifen används bara för sjöns namn. Allt annat är sans-serif.
@@ -184,9 +205,9 @@ Ett mörkt, kallt sjökortsgränssnitt med en enda varm accent, där all övrig 
 ## Layout
 
 Kartan fyller hela skärmen (`#stage`, fast placerad, inset 0). Allt annat ligger i lager ovanpå:
-- **Överkant:** meny (rund, vänster), sjönamn med användare, väderchip och skyltar (blixt, Heatmap) under varandra; kartlägesknapp och Filter till höger. En toning i nattvatten bakom.
+- **Överkant:** meny (rund, vänster), sjönamn med användare, väderchip och skyltar (blixt, Åskvarning av, Heatmap eller Kartanalys) under varandra; kartlägesknapp och Filter till höger. En toning i nattvatten bakom.
 - **Underkant:** skala, zoomnivå, fart/djup-pill och djupskala till vänster; snabbmeddelanden i mitten; fyra rundknappar i ett 2 × 2-rutnät till höger (48 px, 12 px mellanrum, 16 px från kanten; 42/10 px liggande). En toning i nattvatten bakom.
-- **Bottenrutor** glider upp från nederkanten, som mest 62 % av höjden (88 % för en plats); liggande blir de en 420 px bred kolumn till höger.
+- **Bottenrutor** glider upp från nederkanten, som mest 62 % av höjden (88 % för en plats); liggande blir alla (även platsens ruta) en 420 px bred kolumn till höger så att kartan syns bredvid.
 - Marginal mot skärmkanten är 14–18 px; inuti rutor 14–16 px sidled. Mellanrum mellan chips 6 px, mellan rader 8–12 px.
 - Säkra zoner (`env(safe-area-inset-*)`) respekteras överallt; iPhone-hemskärmsappen laddar om vid vridning.
 
@@ -212,16 +233,16 @@ Mjukt rundade former utan skarpa hörn. Rundknappar över kartan är helt runda 
 ### Buttons
 - **Rundknapp över kartan:** 48 × 48 px, helt rund, sjökortsblått glas, dimvit ikon (21–24 px), svävande skugga; trycks ner till 92 %. Aktiv (t.ex. Kartanalys på) får bärnstensfärgad kant och ikon.
 - **Sikteknappen:** samma form men helt bärnstensfärgad med sjökortsblå ikon – den viktigaste knappen.
-- **Handlingsrad i en ruta:** lika breda knappar, 10 px rundning, 13.5 px halvfet text. Neutral (8 % vitt), Ta bort (signalröd), Spara (bärnsten med sjökortsblå text).
+- **Handlingsrad i en ruta:** lika breda knappar, 10 px rundning, 13.5 px halvfet text. Neutral (8 % vitt), Spara (bärnsten med sjökortsblå text) längst till höger. **Ta bort** är en papperskorg längst till vänster (48 px, dämpad röd kontur), avskild från resten – och följs alltid av en Ångra-notis (6 s) innan något raderas.
 - **Stäng av / Återställ** längst ner i Kartanalys och Heatmap: chips; "Stäng av" med bärnstenskant och ett ljus som sveper igenom när något är på, grå och platt annars. "Återställ" grå när allt redan är som från start.
 
 ### Chips
-- **Style:** kapselform (14 px), 7 % vitt, tunn 12 % kant, dimvit 12.5 px text.
+- **Style:** kapselform (14 px), 7 % vitt, tunn 12 % kant, dimvit 13 px text, **minst 40 px hög** i rutorna (blöta fingrar; `85-touch.css`).
 - **State:** valt = helt bärnsten med sjökortsblå halvfet text. Inaktiva (för få fångster) är halvt genomskinliga. Av/på-val i Liknande och Från fångsterna får rosa kant och ✓ när de är på.
 
 ### Segmented control
 - **Style:** 6 % vit bädd med 3 px luft och 10 px rundning; segmenten genomskinliga med vassgrå text.
-- **State:** valt segment är bärnsten med sjökortsblå text (8 px rundning). Används för kategori/stil överst i Kartanalys och Heatmap och för val i Inställningar.
+- **State:** valt segment är bärnsten med sjökortsblå text (8 px rundning). Minst 42 px hög i rutorna. Används för kategori/stil överst i Kartanalys och Heatmap och för val i Inställningar.
 
 ### Bottom Sheet (signaturkomponent)
 - **Corner Style:** 18 px överst.
@@ -239,8 +260,13 @@ Mjukt rundade former utan skarpa hörn. Rundknappar över kartan är helt runda 
 ### Fact Tiles
 - **Style:** fyra lika breda rutor i rad (6 % vitt, 10 px rundning): overline-etikett över ett 13.5–15 px halvfett värde. Används i platsens och fångstens ruta.
 
+### Skyltar (under väderchipet)
+- **Style:** kapsel i 82 % sjökortsblått, 12 px rundning, 12 px halvfet dimvit text med en liten ikon eller prick först. En rad var, under väderchipet.
+- **Vilka:** blixtar (gul, med avstånd), "⚡✕ Åskvarning av" (röd), "Heatmap" (glöd-prick) eller "Kartanalys" (lupp) – aldrig både Heatmap och Kartanalys, lägena stänger av varandra. Tryck = rutan eller inställningen det gäller.
+
 ### Toggles
-- **Style:** iOS-lik kapsel (18 % vitt av, bärnsten på) i inställningsrader och Filter.
+- **Style:** iOS-lik kapsel (18 % vitt av, bärnsten på) i inställningsrader och Filter. Typerna i Filter är en rad artfärgade prickar i stället (ifylld = visas, grå ring = dold).
+- **Inställningar:** avsnitt (Kartan, Båten, Varningar, Kartanalys, Offline, Avancerat) som hopfällbara kort; stängt visar rubriken och en rad med vad som är valt. Raderna inuti är platta med en tunn linje emellan.
 
 ## Do's and Don'ts
 
@@ -249,12 +275,16 @@ Mjukt rundade former utan skarpa hörn. Rundknappar över kartan är helt runda 
 - **Do** använd bärnsten (#E8A33D) för exakt det som är valt eller på, och sjökortsblå text på den.
 - **Do** öppna allt nytt som en bottenruta med greppremsa, ✕ och blå glöd när den dras – och lägg nya rutor i glöd- och greppreglerna.
 - **Do** rita linjer och kanter på kartan kantutjämnade och aldrig tunnare än en ritad punkt (se lä och Kartanalys).
-- **Do** håll tryckytor stora nog för blöta fingrar (rundknappar 48 px, greppremsa 30 px hög) och text läsbar i sol.
+- **Do** håll tryckytor stora nog för blöta fingrar: i rutorna chips/piller minst 40 px, kategorirader 42 px, knapprader 46 px; rundknappar 48 px; greppremsa 30 px hög. Kartans egna knappar ändras inte utan att Filip säger till.
 - **Do** ge statusraden, bakgrunden och toningarna samma nattvatten.
+- **Do** håll småtexten i rutorna läsbar i sol: minst 11 px (faktarutornas rubriker 11, rutornas små rubriker 11,5). Kartans egen skala och zoomtext är undantag.
+- **Do** låt kort över kartan (vädret) stängas med ett tryck på kartan – men inte när kartan dras.
+- **Do** visa tangentbordsfokus med en 2 px bärnstensring (`:focus-visible`). Inställningar är en spalt på högst 600 px på breda skärmar.
 
 ### Don't:
 - **Don't** rita egna djupkurvor eller djupsiffror – bara Genesis kartbilder.
 - **Don't** använd bärnsten för varningar eller dekoration; varningar är orange (#DE8012) eller röda.
 - **Don't** låt en art byta färg mellan vyer.
 - **Don't** lägg helt täckande plattor över kartan eller hårda kanter mot statusraden.
-- **Don't** låt Fara eller åskvarning gå att dölja med filter eller val.
+- **Don't** låt Fara eller åskvarning gå att dölja med filter eller val; är varningen avstängd i Inställningar syns det med en skylt.
+- **Don't** radera något delat utan Ångra, och lägg aldrig Ta bort bredvid Spara.

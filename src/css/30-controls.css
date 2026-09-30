@@ -85,7 +85,17 @@
   .visCol{display:flex;flex-direction:column;gap:8px;}
   .visSwatch--track svg, .visSwatch--wx svg{width:13px;height:13px;}
   #visMore[hidden]{display:none;}
-  #visTypes{display:flex;flex-direction:column;gap:8px;}
+  /* the types: a row of dots under Markeringar -- filled = shown, grey ring = hidden */
+  #visTypes{display:flex;gap:2px;justify-content:space-between;margin-top:1px;}
+  .visDot{position:relative;flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;padding:2px 0;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+  .visDot input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer;z-index:1;}
+  .visDot .visSwatch{width:24px;height:24px;border-width:2px;transition:background-color .15s ease,color .15s ease;}
+  .visDot .visSwatch svg{width:13px;height:13px;}
+  .visDot input:not(:checked) ~ .visSwatch{background-color:transparent;border-color:rgba(255,255,255,.4);color:rgba(255,255,255,.45);}
+  .visDot input:focus-visible ~ .visSwatch{outline:2px solid var(--amber);outline-offset:2px;}
+  .visDotL{font-size:9.5px;line-height:1;color:var(--offwhite);white-space:nowrap;}
+  .visDot input:not(:checked) ~ .visDotL{color:var(--text-muted);}
+  .visSwatch .hmDot{width:12px;height:12px;}
   .visHead{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin-top:1px;}
   #waypoints.othersDim .wpPin--other{opacity:.5;}
 
@@ -145,7 +155,8 @@
     border-bottom:1px solid rgba(255,255,255,.1);
     flex:0 0 auto;
   }
-  #logHeader .kicker,#settingsHeader .kicker{font-size:19px;}
+  /* the views' titles: the app's own font, spaced (the serif is only the lake's name) */
+  #logHeader .kicker,#settingsHeader .kicker,#adminHeader .kicker,#helpHeader .kicker{font-family:Calibri,"Segoe UI",system-ui,-apple-system,sans-serif;font-size:17px;letter-spacing:.08em;}
   #logBackBtn,#settingsBackBtn{
     width:36px;height:36px;border-radius:50%;flex:0 0 auto;
     background:rgba(255,255,255,.08);border:none;color:var(--offwhite);
@@ -173,6 +184,18 @@
   .settingsRowText{flex:1 1 auto;}
   .settingsRowTitle{font-size:14px;color:var(--offwhite);}
   .settingsRowDesc{font-size:12px;color:var(--text-muted);margin-top:3px;line-height:1.4;}
+  /* sections (Kartan, Båten, ...): one card each; closed = the title and a line of what's chosen */
+  .setSec{background:var(--navy-glass);border:1px solid rgba(255,255,255,.1);border-radius:12px;flex:0 0 auto;}
+  .setSec > summary{list-style:none;display:flex;align-items:center;gap:10px;min-height:48px;padding:12px 14px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+  .setSec > summary::-webkit-details-marker{display:none;}
+  .setSecText{flex:1 1 auto;min-width:0;}
+  .setSecTitle{display:block;font-size:15px;font-weight:700;color:var(--offwhite);}
+  .setSecSum{display:block;font-size:12px;color:var(--text-muted);margin-top:2px;line-height:1.35;}
+  .setSec[open] .setSecSum{display:none;}
+  .setSecChev{width:16px;height:16px;flex:0 0 auto;color:var(--text-muted);transition:transform .2s ease;}
+  .setSec[open] .setSecChev{transform:rotate(90deg);}
+  /* the rows inside a section: flat, a thin line between (no card in a card) */
+  .setSecBody .settingsRow{background:none;border:0;border-top:1px solid rgba(255,255,255,.08);border-radius:0;}
 
   #demoBanner{
     /* small sign under the toggle panel (top right), same width as the panel */
@@ -245,7 +268,6 @@
 
   @media (orientation:landscape) and (max-height:520px){
     #visPanel{padding:7px 9px;gap:6px;}
-    #visTypes{gap:6px;}
     /* landscape: the two groups side by side, so the open panel stays short */
     #visMore{flex-direction:row;align-items:flex-start;gap:0;}
     #visMore .visCol{gap:6px;}

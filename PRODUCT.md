@@ -31,6 +31,8 @@ Appen lyckas när alla i gruppen ser samma levande bild under tävlingen, hittar
 
 ## Positioning
 
+FF Map är **kartappen som stöttar gruppens tävlingsapp**. Tävlingsresultaten skrivs in i den andra appen, och där finns också själva tävlingslogiken: tid, poäng och resultat. FF Map ska inte ta över något av det, alltså inget tävlingsläge, ingen klocka och inga poäng. Uppgiften här är kartan, platserna, båtarna och säkerheten, plus att visa tävlingsfångsterna som underlag.
+
 Appen kombinerar detaljerade djupkartor (C-MAP Genesis) över just gruppens sjöar med gruppens egen, levande data: platser, båtar och meddelanden, plus historiken från gruppens egna tävlingsfångster. Ingen allmän fiskeapp har gruppens fångster, positioner och platser samlade.
 
 ## Operating Context

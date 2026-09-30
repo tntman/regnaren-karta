@@ -51,8 +51,8 @@ def bring_to_centre(pg, col, row):
     return screen_of(pg, col, row)
 def set_type_shown(pg, label, on):
     pg.click('#visMoreBtn'); pg.wait_for_timeout(200)
-    cb = pg.query_selector('#visTypes label:has-text("%s") input' % label)
-    if cb.is_checked() != on: pg.click('#visTypes label:has-text("%s") .toggle' % label); pg.wait_for_timeout(150)
+    cb = pg.query_selector('#visTypes input[aria-label="%s"]' % label)
+    if cb.is_checked() != on: pg.click('#visTypes label:has(input[aria-label="%s"])' % label); pg.wait_for_timeout(150)
     pg.click('#visMoreBtn'); pg.wait_for_timeout(300)
 
 def pin_rect(pg, name):

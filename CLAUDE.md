@@ -20,6 +20,10 @@ All text i appen är på svenska. Svara Filip på svenska, kort och tydligt.
   låtsas vara Firebase). Kör alltid testerna efter ändringar och lägg till tester för ny funktion.
   Parallellt (6 åt gången, `TEST_JOBS`), ~3,5 min, mot `tests/serve.py` (egen webbserver med lång
   anslutningskö). Tester får inte ändra filer i `docs/` – blockera i webbläsaren (`pg.route`).
+  **Urval:** `testsun_all.ps1 heatmap filter` kör bara `test_*heatmap*.py` och `test_*filter*.py`.
+  Ordning: under arbetet bara områdets tester → när allt är byggt HELA sviten → rätta, kör om →
+  först när alla går igenom säga "klart" + GitHub Desktop-text (Filip gör commit; allt i `docs/` ska
+  vara testat i sin helhet). Allt är ett skript – en ändring kan bryta tester i helt andra filer.
 - **Testerna får aldrig nå riktiga Firebase**: `fakefb.py` blockerar Firebase-SDK:t och googleapis
   i varje context, spärrar service workers (deras anrop går förbi blockeringen – opt-in med
   `new_page(..., sw=True)`) och låser `window.firebase` så att riktiga SDK:t inte kan ersätta
@@ -96,13 +100,20 @@ Uppdatera rätt anteckning när något ändras.
   zoomnivåer + djupdata, i egen cache `ffmap-offline-<sjö>-<mapversion>` (sw.js rensar den inte).
   Status i localStorage (`lakeKey`), pausa/fortsätt, fortsätter efter rotation. Ny kartversion →
   "ladda ner igen". Regnaren ~1 200 bitar / 66 MB.
-- **Filter**: rubriken "Visa markeringar"; "Namn" borttaget (namnen visas alltid). "Djup" (djupet
-  under båten, `#toggleDepth`) och "Andras fiskeplatser 50/100 %" (`#othersOpacitySeg`) ligger i
-  Inställningar. Knapparna nere till höger = 2 × 2-rutnät (`--bb`).
+- **Filter**: två grupper – **Markeringar** (Mina, Andras, Båtar + typerna som en rad prickar
+  `.visDot`: ifylld = visas, grå ring = dold) och **Lager** (Spår, Väder, Vind och lä, Blixtar,
+  Kartanalys, Heatmap `#toggleHeatmap`). "Djup" (`#toggleDepth`), "Andras fiskeplatser 50/100 %" och
+  "Håll skärmen tänd" ligger i Inställningar. Knapparna nere till höger = 2 × 2-rutnät (`--bb`).
 - **Panorera över markeringar**: ett finger som börjar på en plats, båt, bubbla eller etikett
   panorerar kartan (`mapPointerDown(e, true)`: ingen långtryckning/lod); bara ett tryck utan att
   dra öppnar den (`mapDraggedJustNow()` i deras click).
-- **Håll skärmen tänd** (Filter, av som standard, `ffmap_wakelock_v1`): Wake Lock, tas igen när
+- **Inställningar i avsnitt** (`<details class="setSec">`): namnet överst, sedan Kartan, Båten,
+  Varningar, Kartanalys, Offline, Avancerat. Stängt = rubrik + en rad med vad som är valt (`setSums()`,
+  `js/28-menu.js`, läser av kontrollerna). Vilka som är öppna: `ffmap_settings_open_v1`; fakefb
+  öppnar alla i testerna. "Åskvarning av"-skylten öppnar Varningar (`openSettingsSec('warn')`).
+- **Skyltar under väderchipet**: `#hmPill` (Heatmap) och `#anPill` (Kartanalys, när något läge är
+  på) – aldrig båda, lägena stänger av varandra. Tryck = rutan.
+- **Håll skärmen tänd** (Inställningar → Båten, av som standard, `ffmap_wakelock_v1`): Wake Lock, tas igen när
   appen blir synlig. På = gul sol `#wakeBadge` vid namnet; tryck = av + notis `#wakeNote`.
 - **Hjälp** (menyn → Hjälp; öppnas själv efter första namnvalet): "Nytt i appen" = `HELP_NEWS`
   (`js/30-help.js`), animeringar av `tools/help_anim.py` – allt i `tools/HJALP.md`.

@@ -4,7 +4,7 @@ Koden finns i `src/css/`, `src/html/` och `src/js/` (en fil per del – se `src/
 Använd de här byggstenarna när något nytt ska in, så att allt ser ut och beter sig
 likadant. Färger: `--navy` (#0B2A3A, bakgrund), `--navy-glass` (halvgenomskinlig),
 `--amber` (#E8A33D, det man ska trycka på / valt), `--offwhite`, `--text-muted`.
-Typsnitt: Calibri/Segoe UI; rubriker (sjöns namn, vyer) Cambria (`.kicker`).
+Typsnitt: Calibri/Segoe UI överallt; **bara sjöns namn** är Cambria (serif). Vyrubriker (INSTÄLLNINGAR, LOGG …) och dialogrubriker i Calibri, spärrade.
 
 ---
 
@@ -74,6 +74,14 @@ vald = `.on`/`.active` (amber). För få, fasta val (Av/5/10/20 km, Bara platsen
   `touch-action:none` på stapeln.
 
 ## Av/på-rader (Filter, Inställningar)
+
+Filter = två `.visCol`: "Markeringar" (Mina, Andras, Båtar + `#visTypes`: typerna som prickar
+`.visDot` – en osynlig checkbox över en `.visSwatch` + kort namn; dold = grå ring) och "Lager".
+Liggande står de bredvid varandra.
+
+Inställningar = avsnitt `<details class="setSec" data-sec="…">` med `<summary>` (rubrik + `.setSecSum`,
+fylls av `setSums()`) och `.setSecBody` med raderna (platta, tunn linje emellan – inget kort i kort).
+Ny inställning: lägg raden i rätt avsnitt och lägg till den i `setSums()` om den ska synas stängd.
 
 `<label class="visRow">` med ikon (`.visSwatch`), text (`.visLabel`) och
 `<span class="toggle"><input type="checkbox"><span class="toggleTrack"><span class="toggleThumb"></span></span></span>`.

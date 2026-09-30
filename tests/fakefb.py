@@ -49,6 +49,8 @@ if not getattr(_Browser, '_ffGuarded', False):
         ctx.add_init_script(TEST_PIN_JS)
         if help_seen:   # Hjälp opens by itself the first time -- tests start as if it's been read (test_help: help_seen=False)
             ctx.add_init_script("try { if (!localStorage.getItem('ffmap_help_seen_v1')) localStorage.setItem('ffmap_help_seen_v1', '999'); } catch(e){}")
+        # Inställningar in sections: the tests start with them all open (test_extras checks closing / opening)
+        ctx.add_init_script("try { if (!localStorage.getItem('ffmap_settings_open_v1')) localStorage.setItem('ffmap_settings_open_v1', '[\"map\", \"boat\", \"warn\", \"an\", \"off\", \"adv\"]'); } catch(e){}")
         return ctx
     _Browser.new_context = _guarded_new_context
     _Browser._ffGuarded = True

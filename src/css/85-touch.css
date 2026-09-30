@@ -1,0 +1,22 @@
+  /* ================= wet, cold fingers: touch targets in the bottom panels =================
+     (PRODUCT.md: tävlingsdagen i båten. The controls on the map itself keep their size.) */
+  .anSeg button{min-height:42px;font-size:13px;}                        /* the category / style row on top */
+  .anChips button{min-height:40px;padding:8px 13px;font-size:13px;}     /* choices, Stäng av, Återställ */
+  .anFactors button{min-height:38px;padding:7px 11px;}                  /* on/off: what is compared */
+  .typeSeg button{min-height:40px;padding:8px 13px;}                    /* a spot's type */
+  .sheetActs button{min-height:46px;}                                   /* bin, Åk hit, Liknande, Spara */
+  .msgCardBtns button{min-height:46px;}                                 /* a message / a catch: Åk hit … */
+  #hmCardNav button{width:48px;height:44px;}                            /* ‹ › between the catches there */
+
+  /* small print in the panels, readable in the sun */
+  .wpTile i{font-size:11px;}                                            /* DJUP · LUTNING · BOTTEN · VÄXTER */
+  .anSub{font-size:11.5px;}                                             /* the panels' small headings (ART, TÄVLING ...) */
+  .visDotL{font-size:10.5px;}                                           /* the types' names in Filter */
+  .visHead{font-size:11px;}                                             /* Filter: MARKERINGAR / LAGER */
+  .speedSub{font-size:11px;}                                            /* Inställningar: "Inte kört än" */
+
+  /* Inställningar on a wide screen (landscape, computer): a column, not the whole width */
+  @media (min-width:640px){ #settingsBody > *{width:100%;max-width:600px;margin-left:auto;margin-right:auto;box-sizing:border-box;} }
+
+  /* keyboard focus (computer): an amber ring on whatever has it */
+  :focus-visible{outline:2px solid var(--amber);outline-offset:2px;}

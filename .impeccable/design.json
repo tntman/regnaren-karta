@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-30T09:57:51Z",
+  "generatedAt": "2026-09-30T12:58:25Z",
   "title": "Design System: FF Map",
   "extensions": {
     "colorMeta": {
@@ -229,6 +229,66 @@
           "#B2F6FF"
         ]
       },
+      "glod-lag": {
+        "role": "data",
+        "displayName": "Glöd låg",
+        "canonical": "oklch(37.2% 0.169 308.8)",
+        "tonalRamp": [
+          "#1B0032",
+          "#390057",
+          "#59207D",
+          "#7C3FA6",
+          "#9F62CC",
+          "#C188ED",
+          "#E4AFFF",
+          "#FFD7FF"
+        ]
+      },
+      "glod-mitt": {
+        "role": "data",
+        "displayName": "Glöd mitt",
+        "canonical": "oklch(55.1% 0.206 345.4)",
+        "tonalRamp": [
+          "#2D0019",
+          "#540036",
+          "#7D0057",
+          "#A8127A",
+          "#CF429C",
+          "#F36EBF",
+          "#FF98E2",
+          "#FFC2FF"
+        ]
+      },
+      "glod-hog": {
+        "role": "data",
+        "displayName": "Glöd hög",
+        "canonical": "oklch(69.4% 0.178 39.9)",
+        "tonalRamp": [
+          "#300000",
+          "#580000",
+          "#810500",
+          "#AC2E00",
+          "#D45422",
+          "#F77D52",
+          "#FFA67D",
+          "#FFCFA9"
+        ]
+      },
+      "glod-topp": {
+        "role": "data",
+        "displayName": "Glöd topp",
+        "canonical": "oklch(96.7% 0.059 96.9)",
+        "tonalRamp": [
+          "#110A00",
+          "#2C2505",
+          "#4A421F",
+          "#6A613B",
+          "#8C835B",
+          "#AEA680",
+          "#D2CAA6",
+          "#F7EFCD"
+        ]
+      },
       "sjokortsbla-glas": {
         "role": "neutral",
         "displayName": "Sjökortsblått glas",
@@ -319,8 +379,16 @@
       {
         "name": "liggande",
         "value": "orientation: landscape and max-height: 520px"
+      },
+      {
+        "name": "bred",
+        "value": "min-width: 640px (Inställningar som en spalt på högst 600 px)"
       }
-    ]
+    ],
+    "focus": {
+      "value": "outline: 2px solid #E8A33D; outline-offset: 2px",
+      "purpose": "Tangentbordsfokus (:focus-visible) på allt."
+    }
   },
   "components": [
     {
@@ -367,9 +435,9 @@
       "name": "Handlingsrad",
       "kind": "button",
       "refersTo": "action-save",
-      "description": "Lika breda knappar längst ner i platsens ruta: neutral, Ta bort (röd), Spara (bärnsten).",
-      "html": "<div class=\"ds-acts\"><button>➤ Åk hit</button><button>Liknande</button><button class=\"del\">Ta bort</button><button class=\"save\">Spara</button></div>",
-      "css": ":host{--sjokortsbla:#0B2A3A;--glas:rgba(11,42,58,.72);--barnsten:#E8A33D;--dimma:#F4F7F8;--vass:#B7C4C9;} .ds-acts{display:flex;gap:7px;padding:14px;background:var(--sjokortsbla);} .ds-acts button{flex:1 1 0;min-width:0;border:none;border-radius:10px;padding:8px 2px;font-family:Calibri,\"Segoe UI\",system-ui,-apple-system,sans-serif;font-size:13.5px;font-weight:700;background:rgba(255,255,255,.08);color:var(--dimma);cursor:pointer;transition:transform .12s;} .ds-acts button:active{transform:scale(.97);} .ds-acts button:focus-visible{outline:2px solid var(--barnsten);outline-offset:1px;} .ds-acts .del{background:#D64545;color:#fff;} .ds-acts .save{background:var(--barnsten);color:var(--sjokortsbla);}"
+      "description": "Knappraden i platsens ruta: papperskorg (Ta bort) längst till vänster, avskild; Åk hit, Liknande; Spara (bärnsten) till höger.",
+      "html": "<div class=\"ds-acts\"><button class=\"del\" aria-label=\"Ta bort\">🗑</button><button>➤ Åk hit</button><button>Liknande</button><button class=\"save\">Spara</button></div>",
+      "css": ":host{--sjokortsbla:#0B2A3A;--glas:rgba(11,42,58,.72);--barnsten:#E8A33D;--dimma:#F4F7F8;--vass:#B7C4C9;} .ds-acts{display:flex;gap:7px;padding:14px;background:var(--sjokortsbla);} .ds-acts button{flex:1 1 0;min-width:0;border:none;border-radius:10px;padding:8px 2px;font-family:Calibri,\"Segoe UI\",system-ui,-apple-system,sans-serif;font-size:13.5px;font-weight:700;background:rgba(255,255,255,.08);color:var(--dimma);cursor:pointer;transition:transform .12s;} .ds-acts button:active{transform:scale(.97);} .ds-acts button:focus-visible{outline:2px solid var(--barnsten);outline-offset:1px;} .ds-acts .del{flex:0 0 48px;margin-right:8px;background:rgba(214,69,69,.12);border:1.5px solid rgba(214,69,69,.55);color:#ff8a80;} .ds-acts .save{background:var(--barnsten);color:var(--sjokortsbla);}"
     },
     {
       "name": "Faktarutor",
@@ -377,7 +445,7 @@
       "refersTo": "fact-tile",
       "description": "Fyra rutor med vad som finns under en plats eller fångst.",
       "html": "<div class=\"ds-tiles\"><div><i>Djup</i><b>9,0 m</b></div><div><i>Lutning</i><b>2 %</b></div><div><i>Botten</i><b>Medel</b></div><div><i>Växter</i><b>Inga</b></div></div>",
-      "css": ":host{--sjokortsbla:#0B2A3A;--glas:rgba(11,42,58,.72);--barnsten:#E8A33D;--dimma:#F4F7F8;--vass:#B7C4C9;} .ds-tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:14px;background:var(--sjokortsbla);font-family:Calibri,\"Segoe UI\",system-ui,-apple-system,sans-serif;} .ds-tiles div{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:5px 8px 6px;} .ds-tiles i{display:block;font-style:normal;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--vass);} .ds-tiles b{display:block;font-size:15px;color:var(--dimma);margin-top:1px;}"
+      "css": ":host{--sjokortsbla:#0B2A3A;--glas:rgba(11,42,58,.72);--barnsten:#E8A33D;--dimma:#F4F7F8;--vass:#B7C4C9;} .ds-tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:14px;background:var(--sjokortsbla);font-family:Calibri,\"Segoe UI\",system-ui,-apple-system,sans-serif;} .ds-tiles div{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:5px 8px 6px;} .ds-tiles i{display:block;font-style:normal;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--vass);} .ds-tiles b{display:block;font-size:15px;color:var(--dimma);margin-top:1px;}"
     },
     {
       "name": "Textfält",
@@ -386,6 +454,30 @@
       "description": "Fält i en ruta (platsens namn); 16 px så att iPhone inte zoomar.",
       "html": "<div class=\"ds-wrap\"><input class=\"ds-input\" placeholder=\"Namn, t.ex. Gösvik\"></div>",
       "css": ":host{--sjokortsbla:#0B2A3A;--glas:rgba(11,42,58,.72);--barnsten:#E8A33D;--dimma:#F4F7F8;--vass:#B7C4C9;} .ds-wrap{padding:14px;background:var(--sjokortsbla);} .ds-input{width:100%;box-sizing:border-box;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:11px 12px;color:var(--dimma);font-size:16px;font-family:Calibri,\"Segoe UI\",system-ui,-apple-system,sans-serif;outline:none;transition:border-color .15s;} .ds-input::placeholder{color:var(--vass);} .ds-input:focus-visible{border-color:var(--barnsten);}"
+    },
+    {
+      "name": "Skyltar under vädret",
+      "kind": "custom",
+      "refersTo": "map-pill",
+      "description": "Små kapslar under väderchipet: något är på (Heatmap eller Kartanalys, aldrig båda) eller åskvarningen är av. Tryck = rutan.",
+      "html": "<div class=\"ds-pills\"><button class=\"ds-pill\"><span class=\"ds-dot\"></span>Heatmap</button><button class=\"ds-pill\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\" stroke-linecap=\"round\"><circle cx=\"10.5\" cy=\"10.5\" r=\"6.5\"/><path d=\"M15.5 15.5 21 21\"/></svg>Kartanalys</button></div>",
+      "css": ":host{--sjokortsbla:#0B2A3A;--glas:rgba(11,42,58,.72);--barnsten:#E8A33D;--dimma:#F4F7F8;--vass:#B7C4C9;} .ds-pills{display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:14px;background:#1d4f63;} .ds-pill{display:flex;align-items:center;gap:7px;background:rgba(11,42,58,.82);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:4px 11px 4px 8px;font-family:Calibri,\"Segoe UI\",system-ui,-apple-system,sans-serif;font-size:12px;font-weight:600;color:var(--dimma);box-shadow:0 4px 14px rgba(0,0,0,.3);cursor:pointer;} .ds-pill svg{width:13px;height:13px;} .ds-dot{width:12px;height:12px;border-radius:50%;background:radial-gradient(circle,#fff5c8 0,#f56e3c 45%,#be288c 75%,rgba(90,20,130,.6) 100%);} .ds-pill:focus-visible{outline:2px solid var(--barnsten);outline-offset:2px;}"
+    },
+    {
+      "name": "Typprickar i Filter",
+      "kind": "custom",
+      "refersTo": "type-dot",
+      "description": "Typerna som en rad artfärgade prickar: ifylld = visas, grå ring = dold. Tryck = byt.",
+      "html": "<div class=\"ds-dots\"><label><input type=\"checkbox\" checked><span class=\"d\" style=\"--c:#E4E9EC\"></span><i>Mark</i></label><label><input type=\"checkbox\" checked><span class=\"d\" style=\"--c:#FF7A1A\"></span><i>Abb</i></label><label><input type=\"checkbox\"><span class=\"d\" style=\"--c:#35D24A\"></span><i>Gädda</i></label><label><input type=\"checkbox\" checked><span class=\"d\" style=\"--c:#FFD21A\"></span><i>Gös</i></label><label><input type=\"checkbox\" checked><span class=\"d\" style=\"--c:#FFB23F\"></span><i>Träff</i></label><label><input type=\"checkbox\" checked><span class=\"d\" style=\"--c:#3A86FF\"></span><i>Hem</i></label></div>",
+      "css": ":host{--sjokortsbla:#0B2A3A;--glas:rgba(11,42,58,.72);--barnsten:#E8A33D;--dimma:#F4F7F8;--vass:#B7C4C9;} .ds-dots{display:flex;gap:4px;padding:12px;width:170px;background:var(--glas);border-radius:12px;font-family:Calibri,\"Segoe UI\",system-ui,-apple-system,sans-serif;} .ds-dots label{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;} .ds-dots input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer;} .ds-dots .d{width:24px;height:24px;border-radius:50%;box-sizing:border-box;border:2px solid #14181C;background:var(--c);transition:background-color .15s;} .ds-dots input:not(:checked)~.d{background:transparent;border-color:rgba(255,255,255,.4);} .ds-dots i{font-style:normal;font-size:10.5px;color:var(--dimma);} .ds-dots input:not(:checked)~i{color:var(--vass);} .ds-dots input:focus-visible~.d{outline:2px solid var(--barnsten);outline-offset:2px;}"
+    },
+    {
+      "name": "Avsnitt i Inställningar",
+      "kind": "card",
+      "refersTo": "settings-section",
+      "description": "Hopfällbart kort (details/summary): rubrik + en rad med vad som är valt när det är stängt; raderna inuti platta med tunn linje emellan.",
+      "html": "<div class=\"ds-set\"><details><summary><span><b>Varningar</b><small>Åskvarning 10 km · ljud · vibration</small></span><em>›</em></summary><div class=\"r\">Åskvarning<br><small>Larm när en blixt slår ner närmare än så här.</small></div></details><details open><summary><span><b>Båten</b><small>Spår 60 % · djupet · 2,0 kn marschfart</small></span><em>›</em></summary><div class=\"r\">Djupet under båten</div><div class=\"r\">Håll skärmen tänd</div></details></div>",
+      "css": ":host{--sjokortsbla:#0B2A3A;--glas:rgba(11,42,58,.72);--barnsten:#E8A33D;--dimma:#F4F7F8;--vass:#B7C4C9;} .ds-set{display:flex;flex-direction:column;gap:10px;padding:14px;background:var(--sjokortsbla);font-family:Calibri,\"Segoe UI\",system-ui,-apple-system,sans-serif;} .ds-set details{background:var(--glas);border:1px solid rgba(255,255,255,.1);border-radius:12px;} .ds-set summary{list-style:none;display:flex;align-items:center;gap:10px;min-height:48px;padding:12px 14px;cursor:pointer;color:var(--dimma);} .ds-set summary::-webkit-details-marker{display:none;} .ds-set summary span{flex:1;} .ds-set b{display:block;font-size:15px;} .ds-set small{display:block;font-size:12px;color:var(--vass);margin-top:2px;} .ds-set details[open] summary small{display:none;} .ds-set em{font-style:normal;color:var(--vass);transition:transform .2s;} .ds-set details[open] em{transform:rotate(90deg);} .ds-set .r{border-top:1px solid rgba(255,255,255,.08);padding:12px 14px;font-size:14px;color:var(--dimma);} .ds-set summary:focus-visible{outline:2px solid var(--barnsten);outline-offset:2px;border-radius:12px;}"
     }
   ],
   "narrative": {
@@ -430,15 +522,19 @@
       "**Do** använd bärnsten (#E8A33D) för exakt det som är valt eller på, och sjökortsblå text på den.",
       "**Do** öppna allt nytt som en bottenruta med greppremsa, ✕ och blå glöd när den dras – och lägg nya rutor i glöd- och greppreglerna.",
       "**Do** rita linjer och kanter på kartan kantutjämnade och aldrig tunnare än en ritad punkt (se lä och Kartanalys).",
-      "**Do** håll tryckytor stora nog för blöta fingrar (rundknappar 48 px, greppremsa 30 px hög) och text läsbar i sol.",
-      "**Do** ge statusraden, bakgrunden och toningarna samma nattvatten."
+      "**Do** håll tryckytor stora nog för blöta fingrar: i rutorna chips/piller minst 40 px, kategorirader 42 px, knapprader 46 px; rundknappar 48 px; greppremsa 30 px hög. Kartans egna knappar ändras inte utan att Filip säger till.",
+      "**Do** ge statusraden, bakgrunden och toningarna samma nattvatten.",
+      "**Do** håll småtexten i rutorna läsbar i sol: minst 11 px (faktarutornas rubriker 11, rutornas små rubriker 11,5). Kartans egen skala och zoomtext är undantag.",
+      "**Do** låt kort över kartan (vädret) stängas med ett tryck på kartan – men inte när kartan dras.",
+      "**Do** visa tangentbordsfokus med en 2 px bärnstensring (`:focus-visible`). Inställningar är en spalt på högst 600 px på breda skärmar."
     ],
     "donts": [
       "**Don't** rita egna djupkurvor eller djupsiffror – bara Genesis kartbilder.",
       "**Don't** använd bärnsten för varningar eller dekoration; varningar är orange (#DE8012) eller röda.",
       "**Don't** låt en art byta färg mellan vyer.",
       "**Don't** lägg helt täckande plattor över kartan eller hårda kanter mot statusraden.",
-      "**Don't** låt Fara eller åskvarning gå att dölja med filter eller val."
+      "**Don't** låt Fara eller åskvarning gå att dölja med filter eller val; är varningen avstängd i Inställningar syns det med en skylt.",
+      "**Don't** radera något delat utan Ångra, och lägg aldrig Ta bort bredvid Spara."
     ]
   }
 }

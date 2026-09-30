@@ -81,10 +81,21 @@ with sync_playwright() as p:
        els.forEach(e => { var r=e.getBoundingClientRect(); var d=Math.hypot(r.left+r.width/2-195, r.top+r.height/2-422); if(d<bd){bd=d;best=e;} }); best.click(); }""")
     pg.wait_for_timeout(400)
     check("admin can edit someone else's spot (type buttons, Ta bort, Spara + an ADMIN tag)", pg.is_visible('#wpDelete') and pg.is_enabled('#wpName') and pg.is_visible('#wpTypeSeg') and pg.inner_text('#wpMeta .adminTag') == 'ADMIN', pg.inner_text('#wpMeta'))
+    bb = pg.eval_on_selector_all('.sheetActs button', 'e => e.filter(x => x.offsetParent).map(x => [x.id, x.getBoundingClientRect().left])')
+    check('Ta bort: a bin at the far left, away from Spara', bb[0][0] == 'wpDelete' and bb[-1][0] == 'wpSave', bb)
     pg.click('#wpDelete'); pg.wait_for_timeout(300)
+    check('...pressed: the spot gone from the map, "… borttagen · Ångra" -- not deleted in the database yet', pg.is_visible('#undoToast') and 'Kalles grund' in pg.inner_text('#undoTxt') and
+          any(d.get('name') == 'Kalles grund' for d in pg.evaluate('Object.values(window.__wpDocs)')))
+    pg.click('#undoBtn'); pg.wait_for_timeout(300)
+    check('"Ångra": the spot back, nothing deleted', not pg.is_visible('#undoToast') and any(d.get('name') == 'Kalles grund' for d in pg.evaluate('Object.values(window.__wpDocs)')))
+    pg.evaluate("""() => { var els = document.querySelectorAll('.wpPin--other'); var best=null, bd=1e9;
+       els.forEach(e => { var r=e.getBoundingClientRect(); var d=Math.hypot(r.left+r.width/2-195, r.top+r.height/2-422); if(d<bd){bd=d;best=e;} }); best.click(); }""")
+    pg.wait_for_timeout(400); pg.click('#wpDelete'); pg.wait_for_timeout(300)
     pg.click('#menuBtn'); pg.click('#menuItemLog'); pg.wait_for_timeout(300)
     titles = pg.eval_on_selector_all('#logList .logTitle', 'e=>e.map(x=>x.textContent)')
-    check('...and delete it', 'Kalles grund' not in titles and len(titles) == 3, titles)
+    check('...and delete it (gone from the Logg at once)', 'Kalles grund' not in titles and len(titles) == 3, titles)
+    pg.wait_for_timeout(6300)
+    check('...after 6 s: really deleted, for everyone', not any(d.get('name') == 'Kalles grund' for d in pg.evaluate('Object.values(window.__wpDocs)')))
     pg.click('#logBackBtn'); pg.wait_for_timeout(200)
 
     # remembered after reload; lock

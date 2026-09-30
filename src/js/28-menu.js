@@ -69,7 +69,7 @@
   }
 
   function renderLogList(){
-    var sorted = waypoints.filter(function(w){ return !isExpired(w); }).sort(function(a,b){ return (b.createdAt||0) - (a.createdAt||0); });
+    var sorted = waypoints.filter(function(w){ return !isExpired(w) && !isUndoPending(w.id); }).sort(function(a,b){ return (b.createdAt||0) - (a.createdAt||0); });
     if (!sorted.length){
       logList.innerHTML = '<div id="logEmpty">Inga fiskeplatser sparade än.<br>Håll ner fingret på kartan för att lägga till en.</div>';
       return;
@@ -114,8 +114,42 @@
     menuItemLog.classList.add('menuItem--active');
     toggleMenu(false);
   }
+  /* ---- Inställningar in sections (Kartan, Båten, Varningar ...): closed = one line of what's chosen.
+     Which ones are open is remembered on the phone. ---- */
+  var SET_OPEN_KEY = 'ffmap_settings_open_v1';
+  var setSecs = Array.from(document.querySelectorAll('#settingsBody .setSec'));
+  (function(){
+    var open = []; try { open = JSON.parse(localStorage.getItem(SET_OPEN_KEY) || '[]'); } catch(e){}
+    setSecs.forEach(function(s){ s.open = open.indexOf(s.getAttribute('data-sec')) >= 0; });
+  })();
+  setSecs.forEach(function(s){
+    s.addEventListener('toggle', function(){
+      try { localStorage.setItem(SET_OPEN_KEY, JSON.stringify(setSecs.filter(function(x){ return x.open; }).map(function(x){ return x.getAttribute('data-sec'); }))); } catch(e){}
+    });
+  });
+  function openSettingsSec(id){ setSecs.forEach(function(s){ if (s.getAttribute('data-sec') === id) s.open = true; }); }
+  // the line under each closed title, read from the controls themselves
+  function setSums(){
+    var el = function(id){ return document.getElementById(id); };
+    var act = function(id){ var b = document.querySelector('#' + id + ' .active'); return b ? b.textContent.trim() : ''; };
+    var on = function(id){ return el(id).checked; };
+    var put = function(id, parts){ var t = parts.filter(Boolean).join(' · '); el('setSum-' + id).textContent = t.charAt(0).toUpperCase() + t.slice(1); };
+    var st = document.querySelector('#mapStyleList .styleOpt.active .soName');
+    put('map', [act('wpSizeSeg') + ' storlek', st && st.textContent, 'färg ' + el('mapSatVal').textContent, 'andras ' + act('othersOpacitySeg')]);
+    put('boat', ['spår ' + el('trackOpVal').textContent, on('toggleDepth') && 'djupet', on('gpsPulseToggle') && 'ring', on('toggleWake') && 'skärmen tänd',
+      (el('cruiseInput').value || '–') + ' kn marschfart']);
+    var km = act('ltAlarmSeg');
+    put('warn', km === 'Av' || !km ? ['Åskvarning av'] : ['Åskvarning ' + km, on('ltAlarmSound') && 'ljud', on('ltAlarmVib') && 'vibration']);
+    put('an', ['Tona ner ' + el('anDimOut').textContent]);
+    var ob = el('offBtn').textContent, os = el('offStatus').textContent;
+    put('off', [ob === 'Ta bort' ? 'Nedladdad' : ob === 'Pausa' ? 'Laddar ner …' : ob === 'Fortsätt' ? 'Pausad' : /kartversion/.test(os) ? 'Ny kartversion – ladda ner igen' : 'Inte nedladdad',
+      ob === 'Ladda ner' && !/kartversion/.test(os) && os.split(' · ')[1]]);
+    put('adv', ['Demo Mode ' + (on('demoModeToggle') ? 'på' : 'av'), !el('adminRow').hidden && 'Admin']);
+  }
+  ['change', 'input', 'click'].forEach(function(t){ document.getElementById('settingsBody').addEventListener(t, function(){ setTimeout(setSums, 0); }); });
   function showSettingsView(){
     updateSpeedSettings(); // fresh speed numbers the moment it opens
+    setSums();
     settingsView.classList.add('show');
     logView.classList.remove('show');
     menuItemMap.classList.remove('menuItem--active');

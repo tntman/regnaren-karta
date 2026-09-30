@@ -61,7 +61,7 @@
     var list = offlineFiles(), i = 0, done = 0, bytes = 0, failed = 0;
     start.then(function(){ return caches.open(OFF_CACHE); }).then(function(cache){
       function step(){
-        offFill.style.width = (100 * done / list.length).toFixed(1) + '%';
+        offFill.style.transform = 'scaleX(' + (done / list.length).toFixed(3) + ')';
         offStatus.textContent = 'Laddar ner… ' + done + ' av ' + list.length + ' · ' + fmtMB(bytes);
         try { localStorage.setItem(OFF_KEY, JSON.stringify({ ver: OFF_VER, files: done, bytes: bytes, done: false })); } catch(e){}
       }

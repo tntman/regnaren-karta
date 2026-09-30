@@ -136,6 +136,11 @@
   }
   wxChip.addEventListener('click', function(e){ e.stopPropagation(); setWxOpen(!wxCard.classList.contains('show')); });
   document.getElementById('wxClose').addEventListener('click', function(){ setWxOpen(false); });
+  // a tap anywhere else closes it too; dragging the map doesn't (watch the wind while panning)
+  document.addEventListener('click', function(e){
+    if (!wxCard.classList.contains('show') || wxCard.contains(e.target) || wxChip.contains(e.target) || mapDraggedJustNow()) return;
+    setWxOpen(false);
+  });
   var toggleWeatherEl = document.getElementById('toggleWeather');
   toggleWeatherEl.checked = showWeather;
   toggleWeatherEl.addEventListener('change', function(){

@@ -3,7 +3,9 @@
     <div id="headerUserRow"><div id="headerUser"></div><button type="button" id="wakeBadge" hidden aria-label="Skärmen hålls tänd – tryck för att stänga av" title="Skärmen hålls tänd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg></button></div>
     <button type="button" id="wxChip" aria-expanded="false" aria-controls="wxCard" aria-label="Väder och vind"></button>
     <div id="ltPill" role="status" aria-live="polite"><svg viewBox="0 0 24 24"><path d="M13.5 2 5 13.5h5.5L9 22l9.5-12.5H13z" fill="#FFF08C" stroke="#3a1d00" stroke-width="1.4" stroke-linejoin="round"></path></svg><div><b id="ltPillMain"></b><small id="ltPillSub"></small></div></div>
-    <button type="button" id="hmPill" hidden aria-label="Heatmap – öppna menyn"><span class="hmDot"></span>Heatmap</button>
+    <button type="button" id="ltOffPill" hidden aria-label="Åskvarningen är avstängd – öppna Inställningar"><span class="ltOffIc">⚡✕</span>Åskvarning av</button>
+    <button type="button" id="hmPill" class="mapPill" hidden aria-label="Heatmap – öppna menyn"><span class="hmDot"></span>Heatmap</button>
+    <button type="button" id="anPill" class="mapPill" hidden aria-label="Kartanalys – öppna menyn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="M15.5 15.5 21 21"></path></svg>Kartanalys</button>
     <div id="farAway"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11z"></path><circle cx="12" cy="10" r="2.2"></circle></svg><span class="farText" id="farText"></span></div>
     <div id="netBadge"><span class="netDot"></span><span class="netText" id="netText"></span></div>
   </header>
@@ -73,6 +75,7 @@
     <div id="anResult"></div>
     <div class="anChips anBottom"><button type="button" id="anClear" class="anClr" disabled>✕ Stäng av kartanalys</button><button type="button" id="anReset">↺ Återställ</button></div>
   </div>
+  <div id="undoToast" role="status"><span id="undoTxt"></span><svg viewBox="0 0 26 26" width="26" height="26" aria-hidden="true"><circle cx="13" cy="13" r="10" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="3"></circle><circle cx="13" cy="13" r="10" fill="none" stroke="#E8A33D" stroke-width="3" stroke-dasharray="63" transform="rotate(-90 13 13)"></circle></svg><button type="button" id="undoBtn">Ångra</button></div>
   <div id="hmPanel" role="dialog" aria-label="Heatmap">
     <div class="grab"><button type="button" id="hmClose" class="gripX" aria-label="Stäng">✕</button></div>
     <div class="anSub" style="margin-top:0">Heatmap · fångster</div>
@@ -95,8 +98,8 @@
   </div>
   <div id="wakeNote" role="status"><button type="button" id="wakeNoteClose" aria-label="Stäng">✕</button>
     <b>☀ Håll skärmen tänd är avstängd</b>
-    <span>Den håller telefonen vaken medan appen är öppen (drar mer batteri). Du kan slå på den igen i <b>Filter</b>.</span></div>
-  <div id="ltAlarm" role="alertdialog"><b id="ltAlarmMain"></b><small id="ltAlarmSub"></small><button type="button" id="ltAlarmOk">OK</button></div>
+    <span>Den håller telefonen vaken medan appen är öppen (drar mer batteri). Du kan slå på den igen i <b>Inställningar → Båten</b>.</span></div>
+  <div id="ltAlarm" role="alertdialog"><b id="ltAlarmMain"></b><small id="ltAlarmSub"></small><button type="button" id="ltAlarmOk">OK, jag har sett</button></div>
 
   <button id="measureBtn" aria-label="Mätverktyg" title="Mät sträcka och restid">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17 17 3l4 4L7 21z"></path><path d="M7 13l2 2M10 10l2 2M13 7l2 2"></path></svg>
@@ -121,7 +124,7 @@
     </button>
     <div id="visMore" hidden>
      <div class="visCol">
-      <div class="visHead">Visa markeringar</div>
+      <div class="visHead">Markeringar</div>
       <label class="visRow">
         <span class="visSwatch visSwatch--person" id="swatchMine"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"></path></svg></span>
         <span class="visLabel">Mina</span>
@@ -138,7 +141,6 @@
           <span class="toggleTrack"><span class="toggleThumb"></span></span>
         </span>
       </label>
-      <div class="visSeparator"></div>
       <label class="visRow">
         <span class="visSwatch visSwatch--boat"><span class="boatSwatchDot"></span></span>
         <span class="visLabel">Båtar</span>
@@ -147,7 +149,10 @@
           <span class="toggleTrack"><span class="toggleThumb"></span></span>
         </span>
       </label>
-      <div class="visSeparator"></div>
+      <div id="visTypes"></div>
+     </div>
+     <div class="visCol">
+      <div class="visHead">Lager</div>
       <label class="visRow">
         <span class="visSwatch visSwatch--track"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="18" r="2"></circle><path d="M7 18h5a3.5 3.5 0 0 0 0-7H9.5a3.5 3.5 0 0 1 0-7H19"></path></svg></span>
         <span class="visLabel">Spår</span>
@@ -189,17 +194,13 @@
         </span>
       </label>
       <label class="visRow">
-        <span class="visSwatch visSwatch--wx"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg></span>
-        <span class="visLabel">Håll skärmen tänd</span>
+        <span class="visSwatch visSwatch--wx"><span class="hmDot"></span></span>
+        <span class="visLabel">Heatmap</span>
         <span class="toggle">
-          <input type="checkbox" id="toggleWake">
+          <input type="checkbox" id="toggleHeatmap">
           <span class="toggleTrack"><span class="toggleThumb"></span></span>
         </span>
       </label>
-     </div>
-     <div class="visCol">
-      <div class="visHead">Typer</div>
-      <div id="visTypes"></div>
      </div>
     </div>
   </div>

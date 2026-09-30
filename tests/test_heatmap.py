@@ -125,10 +125,26 @@ with sync_playwright() as p:
     check('opening Kartanalys closes the heat map panel', pg.eval_on_selector('#anPanel', 'e => e.classList.contains("show")') and not heat(pg)['panel'])
     pg.click('#anCatSeg button[data-cat="map"]'); pg.click('#anPanel button[data-m="depth"]'); pg.wait_for_timeout(800)
     check('choosing something in Kartanalys: the heat map goes off (and its pill)', not heat(pg)['on'] and not pg.is_visible('#hmPill') and pg.evaluate('window.__ffAnalysis().mode') == 'depth')
+    check('...instead the "Kartanalys" pill under the weather chip', pg.is_visible('#anPill') and pg.inner_text('#anPill').strip() == 'Kartanalys' and
+          pg.evaluate("document.getElementById('anPill').getBoundingClientRect().top > document.getElementById('wxChip').getBoundingClientRect().bottom - 1"))
     pg.click('#anClose'); pg.wait_for_timeout(300)
-    open_heat(pg)
-    check('the heat map on again: Kartanalys off', heat(pg)['on'] and pg.evaluate('window.__ffAnalysis().mode') is None)
+    pg.click('#anPill'); pg.wait_for_timeout(300)
+    check('tap the pill: the Kartanalys panel', pg.eval_on_selector('#anPanel', 'e => e.classList.contains("show")'))
+    pg.click('#anClose'); pg.wait_for_timeout(300)
+    # Filter → Lager → Heatmap
+    pg.click('#visMoreBtn'); pg.wait_for_timeout(200)
+    check('Filter, Lager: a Heatmap switch (off)', pg.is_visible('label:has(#toggleHeatmap)') and not pg.is_checked('#toggleHeatmap'))
+    pg.click('label:has(#toggleHeatmap) .toggle'); pg.wait_for_timeout(900)
+    check('the heat map on again (from Filter, its panel open): Kartanalys off, only the Heatmap pill', heat(pg)['on'] and heat(pg)['panel'] and pg.evaluate('window.__ffAnalysis().mode') is None
+          and pg.is_visible('#hmPill') and not pg.is_visible('#anPill'))
     check('...its settings kept (Prickar)', heat(pg)['style'] == 'dots')
+    pg.click('label:has(#toggleHeatmap) .toggle'); pg.wait_for_timeout(300)
+    check('Heatmap off in Filter: off, no pill', not heat(pg)['on'] and not pg.is_visible('#hmPill'))
+    pg.click('#visMoreBtn'); pg.wait_for_timeout(200)
+    open_heat(pg)
+    check('on from the map-style list: the Filter switch follows', pg.is_checked('#toggleHeatmap'))
+    legend = pg.evaluate("getComputedStyle(document.querySelector('#hmPill .hmDot')).backgroundImage")
+    check('"glöd" scale: violet -> warm white (not the depth colours)', 'rgb(255, 245, 200)' in legend and 'rgb(0, 220, 230)' not in legend, legend)
     # Liknande from a catch
     pg.click('#hmClose'); pg.wait_for_timeout(300)
     xy = pg.evaluate('(id) => window.__ffHeatScreen(id)', cid); pg.mouse.click(xy[0], xy[1]); pg.wait_for_timeout(900)

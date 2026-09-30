@@ -55,10 +55,11 @@ with sync_playwright() as p:
     pg.click('#visMoreBtn'); pg.wait_for_timeout(300)
     lt_on(pg)          # (off)
     check('turned off: no warning, no radar', not pg.is_visible('#ltPill') and not pg.is_visible('#ltRadar'))
-    del hits[:]
     lt_on(pg)          # (on again)
     s = pg.evaluate('window.__ffLightning()')
-    check('on: FMI asked once, for the area round the lake and the last half hour',
+    # (the strikes are fetched from the start -- the warning is always on, whatever the map layer --
+    #  and switching the layer off and on doesn't fetch them again)
+    check('FMI asked once, for the area round the lake and the last half hour',
           len(hits) == 1 and 'lightning' in hits[0] and 'bbox=15.028,58.490,16.528,59.290' in hits[0] and 'starttime=' in hits[0], hits)
     check('the 40 min old one is left out, the 45 km one is not in range', s['n'] == 5 and s['inRange'] == 4, s)
     txt = pg.inner_text('#ltPill')

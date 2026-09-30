@@ -71,7 +71,7 @@
   try { anShow = localStorage.getItem(SHOW_AN_KEY) !== '0'; } catch(e){}
   var anCanvas = document.getElementById('anLayer'), anCtx = anCanvas.getContext('2d');
   var anSatCanvas = document.getElementById('anSat'), anSatCtx = anSatCanvas.getContext('2d');
-  var anPanel = document.getElementById('anPanel'), anBtn = document.getElementById('anBtn'), anLabelsEl = document.getElementById('anLabels');
+  var anPanel = document.getElementById('anPanel'), anBtn = document.getElementById('anBtn'), anLabelsEl = document.getElementById('anLabels'), anPill = document.getElementById('anPill');
   var AN = null, anBottom = null, anBottomLoading = false, anRes = null, anView = null, anVer = 0;
   function anSave(){ try { localStorage.setItem(AN_KEY, JSON.stringify(anSet)); } catch(e){} }
 
@@ -453,6 +453,7 @@
     // chips + controls + result, labels; then draw
     var m = anSet.mode;
     anBtn.classList.toggle('on', !!m);
+    anPill.hidden = !(m && anShow);                        // (the pill under the weather: something is shown on the map)
     document.getElementById('anClear').disabled = !m;      // (only when there's something to clear)
     anDataRow();
     var cat = anSet.cat || 'map';
@@ -626,6 +627,8 @@
     if (open){ if (typeof toggleMsgPop === 'function') toggleMsgPop(false); if (hmPanel) hmShowPanel(false); loadCatches(false); anCtlMode = '#'; if (!anRes) anCompute(); else anRender(); }
   }
   anBtn.addEventListener('click', function(e){ e.stopPropagation(); showAnPanel(!anPanel.classList.contains('show')); });
+  anPill.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
+  anPill.addEventListener('click', function(e){ e.stopPropagation(); showAnPanel(!anPanel.classList.contains('show')); });
   document.getElementById('anClose').addEventListener('click', function(){ showAnPanel(false); });
   document.getElementById('anClear').addEventListener('click', function(){ anSet.mode = null; anSave(); anCtlMode = '#'; anCompute(); });
   // "Återställ": every setting in the panel back to how it was from the start (what's shown stays; "Mörkare" is in Inställningar)

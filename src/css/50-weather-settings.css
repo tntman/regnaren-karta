@@ -87,7 +87,7 @@
   .offBtn{flex:0 0 auto;background:var(--amber);color:var(--navy);border:none;border-radius:18px;padding:8px 14px;font-family:inherit;font-weight:700;font-size:13px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
   .offBtn.ghost{background:none;color:var(--offwhite);border:1.5px solid rgba(255,255,255,.3);}
   .offBar{height:6px;background:rgba(255,255,255,.12);border-radius:3px;margin-top:10px;overflow:hidden;}
-  .offBar i{display:block;height:100%;width:0;background:var(--amber);transition:width .25s;}
+  .offBar i{display:block;height:100%;width:100%;background:var(--amber);transform:scaleX(0);transform-origin:left;transition:transform .25s;}
   .offStatus{font-size:12px;color:var(--text-muted);margin-top:6px;}
   .offStatus:empty{display:none;}
   .offStatus.ok{color:#7fd88a;}
@@ -134,7 +134,6 @@
     padding:calc(env(safe-area-inset-top,0px) + 14px) 18px 14px;
     border-bottom:1px solid rgba(255,255,255,.1);flex:0 0 auto;
   }
-  #adminHeader .kicker{font-size:19px;}
   #adminBackBtn{
     width:36px;height:36px;border-radius:50%;flex:0 0 auto;
     background:rgba(255,255,255,.08);border:none;color:var(--offwhite);
@@ -203,7 +202,7 @@
   .speedUnit{font-size:12px;color:var(--text-muted);}
   .speedUsed{font-size:12px;color:var(--offwhite);margin-top:10px;}
   .speedUsed b{color:var(--amber);}
-  .sheetDistance{color:var(--amber);font-weight:600;}
+  .sheetDistance{color:var(--offwhite);font-weight:700;}      /* (not amber: amber = chosen / on only) */
 
   /* ---- lightning alarm ---- */
   #ltAlarm{position:absolute;left:18px;right:18px;top:calc(env(safe-area-inset-top,0px) + 120px);z-index:40;display:none;flex-direction:column;align-items:center;gap:4px;
@@ -212,7 +211,14 @@
   @keyframes ltAlarmIn{from{transform:scale(.9);opacity:0;}to{transform:none;opacity:1;}}
   #ltAlarm b{font-size:22px;}
   #ltAlarm small{font-size:14px;opacity:.95;}
-  #ltAlarmOk{margin-top:8px;border:none;border-radius:11px;background:rgba(255,255,255,.22);color:#fff;font:inherit;font-weight:700;font-size:15px;padding:8px 26px;cursor:pointer;}
+  #ltAlarmOk{margin-top:12px;width:100%;min-height:48px;border:2px solid rgba(255,255,255,.85);border-radius:14px;background:none;color:#fff;font:inherit;font-weight:700;font-size:16px;cursor:pointer;}
+  #ltAlarmOk:active{background:rgba(255,255,255,.18);}
+  /* the warning is switched off: a pill under the weather chip, like it -- tap = Inställningar */
+  #ltOffPill{display:flex;align-items:center;gap:7px;margin:6px 0 0 -50px;pointer-events:auto;width:max-content;
+    background:rgba(11,42,58,.9);border:1.5px solid #ff8a80;border-radius:12px;padding:4px 11px 4px 8px;
+    font:700 12px Calibri,"Segoe UI",system-ui,sans-serif;color:#fff;box-shadow:0 4px 14px rgba(0,0,0,.3);cursor:pointer;-webkit-tap-highlight-color:transparent;}
+  #ltOffPill[hidden]{display:none;}
+  .ltOffIc{color:#ff8a80;}
 
   /* ---- "Håll skärmen tänd" on: a yellow sun by your name; tap = off (+ a note) ---- */
   #headerUserRow{display:flex;align-items:center;gap:7px;}

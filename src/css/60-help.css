@@ -9,7 +9,6 @@
     padding:calc(env(safe-area-inset-top,0px) + 14px) 18px 14px;
     border-bottom:1px solid rgba(255,255,255,.1);flex:0 0 auto;
   }
-  #helpHeader .kicker{font-size:19px;}
   #helpBackBtn{
     width:36px;height:36px;border-radius:50%;flex:0 0 auto;
     background:rgba(255,255,255,.08);border:none;color:var(--offwhite);

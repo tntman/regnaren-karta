@@ -5,7 +5,8 @@ Tester: `test_weather.py`, `test_wind.py`, `test_lightning.py`, `test_extras.py`
 
 ## Väder
 Open-Meteo (ingen nyckel), cache 30 min, lagras lokalt. Vindpilen i väderkortet/-chipet är
-orange (#FFB23F).
+orange (#FFB23F). Väderkortet stängs med ✕ eller ett tryck utanför (på kartan) – inte när kartan
+dras (`mapDraggedJustNow()`), så man kan titta på vinden medan man panorerar.
 
 ## Vind och lä
 - Filter, av som standard (`ffmap_show_wind_v1`). Canvas `#windLayer` i skärmkoordinater.
@@ -37,6 +38,9 @@ orange (#FFB23F).
   (test_lightning har egen låtsas-XML).
 
 ## Åskvarning
+**Gäller alltid, oberoende av Blixtar i Filter** (det lagret visar bara nedslagen på kartan): nedslag hämtas
+så länge lagret är på ELLER varningen är på (`ltWatch()`). Stängs varningen av (Inställningar "Av"): röd skylt "⚡✕ Åskvarning av" under väder (`#ltOffPill`,
+tryck = Inställningar vid varningen). OK-knappen: "OK, jag har sett", hela bredden, minst 48 px.
 Inställningar: Av/5/10/20 km, ljud, vibration; standard 10 km. Nytt nedslag < 5 min och inom
 avståndet → `#ltAlarm` + pip (WebAudio, låses upp vid första tryck) + vibration (finns inte på
 iPhone). Varje nedslag larmar en gång.

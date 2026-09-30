@@ -169,6 +169,7 @@
       var mine = isMine(wp);
       var editing = wp.id === editingId; // the spot you're editing always shows, whatever the filters say
       if (isExpired(wp) && !editing) return;   // a Träffpunkt whose hour is up
+      if (isUndoPending(wp.id)) return;        // (just taken away -- "Ångra" can still bring it back)
       if (!editing && wpType(wp) !== 'fara'){   // a Fara always shows, whatever the filters say
         if (mine && !showMine) return;
         if (!mine && !showOthers) return;

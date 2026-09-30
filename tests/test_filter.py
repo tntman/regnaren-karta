@@ -37,11 +37,11 @@ with sync_playwright() as p:
     check('no filter dot while everything is shown', not pg.is_visible('.visMoreDot'))
     pg.screenshot(path='shot_filter_open.png')
 
-    pg.click('#visTypes label:has-text("Gädda") .toggle'); pg.wait_for_timeout(200)
+    pg.click('#visTypes label:has(input[data-type="gadda"])'); pg.wait_for_timeout(200)
     ps = pins(pg)
     check('Gädda off -> gädda spot hidden', len(ps) == 3 and not any(x['t'] == 'gadda' for x in ps), ps)
     check('filter dot shows something is filtered', pg.is_visible('.visMoreDot'))
-    check('Filter: "Visa markeringar"; Andras 50/100 % and Djup are no longer there', 'visa markeringar' in pg.inner_text('#visMore').lower() and not pg.query_selector('#visMore #othersOpacitySeg') and not pg.query_selector('#visMore #toggleDepth'))
+    check('Filter: "Markeringar" + "Lager"; Andras 50/100 % and Djup are no longer there', 'markeringar' in pg.inner_text('#visMore').lower() and 'lager' in pg.inner_text('#visMore').lower() and not pg.query_selector('#visMore #othersOpacitySeg') and not pg.query_selector('#visMore #toggleDepth'))
     pg.click('#menuBtn'); pg.click('#menuItemSettings'); pg.wait_for_timeout(250)
     check('...they are in Inställningar', pg.is_visible('#othersOpacitySeg') and pg.is_visible('label:has(#toggleDepth)') and 'Andras fiskeplatser' in pg.inner_text('#settingsView'))
     pg.click('#othersOpacitySeg button[data-op="0.5"]'); pg.wait_for_timeout(150)
@@ -56,7 +56,7 @@ with sync_playwright() as p:
     check('after reload: Gädda still hidden, 50 % kept', len(ps) == 3 and pg.inner_text('#othersOpacitySeg .active') == '50 %' and all(x['op'] == ('0.5' if x['other'] else '1') for x in ps), ps)
 
     # new spot while its type is filtered out
-    pg.click('#visTypes label:has-text("Markering") .toggle'); pg.wait_for_timeout(200)
+    pg.click('#visTypes label:has(input[data-type="mark"])'); pg.wait_for_timeout(200)
     n = len(pins(pg))
     pg.click('#addHereBtn'); pg.wait_for_timeout(900)
     check('new Markering spot visible while editing, even with Markering off', len(pins(pg)) == n + 1, pins(pg))

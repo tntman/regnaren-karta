@@ -417,7 +417,17 @@
   .visCol{display:flex;flex-direction:column;gap:8px;}
   .visSwatch--track svg, .visSwatch--wx svg{width:13px;height:13px;}
   #visMore[hidden]{display:none;}
-  #visTypes{display:flex;flex-direction:column;gap:8px;}
+  /* the types: a row of dots under Markeringar -- filled = shown, grey ring = hidden */
+  #visTypes{display:flex;gap:2px;justify-content:space-between;margin-top:1px;}
+  .visDot{position:relative;flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;padding:2px 0;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+  .visDot input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer;z-index:1;}
+  .visDot .visSwatch{width:24px;height:24px;border-width:2px;transition:background-color .15s ease,color .15s ease;}
+  .visDot .visSwatch svg{width:13px;height:13px;}
+  .visDot input:not(:checked) ~ .visSwatch{background-color:transparent;border-color:rgba(255,255,255,.4);color:rgba(255,255,255,.45);}
+  .visDot input:focus-visible ~ .visSwatch{outline:2px solid var(--amber);outline-offset:2px;}
+  .visDotL{font-size:9.5px;line-height:1;color:var(--offwhite);white-space:nowrap;}
+  .visDot input:not(:checked) ~ .visDotL{color:var(--text-muted);}
+  .visSwatch .hmDot{width:12px;height:12px;}
   .visHead{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin-top:1px;}
   #waypoints.othersDim .wpPin--other{opacity:.5;}
 
@@ -477,7 +487,8 @@
     border-bottom:1px solid rgba(255,255,255,.1);
     flex:0 0 auto;
   }
-  #logHeader .kicker,#settingsHeader .kicker{font-size:19px;}
+  /* the views' titles: the app's own font, spaced (the serif is only the lake's name) */
+  #logHeader .kicker,#settingsHeader .kicker,#adminHeader .kicker,#helpHeader .kicker{font-family:Calibri,"Segoe UI",system-ui,-apple-system,sans-serif;font-size:17px;letter-spacing:.08em;}
   #logBackBtn,#settingsBackBtn{
     width:36px;height:36px;border-radius:50%;flex:0 0 auto;
     background:rgba(255,255,255,.08);border:none;color:var(--offwhite);
@@ -505,6 +516,18 @@
   .settingsRowText{flex:1 1 auto;}
   .settingsRowTitle{font-size:14px;color:var(--offwhite);}
   .settingsRowDesc{font-size:12px;color:var(--text-muted);margin-top:3px;line-height:1.4;}
+  /* sections (Kartan, Båten, ...): one card each; closed = the title and a line of what's chosen */
+  .setSec{background:var(--navy-glass);border:1px solid rgba(255,255,255,.1);border-radius:12px;flex:0 0 auto;}
+  .setSec > summary{list-style:none;display:flex;align-items:center;gap:10px;min-height:48px;padding:12px 14px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+  .setSec > summary::-webkit-details-marker{display:none;}
+  .setSecText{flex:1 1 auto;min-width:0;}
+  .setSecTitle{display:block;font-size:15px;font-weight:700;color:var(--offwhite);}
+  .setSecSum{display:block;font-size:12px;color:var(--text-muted);margin-top:2px;line-height:1.35;}
+  .setSec[open] .setSecSum{display:none;}
+  .setSecChev{width:16px;height:16px;flex:0 0 auto;color:var(--text-muted);transition:transform .2s ease;}
+  .setSec[open] .setSecChev{transform:rotate(90deg);}
+  /* the rows inside a section: flat, a thin line between (no card in a card) */
+  .setSecBody .settingsRow{background:none;border:0;border-top:1px solid rgba(255,255,255,.08);border-radius:0;}
 
   #demoBanner{
     /* small sign under the toggle panel (top right), same width as the panel */
@@ -577,7 +600,6 @@
 
   @media (orientation:landscape) and (max-height:520px){
     #visPanel{padding:7px 9px;gap:6px;}
-    #visTypes{gap:6px;}
     /* landscape: the two groups side by side, so the open panel stays short */
     #visMore{flex-direction:row;align-items:flex-start;gap:0;}
     #visMore .visCol{gap:6px;}
@@ -736,6 +758,7 @@
     box-shadow:0 -8px 24px rgba(0,0,0,.4);
   }
   #wpSheet.show{transform:translateY(0);}
+  @media (orientation:landscape) and (max-height:520px){ #wpSheet{left:auto;width:420px;} }
   /* (the sheet: only its grip strip at the top drags it -- the rest scrolls) */
   #wpSheet.dragging{transition:none;}
   #sheetBackdrop.dragging{transition:none;}
@@ -765,6 +788,7 @@
   .typeSeg button[data-type="fara"]{--tc:var(--t-fara);}
   .typeSeg button[data-type="meet"]{--tc:var(--t-meet);}
   .typeSeg button[data-type="hem"]{--tc:var(--t-hem);}
+  .typeSeg button[data-type="fara"]:not(.active){color:#FF6B63;}      /* (the stop-sign red is too dark to read on navy) */
   .typeSeg button.active{background:var(--tc);color:var(--ink);position:relative;overflow:hidden;}
   .typeSeg button.active::after{content:'';position:absolute;top:0;bottom:0;left:-60%;width:50%;pointer-events:none;
     background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);animation:pillSweep 2.8s ease-in-out infinite;}
@@ -780,7 +804,18 @@
     -webkit-tap-highlight-color:transparent;cursor:pointer;}
   .sheetActs button[hidden]{display:none;}
   .sheetActs button svg{width:15px;height:15px;flex:0 0 auto;}
-  .sheetActs .del{background:#D64545;color:#fff;}
+  /* Ta bort: a bin at the far left, well apart from Spara (and "Ångra" afterwards) */
+  .sheetActs .del{flex:0 0 48px;margin-right:8px;background:rgba(214,69,69,.12);border:1.5px solid rgba(214,69,69,.55);color:#ff8a80;}
+  .sheetActs .del svg{width:18px;height:18px;}
+  #undoToast{position:absolute;left:14px;right:14px;bottom:calc(env(safe-area-inset-bottom,0px) + 150px);z-index:40;display:none;align-items:center;gap:10px;
+    max-width:460px;margin:0 auto;background:rgba(11,42,58,.97);border:1px solid rgba(255,255,255,.18);border-radius:14px;padding:6px 6px 6px 14px;
+    box-shadow:0 10px 30px rgba(0,0,0,.5);font-size:14px;color:var(--offwhite);}
+  #undoToast.show{display:flex;}
+  #undoToast span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  #undoToast svg{flex:0 0 auto;}
+  #undoToast circle.run{animation:undoRun 6s linear forwards;}
+  @keyframes undoRun{from{stroke-dashoffset:0;}to{stroke-dashoffset:63;}}
+  #undoBtn{flex:0 0 auto;min-height:44px;padding:0 18px;border:none;border-radius:10px;background:var(--amber);color:var(--navy);font:inherit;font-weight:800;font-size:15px;cursor:pointer;}
   .sheetActs .save{background:var(--amber);color:var(--navy);}
   .sheetActs button:active{transform:scale(.97);}
   /* the type of someone else's spot / "ADMIN": small pills at the end of the "Sparad av" line */
@@ -838,7 +873,7 @@
     box-shadow:0 12px 32px rgba(0,0,0,.5);
   }
   #nameModal.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1);}
-  .modalTitle{font-family:Cambria,Georgia,"Times New Roman",serif;font-weight:700;font-size:18px;color:var(--offwhite);margin-bottom:6px;}
+  .modalTitle{font-weight:700;font-size:18px;color:var(--offwhite);margin-bottom:6px;}
   .modalDesc{font-size:12.5px;color:var(--text-muted);line-height:1.4;margin-bottom:14px;}
   #nameInput{
     width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);
@@ -888,8 +923,8 @@
   }
 
   #settingsNameDisplay{
-    width:100%;background:rgba(232,163,61,.1);border:1px solid rgba(232,163,61,.35);
-    border-radius:10px;padding:10px 12px;color:var(--amber);font-size:14px;font-weight:600;
+    width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);
+    border-radius:10px;padding:10px 12px;color:var(--offwhite);font-size:14px;font-weight:600;
     font-family:inherit;margin-top:10px;box-sizing:border-box;
   }
   .btnLogout{
@@ -1010,7 +1045,7 @@
   .offBtn{flex:0 0 auto;background:var(--amber);color:var(--navy);border:none;border-radius:18px;padding:8px 14px;font-family:inherit;font-weight:700;font-size:13px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
   .offBtn.ghost{background:none;color:var(--offwhite);border:1.5px solid rgba(255,255,255,.3);}
   .offBar{height:6px;background:rgba(255,255,255,.12);border-radius:3px;margin-top:10px;overflow:hidden;}
-  .offBar i{display:block;height:100%;width:0;background:var(--amber);transition:width .25s;}
+  .offBar i{display:block;height:100%;width:100%;background:var(--amber);transform:scaleX(0);transform-origin:left;transition:transform .25s;}
   .offStatus{font-size:12px;color:var(--text-muted);margin-top:6px;}
   .offStatus:empty{display:none;}
   .offStatus.ok{color:#7fd88a;}
@@ -1057,7 +1092,6 @@
     padding:calc(env(safe-area-inset-top,0px) + 14px) 18px 14px;
     border-bottom:1px solid rgba(255,255,255,.1);flex:0 0 auto;
   }
-  #adminHeader .kicker{font-size:19px;}
   #adminBackBtn{
     width:36px;height:36px;border-radius:50%;flex:0 0 auto;
     background:rgba(255,255,255,.08);border:none;color:var(--offwhite);
@@ -1126,7 +1160,7 @@
   .speedUnit{font-size:12px;color:var(--text-muted);}
   .speedUsed{font-size:12px;color:var(--offwhite);margin-top:10px;}
   .speedUsed b{color:var(--amber);}
-  .sheetDistance{color:var(--amber);font-weight:600;}
+  .sheetDistance{color:var(--offwhite);font-weight:700;}      /* (not amber: amber = chosen / on only) */
 
   /* ---- lightning alarm ---- */
   #ltAlarm{position:absolute;left:18px;right:18px;top:calc(env(safe-area-inset-top,0px) + 120px);z-index:40;display:none;flex-direction:column;align-items:center;gap:4px;
@@ -1135,7 +1169,14 @@
   @keyframes ltAlarmIn{from{transform:scale(.9);opacity:0;}to{transform:none;opacity:1;}}
   #ltAlarm b{font-size:22px;}
   #ltAlarm small{font-size:14px;opacity:.95;}
-  #ltAlarmOk{margin-top:8px;border:none;border-radius:11px;background:rgba(255,255,255,.22);color:#fff;font:inherit;font-weight:700;font-size:15px;padding:8px 26px;cursor:pointer;}
+  #ltAlarmOk{margin-top:12px;width:100%;min-height:48px;border:2px solid rgba(255,255,255,.85);border-radius:14px;background:none;color:#fff;font:inherit;font-weight:700;font-size:16px;cursor:pointer;}
+  #ltAlarmOk:active{background:rgba(255,255,255,.18);}
+  /* the warning is switched off: a pill under the weather chip, like it -- tap = Inställningar */
+  #ltOffPill{display:flex;align-items:center;gap:7px;margin:6px 0 0 -50px;pointer-events:auto;width:max-content;
+    background:rgba(11,42,58,.9);border:1.5px solid #ff8a80;border-radius:12px;padding:4px 11px 4px 8px;
+    font:700 12px Calibri,"Segoe UI",system-ui,sans-serif;color:#fff;box-shadow:0 4px 14px rgba(0,0,0,.3);cursor:pointer;-webkit-tap-highlight-color:transparent;}
+  #ltOffPill[hidden]{display:none;}
+  .ltOffIc{color:#ff8a80;}
 
   /* ---- "Håll skärmen tänd" on: a yellow sun by your name; tap = off (+ a note) ---- */
   #headerUserRow{display:flex;align-items:center;gap:7px;}
@@ -1163,7 +1204,6 @@
     padding:calc(env(safe-area-inset-top,0px) + 14px) 18px 14px;
     border-bottom:1px solid rgba(255,255,255,.1);flex:0 0 auto;
   }
-  #helpHeader .kicker{font-size:19px;}
   #helpBackBtn{
     width:36px;height:36px;border-radius:50%;flex:0 0 auto;
     background:rgba(255,255,255,.08);border:none;color:var(--offwhite);
@@ -1332,16 +1372,17 @@
   #hmLayer, #hmSat{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;display:none;}
   #hmSat{mix-blend-mode:saturation;}
   #hmLayer.on, #hmSat.on{display:block;}
-  /* the pill under the weather chip (like it): the heat map is on -- tap = its panel */
-  #hmPill{display:flex;align-items:center;gap:7px;margin:6px 0 0 -50px;pointer-events:auto;width:max-content;
+  /* the pills under the weather chip (like it): Heatmap / Kartanalys is on -- tap = its panel (never both) */
+  .mapPill{display:flex;align-items:center;gap:7px;margin:6px 0 0 -50px;pointer-events:auto;width:max-content;
     background:rgba(11,42,58,.82);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:4px 11px 4px 8px;
     font:600 12px Calibri,"Segoe UI",system-ui,sans-serif;color:var(--offwhite);box-shadow:0 4px 14px rgba(0,0,0,.3);cursor:pointer;-webkit-tap-highlight-color:transparent;}
-  #hmPill[hidden]{display:none;}
-  .hmDot{width:12px;height:12px;border-radius:50%;flex:0 0 auto;background:radial-gradient(circle,#e61e28 0,#ffe628 45%,#00dce6 75%,rgba(40,120,255,.6) 100%);}
+  .mapPill[hidden]{display:none;}
+  .mapPill svg{width:13px;height:13px;flex:0 0 auto;}
+  .hmDot{width:12px;height:12px;border-radius:50%;flex:0 0 auto;background:radial-gradient(circle,#fff5c8 0,#f56e3c 45%,#be288c 75%,rgba(90,20,130,.6) 100%);}
   /* in the map-style list: last, a bit special (opens a menu) */
   #mapTypePop .styleOpt.hmOpt{border-color:rgba(255,122,26,.65);}
   #mapTypePop .styleOpt.hmOpt.active{border-color:#FF7A1A;background:rgba(255,122,26,.14);}
-  .hmThumb{width:64px;height:38px;border-radius:8px;flex:0 0 auto;background:radial-gradient(circle at 35% 55%,#e61e28 0,#ffe628 14%,#00dce6 28%,rgba(40,120,255,.7) 42%,#0b2a3a 62%),#0b2a3a;}
+  .hmThumb{width:64px;height:38px;border-radius:8px;flex:0 0 auto;background:radial-gradient(circle at 35% 55%,#fff5c8 0,#ffbe46 12%,#f56e3c 24%,#be288c 36%,rgba(90,20,130,.7) 48%,#0b2a3a 64%),#0b2a3a;}
   .hmOpt .soDesc{display:block;}
   .hmArrow{font-size:18px;color:#FF7A1A;flex:0 0 auto;padding:0 3px;}
   #hmPanel{position:absolute;left:0;right:0;bottom:0;z-index:26;background:var(--navy);border-top:1px solid rgba(255,255,255,.14);border-radius:18px 18px 0 0;
@@ -1351,7 +1392,7 @@
   #hmPanel .grab{margin:-8px -14px 4px;top:-8px;}
   #hmPanel .anSeg{margin-top:6px;}
   #hmLegend{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:11.5px;color:var(--text-muted);}
-  #hmLegend .bar{width:130px;height:8px;border-radius:4px;background:linear-gradient(90deg,rgba(40,120,255,.55),#00dce6,#ffe628,#ff7814,#e61e28);}
+  #hmLegend .bar{width:130px;height:8px;border-radius:4px;background:linear-gradient(90deg,rgba(90,20,130,.6),#be288c,#f56e3c,#ffbe46,#fff5c8);}
   #hmLegend:empty{display:none;}
   .hmSpDot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:0;}
   #hmResult{margin-top:10px;font-size:13px;color:#dbe4e7;line-height:1.4;}
@@ -1441,6 +1482,28 @@
   #anPanel .grab::before, #msgCard .grab::before, #hmPanel .grab::before, #hmCard .grab::before{content:'';width:40px;height:5px;border-radius:3px;background:rgba(255,255,255,.3);}
   #anPanel .grab, #wpSheet .sheetGrab, #msgCard .grab, #hmPanel .grab, #hmCard .grab{touch-action:none;}
   #wpSheet{overflow-y:auto;max-height:88vh;}
+  /* ================= wet, cold fingers: touch targets in the bottom panels =================
+     (PRODUCT.md: tävlingsdagen i båten. The controls on the map itself keep their size.) */
+  .anSeg button{min-height:42px;font-size:13px;}                        /* the category / style row on top */
+  .anChips button{min-height:40px;padding:8px 13px;font-size:13px;}     /* choices, Stäng av, Återställ */
+  .anFactors button{min-height:38px;padding:7px 11px;}                  /* on/off: what is compared */
+  .typeSeg button{min-height:40px;padding:8px 13px;}                    /* a spot's type */
+  .sheetActs button{min-height:46px;}                                   /* bin, Åk hit, Liknande, Spara */
+  .msgCardBtns button{min-height:46px;}                                 /* a message / a catch: Åk hit … */
+  #hmCardNav button{width:48px;height:44px;}                            /* ‹ › between the catches there */
+
+  /* small print in the panels, readable in the sun */
+  .wpTile i{font-size:11px;}                                            /* DJUP · LUTNING · BOTTEN · VÄXTER */
+  .anSub{font-size:11.5px;}                                             /* the panels' small headings (ART, TÄVLING ...) */
+  .visDotL{font-size:10.5px;}                                           /* the types' names in Filter */
+  .visHead{font-size:11px;}                                             /* Filter: MARKERINGAR / LAGER */
+  .speedSub{font-size:11px;}                                            /* Inställningar: "Inte kört än" */
+
+  /* Inställningar on a wide screen (landscape, computer): a column, not the whole width */
+  @media (min-width:640px){ #settingsBody > *{width:100%;max-width:600px;margin-left:auto;margin-right:auto;box-sizing:border-box;} }
+
+  /* keyboard focus (computer): an amber ring on whatever has it */
+  :focus-visible{outline:2px solid var(--amber);outline-offset:2px;}
   /* ================= the four buttons bottom right: one 2 x 2 grid, all the same size =================
      (the only place their size and place are set -- also the message button's height) */
   :root{--bb:48px;--bgap:12px;--bb0:calc(env(safe-area-inset-bottom,0px) + 20px);}
@@ -1543,6 +1606,9 @@
         <div id="settingsNameDisplay"></div>
         <button id="logoutBtn" class="btnLogout" type="button">Logga ut (Byt namn)</button>
       </div>
+      <details class="setSec" data-sec="map">
+        <summary><span class="setSecText"><span class="setSecTitle">Kartan</span><span class="setSecSum" id="setSum-map"></span></span><svg class="setSecChev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></summary>
+        <div class="setSecBody">
       <div class="settingsRow" style="flex-direction:column;align-items:stretch;">
         <div class="settingsRowHead">
           <div class="settingsRowText">
@@ -1565,40 +1631,6 @@
         <div class="styleList" id="mapStyleList" role="radiogroup" aria-label="Kartstil"></div>
         <div class="styleMsg" id="mapStyleMsg" hidden></div>
       </div>
-      <div class="settingsRow" style="flex-direction:column;align-items:stretch;" id="anDimRow">
-        <div class="settingsRowText">
-          <div class="settingsRowTitle">Kartanalys: tona ner resten av kartan</div>
-          <div class="settingsRowDesc">Hur mörk och grå kartan blir utanför det Kartanalys hittar.</div>
-        </div>
-        <div class="anRange"><label for="anDimSet">Mörkare</label><input type="range" id="anDimSet" min="0.3" max="0.92" step="0.02"><output id="anDimOut"></output></div>
-      </div>
-      <div class="settingsRow" style="flex-direction:column;align-items:stretch;" id="ltAlarmRow">
-        <div class="settingsRowText">
-          <div class="settingsRowTitle">Åskvarning</div>
-          <div class="settingsRowDesc">Larm när en blixt slår ner närmare än så här (kräver Blixtar i Filter). Vibration fungerar inte på iPhone.</div>
-        </div>
-        <div class="segmented" id="ltAlarmSeg" role="radiogroup" aria-label="Åskvarning">
-          <button type="button" data-km="0" role="radio">Av</button>
-          <button type="button" data-km="5" role="radio">5 km</button>
-          <button type="button" data-km="10" role="radio">10 km</button>
-          <button type="button" data-km="20" role="radio">20 km</button>
-        </div>
-        <label class="adminToggleRow" style="display:flex;align-items:center;gap:12px;margin-top:10px;"><div style="flex:1 1 auto;font-size:13.5px;">Ljud</div>
-          <span class="toggle"><input type="checkbox" id="ltAlarmSound"><span class="toggleTrack"><span class="toggleThumb"></span></span></span></label>
-        <label class="adminToggleRow" style="display:flex;align-items:center;gap:12px;margin-top:8px;"><div style="flex:1 1 auto;font-size:13.5px;">Vibration</div>
-          <span class="toggle"><input type="checkbox" id="ltAlarmVib"><span class="toggleTrack"><span class="toggleThumb"></span></span></span></label>
-      </div>
-      <div class="settingsRow" style="flex-direction:column;align-items:stretch;" id="offlineRow">
-        <div class="offRow">
-          <div class="settingsRowText">
-            <div class="settingsRowTitle" id="offTitle">Ladda ner sjön för offline</div>
-            <div class="settingsRowDesc" id="offDesc">Alla zoomnivåer för de fyra kartlägena i knappen (Djupfärger, Förenklad, Bottenhårdhet, Vegetation), så att kartan fungerar utan täckning. Helst på wifi.</div>
-          </div>
-          <button type="button" class="offBtn" id="offBtn">Ladda ner</button>
-        </div>
-        <div class="offBar" id="offBar" hidden><i id="offBarFill"></i></div>
-        <div class="offStatus" id="offStatus"></div>
-      </div>
       <div class="settingsRow" style="flex-direction:column;align-items:stretch;">
         <div class="settingsRowText">
           <div class="settingsRowTitle">Kartans färg</div>
@@ -1607,23 +1639,6 @@
         <div class="satRow">
           <input type="range" class="satSlider" id="mapSatSlider" min="0" max="100" step="5" value="80" aria-label="Kartans färgmättnad">
           <span class="satVal" id="mapSatVal">80 %</span>
-        </div>
-      </div>
-      <div class="settingsRow">
-        <div class="settingsRowText">
-          <div class="settingsRowTitle">Spår</div>
-          <div class="settingsRowDesc">Din rutt ritas som en streckad linje på kartan (visa/dölj under Filter). "Börja om" suddar spåret hittills – det fortsätter sedan från där du är nu. Sparas bara på den här telefonen och börjar om varje morgon kl 06:00.</div>
-        </div>
-        <button id="trackClearBtn" class="btnAdmin small" type="button">Börja om</button>
-      </div>
-      <div class="settingsRow" style="flex-direction:column;align-items:stretch;">
-        <div class="settingsRowText">
-          <div class="settingsRowTitle">Spårets synlighet</div>
-          <div class="settingsRowDesc">Hur tydligt spåret syns på kartan.</div>
-        </div>
-        <div class="satRow">
-          <input type="range" class="satSlider trkSlider" id="trackOpSlider" min="10" max="100" step="5" value="60" aria-label="Spårets synlighet">
-          <span class="satVal" id="trackOpVal">60 %</span>
         </div>
       </div>
       <div class="settingsRow" style="flex-direction:column;align-items:stretch;">
@@ -1636,6 +1651,11 @@
           <button type="button" data-op="1" role="radio">100 %</button>
         </div>
       </div>
+        </div>
+      </details>
+      <details class="setSec" data-sec="boat">
+        <summary><span class="setSecText"><span class="setSecTitle">Båten</span><span class="setSecSum" id="setSum-boat"></span></span><svg class="setSecChev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></summary>
+        <div class="setSecBody">
       <label class="settingsRow" for="toggleDepth">
         <div class="settingsRowText">
           <div class="settingsRowTitle">Djupet under båten</div>
@@ -1656,6 +1676,33 @@
           <span class="toggleTrack"><span class="toggleThumb"></span></span>
         </span>
       </label>
+      <label class="settingsRow" for="toggleWake">
+        <div class="settingsRowText">
+          <div class="settingsRowTitle">Håll skärmen tänd</div>
+          <div class="settingsRowDesc">Telefonen somnar inte medan appen är öppen (drar mer batteri). En gul sol vid ditt namn visar att den är på.</div>
+        </div>
+        <span class="toggle">
+          <input type="checkbox" id="toggleWake">
+          <span class="toggleTrack"><span class="toggleThumb"></span></span>
+        </span>
+      </label>
+      <div class="settingsRow">
+        <div class="settingsRowText">
+          <div class="settingsRowTitle">Spår</div>
+          <div class="settingsRowDesc">Din rutt ritas som en streckad linje på kartan (visa/dölj under Filter). "Börja om" suddar spåret hittills – det fortsätter sedan från där du är nu. Sparas bara på den här telefonen och börjar om varje morgon kl 06:00.</div>
+        </div>
+        <button id="trackClearBtn" class="btnAdmin small" type="button">Börja om</button>
+      </div>
+      <div class="settingsRow" style="flex-direction:column;align-items:stretch;">
+        <div class="settingsRowText">
+          <div class="settingsRowTitle">Spårets synlighet</div>
+          <div class="settingsRowDesc">Hur tydligt spåret syns på kartan.</div>
+        </div>
+        <div class="satRow">
+          <input type="range" class="satSlider trkSlider" id="trackOpSlider" min="10" max="100" step="5" value="60" aria-label="Spårets synlighet">
+          <span class="satVal" id="trackOpVal">60 %</span>
+        </div>
+      </div>
       <div class="settingsRow" style="flex-direction:column;align-items:stretch;">
         <div class="settingsRowText">
           <div class="settingsRowTitle">Fart för mätverktyget</div>
@@ -1675,6 +1722,60 @@
         <div class="speedUsed" id="speedUsedNote"></div>
         <div class="btnRowWrap"><button id="avgResetBtn" class="btnAdmin small" type="button">Nollställ snittfart</button></div>
       </div>
+        </div>
+      </details>
+      <details class="setSec" data-sec="warn">
+        <summary><span class="setSecText"><span class="setSecTitle">Varningar</span><span class="setSecSum" id="setSum-warn"></span></span><svg class="setSecChev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></summary>
+        <div class="setSecBody">
+      <div class="settingsRow" style="flex-direction:column;align-items:stretch;" id="ltAlarmRow">
+        <div class="settingsRowText">
+          <div class="settingsRowTitle">Åskvarning</div>
+          <div class="settingsRowDesc">Larm när en blixt slår ner närmare än så här – även när Blixtar är av i Filter. Vibration fungerar inte på iPhone.</div>
+        </div>
+        <div class="segmented" id="ltAlarmSeg" role="radiogroup" aria-label="Åskvarning">
+          <button type="button" data-km="0" role="radio">Av</button>
+          <button type="button" data-km="5" role="radio">5 km</button>
+          <button type="button" data-km="10" role="radio">10 km</button>
+          <button type="button" data-km="20" role="radio">20 km</button>
+        </div>
+        <label class="adminToggleRow" style="display:flex;align-items:center;gap:12px;margin-top:10px;"><div style="flex:1 1 auto;font-size:13.5px;">Ljud</div>
+          <span class="toggle"><input type="checkbox" id="ltAlarmSound"><span class="toggleTrack"><span class="toggleThumb"></span></span></span></label>
+        <label class="adminToggleRow" style="display:flex;align-items:center;gap:12px;margin-top:8px;"><div style="flex:1 1 auto;font-size:13.5px;">Vibration</div>
+          <span class="toggle"><input type="checkbox" id="ltAlarmVib"><span class="toggleTrack"><span class="toggleThumb"></span></span></span></label>
+      </div>
+        </div>
+      </details>
+      <details class="setSec" data-sec="an">
+        <summary><span class="setSecText"><span class="setSecTitle">Kartanalys</span><span class="setSecSum" id="setSum-an"></span></span><svg class="setSecChev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></summary>
+        <div class="setSecBody">
+      <div class="settingsRow" style="flex-direction:column;align-items:stretch;" id="anDimRow">
+        <div class="settingsRowText">
+          <div class="settingsRowTitle">Kartanalys: tona ner resten av kartan</div>
+          <div class="settingsRowDesc">Hur mörk och grå kartan blir utanför det Kartanalys hittar.</div>
+        </div>
+        <div class="anRange"><label for="anDimSet">Mörkare</label><input type="range" id="anDimSet" min="0.3" max="0.92" step="0.02"><output id="anDimOut"></output></div>
+      </div>
+        </div>
+      </details>
+      <details class="setSec" data-sec="off">
+        <summary><span class="setSecText"><span class="setSecTitle">Offline</span><span class="setSecSum" id="setSum-off"></span></span><svg class="setSecChev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></summary>
+        <div class="setSecBody">
+      <div class="settingsRow" style="flex-direction:column;align-items:stretch;" id="offlineRow">
+        <div class="offRow">
+          <div class="settingsRowText">
+            <div class="settingsRowTitle" id="offTitle">Ladda ner sjön för offline</div>
+            <div class="settingsRowDesc" id="offDesc">Alla zoomnivåer för de fyra kartlägena i knappen (Djupfärger, Förenklad, Bottenhårdhet, Vegetation), så att kartan fungerar utan täckning. Helst på wifi.</div>
+          </div>
+          <button type="button" class="offBtn" id="offBtn">Ladda ner</button>
+        </div>
+        <div class="offBar" id="offBar" hidden><i id="offBarFill"></i></div>
+        <div class="offStatus" id="offStatus"></div>
+      </div>
+        </div>
+      </details>
+      <details class="setSec" data-sec="adv">
+        <summary><span class="setSecText"><span class="setSecTitle">Avancerat</span><span class="setSecSum" id="setSum-adv"></span></span><svg class="setSecChev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></summary>
+        <div class="setSecBody">
       <div class="settingsRow" id="adminRow" hidden>
         <div class="settingsRowText">
           <div class="settingsRowTitle">Admin</div>
@@ -1714,6 +1815,8 @@
           <span class="toggleTrack"><span class="toggleThumb"></span></span>
         </span>
       </label>
+        </div>
+      </details>
     </div>
   </div>
 
@@ -1808,7 +1911,9 @@
     <div id="headerUserRow"><div id="headerUser"></div><button type="button" id="wakeBadge" hidden aria-label="Skärmen hålls tänd – tryck för att stänga av" title="Skärmen hålls tänd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg></button></div>
     <button type="button" id="wxChip" aria-expanded="false" aria-controls="wxCard" aria-label="Väder och vind"></button>
     <div id="ltPill" role="status" aria-live="polite"><svg viewBox="0 0 24 24"><path d="M13.5 2 5 13.5h5.5L9 22l9.5-12.5H13z" fill="#FFF08C" stroke="#3a1d00" stroke-width="1.4" stroke-linejoin="round"></path></svg><div><b id="ltPillMain"></b><small id="ltPillSub"></small></div></div>
-    <button type="button" id="hmPill" hidden aria-label="Heatmap – öppna menyn"><span class="hmDot"></span>Heatmap</button>
+    <button type="button" id="ltOffPill" hidden aria-label="Åskvarningen är avstängd – öppna Inställningar"><span class="ltOffIc">⚡✕</span>Åskvarning av</button>
+    <button type="button" id="hmPill" class="mapPill" hidden aria-label="Heatmap – öppna menyn"><span class="hmDot"></span>Heatmap</button>
+    <button type="button" id="anPill" class="mapPill" hidden aria-label="Kartanalys – öppna menyn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="M15.5 15.5 21 21"></path></svg>Kartanalys</button>
     <div id="farAway"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11z"></path><circle cx="12" cy="10" r="2.2"></circle></svg><span class="farText" id="farText"></span></div>
     <div id="netBadge"><span class="netDot"></span><span class="netText" id="netText"></span></div>
   </header>
@@ -1878,6 +1983,7 @@
     <div id="anResult"></div>
     <div class="anChips anBottom"><button type="button" id="anClear" class="anClr" disabled>✕ Stäng av kartanalys</button><button type="button" id="anReset">↺ Återställ</button></div>
   </div>
+  <div id="undoToast" role="status"><span id="undoTxt"></span><svg viewBox="0 0 26 26" width="26" height="26" aria-hidden="true"><circle cx="13" cy="13" r="10" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="3"></circle><circle cx="13" cy="13" r="10" fill="none" stroke="#E8A33D" stroke-width="3" stroke-dasharray="63" transform="rotate(-90 13 13)"></circle></svg><button type="button" id="undoBtn">Ångra</button></div>
   <div id="hmPanel" role="dialog" aria-label="Heatmap">
     <div class="grab"><button type="button" id="hmClose" class="gripX" aria-label="Stäng">✕</button></div>
     <div class="anSub" style="margin-top:0">Heatmap · fångster</div>
@@ -1900,8 +2006,8 @@
   </div>
   <div id="wakeNote" role="status"><button type="button" id="wakeNoteClose" aria-label="Stäng">✕</button>
     <b>☀ Håll skärmen tänd är avstängd</b>
-    <span>Den håller telefonen vaken medan appen är öppen (drar mer batteri). Du kan slå på den igen i <b>Filter</b>.</span></div>
-  <div id="ltAlarm" role="alertdialog"><b id="ltAlarmMain"></b><small id="ltAlarmSub"></small><button type="button" id="ltAlarmOk">OK</button></div>
+    <span>Den håller telefonen vaken medan appen är öppen (drar mer batteri). Du kan slå på den igen i <b>Inställningar → Båten</b>.</span></div>
+  <div id="ltAlarm" role="alertdialog"><b id="ltAlarmMain"></b><small id="ltAlarmSub"></small><button type="button" id="ltAlarmOk">OK, jag har sett</button></div>
 
   <button id="measureBtn" aria-label="Mätverktyg" title="Mät sträcka och restid">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17 17 3l4 4L7 21z"></path><path d="M7 13l2 2M10 10l2 2M13 7l2 2"></path></svg>
@@ -1926,7 +2032,7 @@
     </button>
     <div id="visMore" hidden>
      <div class="visCol">
-      <div class="visHead">Visa markeringar</div>
+      <div class="visHead">Markeringar</div>
       <label class="visRow">
         <span class="visSwatch visSwatch--person" id="swatchMine"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"></path></svg></span>
         <span class="visLabel">Mina</span>
@@ -1943,7 +2049,6 @@
           <span class="toggleTrack"><span class="toggleThumb"></span></span>
         </span>
       </label>
-      <div class="visSeparator"></div>
       <label class="visRow">
         <span class="visSwatch visSwatch--boat"><span class="boatSwatchDot"></span></span>
         <span class="visLabel">Båtar</span>
@@ -1952,7 +2057,10 @@
           <span class="toggleTrack"><span class="toggleThumb"></span></span>
         </span>
       </label>
-      <div class="visSeparator"></div>
+      <div id="visTypes"></div>
+     </div>
+     <div class="visCol">
+      <div class="visHead">Lager</div>
       <label class="visRow">
         <span class="visSwatch visSwatch--track"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="18" r="2"></circle><path d="M7 18h5a3.5 3.5 0 0 0 0-7H9.5a3.5 3.5 0 0 1 0-7H19"></path></svg></span>
         <span class="visLabel">Spår</span>
@@ -1994,17 +2102,13 @@
         </span>
       </label>
       <label class="visRow">
-        <span class="visSwatch visSwatch--wx"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg></span>
-        <span class="visLabel">Håll skärmen tänd</span>
+        <span class="visSwatch visSwatch--wx"><span class="hmDot"></span></span>
+        <span class="visLabel">Heatmap</span>
         <span class="toggle">
-          <input type="checkbox" id="toggleWake">
+          <input type="checkbox" id="toggleHeatmap">
           <span class="toggleTrack"><span class="toggleThumb"></span></span>
         </span>
       </label>
-     </div>
-     <div class="visCol">
-      <div class="visHead">Typer</div>
-      <div id="visTypes"></div>
      </div>
     </div>
   </div>
@@ -2314,9 +2418,9 @@
       <button type="button" data-type="hem" role="radio">Hem</button>
     </div>
     <div class="sheetActs">
+      <button id="wpDelete" class="del" type="button" aria-label="Ta bort" title="Ta bort"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 13h9l1-13M10 11v6M14 11v6"></path></svg></button>
       <button id="wpGo" type="button">➤ Åk hit</button>
       <button id="wpLike" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="M15.5 15.5 21 21"></path><path d="M7.5 11.5c1-2 2-2 3-1s2 1 3-1"></path></svg>Liknande</button>
-      <button id="wpDelete" class="del" type="button">Ta bort</button>
       <button id="wpSave" class="save" type="button">Spara</button>
     </div>
   </div>
@@ -3100,6 +3204,7 @@
       var mine = isMine(wp);
       var editing = wp.id === editingId; // the spot you're editing always shows, whatever the filters say
       if (isExpired(wp) && !editing) return;   // a Träffpunkt whose hour is up
+      if (isUndoPending(wp.id)) return;        // (just taken away -- "Ångra" can still bring it back)
       if (!editing && wpType(wp) !== 'fara'){   // a Fara always shows, whatever the filters say
         if (mine && !showMine) return;
         if (!mine && !showOthers) return;
@@ -3408,7 +3513,7 @@
     var list = offlineFiles(), i = 0, done = 0, bytes = 0, failed = 0;
     start.then(function(){ return caches.open(OFF_CACHE); }).then(function(cache){
       function step(){
-        offFill.style.width = (100 * done / list.length).toFixed(1) + '%';
+        offFill.style.transform = 'scaleX(' + (done / list.length).toFixed(3) + ')';
         offStatus.textContent = 'Laddar ner… ' + done + ' av ' + list.length + ' · ' + fmtMB(bytes);
         try { localStorage.setItem(OFF_KEY, JSON.stringify({ ver: OFF_VER, files: done, bytes: bytes, done: false })); } catch(e){}
       }
@@ -3569,12 +3674,12 @@
   try { if (sessionStorage.getItem(VIS_MORE_OPEN_KEY) === '1') setVisMoreOpen(true); } catch(e){}
 
   delete hiddenTypes.fara;   // (Fara can't be hidden -- no switch for it; an old saved choice is dropped)
+  // the types as one row of dots: filled = shown, grey ring = hidden (tap = switch)
+  var TYPE_SHORT = { mark: 'Mark', abborre: 'Abb', gadda: 'Gädda', gos: 'Gös', meet: 'Träff', hem: 'Hem' };
   visTypesEl.innerHTML = Object.keys(WP_TYPES).filter(function(t){ return t !== 'fara'; }).map(function(t){
-    return '<label class="visRow">' +
-      '<span class="visSwatch ws-' + t + '">' + wpIconSvg(t) + '</span>' +
-      '<span class="visLabel">' + WP_TYPES[t].label + '</span>' +
-      '<span class="toggle"><input type="checkbox" data-type="' + t + '"' + (hiddenTypes[t] ? '' : ' checked') + '>' +
-      '<span class="toggleTrack"><span class="toggleThumb"></span></span></span>' +
+    return '<label class="visDot" title="' + WP_TYPES[t].label + '">' +
+      '<input type="checkbox" data-type="' + t + '"' + (hiddenTypes[t] ? '' : ' checked') + ' aria-label="' + WP_TYPES[t].label + '">' +
+      '<span class="visSwatch ws-' + t + '">' + wpIconSvg(t) + '</span><span class="visDotL">' + (TYPE_SHORT[t] || WP_TYPES[t].label) + '</span>' +
     '</label>';
   }).join('');
   // the little orange dot on the closed "Filter" button: something is hidden from the map
@@ -4036,11 +4141,27 @@
     closeSheet();
   }
   wpCancelBtn.addEventListener('click', cancelSheet);
+  // Ta bort: the spot disappears at once, but is only really deleted (for everyone) after 6 s -- "Ångra"
+  // brings it back. Leaving the app (or turning the phone: a reload) in between deletes it then.
+  var undoToast = document.getElementById('undoToast'), undoT = null, undoPending = null;
+  function flushDelete(){ if (!undoPending) return; var id = undoPending.id; undoPending = null; clearTimeout(undoT); undoToast.classList.remove('show'); deleteWaypointById(id); }
   wpDeleteBtn.addEventListener('click', function(){
     if (!editingId) return;
-    deleteWaypointById(editingId);
-    closeSheet();
+    flushDelete();                                           // (an earlier one still waiting: delete it now)
+    var wp = waypoints.filter(function(w){ return w.id === editingId; })[0];
+    undoPending = { id: editingId };
+    closeSheet(); renderWaypoints();
+    document.getElementById('undoTxt').innerHTML = '<b>' + escHtml((wp && wp.name) || 'Platsen') + '</b> borttagen';
+    var ring = undoToast.querySelectorAll('circle')[1]; ring.classList.remove('run'); void ring.getBoundingClientRect(); ring.classList.add('run');
+    undoToast.classList.add('show');
+    undoT = setTimeout(flushDelete, 6000);
   });
+  document.getElementById('undoBtn').addEventListener('click', function(){
+    undoPending = null; clearTimeout(undoT); undoToast.classList.remove('show'); renderWaypoints(); if (typeof renderLogList === 'function' && logView.classList.contains('show')) renderLogList();
+  });
+  undoToast.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
+  window.addEventListener('pagehide', flushDelete);
+  function isUndoPending(id){ return !!(undoPending && undoPending.id === id); }
   sheetBackdrop.addEventListener('click', cancelSheet);
 
   /* ---- swipe the sheet down to close it (same as "Avbryt") ----
@@ -4389,7 +4510,7 @@
   }
 
   function renderLogList(){
-    var sorted = waypoints.filter(function(w){ return !isExpired(w); }).sort(function(a,b){ return (b.createdAt||0) - (a.createdAt||0); });
+    var sorted = waypoints.filter(function(w){ return !isExpired(w) && !isUndoPending(w.id); }).sort(function(a,b){ return (b.createdAt||0) - (a.createdAt||0); });
     if (!sorted.length){
       logList.innerHTML = '<div id="logEmpty">Inga fiskeplatser sparade än.<br>Håll ner fingret på kartan för att lägga till en.</div>';
       return;
@@ -4434,8 +4555,42 @@
     menuItemLog.classList.add('menuItem--active');
     toggleMenu(false);
   }
+  /* ---- Inställningar in sections (Kartan, Båten, Varningar ...): closed = one line of what's chosen.
+     Which ones are open is remembered on the phone. ---- */
+  var SET_OPEN_KEY = 'ffmap_settings_open_v1';
+  var setSecs = Array.from(document.querySelectorAll('#settingsBody .setSec'));
+  (function(){
+    var open = []; try { open = JSON.parse(localStorage.getItem(SET_OPEN_KEY) || '[]'); } catch(e){}
+    setSecs.forEach(function(s){ s.open = open.indexOf(s.getAttribute('data-sec')) >= 0; });
+  })();
+  setSecs.forEach(function(s){
+    s.addEventListener('toggle', function(){
+      try { localStorage.setItem(SET_OPEN_KEY, JSON.stringify(setSecs.filter(function(x){ return x.open; }).map(function(x){ return x.getAttribute('data-sec'); }))); } catch(e){}
+    });
+  });
+  function openSettingsSec(id){ setSecs.forEach(function(s){ if (s.getAttribute('data-sec') === id) s.open = true; }); }
+  // the line under each closed title, read from the controls themselves
+  function setSums(){
+    var el = function(id){ return document.getElementById(id); };
+    var act = function(id){ var b = document.querySelector('#' + id + ' .active'); return b ? b.textContent.trim() : ''; };
+    var on = function(id){ return el(id).checked; };
+    var put = function(id, parts){ var t = parts.filter(Boolean).join(' · '); el('setSum-' + id).textContent = t.charAt(0).toUpperCase() + t.slice(1); };
+    var st = document.querySelector('#mapStyleList .styleOpt.active .soName');
+    put('map', [act('wpSizeSeg') + ' storlek', st && st.textContent, 'färg ' + el('mapSatVal').textContent, 'andras ' + act('othersOpacitySeg')]);
+    put('boat', ['spår ' + el('trackOpVal').textContent, on('toggleDepth') && 'djupet', on('gpsPulseToggle') && 'ring', on('toggleWake') && 'skärmen tänd',
+      (el('cruiseInput').value || '–') + ' kn marschfart']);
+    var km = act('ltAlarmSeg');
+    put('warn', km === 'Av' || !km ? ['Åskvarning av'] : ['Åskvarning ' + km, on('ltAlarmSound') && 'ljud', on('ltAlarmVib') && 'vibration']);
+    put('an', ['Tona ner ' + el('anDimOut').textContent]);
+    var ob = el('offBtn').textContent, os = el('offStatus').textContent;
+    put('off', [ob === 'Ta bort' ? 'Nedladdad' : ob === 'Pausa' ? 'Laddar ner …' : ob === 'Fortsätt' ? 'Pausad' : /kartversion/.test(os) ? 'Ny kartversion – ladda ner igen' : 'Inte nedladdad',
+      ob === 'Ladda ner' && !/kartversion/.test(os) && os.split(' · ')[1]]);
+    put('adv', ['Demo Mode ' + (on('demoModeToggle') ? 'på' : 'av'), !el('adminRow').hidden && 'Admin']);
+  }
+  ['change', 'input', 'click'].forEach(function(t){ document.getElementById('settingsBody').addEventListener(t, function(){ setTimeout(setSums, 0); }); });
   function showSettingsView(){
     updateSpeedSettings(); // fresh speed numbers the moment it opens
+    setSums();
     settingsView.classList.add('show');
     logView.classList.remove('show');
     menuItemMap.classList.remove('menuItem--active');
@@ -6412,6 +6567,11 @@
   }
   wxChip.addEventListener('click', function(e){ e.stopPropagation(); setWxOpen(!wxCard.classList.contains('show')); });
   document.getElementById('wxClose').addEventListener('click', function(){ setWxOpen(false); });
+  // a tap anywhere else closes it too; dragging the map doesn't (watch the wind while panning)
+  document.addEventListener('click', function(e){
+    if (!wxCard.classList.contains('show') || wxCard.contains(e.target) || wxChip.contains(e.target) || mapDraggedJustNow()) return;
+    setWxOpen(false);
+  });
   var toggleWeatherEl = document.getElementById('toggleWeather');
   toggleWeatherEl.checked = showWeather;
   toggleWeatherEl.addEventListener('change', function(){
@@ -6667,12 +6827,15 @@
     }
     return out;
   }
+  // strikes are fetched while they're shown on the map OR the alarm is on (the alarm never depends on the
+  // "Blixtar" switch in Filter -- that only shows / hides them on the map)
+  function ltWatch(){ return ltOn || !!ltAlarm.km; }
   function ltFetch(){
-    if (!ltOn || ltFetching || typeof fetch !== 'function') return;
+    if (!ltWatch() || ltFetching || typeof fetch !== 'function') return;
     ltFetching = true;
     fetch(ltUrl()).then(function(r){ return r.ok ? r.text() : null; }).then(function(x){
       ltFetching = false;
-      if (x == null || !ltOn) return;
+      if (x == null || !ltWatch()) return;
       var had = {}, first = !ltFetchedAt, fresh = {}, n = 0;
       ltStrikes.forEach(function(s){ had[s.k] = 1; });
       ltStrikes = ltParse(x); ltFetchedAt = Date.now();
@@ -6807,7 +6970,7 @@
     if (Date.now() - ltFlash.from < 2600) ltAnim = requestAnimationFrame(ltPulse);
   }
   function ltTick(){
-    if (!ltOn || document.visibilityState === 'hidden') return;
+    if (!ltWatch() || document.visibilityState === 'hidden') return;
     if (Date.now() - ltFetchedAt >= LT_POLL_MS) ltFetch();
     ltRender();                                                     // (the ages move on)
   }
@@ -6816,7 +6979,7 @@
   toggleLtEl.addEventListener('change', function(){
     ltOn = toggleLtEl.checked;
     try { localStorage.setItem(SHOW_LT_KEY, ltOn ? '1' : '0'); } catch(e){}
-    if (!ltOn){ ltStrikes = []; ltFetchedAt = 0; }
+    if (!ltWatch()){ ltStrikes = []; ltFetchedAt = 0; }
     ltRender(); ltTick();
   });
   setInterval(ltTick, 15000);
@@ -6946,7 +7109,7 @@
   try { anShow = localStorage.getItem(SHOW_AN_KEY) !== '0'; } catch(e){}
   var anCanvas = document.getElementById('anLayer'), anCtx = anCanvas.getContext('2d');
   var anSatCanvas = document.getElementById('anSat'), anSatCtx = anSatCanvas.getContext('2d');
-  var anPanel = document.getElementById('anPanel'), anBtn = document.getElementById('anBtn'), anLabelsEl = document.getElementById('anLabels');
+  var anPanel = document.getElementById('anPanel'), anBtn = document.getElementById('anBtn'), anLabelsEl = document.getElementById('anLabels'), anPill = document.getElementById('anPill');
   var AN = null, anBottom = null, anBottomLoading = false, anRes = null, anView = null, anVer = 0;
   function anSave(){ try { localStorage.setItem(AN_KEY, JSON.stringify(anSet)); } catch(e){} }
 
@@ -7328,6 +7491,7 @@
     // chips + controls + result, labels; then draw
     var m = anSet.mode;
     anBtn.classList.toggle('on', !!m);
+    anPill.hidden = !(m && anShow);                        // (the pill under the weather: something is shown on the map)
     document.getElementById('anClear').disabled = !m;      // (only when there's something to clear)
     anDataRow();
     var cat = anSet.cat || 'map';
@@ -7501,6 +7665,8 @@
     if (open){ if (typeof toggleMsgPop === 'function') toggleMsgPop(false); if (hmPanel) hmShowPanel(false); loadCatches(false); anCtlMode = '#'; if (!anRes) anCompute(); else anRender(); }
   }
   anBtn.addEventListener('click', function(e){ e.stopPropagation(); showAnPanel(!anPanel.classList.contains('show')); });
+  anPill.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
+  anPill.addEventListener('click', function(e){ e.stopPropagation(); showAnPanel(!anPanel.classList.contains('show')); });
   document.getElementById('anClose').addEventListener('click', function(){ showAnPanel(false); });
   document.getElementById('anClear').addEventListener('click', function(){ anSet.mode = null; anSave(); anCtlMode = '#'; anCompute(); });
   // "Återställ": every setting in the panel back to how it was from the start (what's shown stays; "Mörkare" is in Inställningar)
@@ -7729,11 +7895,19 @@
   var ltAlarm = { km: 10, sound: true, vib: true };
   try { var la = JSON.parse(localStorage.getItem(LT_ALARM_KEY) || 'null'); if (la) ltAlarm = la; } catch(e){}
   var ltAlarmed = {}, ltAudio = null;
-  function ltAlarmSave(){ try { localStorage.setItem(LT_ALARM_KEY, JSON.stringify(ltAlarm)); } catch(e){} ltAlarmUi(); }
+  function ltAlarmSave(){ try { localStorage.setItem(LT_ALARM_KEY, JSON.stringify(ltAlarm)); } catch(e){} ltAlarmUi(); ltTick(); }
   function ltAlarmUi(){
     Array.prototype.forEach.call(document.querySelectorAll('#ltAlarmSeg button'), function(b){ var on = +b.getAttribute('data-km') === ltAlarm.km; b.classList.toggle('active', on); b.setAttribute('aria-checked', on ? 'true' : 'false'); });
     document.getElementById('ltAlarmSound').checked = !!ltAlarm.sound; document.getElementById('ltAlarmVib').checked = !!ltAlarm.vib;
+    // the warning switched off: a red pill under the weather (tap = Inställningar at the warning)
+    document.getElementById('ltOffPill').hidden = !!ltAlarm.km;
   }
+  document.getElementById('ltOffPill').addEventListener('pointerdown', function(e){ e.stopPropagation(); });
+  document.getElementById('ltOffPill').addEventListener('click', function(e){
+    e.stopPropagation(); showSettingsView(); openSettingsSec('warn');
+    var row = document.getElementById('ltAlarmRow'), body = document.getElementById('settingsBody');
+    setTimeout(function(){ body.scrollTop += row.getBoundingClientRect().top - body.getBoundingClientRect().top - 12; }, 50);
+  });
   document.getElementById('ltAlarmSeg').addEventListener('click', function(e){ var b = e.target.closest ? e.target.closest('button[data-km]') : null; if (b){ ltAlarm.km = +b.getAttribute('data-km'); ltAlarmSave(); } });
   document.getElementById('ltAlarmSound').addEventListener('change', function(e){ ltAlarm.sound = e.target.checked; ltAlarmSave(); });
   document.getElementById('ltAlarmVib').addEventListener('change', function(e){ ltAlarm.vib = e.target.checked; ltAlarmSave(); });
@@ -7756,7 +7930,7 @@
     } catch(e){}
   }
   function ltCheckAlarm(){
-    if (!ltOn || !ltAlarm.km) return;
+    if (!ltAlarm.km) return;                   // (NOT tied to the map layer: see ltWatch)
     var now = Date.now(), ref = ltRef(), hit = null;
     ltStrikes.forEach(function(s){
       if (ltAlarmed[s.k]) return;
@@ -8154,7 +8328,7 @@
   var hmOn = false, hmHeatCache = null, hmHexCells = null, hmCardList = null, hmCardI = 0, hmPendingCard = null;
   var hmCanvas = document.getElementById('hmLayer'), hmCtx = hmCanvas.getContext('2d');
   var hmSatCanvas = document.getElementById('hmSat'), hmSatCtx = hmSatCanvas.getContext('2d');
-  var hmPanel = document.getElementById('hmPanel'), hmCard = document.getElementById('hmCard'), hmPill = document.getElementById('hmPill');
+  var hmPanel = document.getElementById('hmPanel'), hmCard = document.getElementById('hmCard'), hmPill = document.getElementById('hmPill'), toggleHmEl = document.getElementById('toggleHeatmap');
   var HM_COL = { abborre: [255, 122, 26], gadda: [53, 210, 74], gos: [255, 210, 26] };
   var HM_SP = [['abborre', 'Abborre', 'abborren'], ['gadda', 'Gädda', 'gäddan'], ['gos', 'Gös', 'gösen']];
   var HM_MON = ['jan', 'feb', 'mar', 'apr', 'maj', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
@@ -8202,7 +8376,7 @@
       showAnPanel(false);
     } else { hmShowPanel(false); hmCloseCard(); }
     hmCanvas.classList.toggle('on', hmOn); hmSatCanvas.classList.toggle('on', hmOn);
-    hmPill.hidden = !hmOn;
+    hmPill.hidden = !hmOn; toggleHmEl.checked = hmOn;
     hmHeatCache = null;
     if (openPanel) hmShowPanel(true);
     hmRenderPanel(); hmDraw(); hmFitIfNone();
@@ -8232,6 +8406,8 @@
     hmPanel.classList.toggle('show', !!open);
   }
   hmPill.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
+  // Filter → Lager → Heatmap: on = on with its panel open, off = off
+  toggleHmEl.addEventListener('change', function(){ hmSetOn(toggleHmEl.checked, toggleHmEl.checked); });
   hmPill.addEventListener('click', function(e){ e.stopPropagation(); hmShowPanel(!hmPanel.classList.contains('show')); });
 
   function hmRenderPanel(){
@@ -8291,8 +8467,8 @@
   sheetSwipe(hmPanel, function(){ hmShowPanel(false); });
 
   // ---- drawing (a screen canvas like Kartanalys: the map toned down, the catches on top) ----
-  function hmRamp(v){   // transparent blue -> cyan -> yellow -> orange -> red
-    var S = [[0, [40, 90, 255, 0]], [0.12, [40, 120, 255, 110]], [0.3, [0, 220, 230, 170]], [0.55, [255, 230, 40, 205]], [0.8, [255, 120, 20, 225]], [1, [230, 30, 40, 240]]];
+  function hmRamp(v){   // "glöd": transparent dark violet -> magenta -> orange -> amber -> warm white
+    var S = [[0, [60, 10, 90, 0]], [0.12, [90, 20, 130, 120]], [0.35, [190, 40, 140, 185]], [0.6, [245, 110, 60, 215]], [0.85, [255, 190, 70, 235]], [1, [255, 245, 200, 245]]];
     for (var k = 1; k < S.length; k++) if (v <= S[k][0]){
       var t = (v - S[k - 1][0]) / (S[k][0] - S[k - 1][0]), A = S[k - 1][1], B = S[k][1];
       return [A[0] + (B[0] - A[0]) * t, A[1] + (B[1] - A[1]) * t, A[2] + (B[2] - A[2]) * t, A[3] + (B[3] - A[3]) * t];
@@ -8371,7 +8547,7 @@
         hmCtx.closePath();
         hmCtx.fillStyle = 'rgba(' + (col[0] | 0) + ',' + (col[1] | 0) + ',' + (col[2] | 0) + ',0.75)'; hmCtx.fill();
         hmCtx.lineWidth = 1; hmCtx.strokeStyle = 'rgba(255,255,255,0.55)'; hmCtx.stroke();
-        if (hmSet.cnt && Rpx >= 8){ hmCtx.fillStyle = '#0B2A3A'; hmCtx.fillText(String(h2.list.length), cx, cy + 0.5); }
+        if (hmSet.cnt && Rpx >= 8){ hmCtx.fillStyle = col[0] * 0.3 + col[1] * 0.59 + col[2] * 0.11 < 140 ? '#fff' : '#0B2A3A'; hmCtx.fillText(String(h2.list.length), cx, cy + 0.5); }
       }
       hmHexCells = { R: R, cells: cells, rpx: Rpx };
     } else {

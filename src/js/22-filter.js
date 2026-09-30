@@ -15,12 +15,12 @@
   try { if (sessionStorage.getItem(VIS_MORE_OPEN_KEY) === '1') setVisMoreOpen(true); } catch(e){}
 
   delete hiddenTypes.fara;   // (Fara can't be hidden -- no switch for it; an old saved choice is dropped)
+  // the types as one row of dots: filled = shown, grey ring = hidden (tap = switch)
+  var TYPE_SHORT = { mark: 'Mark', abborre: 'Abb', gadda: 'Gädda', gos: 'Gös', meet: 'Träff', hem: 'Hem' };
   visTypesEl.innerHTML = Object.keys(WP_TYPES).filter(function(t){ return t !== 'fara'; }).map(function(t){
-    return '<label class="visRow">' +
-      '<span class="visSwatch ws-' + t + '">' + wpIconSvg(t) + '</span>' +
-      '<span class="visLabel">' + WP_TYPES[t].label + '</span>' +
-      '<span class="toggle"><input type="checkbox" data-type="' + t + '"' + (hiddenTypes[t] ? '' : ' checked') + '>' +
-      '<span class="toggleTrack"><span class="toggleThumb"></span></span></span>' +
+    return '<label class="visDot" title="' + WP_TYPES[t].label + '">' +
+      '<input type="checkbox" data-type="' + t + '"' + (hiddenTypes[t] ? '' : ' checked') + ' aria-label="' + WP_TYPES[t].label + '">' +
+      '<span class="visSwatch ws-' + t + '">' + wpIconSvg(t) + '</span><span class="visDotL">' + (TYPE_SHORT[t] || WP_TYPES[t].label) + '</span>' +
     '</label>';
   }).join('');
   // the little orange dot on the closed "Filter" button: something is hidden from the map

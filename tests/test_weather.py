@@ -43,6 +43,11 @@ def _main():
       pg.screenshot(path='wx_real_card.png')
       pg.click('#wxClose'); pg.wait_for_timeout(200)
       check('✕ closes', not pg.is_visible('#wxCard'))
+      pg.click('#wxChip'); pg.wait_for_timeout(300)
+      pg.mouse.move(200, 600); pg.mouse.down(); pg.mouse.move(260, 640, steps=8); pg.mouse.up(); pg.wait_for_timeout(200)
+      check('dragging the map: the card stays', pg.is_visible('#wxCard'))
+      pg.wait_for_timeout(600); pg.mouse.click(200, 600); pg.wait_for_timeout(300)
+      check('a tap on the map closes it', not pg.is_visible('#wxCard'))
       # offline: the last forecast stays
       pg.unroute('**/api.open-meteo.com/**'); ctx.route('**/api.open-meteo.com/**', lambda r: r.abort())
       pg.reload(); pg.wait_for_timeout(1800)

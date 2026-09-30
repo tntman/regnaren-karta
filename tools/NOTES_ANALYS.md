@@ -22,11 +22,15 @@ Inget extra kort (Filip: behövs inte).
 vem/när (namnet i fetstil, + typen som mini-pill för andras, `ADMIN` när admin ändrar andras),
 faktarutor under platsen (`renderWpData`: djup, lutning, botten = hårdhet närmast inom 15 m,
 växter = andel inom 25 m; bara rubrik + värde), typpiller (dolda för andras; vald typ har ett
-svepande ljus), en knapprad: Åk hit, Liknande → Kartanalys "Liknande", Ta bort (röd), Spara.
+svepande ljus), en knapprad: papperskorg (Ta bort, längst till vänster, dämpad röd kontur, avskild),
+Åk hit, Liknande → Kartanalys "Liknande", Spara. **Ta bort** tar bort platsen från kartan direkt men raderar
+den (för alla) först efter 6 s: notisen "… borttagen · Ångra" (`#undoToast`) – lämnas appen innan dess
+raderas den då (`pagehide`).
 
 ## Kartanalys ("Hitta ställen")
 - Knappen nere till höger `#anBtn` (ersatte uppdatera-knappen); Filter "Kartanalys" visar/döljer
-  (på som standard). Panel `#anPanel`: Djup, Branta kanter, Grynnor & hålor, Växter, Hård botten,
+  (på som standard). När ett läge är på (och syns): skylten **Kartanalys** under väderchipet
+  (`#anPill`, som Heatmaps) – tryck = rutan. Panel `#anPanel`: Djup, Branta kanter, Grynnor & hålor, Växter, Hård botten,
   Vindkant, Liknande + förinställt Abborre/Gädda/Gös (tumregler från vanliga fiskeråd, INTE data).
 - Djupreglage = stapel i djupfärgerna med två handtag (`anDualRow`). "Mörkare" (standard 72 %)
   ligger i Inställningar (`#anDimSet`) + gråtoning (`#anSat`, mix-blend-mode saturation).

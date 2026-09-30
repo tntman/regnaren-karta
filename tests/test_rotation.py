@@ -44,7 +44,7 @@ with sync_playwright() as p:
     pg.click('#toggleOthers .. >> xpath=..') if False else None
     pg.evaluate("document.getElementById('toggleBoats').click()")
     pg.click('#visMoreBtn'); pg.wait_for_timeout(150)
-    pg.click('#visTypes label:has-text("Abborre") .toggle')
+    pg.click('#visTypes label:has(input[data-type="abborre"])')
     pg.click('#menuBtn'); pg.click('#menuItemSettings'); pg.wait_for_timeout(200)
     pg.click('#othersOpacitySeg button[data-op="0.5"]')
     pg.click('#wpSizeSeg button[data-size="1"]')
