@@ -12,6 +12,8 @@
   var CATCH_CACHE_KEY = lakeKey('ffmap_catches_v1', 'catches_v1');
   var catchData = null, catchLoading = false, catchErr = null, catchVer = 0, catchListeners = [];
   function catchesChanged(){ catchVer++; catchListeners.forEach(function(f){ try { f(); } catch(e){} }); }
+  // Kartanalys: the "Från fångsterna" row, and a species chosen there, follow the catches as they arrive
+  catchListeners.push(function(){ if (anSet.mode && anSet.mode.indexOf('c_') === 0) anCompute(); else if (anPanel.classList.contains('show')) anRender(); });
 
   // --- turning anything into catches ---
   function catchNum(v){ if (typeof v === 'number') return v; var n = parseFloat(String(v == null ? '' : v).trim().replace(',', '.')); return isFinite(n) ? n : null; }

@@ -67,6 +67,9 @@
   .anSeg{display:flex;gap:4px;margin-top:8px;background:rgba(255,255,255,.06);border-radius:10px;padding:3px;}
   .anSeg button{flex:1;border:none;background:none;color:var(--text-muted);font:inherit;font-size:12px;padding:6px 2px;border-radius:8px;cursor:pointer;}
   .anSeg button.on{background:var(--amber);color:var(--navy);font-weight:700;}
+  .anDots{font-size:9px;letter-spacing:1px;margin-left:3px;opacity:.9;}
+  .anFactors button:disabled{opacity:.4;}
+  #anDataChips button:disabled{opacity:.45;cursor:default;}
   .anLbl2{font-size:11px;color:var(--text-muted);margin-top:9px;}
   /* ---- Liknande: the spot you start from (a pink ring spreading out), "Gå till", what "area" means ---- */
   .anRefRow{display:flex;gap:8px;align-items:center;margin-top:8px;}

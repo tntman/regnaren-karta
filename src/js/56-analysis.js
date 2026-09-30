@@ -18,7 +18,8 @@
   ];
   var AN_HARD = ['Mjuk', 'Medelhård', 'Hård', 'Mycket hård'];      // Genesis' 4 levels
   var AN_COLORS = { depth: null, steep: [255, 70, 200], tops: [255, 190, 40], veg: [90, 235, 80], hard: [240, 70, 10],
-                    wind: [255, 178, 63], similar: [255, 80, 160], abborre: [255, 210, 26], gadda: [120, 255, 120], gos: [255, 210, 26] };
+                    wind: [255, 178, 63], similar: [255, 80, 160], abborre: [255, 210, 26], gadda: [120, 255, 120], gos: [255, 210, 26],
+                    c_abborre: [255, 122, 26], c_gadda: [53, 210, 74], c_gos: [255, 210, 26] };   // (c_ = from the catches: the species' colours)
   // the depth scale of the sliders = the legend's (0 .. the lake's max depth, same colours)
   var AN_DMAX = parseFloat(String((LAKE.legendTicks || []).slice(-1)[0] || '').replace(',', '.')) || Math.ceil(LAKE.depth.max || 20);
   var AN_SIMF = [['d', 'Djup'], ['s', 'Lutning'], ['h', 'Botten'], ['v', 'Växter'], ['t', 'Grynna/håla']];
@@ -60,7 +61,8 @@
     A.domeTop = anDome(ft, A.W, A.H, 300); A.domeHole = anDome(fh, A.W, A.H, 300);
     return A;
   }
-  var anSet = { simF: { d: 1, s: 1, h: 1, v: 1, t: 1 }, simR: 0, mode: null, lo: 4, hi: 6, slope: 10, elo: 0, ehi: AN_DMAX, topP: 0.6, holeP: 0.8, hmin: 3, hlo: 0, hhi: AN_DMAX, dim: 0.72, ref: null };
+  var anSet = { simF: { d: 1, s: 1, h: 1, v: 1, t: 1 }, simR: 0, mode: null, lo: 4, hi: 6, slope: 10, elo: 0, ehi: AN_DMAX, topP: 0.6, holeP: 0.8, hmin: 3, hlo: 0, hhi: AN_DMAX, dim: 0.72, ref: null,
+               cF: { d: 1, s: 1, h: 1, v: 1, l: 1, t: 1 }, cCov: 7, cView: 'area' };   // (c* = "Från fångsterna", 57-an-catches.js)
   try { var sv = JSON.parse(localStorage.getItem(AN_KEY) || 'null'); if (sv) for (var k0 in sv) anSet[k0] = sv[k0]; } catch(e){}
   if (!rotState) anSet.mode = null;          // a new start of the app: off (turning the phone keeps it)
   var anShow = true;
@@ -137,7 +139,7 @@
       if (typeof editingWpInfo !== 'undefined' && editingWpInfo && wpSheet.classList.contains('show')) refreshSheetMeta();
     }).catch(function(){ anBottomLoading = false; });
   }
-  function anNeedsBottom(m){ return m === 'veg' || m === 'hard' || m === 'similar' || m === 'abborre' || m === 'gadda' || m === 'gos'; }
+  function anNeedsBottom(m){ return (m && m.indexOf('c_') === 0) || m === 'veg' || m === 'hard' || m === 'similar' || m === 'abborre' || m === 'gadda' || m === 'gos'; }
   // connected groups of cells (4-neighbours) of a mask
   function anBlobs(mask, W, H){
     var lab = new Int32Array(W * H), out = [], st = [];
@@ -296,6 +298,9 @@
             : k === 'v' ? 'växter ' + Math.round(r0.v * 100) + ' %' : (r0.t >= 0.6 ? 'grynna' : r0.t <= -0.8 ? 'håla' : 'jämn botten'); }).join(', ').replace('botten ej mätt botten', 'botten ej mätt')
           : 'Välj minst en sak att jämföra.';
       }
+    } else if (m.indexOf('c_') === 0){                    // from the catches (data), 57-an-catches.js
+      var cr = anCatchCompute(A, m.slice(2), M);
+      n = cr.n; text = cr.text; note = cr.note; var cG = cr.G, cPts = cr.pts, cEmpty = cr.empty;
     } else {                                             // presets (rules of thumb)
       var hn, e2;
       if (m === 'abborre'){
@@ -312,8 +317,8 @@
       text = '<b>' + pr[1] + ':</b> ' + pr[2] + ' · ' + anPct(n) + ' av sjön';
       note = 'Tumregler från vanliga fiskeråd – inte fångstdata. Fisken läser inte kartan 🙂';
     }
-    var empty = (m === 'similar' && !list) || (m === 'wind' && !n && !note);
-    anRes = { M: empty ? null : M, n: n, labels: labels, list: list, text: text, note: note, color: AN_COLORS[m], ver: anVer };
+    var empty = (m === 'similar' && !list) || (m === 'wind' && !n && !note) || !!cEmpty;
+    anRes = { M: empty ? null : M, n: n, labels: labels, list: list, text: text, note: note, color: AN_COLORS[m], ver: anVer, G: cG || null, pts: cPts || null };
     anRender();
   }
   function anPct(n){ var w = 0, A = AN; for (var i = 0; i < A.N; i++) w += A.wat[i]; var p = 100 * n / Math.max(1, w); return (p < 1 && p > 0 ? '<1' : Math.round(p)) + ' %'; }
@@ -327,7 +332,7 @@
   var anPyr = null;
   function anField(R, A, lv){
     if (!anPyr || anPyr.ver !== R.ver || anPyr.A !== A){
-      var N0 = A.W * A.H, f0 = [new Float32Array(N0), new Float32Array(N0), new Float32Array(N0)];
+      var N0 = A.W * A.H, f0 = [new Float32Array(N0), new Float32Array(N0), new Float32Array(N0), R.G ? new Float32Array(R.G) : new Float32Array(N0)];
       for (var i0 = 0; i0 < N0; i0++){ var v0 = R.M[i0]; if (v0 === 1) f0[0][i0] = 1; else if (v0 === 2) f0[1][i0] = 1; if (A.lake[i0]) f0[2][i0] = 1; }
       anPyr = { ver: R.ver, A: A, raw: [{ w: A.W, h: A.H, f: f0 }], soft: [] };
     }
@@ -335,7 +340,7 @@
     while (P.raw.length <= lv){
       var pr = P.raw[P.raw.length - 1], w2 = Math.ceil(pr.w / 2), h2 = Math.ceil(pr.h / 2), g = [];
       if (pr.w < 4 || pr.h < 4){ lv = P.raw.length - 1; break; }
-      for (var c = 0; c < 3; c++){
+      for (var c = 0; c < 4; c++){
         var src = pr.f[c], dst = new Float32Array(w2 * h2);
         for (var y = 0; y < h2; y++) for (var x = 0; x < w2; x++){
           var s = 0, n = 0;
@@ -349,7 +354,7 @@
     }
     if (!P.soft[lv]){
       var r0 = P.raw[lv], w = r0.w, h = r0.h, out = [];
-      for (var c2 = 0; c2 < 3; c2++){
+      for (var c2 = 0; c2 < 4; c2++){
         var a = r0.f[c2], t = new Float32Array(w * h), o = new Float32Array(w * h);
         for (var y1 = 0; y1 < h; y1++) for (var x1 = 0; x1 < w; x1++){ var j = y1 * w + x1; t[j] = (a[x1 > 0 ? j - 1 : j] + 2 * a[j] + a[x1 < w - 1 ? j + 1 : j]) / 4; }
         for (var y2 = 0; y2 < h; y2++) for (var x2 = 0; x2 < w; x2++){ var j2 = y2 * w + x2; o[j2] = (t[y2 > 0 ? j2 - w : j2] + 2 * t[j2] + t[y2 < h - 1 ? j2 + w : j2]) / 4; }
@@ -381,19 +386,19 @@
       var N2 = vw * vh, f1 = new Float32Array(N2), f2 = new Float32Array(N2), fl = new Float32Array(N2);
       // the smooth field at the level where a cell is about one drawn point (see anField)
       var cpp = A.W / IMG_W / scale * STEP, want = Math.max(0, Math.round(Math.log(Math.max(1, cpp)) / Math.LN2));
-      var Lf = anField(R, A, want), LW2 = Lf.w, LH2 = Lf.h, g1 = Lf.f[0], g2 = Lf.f[1], gl = Lf.f[2];
+      var Lf = anField(R, A, want), LW2 = Lf.w, LH2 = Lf.h, g1 = Lf.f[0], g2 = Lf.f[1], gl = Lf.f[2], g3 = Lf.f[3], f3 = R.G ? new Float32Array(N2) : null;
       var kx = A.W / IMG_W / (1 << Lf.lv), ky = A.H / IMG_H / (1 << Lf.lv);
       for (var y = 0; y < vh; y++) for (var x = 0; x < vw; x++){
         var ix = (x * STEP + 1 - originX) / scale, iy = (y * STEP + 1 - originY) / scale;
         var fx = ix * kx - 0.5, fy = iy * ky - 0.5, x0 = Math.floor(fx), y0 = Math.floor(fy), tx = fx - x0, ty = fy - y0;
-        var a1 = 0, a2 = 0, al = 0, q = y * vw + x;
+        var a1 = 0, a2 = 0, al = 0, a3 = 0, q = y * vw + x;
         for (var dy = 0; dy <= 1; dy++) for (var dx = 0; dx <= 1; dx++){
           var cx = x0 + dx, cy = y0 + dy, wt = (dx ? tx : 1 - tx) * (dy ? ty : 1 - ty);
           if (cx < 0 || cy < 0 || cx >= LW2 || cy >= LH2) continue;
           var ci = cy * LW2 + cx;
-          a1 += g1[ci] * wt; a2 += g2[ci] * wt; al += gl[ci] * wt;
+          a1 += g1[ci] * wt; a2 += g2[ci] * wt; al += gl[ci] * wt; if (f3) a3 += g3[ci] * wt;
         }
-        f1[q] = a1; f2[q] = a2; fl[q] = al;
+        f1[q] = a1; f2[q] = a2; fl[q] = al; if (f3) f3[q] = a3;
       }
       // signed distance (in steps) from the 0,5 edge of a field: value / slope
       function sd(f, q, x, y){
@@ -412,6 +417,9 @@
         var r = 0, g = 0, b = 0, a = 0;
         function over(cr, cg, cb, ca){ ca /= 255; r = cr * ca + r * (1 - ca); g = cg * ca + g * (1 - ca); b = cb * ca + b * (1 - ca); a = ca + a * (1 - ca); }
         over(6, 14, 20, dimA * k0);
+        // "Skala" (from the catches): the whole lake from unlike (blue, see-through) to most alike (red)
+        var ra = 0;
+        if (f3 && fl[q2] > 0.05){ var rc = hmRamp(Math.max(0, Math.min(1, f3[q2] / fl[q2]))); ra = rc[3] / 255 * Math.min(1, fl[q2] * 1.6); over(rc[0], rc[1], rc[2], 255 * ra); }
         if (c1col) over(c1col[0], c1col[1], c1col[2], 105 * k1);
         over(c2col[0], c2col[1], c2col[2], c2a * k2);
         var e = Math.max(cl(1 - Math.abs(d1) / EA[0]), cl(1 - Math.abs(d2) / EA[0])) * EA[1];
@@ -419,7 +427,7 @@
         var es = cl(1 - Math.abs(dl) / ES[0]) * ES[1];
         if (es > 0) over(255, 255, 255, 128 * es);      // the shore: a solid line, 50 %
         if (a > 0){ px[k] = r / a; px[k + 1] = g / a; px[k + 2] = b / a; px[k + 3] = a * 255; }
-        sp[k] = 128; sp[k + 1] = 128; sp[k + 2] = 128; sp[k + 3] = satA * k0;
+        sp[k] = 128; sp[k + 1] = 128; sp[k + 2] = 128; sp[k + 3] = satA * k0 * (1 - ra);
       }
       c2.putImageData(im, 0, 0); s2.putImageData(sm, 0, 0);
       anView = { key: key, cv: cv, sv: sv };
@@ -427,6 +435,11 @@
     anCtx.imageSmoothingEnabled = true; anSatCtx.imageSmoothingEnabled = true;
     anCtx.drawImage(anView.cv, 0, 0, vw * STEP, vh * STEP);
     anSatCtx.drawImage(anView.sv, 0, 0, vw * STEP, vh * STEP);
+    // from the catches: the catches it's worked out from, small white dots
+    if (R.pts) R.pts.forEach(function(p){
+      var x = originX + p.x * scale, y = originY + p.y * scale; if (x < -5 || y < -5 || x > W + 5 || y > H + 5) return;
+      anCtx.beginPath(); anCtx.arc(x, y, 2.6, 0, 7); anCtx.fillStyle = '#fff'; anCtx.fill(); anCtx.lineWidth = 1; anCtx.strokeStyle = 'rgba(11,42,58,.9)'; anCtx.stroke();
+    });
     // labels (tops/holes, similar places)
     Array.prototype.forEach.call(anLabelsEl.children, function(el){
       var p = anImgOfCell(+el.getAttribute('data-i'));
@@ -438,7 +451,8 @@
     var m = anSet.mode;
     anBtn.classList.toggle('on', !!m);
     document.getElementById('anClear').disabled = !m;      // (only when there's something to clear)
-    Array.prototype.forEach.call(document.querySelectorAll('#anChips button[data-m], #anPresets button[data-m]'), function(b){ b.classList.toggle('on', b.getAttribute('data-m') === m); });
+    anDataRow();
+    Array.prototype.forEach.call(document.querySelectorAll('#anChips button[data-m], #anPresets button[data-m], #anDataChips button[data-m]'), function(b){ b.classList.toggle('on', b.getAttribute('data-m') === m); });
     var R = anRes, res = document.getElementById('anResult');
     if (!m) res.innerHTML = 'Välj vad du vill hitta. Det som matchar lyser, resten av kartan tonas ner.';
     else if (!R) res.innerHTML = 'Djupdatan laddas…';
@@ -457,6 +471,17 @@
     anView = null; anDraw();
   }
   // a slider with one handle: label, the bar, the value
+  // "Från fångsterna (data)": a button per species with its number of catches here (< 10: can't be chosen)
+  function anDataRow(){
+    var head = document.getElementById('anDataHead'), row = document.getElementById('anDataChips');
+    var L = catchData ? catchData.list : [];
+    head.hidden = row.hidden = !L.length;
+    if (!L.length) return;
+    row.innerHTML = [['abborre', 'Abborre'], ['gadda', 'Gädda'], ['gos', 'Gös']].map(function(x){
+      var n = L.filter(function(c){ return c.sp === x[0]; }).length;
+      return '<button type="button" data-m="c_' + x[0] + '"' + (n < AN_CMIN ? ' disabled' : '') + '>' + x[1] + ' ' + n + (n < AN_CMIN ? ' · för få' : '') + '</button>';
+    }).join('');
+  }
   function anRangeRow(id, label, min, max, step, val, fmt){
     return '<div class="anRange"><label for="' + id + '">' + label + '</label><input type="range" id="' + id + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + val + '"><output>' + fmt(val) + '</output></div>';
   }
@@ -486,6 +511,7 @@
     else if (m === 'steep') h = anRangeRow('anSlope', 'Lutning', 4, 30, 1, anSet.slope, function(v){ return v + ' %'; }) + anDualRow('steep');
     else if (m === 'tops') h = anRangeRow('anTopP', 'Grynnor', 0.3, 2.5, 0.1, anSet.topP, function(v){ return '≥ ' + fmtDepth(+v) + ' m'; }) +
       anRangeRow('anHoleP', 'Hålor', 0.3, 2.5, 0.1, anSet.holeP, function(v){ return '≥ ' + fmtDepth(+v) + ' m'; });
+    else if (m && m.indexOf('c_') === 0) h = anCatchControls();
     else if (m === 'hard') h = anRangeRow('anHmin', 'Minst', 1, 4, 1, anSet.hmin, function(v){ return AN_HARD[v - 1]; }) + anDualRow('hard');
     else if (m === 'similar'){
       var sp = anSpots();
@@ -497,6 +523,7 @@
         '<div class="anNote"><b>Bara platsen</b> jämför det som finns precis under pinnen (en ruta på ca 5 × 5 m). <b>25–100 m</b> jämför i stället <b>snittet</b> inom den radien – både runt din plats och runt varje ställe i sjön. Då hittar du liknande <i>omgivningar</i> (t.ex. en kant med växter), inte bara en likadan punkt.<br>Listan: områdena som är mest lika, bäst först (inte slump). Platsen själv lyser men står inte i listan.</div>' : '';
     }
     el.innerHTML = h;
+    if (m && m.indexOf('c_') === 0) anCatchDots();
     anDualPlace();
   }
   var anDimSet = document.getElementById('anDimSet');
@@ -509,10 +536,10 @@
   function anLater(){ anSave(); clearTimeout(anTimer); anTimer = setTimeout(anCompute, 60); }
   document.getElementById('anControls').addEventListener('input', function(e){
     var t = e.target, v = parseFloat(t.value);
-    var map = { anSlope: 'slope', anTopP: 'topP', anHoleP: 'holeP', anHmin: 'hmin' };
+    var map = { anSlope: 'slope', anTopP: 'topP', anHoleP: 'holeP', anHmin: 'hmin', anCCov: 'cCov' };
     if (!map[t.id]) return;
     anSet[map[t.id]] = v;
-    t.nextSibling.textContent = t.id === 'anSlope' ? v + ' %' : t.id === 'anHmin' ? AN_HARD[v - 1] : '≥ ' + fmtDepth(v) + ' m';
+    t.nextSibling.textContent = t.id === 'anSlope' ? v + ' %' : t.id === 'anHmin' ? AN_HARD[v - 1] : t.id === 'anCCov' ? v + ' av 10' : '≥ ' + fmtDepth(v) + ' m';
     anLater();
   });
   // dragging a handle of a depth range (either handle; they can't cross)
@@ -538,6 +565,11 @@
   document.getElementById('anControls').addEventListener('pointerup', anDragEnd);
   document.getElementById('anControls').addEventListener('pointercancel', anDragEnd);
   document.getElementById('anControls').addEventListener('click', function(e){
+    var cf = e.target.closest ? e.target.closest('#anCF button[data-cf]') : null, cvb = e.target.closest ? e.target.closest('#anCView button[data-cv]') : null;
+    if (cf){ var ck = cf.getAttribute('data-cf'), others = AN_CF.filter(function(x){ return x[0] !== ck && anSet.cF[x[0]]; }).length;
+      if (anSet.cF[ck] && !others) return;                    // (at least one stays on)
+      anSet.cF[ck] = anSet.cF[ck] ? 0 : 1; cf.classList.toggle('on', !!anSet.cF[ck]); anLater(); return; }
+    if (cvb){ anSet.cView = cvb.getAttribute('data-cv'); anCtlMode = '#'; anSave(); anCompute(); return; }
     if (e.target.id === 'anRefGo'){
       var wp = anSpots().filter(function(w){ return w.id === anSet.ref; })[0];
       if (wp){ showAnPanel(false); centerOnWaypoint(wp); }
@@ -575,7 +607,7 @@
   function showAnPanel(open){
     if (open && !anPanel.classList.contains('show') && anPanel._resetSize) anPanel._resetSize();
     anPanel.classList.toggle('show', open);
-    if (open){ if (typeof toggleMsgPop === 'function') toggleMsgPop(false); if (hmPanel) hmShowPanel(false); anCtlMode = '#'; if (!anRes) anCompute(); else anRender(); }
+    if (open){ if (typeof toggleMsgPop === 'function') toggleMsgPop(false); if (hmPanel) hmShowPanel(false); loadCatches(false); anCtlMode = '#'; if (!anRes) anCompute(); else anRender(); }
   }
   anBtn.addEventListener('click', function(e){ e.stopPropagation(); showAnPanel(!anPanel.classList.contains('show')); });
   document.getElementById('anClose').addEventListener('click', function(){ showAnPanel(false); });

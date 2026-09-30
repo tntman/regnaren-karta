@@ -57,3 +57,20 @@ svepande ljus), en knapprad: Åk hit, Liknande → Kartanalys "Liknande", Ta bor
   250 n n; görs av genesis_render, även `grid`) + vinden.
 - Canvas `#anLayer` per skärmpunkt, etiketter i `#anLabels`. Val per sjö (`lakeKey`).
   `window.__ffGeo`, `__ffAnalysis()` för tester/verktyg.
+
+## Från fångsterna (data) – per art
+Kod: `src/js/57-an-catches.js` (+ inkopplat i 56-analysis.js), test `tests/test_ancatches.py`.
+- Egen rad i Kartanalys under tumreglerna: **Abborre n · Gädda n · Gös n** (tävlingarnas fångster i sjön,
+  66-catches.js). Under 10 fångster: grå, "för få". Bara sjön man är i.
+- För varje fångst: platsen (inom 25 m, `anSimFeatures(A, 25)`) – djup, lutning, botten, växter, från land
+  (`A.shore`), grynna/håla – i steg (`anCatchBins`, cachat per sjö). Jämfört med hela sjön: hur mycket
+  vanligare fångsterna var i varje steg ("lift", utjämnad +1). Varje punkt i sjön får summan av log-lift
+  för värdena som är på.
+- **Tänt**: från mest lik och nedåt tills "Typiskt" av 10 fångster ryms (reglage 5–9, standard 7) – datan
+  bestämmer ytan: litet tänt = tydligt mönster (< 12 % tydligt, 12–25 % måttligt, > 25 % svagt).
+  **Skala**: hela sjön olikt → mest likt (`anRes.G`, 4:e kanalen i `anField`, färger som heatmapen).
+- Av/på per värde (minst ett på); prickarna ●○○–●●● = hur mycket värdet ENSAMT pekar ut arten här
+  (tänd yta för samma andel fångster jämfört med ingen information).
+- Fångsterna ritas som små vita prickar (`anRes.pts`). Texten säger vad som sticker ut + att det visar var
+  man fick fisk (inte var all fisk finns), månad(er), fångster utanför djupkartan räknas inte.
+- Inte samtidigt som heatmapen (som alla Kartanalys-lägen).

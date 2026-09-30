@@ -63,6 +63,7 @@ specificitet.
 | `52-lightning.js` | blixtar (FMI) |
 | `54-panels.js` | bottenpaneler (`sheetSwipe`) |
 | `56-analysis.js` | Kartanalys |
+| `57-an-catches.js` | Kartanalys "Från fångsterna (data)": per art ur tävlingarnas fångster |
 | `58-akhit-spotdata.js` | Åk hit, vad som finns under en plats |
 | `60-lightning-alarm.js` | åskvarning |
 | `62-wakelock.js` | håll skärmen tänd |
