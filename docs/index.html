@@ -1314,7 +1314,7 @@
   #anPanel{
     position:absolute;left:0;right:0;bottom:0;z-index:26;background:var(--navy);
     border-top:1px solid rgba(255,255,255,.14);border-radius:18px 18px 0 0;
-    padding:8px 14px calc(env(safe-area-inset-bottom,0px) + 16px);box-shadow:0 -10px 30px rgba(0,0,0,.45);
+    padding:8px 14px calc(env(safe-area-inset-bottom,0px) + 10px);box-shadow:0 -10px 30px rgba(0,0,0,.45);
     transform:translateY(105%);transition:transform .25s ease;max-height:62vh;overflow-y:auto;
   }
   #anPanel.show{transform:none;}
@@ -1328,9 +1328,6 @@
   .anRange label{flex:0 0 58px;}
   .anRange input[type=range]{flex:1;accent-color:var(--amber);height:26px;}
   .anRange output{flex:0 0 48px;text-align:right;font-weight:700;color:var(--amber);}
-  #anResult{margin-top:9px;font-size:13px;color:#dbe4e7;line-height:1.4;}
-  #anResult b{color:var(--amber);}
-  #anResult .note{display:block;color:var(--text-muted);font-size:11.5px;margin-top:3px;}
   .anList{margin-top:7px;display:flex;flex-direction:column;gap:5px;}
   .anList .li{display:flex;align-items:center;gap:9px;background:rgba(255,255,255,.05);border-radius:10px;padding:6px 9px;font-size:13px;color:#dbe4e7;}
   .anList .n{width:20px;height:20px;border-radius:50%;background:#ff50a0;color:#fff;font-weight:700;font-size:11.5px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
@@ -1372,22 +1369,53 @@
     animation:simRing 2s ease-out infinite;box-sizing:border-box;}
   .anLbl.simRef::after{animation-delay:1s;}
   @keyframes simRing{0%{transform:scale(.25);opacity:1;}100%{transform:scale(1.6);opacity:0;}}
-  .anBottom{margin-top:12px;}
   #anCatSeg{margin-top:6px;}
   #anCatSeg button.has{box-shadow:inset 0 -2px 0 var(--amber);}      /* (what's on is in this category) */
   .anSep{width:1.5px;align-self:stretch;background:rgba(255,255,255,.3);border-radius:1px;margin:3px 3px;}
-  .anChips .anClr{position:relative;overflow:hidden;background:rgba(232,163,61,.16);border:1.5px solid var(--amber);color:#fff;font-weight:700;}
-  .anChips .anClr::after{content:'';position:absolute;top:0;bottom:0;left:-60%;width:50%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.45),transparent);animation:clrSweep 2.6s ease-in-out infinite;}
-  @keyframes clrSweep{0%{left:-60%;}55%,100%{left:120%;}}
-  .anChips .anClr:disabled{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);color:rgba(183,196,201,.4);font-weight:400;cursor:default;}
-  .anChips .anClr:disabled::after{display:none;}
-  @media (prefers-reduced-motion:reduce){ .anChips .anClr::after{animation:none;display:none;} }
-  /* "Återställ" done: green "✓ Återställt" for a moment, the tick turns in (resetDone) */
-  .rsIc{display:inline-block;}
-  .anChips .rsBtn.rsDone{background:rgba(127,216,138,.12);border-color:rgba(127,216,138,.6);color:#7fd88a;font-weight:700;}
-  .rsDone .rsIc{animation:rsTick .45s cubic-bezier(.16,1,.3,1);}
+  /* ---- the panels' top row (Kartanalys, Heatmap): what it shows now (2 lines at most) + ⓘ ↺ ⏻; ✕ in the grip ---- */
+  .pnHead{display:flex;align-items:center;gap:6px;min-height:40px;margin:-2px 0 2px;}
+  .pnResCol{flex:1 1 auto;min-width:0;}
+  .pnRes{font-size:13px;line-height:1.3;color:#dbe4e7;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;}
+  .pnRes b{color:var(--amber);}
+  .pnRes .note{display:none;}                                           /* (behind ⓘ) */
+  .pnHid{color:#ff8a80;}
+  .hdBtn{flex:0 0 auto;width:36px;height:36px;border-radius:11px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);
+    color:var(--offwhite);display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+  .hdBtn svg{width:18px;height:18px;display:block;}
+  .hdBtn:active{transform:scale(.92);}
+  .hdBtn:disabled{opacity:.35;cursor:default;transform:none;}
+  .hdBtn.on{border-color:var(--amber);color:var(--amber);background:rgba(232,163,61,.14);}   /* ⓘ open / ⏻ something is on */
+  .hdBtn.pwBtn:not(:disabled){border-color:var(--amber);color:var(--amber);background:rgba(232,163,61,.14);}
+  /* ⓘ: the explanations under the top row */
+  .pnInfo{margin:2px 0 4px;padding:8px 11px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);font-size:12px;line-height:1.45;color:#c9d4d8;}
+  .pnInfo[hidden]{display:none;}
+  .pnInfo p{margin:0;} .pnInfo p + p{margin-top:5px;}
+  .pnInfo b{color:#dbe4e7;}
+  #anControls .anNote{display:none;}                                    /* (behind ⓘ) */
+  /* rows: one line each -- they scroll sideways instead of wrapping (a fade at the edge says there's more) */
+  #anPanel .anChips, #hmPanel .anChips, #anPanel .anFactors{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-top:8px;padding-right:22px;
+    -webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 26px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 26px),transparent);}
+  #anPanel .anChips::-webkit-scrollbar, #hmPanel .anChips::-webkit-scrollbar, #anPanel .anFactors::-webkit-scrollbar{display:none;}
+  #anPanel .anChips > *, #hmPanel .anChips > *, #anPanel .anFactors > *{flex:0 0 auto;}
+  .rowLbl{flex:0 0 auto;align-self:center;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);margin-right:2px;}
+  /* sliders: name + value above, the bar under -- two side by side when there are two */
+  #anControls, #hmCtl{display:grid;grid-template-columns:1fr 1fr;column-gap:14px;}
+  #anControls > *, #hmCtl > *{grid-column:1 / -1;}
+  #anControls > .anRange:has(+ .anRange), #anControls > .anRange + .anRange, #hmCtl > .anRange:has(+ .anRange), #hmCtl > .anRange + .anRange{grid-column:auto;}
+  #anControls .anRange, #hmCtl .anRange{flex-wrap:wrap;row-gap:0;margin-top:8px;}
+  #anControls .anRange label, #hmCtl .anRange label{flex:1 1 auto;}
+  #anControls .anRange output, #hmCtl .anRange output{flex:0 0 auto;}
+  #anControls .anRange input, #hmCtl .anRange input{flex:1 1 100%;order:3;height:24px;}
+  .pnRow2{display:flex;gap:8px;align-items:center;}
+  .pnRow2 .anSeg{flex:1 1 auto;} .pnRow2 .anChips{flex:0 0 auto;padding-right:0;-webkit-mask-image:none;mask-image:none;}
+  #anPanel .anSeg, #hmPanel .anSeg{margin-top:6px;}
+  #anPanel .anDual{margin-top:8px;}
+  #anListBox:empty{display:none;}
+  /* "↺ Återställ" done: green with a tick for a moment, the tick turns in (resetDone) */
+  .hdBtn.rsDone, .hdBtn.rsDone:disabled{opacity:1;border-color:rgba(127,216,138,.6);color:#7fd88a;background:rgba(127,216,138,.12);}
+  .rsDone svg{animation:rsTick .45s cubic-bezier(.16,1,.3,1);}
   @keyframes rsTick{from{transform:rotate(-270deg) scale(.5);opacity:0;}to{transform:none;opacity:1;}}
-  @media (prefers-reduced-motion:reduce){ .rsDone .rsIc{animation-name:fadeIn;} }
+  @media (prefers-reduced-motion:reduce){ .rsDone svg{animation-name:fadeIn;} }
   /* ================= Heatmap (fångster): map-style list -> a bottom panel like Kartanalys ================= */
   #hmLayer, #hmSat{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;display:none;}
   #hmSat{mix-blend-mode:saturation;}
@@ -1408,18 +1436,15 @@
   .hmOpt .soDesc{display:block;}
   .hmArrow{font-size:18px;color:#FF7A1A;flex:0 0 auto;padding:0 3px;}
   #hmPanel{position:absolute;left:0;right:0;bottom:0;z-index:26;background:var(--navy);border-top:1px solid rgba(255,255,255,.14);border-radius:18px 18px 0 0;
-    padding:8px 14px calc(env(safe-area-inset-bottom,0px) + 16px);box-shadow:0 -10px 30px rgba(0,0,0,.45);transform:translateY(105%);transition:transform .25s ease;max-height:62vh;overflow-y:auto;}
+    padding:8px 14px calc(env(safe-area-inset-bottom,0px) + 10px);box-shadow:0 -10px 30px rgba(0,0,0,.45);transform:translateY(105%);transition:transform .25s ease;max-height:62vh;overflow-y:auto;}
   #hmPanel.show{transform:none;}
   #hmPanel.dragging, #hmCard.dragging{transition:none;}
   #hmPanel .grab{margin:-8px -14px 4px;top:-8px;}
   #hmPanel .anSeg{margin-top:6px;}
-  #hmLegend{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:11.5px;color:var(--text-muted);}
-  #hmLegend .bar{width:130px;height:8px;border-radius:4px;background:linear-gradient(90deg,rgba(90,20,130,.6),#be288c,#f56e3c,#ffbe46,#fff5c8);}
+  #hmLegend{display:flex;align-items:center;gap:6px;margin-top:3px;font-size:11px;color:var(--text-muted);}   /* (in the top row, under the result) */
+  #hmLegend .bar{width:80px;height:6px;border-radius:3px;background:linear-gradient(90deg,rgba(90,20,130,.6),#be288c,#f56e3c,#ffbe46,#fff5c8);}
   #hmLegend:empty{display:none;}
   .hmSpDot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:0;}
-  #hmResult{margin-top:10px;font-size:13px;color:#dbe4e7;line-height:1.4;}
-  #hmResult b{color:var(--amber);}
-  #hmResult .note{display:block;color:var(--text-muted);font-size:11.5px;margin-top:3px;}
   #hmCard{position:absolute;left:0;right:0;bottom:0;z-index:27;background:var(--navy);border-top:1px solid rgba(255,255,255,.14);border-radius:18px 18px 0 0;
     padding:8px 16px calc(env(safe-area-inset-bottom,0px) + 16px);box-shadow:0 -10px 30px rgba(0,0,0,.45);transform:translateY(105%);transition:transform .25s ease;overflow-y:auto;}
   #hmCard.show{transform:none;}
@@ -1506,9 +1531,10 @@
   #wpSheet{overflow-y:auto;max-height:88vh;}
   /* ================= wet, cold fingers: touch targets in the bottom panels =================
      (PRODUCT.md: tävlingsdagen i båten. The controls on the map itself keep their size.) */
-  .anSeg button{min-height:42px;font-size:13px;}                        /* the category / style row on top */
-  .anChips button{min-height:40px;padding:8px 13px;font-size:13px;}     /* choices, Stäng av, Återställ */
-  .anFactors button{min-height:38px;padding:7px 11px;}                  /* on/off: what is compared */
+  /* Kartanalys / Heatmap: a bit lower (Filip, 2026-09-30) so the panels leave the map room */
+  .anSeg button{min-height:36px;padding:4px 2px;font-size:13px;}        /* the category / style row on top */
+  .anChips button{min-height:34px;padding:5px 11px;font-size:12.5px;}   /* the choices */
+  .anFactors button{min-height:34px;padding:5px 10px;}                  /* on/off: what is compared */
   .typeSeg button{min-height:40px;padding:8px 13px;}                    /* a spot's type */
   .sheetActs button{min-height:46px;}                                   /* bin, Åk hit, Liknande, Spara */
   .msgCardBtns button{min-height:46px;}                                 /* a message / a catch: Åk hit … */
@@ -2003,28 +2029,30 @@
   </div>
   <div id="anPanel" role="dialog" aria-label="Kartanalys">
     <div class="grab"><button type="button" id="anClose" class="gripX" aria-label="Stäng">✕</button></div>
-    <div class="anSub" style="margin-top:0">Kartanalys · hitta ställen</div>
+    <div class="pnHead"><div class="pnResCol"><div id="anResult" class="pnRes"></div></div>
+      <button type="button" class="hdBtn pnInfoBtn" aria-label="Förklaring" aria-pressed="false" title="Förklaring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6M12 7.5v.5"></path></svg></button>
+      <button type="button" id="anReset" class="hdBtn rsBtn" aria-label="Återställ" title="Återställ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.3-5.6"></path><path d="M4 4v4.5h4.5"></path></svg></button>
+      <button type="button" id="anClear" class="hdBtn pwBtn" aria-label="Stäng av kartanalys" title="Stäng av kartanalys" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 3v8"></path><path d="M6.6 6.6a7.5 7.5 0 1 0 10.8 0"></path></svg></button></div>
+    <div class="pnInfo" hidden></div>
     <div class="anSeg" id="anCatSeg"><button type="button" data-cat="map">Kartdata</button><button type="button" data-cat="rule">Tumregler</button><button type="button" data-cat="data">Fångster</button><button type="button" data-cat="similar">Liknande</button></div>
     <div class="anChips" id="anChips"></div>
     <div class="anChips" id="anPresets"></div>
     <div class="anChips" id="anDataChips"></div>
     <div id="anControls"></div>
-    <div id="anResult"></div>
-    <div class="anChips anBottom"><button type="button" id="anClear" class="anClr" disabled>✕ Stäng av kartanalys</button><button type="button" id="anReset" class="rsBtn"><span class="rsIc">↺</span> <span class="rsTx">Återställ</span></button></div>
+    <div id="anListBox"></div>
   </div>
   <div id="undoToast" role="status"><span id="undoTxt"></span><svg viewBox="0 0 26 26" width="26" height="26" aria-hidden="true"><circle cx="13" cy="13" r="10" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="3"></circle><circle cx="13" cy="13" r="10" fill="none" stroke="#E8A33D" stroke-width="3" stroke-dasharray="63" transform="rotate(-90 13 13)"></circle></svg><button type="button" id="undoBtn">Ångra</button></div>
   <div id="hmPanel" role="dialog" aria-label="Heatmap">
     <div class="grab"><button type="button" id="hmClose" class="gripX" aria-label="Stäng">✕</button></div>
-    <div class="anSub" style="margin-top:0">Heatmap · fångster</div>
+    <div class="pnHead"><div class="pnResCol"><div id="hmResult" class="pnRes"></div><div id="hmLegend"></div></div>
+      <button type="button" class="hdBtn pnInfoBtn" aria-label="Förklaring" aria-pressed="false" title="Förklaring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6M12 7.5v.5"></path></svg></button>
+      <button type="button" id="hmReset" class="hdBtn rsBtn" aria-label="Återställ" title="Återställ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.3-5.6"></path><path d="M4 4v4.5h4.5"></path></svg></button>
+      <button type="button" id="hmOff" class="hdBtn pwBtn on" aria-label="Stäng av heatmap" title="Stäng av heatmap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 3v8"></path><path d="M6.6 6.6a7.5 7.5 0 1 0 10.8 0"></path></svg></button></div>
+    <div class="pnInfo" hidden></div>
     <div class="anSeg" id="hmStyleSeg"><button type="button" data-s="heat">Värme</button><button type="button" data-s="species">Per art</button><button type="button" data-s="hex">Rutor</button><button type="button" data-s="dots">Prickar</button></div>
-    <div id="hmLegend"></div>
-    <div class="anSub" id="hmSpHead">Art</div>
     <div class="anChips" id="hmSp"></div>
-    <div class="anSub">Tävling</div>
     <div class="anChips" id="hmComp"></div>
     <div id="hmCtl"></div>
-    <div id="hmResult"></div>
-    <div class="anChips anBottom"><button type="button" id="hmOff" class="anClr">✕ Stäng av heatmap</button><button type="button" id="hmReset" class="rsBtn"><span class="rsIc">↺</span> <span class="rsTx">Återställ</span></button></div>
   </div>
   <div id="hmCard" role="dialog" aria-label="Fångst"><div class="grab"><button type="button" id="hmCardClose" class="gripX" aria-label="Stäng">✕</button></div>
     <div id="hmCardKick"></div><div id="hmCardTitle"></div>
@@ -7582,14 +7610,16 @@
     document.getElementById('anDataChips').hidden = cat !== 'data';
     document.getElementById('anReset').disabled = anIsDefault();
     Array.prototype.forEach.call(document.querySelectorAll('#anChips button[data-m], #anPresets button[data-m], #anDataChips button[data-m]'), function(b){ b.classList.toggle('on', b.getAttribute('data-m') === m); });
-    var R = anRes, res = document.getElementById('anResult');
+    var R = anRes, res = document.getElementById('anResult'), lst = document.getElementById('anListBox');
+    lst.innerHTML = '';
     if (!m) res.innerHTML = { map: 'Välj vad du vill hitta på kartan. Det som matchar lyser, resten tonas ner.', rule: 'Tumregler från vanliga fiskeråd – inte fångstdata.',
       data: 'Var arten liknar platserna där den togs i tävlingarna.', similar: 'Välj en fiskeplats att jämföra med.' }[cat] || '';
     else if (!R) res.innerHTML = 'Djupdatan laddas…';
     else if (R.wait) res.innerHTML = 'Hämtar bottendata…';
     else {
-      res.innerHTML = R.text + (R.note ? '<span class="note">' + R.note + '</span>' : '') + (!anShow ? '<span class="note">(Dold – slå på Kartanalys i Filter.)</span>' : '') +
-        (R.list ? '<div class="anList">' + (R.list.length ? R.list.map(function(it){
+      // (the top row: the result; its explanations are behind ⓘ; the Liknande list stays in the panel)
+      res.innerHTML = R.text + (R.note ? '<span class="note">' + R.note + '</span>' : '') + (!anShow ? '<span class="pnHid"> · Dold – slå på Kartanalys i Filter</span>' : '');
+      lst.innerHTML = (R.list ? '<div class="anList">' + (R.list.length ? R.list.map(function(it){
           return '<div class="li"><span class="n">' + it.n + '</span>' + fmtDepth(it.dep) + ' m · lutning ' + Math.round(it.slope) + ' %' +
             '<button type="button" data-go="' + it.n + '">' + (it.dm != null ? fmtMeters(it.dm) + ' · ' : '') + 'Åk hit ›</button></div>';
         }).join('') : '<div class="li">Inga tydliga träffar.</div>') + '</div>' : '');
@@ -7598,6 +7628,7 @@
       return '<div class="anLbl ' + l.cls + '" data-i="' + l.i + '">' + escHtml(l.txt) + '</div>';
     }).join('');
     anControls();
+    pnInfo(anPanel);
     anView = null; anDraw();
   }
   // a slider with one handle: label, the bar, the value
@@ -7757,14 +7788,37 @@
     anExtraRef = null; anSave(); anCtlMode = '#'; anCompute();
     resetDone(this);
   });
-  // "Återställ" (Kartanalys, Heatmap) says it's done: a green "✓ Återställt" for a moment (the tick turns in),
-  // then the usual grey "↺ Återställ" (nothing left to reset)
+  // "↺ Återställ" (Kartanalys, Heatmap) says it's done: green with a tick for a moment (it turns in),
+  // then the usual grey ↺ (nothing left to reset)
+  var RS_TICK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>';
   function resetDone(btn){
-    var ic = btn.querySelector('.rsIc'), tx = btn.querySelector('.rsTx');
+    if (!btn._rsIc) btn._rsIc = btn.innerHTML;
     clearTimeout(btn._rsT); btn.classList.remove('rsDone'); void btn.offsetWidth;
-    btn.classList.add('rsDone'); ic.textContent = '✓'; tx.textContent = 'Återställt';
-    btn._rsT = setTimeout(function(){ btn.classList.remove('rsDone'); ic.textContent = '↺'; tx.textContent = 'Återställ'; }, 1600);
+    btn.classList.add('rsDone'); btn.innerHTML = RS_TICK; btn.setAttribute('aria-label', 'Återställt');
+    btn._rsT = setTimeout(function(){ btn.classList.remove('rsDone'); btn.innerHTML = btn._rsIc; btn.setAttribute('aria-label', 'Återställ'); }, 1600);
   }
+  // ⓘ in the top row (Kartanalys, Heatmap): the explanations -- kept out of the panel itself -- in a box under
+  // it: the notes on the result + the controls' notes. Open or not is remembered on the phone (closed at first).
+  var PN_INFO_KEY = 'ffmap_panel_info_v1', pnInfoOn = false;
+  try { pnInfoOn = localStorage.getItem(PN_INFO_KEY) === '1'; } catch(e){}
+  function pnInfo(P){
+    var box = P.querySelector('.pnInfo'), btn = P.querySelector('.pnInfoBtn'), res = P.querySelector('.pnRes'), parts = [];
+    if (!box) return;
+    if (pnInfoOn){
+      if (res && res.scrollHeight > res.clientHeight + 2){ var c = res.cloneNode(true); Array.prototype.forEach.call(c.querySelectorAll('.note'), function(n){ n.remove(); }); parts.push(c.innerHTML); }
+      Array.prototype.forEach.call(P.querySelectorAll('.pnRes .note, #anControls .anNote'), function(n){ if (n.textContent.trim()) parts.push(n.innerHTML); });
+      box.innerHTML = parts.length ? parts.map(function(t){ return '<p>' + t + '</p>'; }).join('') : '<p>Ingen förklaring till det här.</p>';
+    }
+    box.hidden = !pnInfoOn;
+    btn.classList.toggle('on', pnInfoOn); btn.setAttribute('aria-pressed', pnInfoOn ? 'true' : 'false');
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('.pnInfoBtn'), function(b){
+    b.addEventListener('click', function(e){
+      e.stopPropagation(); pnInfoOn = !pnInfoOn;
+      try { localStorage.setItem(PN_INFO_KEY, pnInfoOn ? '1' : '0'); } catch(err){}
+      pnInfo(anPanel); pnInfo(hmPanel);
+    });
+  });
   anLabelsEl.addEventListener('pointerdown', function(e){ e.stopPropagation(); if (e.target.closest && e.target.closest('.anLbl')) mapPointerDown(e, true); });
   anLabelsEl.addEventListener('click', function(e){
     var l = e.target.closest ? e.target.closest('.anLbl') : null; if (!l) return;
@@ -7910,7 +7964,8 @@
   }
   function anCatchControls(){
     return '<div class="anSeg" id="anCView">' + [['area', 'Tänt'], ['grad', 'Skala']].map(function(x){ return '<button type="button" data-cv="' + x[0] + '" class="' + (anSet.cView === x[0] ? 'on' : '') + '">' + x[1] + '</button>'; }).join('') + '</div>' +
-      '<div class="anLbl2">Vad som jämförs <span style="opacity:.8">(● = hur mycket det pekar ut arten här)</span></div>' +
+      '<div class="anLbl2">Vad som jämförs</div>' +
+      '<div class="anNote"><b>Vad som jämförs:</b> slå av det du inte vill jämföra. ●●● = hur mycket värdet ensamt pekar ut arten här.</div>' +
       '<div class="anFactors" id="anCF">' + AN_CF.map(function(x){ return '<button type="button" data-cf="' + x[0] + '" class="' + (anSet.cF[x[0]] ? 'on' : '') + '">' + x[1] + ' <span class="anDots"></span></button>'; }).join('') + '</div>' +
       (anSet.cView === 'grad' ? '' : anRangeRow('anCCov', 'Typiskt', 5, 9, 1, anSet.cCov, function(v){ return v + ' av 10'; }) +
       '<div class="anNote">Hur många av fångsterna det tända ska rymma. <b>Lägre</b> = bara de allra mest typiska ställena – udda fångster räknas bort, mindre yta. <b>Högre</b> = fler fångster får plats, större yta.</div>');
@@ -8547,18 +8602,18 @@
     var inComp = hmAll().filter(hmInComp), cnt = { abborre: 0, gadda: 0, gos: 0 };
     inComp.forEach(function(c){ cnt[c.sp]++; });
     var dot = function(sp){ return '<span class="hmSpDot" style="background:rgb(' + HM_COL[sp] + ')"></span>'; };
-    document.getElementById('hmSpHead').textContent = st === 'species' ? 'Arter (en färg var)' : 'Art';
-    document.getElementById('hmSp').innerHTML = st === 'species'
+    // (each row: its name first, then the choices -- one line, sideways if they don't fit)
+    document.getElementById('hmSp').innerHTML = '<span class="rowLbl">' + (st === 'species' ? 'Arter' : 'Art') + '</span>' + (st === 'species'
       ? HM_SP.map(function(x){ return '<button type="button" data-spt="' + x[0] + '" class="' + (hmSet.spOn[x[0]] ? 'on' : '') + '">' + dot(x[0]) + x[1] + ' ' + cnt[x[0]] + '</button>'; }).join('')
-      : [['all', 'Alla']].concat(HM_SP).map(function(x){ return '<button type="button" data-sp="' + x[0] + '" class="' + (hmSet.sp === x[0] ? 'on' : '') + '">' + x[1] + '</button>'; }).join('');
-    document.getElementById('hmComp').innerHTML = '<button type="button" data-comp="all" class="' + (hmSet.comp === 'all' ? 'on' : '') + '">Alla</button>' +
+      : [['all', 'Alla']].concat(HM_SP).map(function(x){ return '<button type="button" data-sp="' + x[0] + '" class="' + (hmSet.sp === x[0] ? 'on' : '') + '">' + x[1] + '</button>'; }).join(''));
+    document.getElementById('hmComp').innerHTML = '<span class="rowLbl">Tävling</span><button type="button" data-comp="all" class="' + (hmSet.comp === 'all' ? 'on' : '') + '">Alla</button>' +
       comps.map(function(c){ return '<button type="button" data-comp="' + escHtml(c.id) + '" class="' + (hmSet.comp === c.id ? 'on' : '') + '">' + escHtml(hmCompName(c.id)) + ' · ' + hmDateRange(c.list) + '</button>'; }).join('');
     var rng = function(k, l, min, max, stp){ return '<div class="anRange"><label>' + l + '</label><input type="range" data-r="' + k + '" min="' + min + '" max="' + max + '" step="' + stp + '" value="' + hmSet[k] + '"><output id="hmOut_' + k + '">' + hmOutTxt(k) + '</output></div>'; };
     var tog = function(k, l){ return '<button type="button" data-t="' + k + '" class="' + (hmSet[k] ? 'on' : '') + '">' + (hmSet[k] ? '✓ ' : '') + l + '</button>'; };
     document.getElementById('hmCtl').innerHTML =
       st === 'heat' ? rng('rad', 'Radie', 20, 200, 10) + rng('str', 'Styrka', 0, 100, 5)
       : st === 'species' ? rng('rad', 'Radie', 20, 200, 10)
-      : st === 'hex' ? '<div class="anSub">Rutans storlek</div><div class="anSeg">' + [30, 60, 120].map(function(m){ return '<button type="button" data-hx="' + m + '" class="' + (hmSet.hexM === m ? 'on' : '') + '">' + m + ' m</button>'; }).join('') + '</div><div class="anChips">' + tog('cnt', 'Visa antal') + '</div>'
+      : st === 'hex' ? '<div class="pnRow2"><div class="anSeg" aria-label="Rutans storlek">' + [30, 60, 120].map(function(m){ return '<button type="button" data-hx="' + m + '" class="' + (hmSet.hexM === m ? 'on' : '') + '">' + m + ' m</button>'; }).join('') + '</div><div class="anChips">' + tog('cnt', 'Visa antal') + '</div></div>'
       : '<div class="anChips">' + tog('big', 'Större prick = större fisk') + tog('names', 'Visa namn') + '</div>';
     var res = document.getElementById('hmResult'), all = hmAll();
     if (!catchData) res.innerHTML = 'Hämtar fångster…';
@@ -8567,8 +8622,9 @@
       var v = hmVisible(), c2 = { abborre: 0, gadda: 0, gos: 0 }; v.forEach(function(c){ c2[c.sp]++; });
       res.innerHTML = '<b>' + v.length + ' fångster</b> i ' + escHtml(LAKE.name) + ' · ' + HM_SP.map(function(x){ return c2[x[0]] + ' ' + x[1].toLowerCase(); }).join(', ') +
         '<span class="note">' + (st === 'dots' ? 'Tryck på en prick för allt om fångsten.' : st === 'hex' ? 'Tryck på en ruta för fångsterna i den.' : 'Tryck på kartan där det är färg för fångsterna där.') + '</span>' +
-        (!hmShow ? '<span class="note">(Dold – slå på Heatmap i Filter.)</span>' : '');
+        (!hmShow ? '<span class="pnHid"> · Dold – slå på Heatmap i Filter</span>' : '');
     }
+    pnInfo(hmPanel);
   }
   function hmOutTxt(k){ return k === 'rad' ? hmSet.rad + ' m' : hmSet.str < 34 ? 'Svag' : hmSet.str < 67 ? 'Mellan' : 'Stark'; }
   hmPanel.addEventListener('pointerdown', function(e){ e.stopPropagation(); });

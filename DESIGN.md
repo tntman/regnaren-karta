@@ -234,21 +234,21 @@ Mjukt rundade former utan skarpa hörn. Rundknappar över kartan är helt runda 
 - **Rundknapp över kartan:** 48 × 48 px, helt rund, sjökortsblått glas, dimvit ikon (21–24 px), svävande skugga; trycks ner till 92 %. Aktiv (t.ex. Kartanalys på) får bärnstensfärgad kant och ikon.
 - **Sikteknappen:** samma form men helt bärnstensfärgad med sjökortsblå ikon – den viktigaste knappen.
 - **Handlingsrad i en ruta:** lika breda knappar, 10 px rundning, 13.5 px halvfet text. Neutral (8 % vitt), Spara (bärnsten med sjökortsblå text) längst till höger. **Ta bort** är en papperskorg längst till vänster (48 px, dämpad röd kontur), avskild från resten – och följs alltid av en Ångra-notis (6 s) innan något raderas.
-- **Stäng av / Återställ** längst ner i Kartanalys och Heatmap: chips; "Stäng av" med bärnstenskant och ett ljus som sveper igenom när något är på, grå och platt annars. "Återställ" grå när allt redan är som från start.
+- **Översta raden i Kartanalys och Heatmap:** resultatet (högst 2 rader, värdet i bärnsten) och tre ikonknappar 36 × 36 px: **ⓘ** (förklaringarna i en ruta under raden; bärnsten när den är öppen, telefonen minns), **↺ Återställ** (grå när allt redan är som från start; grön med bock en stund efter tryck) och **⏻ Stäng av** (bärnsten när något är på, grå annars). ✕ i greppremsan.
 
 ### Chips
-- **Style:** kapselform (14 px), 7 % vitt, tunn 12 % kant, dimvit 13 px text, **minst 40 px hög** i rutorna (blöta fingrar; `85-touch.css`).
+- **Style:** kapselform (14 px), 7 % vitt, tunn 12 % kant, dimvit 13 px text, **minst 40 px hög** i rutorna (blöta fingrar; `85-touch.css`) – i Kartanalys och Heatmap **34 px** (Filips val: rutorna ska lämna plats åt kartan). Där ligger varje grupp på **en rad som skrollar i sidled** (toning i kanten), med radens namn först (ART, TÄVLING).
 - **State:** valt = helt bärnsten med sjökortsblå halvfet text. Inaktiva (för få fångster) är halvt genomskinliga. Av/på-val i Liknande och Från fångsterna får rosa kant och ✓ när de är på.
 
 ### Segmented control
 - **Style:** 6 % vit bädd med 3 px luft och 10 px rundning; segmenten genomskinliga med vassgrå text.
-- **State:** valt segment är bärnsten med sjökortsblå text (8 px rundning). Minst 42 px hög i rutorna. Används för kategori/stil överst i Kartanalys och Heatmap och för val i Inställningar.
+- **State:** valt segment är bärnsten med sjökortsblå text (8 px rundning). Minst 42 px hög (36 px i Kartanalys och Heatmap). Används för kategori/stil i Kartanalys och Heatmap och för val i Inställningar.
 
 ### Bottom Sheet (signaturkomponent)
 - **Corner Style:** 18 px överst.
 - **Background:** sjökortsblå, tunn ljus överkant (14 % vitt).
 - **Greppremsa:** 30 px hög remsa överst med ett 40 × 5 px streck (30 % vitt) och ✕ i högra hörnet (16 px, samma grå). Bara remsan drar rutan: dra = mindre/större, snärt nedåt = stäng. Medan den hålls glöder överkanten och remsan blått.
-- **Innehåll:** overline-rubrik, segmentrad, chips, reglage, resultattext, och längst ner en rad med Stäng av + Återställ.
+- **Innehåll (Kartanalys, Heatmap):** översta raden (resultat + ⓘ ↺ ⏻), segmentrad, chips på en rad var, reglage (två sida vid sida med namn och värde ovanför). Inga förklarande texter i själva rutan – de ligger bakom ⓘ. Mål: rutan tar högst ungefär en tredjedel av skärmen så att kartan syns medan man ställer in.
 
 ### Inputs / Fields
 - **Style:** 8 % vitt, 18 % kant, 10 px rundning, 16 px text (så iPhone inte zoomar).
@@ -275,7 +275,7 @@ Mjukt rundade former utan skarpa hörn. Rundknappar över kartan är helt runda 
 - **Do** använd bärnsten (#E8A33D) för exakt det som är valt eller på, och sjökortsblå text på den.
 - **Do** öppna allt nytt som en bottenruta med greppremsa, ✕ och blå glöd när den dras – och lägg nya rutor i glöd- och greppreglerna.
 - **Do** rita linjer och kanter på kartan kantutjämnade och aldrig tunnare än en ritad punkt (se lä och Kartanalys).
-- **Do** håll tryckytor stora nog för blöta fingrar: i rutorna chips/piller minst 40 px, kategorirader 42 px, knapprader 46 px; rundknappar 48 px; greppremsa 30 px hög. Kartans egna knappar ändras inte utan att Filip säger till.
+- **Do** håll tryckytor stora nog för blöta fingrar: i rutorna chips/piller minst 40 px, kategorirader 42 px, knapprader 46 px (Kartanalys och Heatmap: chips 34, kategorier 36, ikonknappar 36); rundknappar 48 px; greppremsa 30 px hög. Kartans egna knappar ändras inte utan att Filip säger till.
 - **Do** ge statusraden, bakgrunden och toningarna samma nattvatten.
 - **Do** håll småtexten i rutorna läsbar i sol: minst 11 px (faktarutornas rubriker 11, rutornas små rubriker 11,5). Kartans egen skala och zoomtext är undantag.
 - **Do** låt kort över kartan (vädret) stängas med ett tryck på kartan – men inte när kartan dras.

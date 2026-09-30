@@ -122,7 +122,8 @@
   }
   function anCatchControls(){
     return '<div class="anSeg" id="anCView">' + [['area', 'Tänt'], ['grad', 'Skala']].map(function(x){ return '<button type="button" data-cv="' + x[0] + '" class="' + (anSet.cView === x[0] ? 'on' : '') + '">' + x[1] + '</button>'; }).join('') + '</div>' +
-      '<div class="anLbl2">Vad som jämförs <span style="opacity:.8">(● = hur mycket det pekar ut arten här)</span></div>' +
+      '<div class="anLbl2">Vad som jämförs</div>' +
+      '<div class="anNote"><b>Vad som jämförs:</b> slå av det du inte vill jämföra. ●●● = hur mycket värdet ensamt pekar ut arten här.</div>' +
       '<div class="anFactors" id="anCF">' + AN_CF.map(function(x){ return '<button type="button" data-cf="' + x[0] + '" class="' + (anSet.cF[x[0]] ? 'on' : '') + '">' + x[1] + ' <span class="anDots"></span></button>'; }).join('') + '</div>' +
       (anSet.cView === 'grad' ? '' : anRangeRow('anCCov', 'Typiskt', 5, 9, 1, anSet.cCov, function(v){ return v + ' av 10'; }) +
       '<div class="anNote">Hur många av fångsterna det tända ska rymma. <b>Lägre</b> = bara de allra mest typiska ställena – udda fångster räknas bort, mindre yta. <b>Högre</b> = fler fångster får plats, större yta.</div>');

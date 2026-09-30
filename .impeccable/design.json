@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-30T13:33:50Z",
+  "generatedAt": "2026-09-30T15:26:09Z",
   "title": "Design System: FF Map",
   "extensions": {
     "colorMeta": {
@@ -537,7 +537,7 @@
       "**Do** använd bärnsten (#E8A33D) för exakt det som är valt eller på, och sjökortsblå text på den.",
       "**Do** öppna allt nytt som en bottenruta med greppremsa, ✕ och blå glöd när den dras – och lägg nya rutor i glöd- och greppreglerna.",
       "**Do** rita linjer och kanter på kartan kantutjämnade och aldrig tunnare än en ritad punkt (se lä och Kartanalys).",
-      "**Do** håll tryckytor stora nog för blöta fingrar: i rutorna chips/piller minst 40 px, kategorirader 42 px, knapprader 46 px; rundknappar 48 px; greppremsa 30 px hög. Kartans egna knappar ändras inte utan att Filip säger till.",
+      "**Do** håll tryckytor stora nog för blöta fingrar: i rutorna chips/piller minst 40 px, kategorirader 42 px, knapprader 46 px (Kartanalys och Heatmap: chips 34, kategorier 36, ikonknappar 36); rundknappar 48 px; greppremsa 30 px hög. Kartans egna knappar ändras inte utan att Filip säger till.",
       "**Do** ge statusraden, bakgrunden och toningarna samma nattvatten.",
       "**Do** håll småtexten i rutorna läsbar i sol: minst 11 px (faktarutornas rubriker 11, rutornas små rubriker 11,5). Kartans egen skala och zoomtext är undantag.",
       "**Do** låt kort över kartan (vädret) stängas med ett tryck på kartan – men inte när kartan dras.",

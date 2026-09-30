@@ -66,28 +66,30 @@
   </div>
   <div id="anPanel" role="dialog" aria-label="Kartanalys">
     <div class="grab"><button type="button" id="anClose" class="gripX" aria-label="Stäng">✕</button></div>
-    <div class="anSub" style="margin-top:0">Kartanalys · hitta ställen</div>
+    <div class="pnHead"><div class="pnResCol"><div id="anResult" class="pnRes"></div></div>
+      <button type="button" class="hdBtn pnInfoBtn" aria-label="Förklaring" aria-pressed="false" title="Förklaring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6M12 7.5v.5"></path></svg></button>
+      <button type="button" id="anReset" class="hdBtn rsBtn" aria-label="Återställ" title="Återställ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.3-5.6"></path><path d="M4 4v4.5h4.5"></path></svg></button>
+      <button type="button" id="anClear" class="hdBtn pwBtn" aria-label="Stäng av kartanalys" title="Stäng av kartanalys" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 3v8"></path><path d="M6.6 6.6a7.5 7.5 0 1 0 10.8 0"></path></svg></button></div>
+    <div class="pnInfo" hidden></div>
     <div class="anSeg" id="anCatSeg"><button type="button" data-cat="map">Kartdata</button><button type="button" data-cat="rule">Tumregler</button><button type="button" data-cat="data">Fångster</button><button type="button" data-cat="similar">Liknande</button></div>
     <div class="anChips" id="anChips"></div>
     <div class="anChips" id="anPresets"></div>
     <div class="anChips" id="anDataChips"></div>
     <div id="anControls"></div>
-    <div id="anResult"></div>
-    <div class="anChips anBottom"><button type="button" id="anClear" class="anClr" disabled>✕ Stäng av kartanalys</button><button type="button" id="anReset" class="rsBtn"><span class="rsIc">↺</span> <span class="rsTx">Återställ</span></button></div>
+    <div id="anListBox"></div>
   </div>
   <div id="undoToast" role="status"><span id="undoTxt"></span><svg viewBox="0 0 26 26" width="26" height="26" aria-hidden="true"><circle cx="13" cy="13" r="10" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="3"></circle><circle cx="13" cy="13" r="10" fill="none" stroke="#E8A33D" stroke-width="3" stroke-dasharray="63" transform="rotate(-90 13 13)"></circle></svg><button type="button" id="undoBtn">Ångra</button></div>
   <div id="hmPanel" role="dialog" aria-label="Heatmap">
     <div class="grab"><button type="button" id="hmClose" class="gripX" aria-label="Stäng">✕</button></div>
-    <div class="anSub" style="margin-top:0">Heatmap · fångster</div>
+    <div class="pnHead"><div class="pnResCol"><div id="hmResult" class="pnRes"></div><div id="hmLegend"></div></div>
+      <button type="button" class="hdBtn pnInfoBtn" aria-label="Förklaring" aria-pressed="false" title="Förklaring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6M12 7.5v.5"></path></svg></button>
+      <button type="button" id="hmReset" class="hdBtn rsBtn" aria-label="Återställ" title="Återställ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.3-5.6"></path><path d="M4 4v4.5h4.5"></path></svg></button>
+      <button type="button" id="hmOff" class="hdBtn pwBtn on" aria-label="Stäng av heatmap" title="Stäng av heatmap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 3v8"></path><path d="M6.6 6.6a7.5 7.5 0 1 0 10.8 0"></path></svg></button></div>
+    <div class="pnInfo" hidden></div>
     <div class="anSeg" id="hmStyleSeg"><button type="button" data-s="heat">Värme</button><button type="button" data-s="species">Per art</button><button type="button" data-s="hex">Rutor</button><button type="button" data-s="dots">Prickar</button></div>
-    <div id="hmLegend"></div>
-    <div class="anSub" id="hmSpHead">Art</div>
     <div class="anChips" id="hmSp"></div>
-    <div class="anSub">Tävling</div>
     <div class="anChips" id="hmComp"></div>
     <div id="hmCtl"></div>
-    <div id="hmResult"></div>
-    <div class="anChips anBottom"><button type="button" id="hmOff" class="anClr">✕ Stäng av heatmap</button><button type="button" id="hmReset" class="rsBtn"><span class="rsIc">↺</span> <span class="rsTx">Återställ</span></button></div>
   </div>
   <div id="hmCard" role="dialog" aria-label="Fångst"><div class="grab"><button type="button" id="hmCardClose" class="gripX" aria-label="Stäng">✕</button></div>
     <div id="hmCardKick"></div><div id="hmCardTitle"></div>

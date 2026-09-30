@@ -236,7 +236,7 @@ with sync_playwright() as p:
     hs = pg.evaluate("(() => ['.typeSeg button', '.sheetActs button'].map(s => document.querySelector(s).getBoundingClientRect().height))()")
     pg.click('#wpCancel'); pg.wait_for_timeout(300); pg.click('#anBtn'); pg.wait_for_timeout(400)
     hs += pg.evaluate("(() => ['#anCatSeg button', '#anChips button', '#anClear'].map(s => document.querySelector(s).getBoundingClientRect().height))()")
-    check('panels: type pills >= 40, action row >= 46, category row >= 42, chips >= 40 px', hs[0] >= 40 and hs[1] >= 46 and hs[2] >= 42 and hs[3] >= 40 and hs[4] >= 40, hs)
+    check('panels: type pills >= 40, action row >= 46; Kartanalys/Heatmap a bit lower (Filip): categories >= 36, chips >= 34, top-row buttons >= 36 px', hs[0] >= 40 and hs[1] >= 46 and hs[2] >= 36 and hs[3] >= 34 and hs[4] >= 36, hs)
     check('...the map controls unchanged (menu 40 px)', pg.evaluate("document.getElementById('menuBtn').getBoundingClientRect().height") == 40)
     check('no page errors', not errs, errs)
     b.close()

@@ -463,14 +463,16 @@
     document.getElementById('anDataChips').hidden = cat !== 'data';
     document.getElementById('anReset').disabled = anIsDefault();
     Array.prototype.forEach.call(document.querySelectorAll('#anChips button[data-m], #anPresets button[data-m], #anDataChips button[data-m]'), function(b){ b.classList.toggle('on', b.getAttribute('data-m') === m); });
-    var R = anRes, res = document.getElementById('anResult');
+    var R = anRes, res = document.getElementById('anResult'), lst = document.getElementById('anListBox');
+    lst.innerHTML = '';
     if (!m) res.innerHTML = { map: 'Välj vad du vill hitta på kartan. Det som matchar lyser, resten tonas ner.', rule: 'Tumregler från vanliga fiskeråd – inte fångstdata.',
       data: 'Var arten liknar platserna där den togs i tävlingarna.', similar: 'Välj en fiskeplats att jämföra med.' }[cat] || '';
     else if (!R) res.innerHTML = 'Djupdatan laddas…';
     else if (R.wait) res.innerHTML = 'Hämtar bottendata…';
     else {
-      res.innerHTML = R.text + (R.note ? '<span class="note">' + R.note + '</span>' : '') + (!anShow ? '<span class="note">(Dold – slå på Kartanalys i Filter.)</span>' : '') +
-        (R.list ? '<div class="anList">' + (R.list.length ? R.list.map(function(it){
+      // (the top row: the result; its explanations are behind ⓘ; the Liknande list stays in the panel)
+      res.innerHTML = R.text + (R.note ? '<span class="note">' + R.note + '</span>' : '') + (!anShow ? '<span class="pnHid"> · Dold – slå på Kartanalys i Filter</span>' : '');
+      lst.innerHTML = (R.list ? '<div class="anList">' + (R.list.length ? R.list.map(function(it){
           return '<div class="li"><span class="n">' + it.n + '</span>' + fmtDepth(it.dep) + ' m · lutning ' + Math.round(it.slope) + ' %' +
             '<button type="button" data-go="' + it.n + '">' + (it.dm != null ? fmtMeters(it.dm) + ' · ' : '') + 'Åk hit ›</button></div>';
         }).join('') : '<div class="li">Inga tydliga träffar.</div>') + '</div>' : '');
@@ -479,6 +481,7 @@
       return '<div class="anLbl ' + l.cls + '" data-i="' + l.i + '">' + escHtml(l.txt) + '</div>';
     }).join('');
     anControls();
+    pnInfo(anPanel);
     anView = null; anDraw();
   }
   // a slider with one handle: label, the bar, the value
@@ -638,14 +641,37 @@
     anExtraRef = null; anSave(); anCtlMode = '#'; anCompute();
     resetDone(this);
   });
-  // "Återställ" (Kartanalys, Heatmap) says it's done: a green "✓ Återställt" for a moment (the tick turns in),
-  // then the usual grey "↺ Återställ" (nothing left to reset)
+  // "↺ Återställ" (Kartanalys, Heatmap) says it's done: green with a tick for a moment (it turns in),
+  // then the usual grey ↺ (nothing left to reset)
+  var RS_TICK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>';
   function resetDone(btn){
-    var ic = btn.querySelector('.rsIc'), tx = btn.querySelector('.rsTx');
+    if (!btn._rsIc) btn._rsIc = btn.innerHTML;
     clearTimeout(btn._rsT); btn.classList.remove('rsDone'); void btn.offsetWidth;
-    btn.classList.add('rsDone'); ic.textContent = '✓'; tx.textContent = 'Återställt';
-    btn._rsT = setTimeout(function(){ btn.classList.remove('rsDone'); ic.textContent = '↺'; tx.textContent = 'Återställ'; }, 1600);
+    btn.classList.add('rsDone'); btn.innerHTML = RS_TICK; btn.setAttribute('aria-label', 'Återställt');
+    btn._rsT = setTimeout(function(){ btn.classList.remove('rsDone'); btn.innerHTML = btn._rsIc; btn.setAttribute('aria-label', 'Återställ'); }, 1600);
   }
+  // ⓘ in the top row (Kartanalys, Heatmap): the explanations -- kept out of the panel itself -- in a box under
+  // it: the notes on the result + the controls' notes. Open or not is remembered on the phone (closed at first).
+  var PN_INFO_KEY = 'ffmap_panel_info_v1', pnInfoOn = false;
+  try { pnInfoOn = localStorage.getItem(PN_INFO_KEY) === '1'; } catch(e){}
+  function pnInfo(P){
+    var box = P.querySelector('.pnInfo'), btn = P.querySelector('.pnInfoBtn'), res = P.querySelector('.pnRes'), parts = [];
+    if (!box) return;
+    if (pnInfoOn){
+      if (res && res.scrollHeight > res.clientHeight + 2){ var c = res.cloneNode(true); Array.prototype.forEach.call(c.querySelectorAll('.note'), function(n){ n.remove(); }); parts.push(c.innerHTML); }
+      Array.prototype.forEach.call(P.querySelectorAll('.pnRes .note, #anControls .anNote'), function(n){ if (n.textContent.trim()) parts.push(n.innerHTML); });
+      box.innerHTML = parts.length ? parts.map(function(t){ return '<p>' + t + '</p>'; }).join('') : '<p>Ingen förklaring till det här.</p>';
+    }
+    box.hidden = !pnInfoOn;
+    btn.classList.toggle('on', pnInfoOn); btn.setAttribute('aria-pressed', pnInfoOn ? 'true' : 'false');
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('.pnInfoBtn'), function(b){
+    b.addEventListener('click', function(e){
+      e.stopPropagation(); pnInfoOn = !pnInfoOn;
+      try { localStorage.setItem(PN_INFO_KEY, pnInfoOn ? '1' : '0'); } catch(err){}
+      pnInfo(anPanel); pnInfo(hmPanel);
+    });
+  });
   anLabelsEl.addEventListener('pointerdown', function(e){ e.stopPropagation(); if (e.target.closest && e.target.closest('.anLbl')) mapPointerDown(e, true); });
   anLabelsEl.addEventListener('click', function(e){
     var l = e.target.closest ? e.target.closest('.anLbl') : null; if (!l) return;

@@ -19,7 +19,7 @@
   #anPanel{
     position:absolute;left:0;right:0;bottom:0;z-index:26;background:var(--navy);
     border-top:1px solid rgba(255,255,255,.14);border-radius:18px 18px 0 0;
-    padding:8px 14px calc(env(safe-area-inset-bottom,0px) + 16px);box-shadow:0 -10px 30px rgba(0,0,0,.45);
+    padding:8px 14px calc(env(safe-area-inset-bottom,0px) + 10px);box-shadow:0 -10px 30px rgba(0,0,0,.45);
     transform:translateY(105%);transition:transform .25s ease;max-height:62vh;overflow-y:auto;
   }
   #anPanel.show{transform:none;}
@@ -33,9 +33,6 @@
   .anRange label{flex:0 0 58px;}
   .anRange input[type=range]{flex:1;accent-color:var(--amber);height:26px;}
   .anRange output{flex:0 0 48px;text-align:right;font-weight:700;color:var(--amber);}
-  #anResult{margin-top:9px;font-size:13px;color:#dbe4e7;line-height:1.4;}
-  #anResult b{color:var(--amber);}
-  #anResult .note{display:block;color:var(--text-muted);font-size:11.5px;margin-top:3px;}
   .anList{margin-top:7px;display:flex;flex-direction:column;gap:5px;}
   .anList .li{display:flex;align-items:center;gap:9px;background:rgba(255,255,255,.05);border-radius:10px;padding:6px 9px;font-size:13px;color:#dbe4e7;}
   .anList .n{width:20px;height:20px;border-radius:50%;background:#ff50a0;color:#fff;font-weight:700;font-size:11.5px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
@@ -77,19 +74,50 @@
     animation:simRing 2s ease-out infinite;box-sizing:border-box;}
   .anLbl.simRef::after{animation-delay:1s;}
   @keyframes simRing{0%{transform:scale(.25);opacity:1;}100%{transform:scale(1.6);opacity:0;}}
-  .anBottom{margin-top:12px;}
   #anCatSeg{margin-top:6px;}
   #anCatSeg button.has{box-shadow:inset 0 -2px 0 var(--amber);}      /* (what's on is in this category) */
   .anSep{width:1.5px;align-self:stretch;background:rgba(255,255,255,.3);border-radius:1px;margin:3px 3px;}
-  .anChips .anClr{position:relative;overflow:hidden;background:rgba(232,163,61,.16);border:1.5px solid var(--amber);color:#fff;font-weight:700;}
-  .anChips .anClr::after{content:'';position:absolute;top:0;bottom:0;left:-60%;width:50%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.45),transparent);animation:clrSweep 2.6s ease-in-out infinite;}
-  @keyframes clrSweep{0%{left:-60%;}55%,100%{left:120%;}}
-  .anChips .anClr:disabled{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);color:rgba(183,196,201,.4);font-weight:400;cursor:default;}
-  .anChips .anClr:disabled::after{display:none;}
-  @media (prefers-reduced-motion:reduce){ .anChips .anClr::after{animation:none;display:none;} }
-  /* "Återställ" done: green "✓ Återställt" for a moment, the tick turns in (resetDone) */
-  .rsIc{display:inline-block;}
-  .anChips .rsBtn.rsDone{background:rgba(127,216,138,.12);border-color:rgba(127,216,138,.6);color:#7fd88a;font-weight:700;}
-  .rsDone .rsIc{animation:rsTick .45s cubic-bezier(.16,1,.3,1);}
+  /* ---- the panels' top row (Kartanalys, Heatmap): what it shows now (2 lines at most) + ⓘ ↺ ⏻; ✕ in the grip ---- */
+  .pnHead{display:flex;align-items:center;gap:6px;min-height:40px;margin:-2px 0 2px;}
+  .pnResCol{flex:1 1 auto;min-width:0;}
+  .pnRes{font-size:13px;line-height:1.3;color:#dbe4e7;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;}
+  .pnRes b{color:var(--amber);}
+  .pnRes .note{display:none;}                                           /* (behind ⓘ) */
+  .pnHid{color:#ff8a80;}
+  .hdBtn{flex:0 0 auto;width:36px;height:36px;border-radius:11px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);
+    color:var(--offwhite);display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+  .hdBtn svg{width:18px;height:18px;display:block;}
+  .hdBtn:active{transform:scale(.92);}
+  .hdBtn:disabled{opacity:.35;cursor:default;transform:none;}
+  .hdBtn.on{border-color:var(--amber);color:var(--amber);background:rgba(232,163,61,.14);}   /* ⓘ open / ⏻ something is on */
+  .hdBtn.pwBtn:not(:disabled){border-color:var(--amber);color:var(--amber);background:rgba(232,163,61,.14);}
+  /* ⓘ: the explanations under the top row */
+  .pnInfo{margin:2px 0 4px;padding:8px 11px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);font-size:12px;line-height:1.45;color:#c9d4d8;}
+  .pnInfo[hidden]{display:none;}
+  .pnInfo p{margin:0;} .pnInfo p + p{margin-top:5px;}
+  .pnInfo b{color:#dbe4e7;}
+  #anControls .anNote{display:none;}                                    /* (behind ⓘ) */
+  /* rows: one line each -- they scroll sideways instead of wrapping (a fade at the edge says there's more) */
+  #anPanel .anChips, #hmPanel .anChips, #anPanel .anFactors{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-top:8px;padding-right:22px;
+    -webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 26px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 26px),transparent);}
+  #anPanel .anChips::-webkit-scrollbar, #hmPanel .anChips::-webkit-scrollbar, #anPanel .anFactors::-webkit-scrollbar{display:none;}
+  #anPanel .anChips > *, #hmPanel .anChips > *, #anPanel .anFactors > *{flex:0 0 auto;}
+  .rowLbl{flex:0 0 auto;align-self:center;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);margin-right:2px;}
+  /* sliders: name + value above, the bar under -- two side by side when there are two */
+  #anControls, #hmCtl{display:grid;grid-template-columns:1fr 1fr;column-gap:14px;}
+  #anControls > *, #hmCtl > *{grid-column:1 / -1;}
+  #anControls > .anRange:has(+ .anRange), #anControls > .anRange + .anRange, #hmCtl > .anRange:has(+ .anRange), #hmCtl > .anRange + .anRange{grid-column:auto;}
+  #anControls .anRange, #hmCtl .anRange{flex-wrap:wrap;row-gap:0;margin-top:8px;}
+  #anControls .anRange label, #hmCtl .anRange label{flex:1 1 auto;}
+  #anControls .anRange output, #hmCtl .anRange output{flex:0 0 auto;}
+  #anControls .anRange input, #hmCtl .anRange input{flex:1 1 100%;order:3;height:24px;}
+  .pnRow2{display:flex;gap:8px;align-items:center;}
+  .pnRow2 .anSeg{flex:1 1 auto;} .pnRow2 .anChips{flex:0 0 auto;padding-right:0;-webkit-mask-image:none;mask-image:none;}
+  #anPanel .anSeg, #hmPanel .anSeg{margin-top:6px;}
+  #anPanel .anDual{margin-top:8px;}
+  #anListBox:empty{display:none;}
+  /* "↺ Återställ" done: green with a tick for a moment, the tick turns in (resetDone) */
+  .hdBtn.rsDone, .hdBtn.rsDone:disabled{opacity:1;border-color:rgba(127,216,138,.6);color:#7fd88a;background:rgba(127,216,138,.12);}
+  .rsDone svg{animation:rsTick .45s cubic-bezier(.16,1,.3,1);}
   @keyframes rsTick{from{transform:rotate(-270deg) scale(.5);opacity:0;}to{transform:none;opacity:1;}}
-  @media (prefers-reduced-motion:reduce){ .rsDone .rsIc{animation-name:fadeIn;} }
+  @media (prefers-reduced-motion:reduce){ .rsDone svg{animation-name:fadeIn;} }

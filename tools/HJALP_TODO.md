@@ -20,7 +20,7 @@ i avsnitt, Ångra, åskvarningen alltid + "dragit förbi", solnedgången, Täckn
 
 ## Att göra
 
-(inget just nu)
+- [ ] 2026-09-30 – Kartanalys och Heatmap tightare: resultatet + ⓘ (förklaringar) + ↺ Återställ + ⏻ Stäng av i översta raden (inte längre längst ner), valen på en rad som skrollar i sidled, lägre knappar, två reglage sida vid sida. Hjälp: Kartanalys + Heatmap (texten "Längst ner: Stäng av … Återställ" → översta raden + ⓘ) + animeringarna `analys` och `heatmap` spelas in igen. Nyhet: "Kartanalys och Heatmap tar mindre plats – förklaringarna bakom ⓘ" (BÄTTRE)
 
 <!-- mall:
 - [ ] ÅÅÅÅ-MM-DD – Vad som ändrats. Hjälp: avsnitt X (text) + animering `namn`. Nyhet: "…" (NYTT/BÄTTRE/FIXAT)

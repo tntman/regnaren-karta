@@ -124,18 +124,18 @@
     var inComp = hmAll().filter(hmInComp), cnt = { abborre: 0, gadda: 0, gos: 0 };
     inComp.forEach(function(c){ cnt[c.sp]++; });
     var dot = function(sp){ return '<span class="hmSpDot" style="background:rgb(' + HM_COL[sp] + ')"></span>'; };
-    document.getElementById('hmSpHead').textContent = st === 'species' ? 'Arter (en färg var)' : 'Art';
-    document.getElementById('hmSp').innerHTML = st === 'species'
+    // (each row: its name first, then the choices -- one line, sideways if they don't fit)
+    document.getElementById('hmSp').innerHTML = '<span class="rowLbl">' + (st === 'species' ? 'Arter' : 'Art') + '</span>' + (st === 'species'
       ? HM_SP.map(function(x){ return '<button type="button" data-spt="' + x[0] + '" class="' + (hmSet.spOn[x[0]] ? 'on' : '') + '">' + dot(x[0]) + x[1] + ' ' + cnt[x[0]] + '</button>'; }).join('')
-      : [['all', 'Alla']].concat(HM_SP).map(function(x){ return '<button type="button" data-sp="' + x[0] + '" class="' + (hmSet.sp === x[0] ? 'on' : '') + '">' + x[1] + '</button>'; }).join('');
-    document.getElementById('hmComp').innerHTML = '<button type="button" data-comp="all" class="' + (hmSet.comp === 'all' ? 'on' : '') + '">Alla</button>' +
+      : [['all', 'Alla']].concat(HM_SP).map(function(x){ return '<button type="button" data-sp="' + x[0] + '" class="' + (hmSet.sp === x[0] ? 'on' : '') + '">' + x[1] + '</button>'; }).join(''));
+    document.getElementById('hmComp').innerHTML = '<span class="rowLbl">Tävling</span><button type="button" data-comp="all" class="' + (hmSet.comp === 'all' ? 'on' : '') + '">Alla</button>' +
       comps.map(function(c){ return '<button type="button" data-comp="' + escHtml(c.id) + '" class="' + (hmSet.comp === c.id ? 'on' : '') + '">' + escHtml(hmCompName(c.id)) + ' · ' + hmDateRange(c.list) + '</button>'; }).join('');
     var rng = function(k, l, min, max, stp){ return '<div class="anRange"><label>' + l + '</label><input type="range" data-r="' + k + '" min="' + min + '" max="' + max + '" step="' + stp + '" value="' + hmSet[k] + '"><output id="hmOut_' + k + '">' + hmOutTxt(k) + '</output></div>'; };
     var tog = function(k, l){ return '<button type="button" data-t="' + k + '" class="' + (hmSet[k] ? 'on' : '') + '">' + (hmSet[k] ? '✓ ' : '') + l + '</button>'; };
     document.getElementById('hmCtl').innerHTML =
       st === 'heat' ? rng('rad', 'Radie', 20, 200, 10) + rng('str', 'Styrka', 0, 100, 5)
       : st === 'species' ? rng('rad', 'Radie', 20, 200, 10)
-      : st === 'hex' ? '<div class="anSub">Rutans storlek</div><div class="anSeg">' + [30, 60, 120].map(function(m){ return '<button type="button" data-hx="' + m + '" class="' + (hmSet.hexM === m ? 'on' : '') + '">' + m + ' m</button>'; }).join('') + '</div><div class="anChips">' + tog('cnt', 'Visa antal') + '</div>'
+      : st === 'hex' ? '<div class="pnRow2"><div class="anSeg" aria-label="Rutans storlek">' + [30, 60, 120].map(function(m){ return '<button type="button" data-hx="' + m + '" class="' + (hmSet.hexM === m ? 'on' : '') + '">' + m + ' m</button>'; }).join('') + '</div><div class="anChips">' + tog('cnt', 'Visa antal') + '</div></div>'
       : '<div class="anChips">' + tog('big', 'Större prick = större fisk') + tog('names', 'Visa namn') + '</div>';
     var res = document.getElementById('hmResult'), all = hmAll();
     if (!catchData) res.innerHTML = 'Hämtar fångster…';
@@ -144,8 +144,9 @@
       var v = hmVisible(), c2 = { abborre: 0, gadda: 0, gos: 0 }; v.forEach(function(c){ c2[c.sp]++; });
       res.innerHTML = '<b>' + v.length + ' fångster</b> i ' + escHtml(LAKE.name) + ' · ' + HM_SP.map(function(x){ return c2[x[0]] + ' ' + x[1].toLowerCase(); }).join(', ') +
         '<span class="note">' + (st === 'dots' ? 'Tryck på en prick för allt om fångsten.' : st === 'hex' ? 'Tryck på en ruta för fångsterna i den.' : 'Tryck på kartan där det är färg för fångsterna där.') + '</span>' +
-        (!hmShow ? '<span class="note">(Dold – slå på Heatmap i Filter.)</span>' : '');
+        (!hmShow ? '<span class="pnHid"> · Dold – slå på Heatmap i Filter</span>' : '');
     }
+    pnInfo(hmPanel);
   }
   function hmOutTxt(k){ return k === 'rad' ? hmSet.rad + ' m' : hmSet.str < 34 ? 'Svag' : hmSet.str < 67 ? 'Mellan' : 'Stark'; }
   hmPanel.addEventListener('pointerdown', function(e){ e.stopPropagation(); });

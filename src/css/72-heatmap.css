@@ -18,18 +18,15 @@
   .hmOpt .soDesc{display:block;}
   .hmArrow{font-size:18px;color:#FF7A1A;flex:0 0 auto;padding:0 3px;}
   #hmPanel{position:absolute;left:0;right:0;bottom:0;z-index:26;background:var(--navy);border-top:1px solid rgba(255,255,255,.14);border-radius:18px 18px 0 0;
-    padding:8px 14px calc(env(safe-area-inset-bottom,0px) + 16px);box-shadow:0 -10px 30px rgba(0,0,0,.45);transform:translateY(105%);transition:transform .25s ease;max-height:62vh;overflow-y:auto;}
+    padding:8px 14px calc(env(safe-area-inset-bottom,0px) + 10px);box-shadow:0 -10px 30px rgba(0,0,0,.45);transform:translateY(105%);transition:transform .25s ease;max-height:62vh;overflow-y:auto;}
   #hmPanel.show{transform:none;}
   #hmPanel.dragging, #hmCard.dragging{transition:none;}
   #hmPanel .grab{margin:-8px -14px 4px;top:-8px;}
   #hmPanel .anSeg{margin-top:6px;}
-  #hmLegend{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:11.5px;color:var(--text-muted);}
-  #hmLegend .bar{width:130px;height:8px;border-radius:4px;background:linear-gradient(90deg,rgba(90,20,130,.6),#be288c,#f56e3c,#ffbe46,#fff5c8);}
+  #hmLegend{display:flex;align-items:center;gap:6px;margin-top:3px;font-size:11px;color:var(--text-muted);}   /* (in the top row, under the result) */
+  #hmLegend .bar{width:80px;height:6px;border-radius:3px;background:linear-gradient(90deg,rgba(90,20,130,.6),#be288c,#f56e3c,#ffbe46,#fff5c8);}
   #hmLegend:empty{display:none;}
   .hmSpDot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:0;}
-  #hmResult{margin-top:10px;font-size:13px;color:#dbe4e7;line-height:1.4;}
-  #hmResult b{color:var(--amber);}
-  #hmResult .note{display:block;color:var(--text-muted);font-size:11.5px;margin-top:3px;}
   #hmCard{position:absolute;left:0;right:0;bottom:0;z-index:27;background:var(--navy);border-top:1px solid rgba(255,255,255,.14);border-radius:18px 18px 0 0;
     padding:8px 16px calc(env(safe-area-inset-bottom,0px) + 16px);box-shadow:0 -10px 30px rgba(0,0,0,.45);transform:translateY(105%);transition:transform .25s ease;overflow-y:auto;}
   #hmCard.show{transform:none;}

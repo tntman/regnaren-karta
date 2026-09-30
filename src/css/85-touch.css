@@ -1,8 +1,9 @@
   /* ================= wet, cold fingers: touch targets in the bottom panels =================
      (PRODUCT.md: tävlingsdagen i båten. The controls on the map itself keep their size.) */
-  .anSeg button{min-height:42px;font-size:13px;}                        /* the category / style row on top */
-  .anChips button{min-height:40px;padding:8px 13px;font-size:13px;}     /* choices, Stäng av, Återställ */
-  .anFactors button{min-height:38px;padding:7px 11px;}                  /* on/off: what is compared */
+  /* Kartanalys / Heatmap: a bit lower (Filip, 2026-09-30) so the panels leave the map room */
+  .anSeg button{min-height:36px;padding:4px 2px;font-size:13px;}        /* the category / style row on top */
+  .anChips button{min-height:34px;padding:5px 11px;font-size:12.5px;}   /* the choices */
+  .anFactors button{min-height:34px;padding:5px 10px;}                  /* on/off: what is compared */
   .typeSeg button{min-height:40px;padding:8px 13px;}                    /* a spot's type */
   .sheetActs button{min-height:46px;}                                   /* bin, Åk hit, Liknande, Spara */
   .msgCardBtns button{min-height:46px;}                                 /* a message / a catch: Åk hit … */

@@ -17,7 +17,7 @@ bottenrutan, fångstrutan, tryck på kartan), `src/css/72-heatmap.css`, HTML i `
   ("2 av 37" bland samma art), ‹ › mellan fångsterna där, **Åk hit** (lodet, heatmapen ligger kvar) och
   **Liknande** (Kartanalys Liknande med fångsten som plats: `anExtraRef` i `anSpots()`; heatmapen stängs).
 - **Inte samtidigt som Kartanalys**: heatmap på → Kartanalys-läget av; ett Kartanalys-läge valt → heatmap av.
-- Längst ner: **✕ Stäng av heatmap** och **↺ Återställ** (`HM_DEFAULTS`, grå när allt är som från start).
+- Översta raden (`.pnHead`, som Kartanalys): resultatet + teckenförklaringen (`#hmLegend`), **ⓘ** (`pnInfo`: noterna i `#hmResult .note` i en ruta), **↺ Återställ** (`HM_DEFAULTS`, grå när allt är som från start) och **⏻ Stäng av heatmap** (`#hmOff`). Art/Tävling: radens namn först (`.rowLbl`), en rad var som skrollar i sidled.
 - Sjöns kant: tunn vit linje 50 % som i Kartanalys (`hmShoreLayer`: `anField` med egen cache, `edgeW`).
 - Rutan stängd: skylten **Heatmap** under väderchipet (`#hmPill`, klass `.mapPill` som Kartanalys `#anPill`) öppnar den igen.
 - **Filter → Lager → Heatmap** (`#toggleHeatmap`) visar/döljer bara, som Kartanalys: `hmOn` = påslagen (kartlägeslistan/rutan),
