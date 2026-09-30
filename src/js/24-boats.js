@@ -58,7 +58,6 @@
           });
           boatsLayer.appendChild(el);
         }
-        el.classList.toggle('boatPip--noName', !showBoatNames);
         el.classList.toggle('boatPip--group', c.names.length > 1);
         el.classList.toggle('boatPip--stale', (now - c.updatedAt) > BOAT_GRAY_MS);
         var nameEl = el.querySelector('.boatName');
@@ -82,24 +81,10 @@
   }
 
   var toggleBoatsEl = document.getElementById('toggleBoats');
-  var toggleNamesEl = document.getElementById('toggleNames');
-  var visRowNamesEl = document.getElementById('visRowNames');
   toggleBoatsEl.checked = showBoats;
-  toggleNamesEl.checked = showBoatNames;
-  function updateNamesRowEnabled(){
-    visRowNamesEl.classList.toggle('disabled', !showBoats);
-    toggleNamesEl.disabled = !showBoats;
-  }
-  updateNamesRowEnabled();
   toggleBoatsEl.addEventListener('change', function(){
     showBoats = toggleBoatsEl.checked;
     try { localStorage.setItem('regnaren_vis_boats_v1', showBoats ? '1' : '0'); } catch(e){}
-    updateNamesRowEnabled();
-    renderBoats();
-  });
-  toggleNamesEl.addEventListener('change', function(){
-    showBoatNames = toggleNamesEl.checked;
-    try { localStorage.setItem('regnaren_vis_boatnames_v1', showBoatNames ? '1' : '0'); } catch(e){}
     renderBoats();
   });
 

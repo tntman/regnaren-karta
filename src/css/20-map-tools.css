@@ -15,8 +15,7 @@
 
   /* ---- measuring tool ---- */
   #measureBtn{
-    position:absolute;right:76px;bottom:calc(env(safe-area-inset-bottom,0px) + 86px);
-    z-index:22;width:44px;height:44px;border-radius:50%;
+    position:absolute;z-index:22;border-radius:50%;      /* (size and place: 90-buttons.css) */
     background:var(--navy-glass);backdrop-filter:blur(6px);
     color:var(--offwhite);border:1px solid rgba(255,255,255,.16);
     display:flex;align-items:center;justify-content:center;
@@ -99,14 +98,12 @@
   .mpClose svg{width:15px;height:15px;}
 
   #addHereBtn{
-    position:absolute;right:18px;
-    bottom:calc(env(safe-area-inset-bottom,0px) + 84px);
-    z-index:22;width:50px;height:54px;padding:0;
+    position:absolute;z-index:22;padding:0;      /* (size and place: 90-buttons.css) */
     background:transparent;border:none;
     -webkit-tap-highlight-color:transparent;
   }
   #addHereBtn .addPin{
-    position:absolute;left:7px;top:4px;width:36px;height:36px;
+    position:absolute;
     transform:rotate(-45deg);
     border-radius:50% 50% 50% 0;
     background:var(--t-mark);border:3px solid #fff;
@@ -120,7 +117,6 @@
     display:flex;align-items:center;justify-content:center;
   }
   #addHereBtn .addPinHead svg{width:16px;height:16px;display:block;color:var(--ink);}
-  #addHereBtn .addPinHead .fishEye{fill:var(--offwhite);}
   #addHereBtn .addBadge{
     position:absolute;right:0;top:0;width:20px;height:20px;border-radius:50%;
     background:var(--amber);color:var(--navy);border:2px solid var(--navy);

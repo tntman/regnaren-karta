@@ -54,7 +54,7 @@ with sync_playwright() as p:
     pg.fill('#cruiseInput', '3,5')   # typed, NOT committed (still focused)
     pg.evaluate("document.getElementById('settingsBody').scrollTop = 180")
     before = pg.evaluate("""() => ({
-      boats: document.getElementById('toggleBoats').checked, namesDisabled: document.getElementById('visRowNames').classList.contains('disabled'),
+      boats: document.getElementById('toggleBoats').checked,
       types: Array.from(document.querySelectorAll('#visTypes input')).map(e => e.checked),
       op: document.querySelector('#othersOpacitySeg .active').textContent,
       size: document.querySelector('#wpSizeSeg .active').textContent,
@@ -69,7 +69,7 @@ with sync_playwright() as p:
     rotate(pg, 844, 390)
     check('page really reloaded', pg.evaluate('window.__rc') is None)
     after = pg.evaluate("""() => ({
-      boats: document.getElementById('toggleBoats').checked, namesDisabled: document.getElementById('visRowNames').classList.contains('disabled'),
+      boats: document.getElementById('toggleBoats').checked,
       types: Array.from(document.querySelectorAll('#visTypes input')).map(e => e.checked),
       op: document.querySelector('#othersOpacitySeg .active').textContent,
       size: document.querySelector('#wpSizeSeg .active').textContent,
@@ -78,7 +78,7 @@ with sync_playwright() as p:
       scroll: document.getElementById('settingsBody').scrollTop,
       speed: document.getElementById('speedVal').textContent })""")
     print('   after: ', after)
-    check('Båtar off + Namn disabled kept', after['boats'] == before['boats'] == False and after['namesDisabled'])
+    check('Båtar off kept', after['boats'] == before['boats'] == False)
     check('type filter kept', after['types'] == before['types'] == [True, False, True, True, True, True], after['types'])
     check('opacity 50 % kept', after['op'] == '50 %')
     check('filter still open', pg.is_visible('#visMore'))

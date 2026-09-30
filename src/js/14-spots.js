@@ -37,12 +37,10 @@
     if (vo !== null) showOthers = vo === '1';
   } catch(e){}
 
-  var showBoats = true, showBoatNames = true;
+  var showBoats = true;          // (the boats' names are always shown -- no "Namn" switch)
   try {
     var sb = localStorage.getItem('regnaren_vis_boats_v1');
-    var sn = localStorage.getItem('regnaren_vis_boatnames_v1');
     if (sb !== null) showBoats = sb === '1';
-    // ("Namn" is no longer in Filter -- the names are always shown)
   } catch(e){}
   var boatsLayer = document.getElementById('boatsLayer');
   var boatPositions = {}; // uid -> {lat, lon, name, uid, updatedAt}

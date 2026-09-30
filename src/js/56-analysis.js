@@ -506,7 +506,7 @@
     var want = m + (m === 'similar' ? anSpots().length : '');
     if (anCtlMode === want){ anDualPlace(); return; }            // (don't rebuild while dragging)
     anCtlMode = want;
-    var fm = function(v){ return fmtDepth(+v) + ' m'; }, h = '';
+    var h = '';
     if (m === 'depth') h = anDualRow('depth');
     else if (m === 'steep') h = anRangeRow('anSlope', 'Lutning', 4, 30, 1, anSet.slope, function(v){ return v + ' %'; }) + anDualRow('steep');
     else if (m === 'tops') h = anRangeRow('anTopP', 'Grynnor', 0.3, 2.5, 0.1, anSet.topP, function(v){ return '≥ ' + fmtDepth(+v) + ' m'; }) +

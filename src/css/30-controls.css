@@ -38,7 +38,6 @@
     background:var(--offwhite);color:var(--ink);border:1.5px solid var(--ink);
   }
   .visSwatch svg{width:12px;height:12px;display:block;}
-  .visSwatch .fishEye{fill:var(--offwhite);}
   .visSwatch.ws-mark{background-color:var(--t-mark);}
   .visSwatch.ws-abborre{background-color:var(--t-abborre);}
   .visSwatch.ws-gadda{background-color:var(--t-gadda);}
@@ -68,9 +67,6 @@
   .visSeparator{height:1px;background:rgba(255,255,255,.14);margin:2px 1px;}
   .visSwatch--boat{display:flex;align-items:center;justify-content:center;}
   .boatSwatchDot{width:8px;height:8px;border-radius:1.5px;background:#fff;border:1.5px solid #000;transform:rotate(45deg);}
-  .visSwatch--name{font-size:9.5px;font-weight:700;}
-  #visRowNames.disabled{opacity:.45;}
-  #visRowNames.disabled .toggle{pointer-events:none;}
   /* fold-out filter under the toggles: spot types + how see-through others' spots are */
   .visMoreBtn{
     display:flex;align-items:center;gap:8px;width:100%;min-height:20px;
@@ -87,17 +83,10 @@
   /* everything lives in the fold-out (closed by default); the panel itself is just the "Filter" button */
   #visMore{display:flex;flex-direction:column;gap:10px;margin-top:2px;}
   .visCol{display:flex;flex-direction:column;gap:8px;}
-  .visSwatch--depth svg, .visSwatch--track svg, .visSwatch--wx svg{width:13px;height:13px;}
+  .visSwatch--track svg, .visSwatch--wx svg{width:13px;height:13px;}
   #visMore[hidden]{display:none;}
   #visTypes{display:flex;flex-direction:column;gap:8px;}
   .visHead{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin-top:1px;}
-  .visSeg{display:flex;gap:3px;padding:2px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;}
-  .visSeg button{
-    flex:1 1 0;min-width:0;border:none;background:transparent;color:var(--text-muted);
-    font-family:inherit;font-size:11.5px;font-weight:700;padding:5px 0;border-radius:6px;
-    white-space:nowrap;cursor:pointer;-webkit-tap-highlight-color:transparent;
-  }
-  .visSeg button.active{background:var(--amber);color:var(--navy);}
   #waypoints.othersDim .wpPin--other{opacity:.5;}
 
   #menuBtn{
@@ -250,9 +239,6 @@
   @media (max-width:420px){
     .kicker{font-size:19px;}
     #legend{width:111px;padding:5px 7px 4px;}
-    #locateBtn{width:50px;height:50px;}
-    #measureBtn{width:40px;height:40px;right:72px;bottom:calc(env(safe-area-inset-bottom,0px) + 82px);}
-    #addHereBtn{right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 80px);}
     #visPanel{padding:7px 9px;gap:6px;}
     .visLabel{font-size:11px;}
   }
@@ -260,18 +246,12 @@
   @media (orientation:landscape) and (max-height:520px){
     #visPanel{padding:7px 9px;gap:6px;}
     #visTypes{gap:6px;}
-    /* landscape: the opened filter goes in a column to the LEFT of the toggles,
-       so the panel stays short and clear of the buttons in the bottom-right corner */
     /* landscape: the two groups side by side, so the open panel stays short */
     #visMore{flex-direction:row;align-items:flex-start;gap:0;}
     #visMore .visCol{gap:6px;}
     #visMore .visCol + .visCol{margin-left:11px;padding-left:11px;border-left:1px solid rgba(255,255,255,.14);}
     #legend{bottom:calc(env(safe-area-inset-bottom,0px) + 8px);}
     #scalebar{bottom:calc(env(safe-area-inset-bottom,0px) + 50px);}
-    #locateBtn{bottom:calc(env(safe-area-inset-bottom,0px) + 8px);width:46px;height:46px;}
-    #anBtn{bottom:calc(env(safe-area-inset-bottom,0px) + 13px);width:38px;height:38px;right:68px;}
-    #addHereBtn{bottom:calc(env(safe-area-inset-bottom,0px) + 62px);}
-    #measureBtn{bottom:calc(env(safe-area-inset-bottom,0px) + 62px);width:38px;height:38px;right:68px;}
     #speedPill{left:148px;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);}
     /* landscape: along the bottom edge, in a row with the depth scale and the
        knot meter, between them and the buttons on the right -- out of the
@@ -323,4 +303,3 @@
     display:flex;align-items:center;justify-content:center;
   }
   .wpPin .pinHead svg{width:20px;height:20px;display:block;color:var(--ink);}
-  .wpPin .pinHead .fishEye{fill:var(--offwhite);}

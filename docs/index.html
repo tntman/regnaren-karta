@@ -163,7 +163,6 @@
     box-shadow:0 4px 14px rgba(0,0,0,.35);
     width:126px; /* compact: 25 % shorter than before (168px) */
   }
-  #legend .ttl{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:6px;}
   #legend .bar{
     height:7px;border-radius:4px;
     background:linear-gradient(to right,#d62728 0%,#ff7f0e 18%,#ffdd00 36%,#2ca02c 55%,#17becf 72%,#1f4fd6 87%,#0a1a5c 100%);
@@ -184,18 +183,14 @@
   #zoomLabel{font-size:10px;opacity:.85;font-variant-numeric:tabular-nums;}
   #zoomLabel b{font-weight:700;color:#fff;margin-left:3px;}
 
-  #locateBtn{
-    position:absolute;right:16px;
-    bottom:calc(env(safe-area-inset-bottom,0px) + 20px);
-    z-index:22;
-    width:54px;height:54px;border-radius:50%;
+  #locateBtn{          /* (size and place: 90-buttons.css) */
+    position:absolute;z-index:22;border-radius:50%;
     background:var(--amber);color:var(--navy);
     border:none;display:flex;align-items:center;justify-content:center;
     box-shadow:0 5px 16px rgba(0,0,0,.45);
     -webkit-tap-highlight-color:transparent;
   }
   #locateBtn:active{transform:scale(.93);}
-  #locateBtn svg{width:26px;height:26px;}
   #locateBtn.tracking{background:var(--offwhite);}
   #locateBtn:disabled{opacity:.4;}
 
@@ -221,8 +216,7 @@
 
   /* ---- measuring tool ---- */
   #measureBtn{
-    position:absolute;right:76px;bottom:calc(env(safe-area-inset-bottom,0px) + 86px);
-    z-index:22;width:44px;height:44px;border-radius:50%;
+    position:absolute;z-index:22;border-radius:50%;      /* (size and place: 90-buttons.css) */
     background:var(--navy-glass);backdrop-filter:blur(6px);
     color:var(--offwhite);border:1px solid rgba(255,255,255,.16);
     display:flex;align-items:center;justify-content:center;
@@ -305,14 +299,12 @@
   .mpClose svg{width:15px;height:15px;}
 
   #addHereBtn{
-    position:absolute;right:18px;
-    bottom:calc(env(safe-area-inset-bottom,0px) + 84px);
-    z-index:22;width:50px;height:54px;padding:0;
+    position:absolute;z-index:22;padding:0;      /* (size and place: 90-buttons.css) */
     background:transparent;border:none;
     -webkit-tap-highlight-color:transparent;
   }
   #addHereBtn .addPin{
-    position:absolute;left:7px;top:4px;width:36px;height:36px;
+    position:absolute;
     transform:rotate(-45deg);
     border-radius:50% 50% 50% 0;
     background:var(--t-mark);border:3px solid #fff;
@@ -326,7 +318,6 @@
     display:flex;align-items:center;justify-content:center;
   }
   #addHereBtn .addPinHead svg{width:16px;height:16px;display:block;color:var(--ink);}
-  #addHereBtn .addPinHead .fishEye{fill:var(--offwhite);}
   #addHereBtn .addBadge{
     position:absolute;right:0;top:0;width:20px;height:20px;border-radius:50%;
     background:var(--amber);color:var(--navy);border:2px solid var(--navy);
@@ -379,7 +370,6 @@
     background:var(--offwhite);color:var(--ink);border:1.5px solid var(--ink);
   }
   .visSwatch svg{width:12px;height:12px;display:block;}
-  .visSwatch .fishEye{fill:var(--offwhite);}
   .visSwatch.ws-mark{background-color:var(--t-mark);}
   .visSwatch.ws-abborre{background-color:var(--t-abborre);}
   .visSwatch.ws-gadda{background-color:var(--t-gadda);}
@@ -409,9 +399,6 @@
   .visSeparator{height:1px;background:rgba(255,255,255,.14);margin:2px 1px;}
   .visSwatch--boat{display:flex;align-items:center;justify-content:center;}
   .boatSwatchDot{width:8px;height:8px;border-radius:1.5px;background:#fff;border:1.5px solid #000;transform:rotate(45deg);}
-  .visSwatch--name{font-size:9.5px;font-weight:700;}
-  #visRowNames.disabled{opacity:.45;}
-  #visRowNames.disabled .toggle{pointer-events:none;}
   /* fold-out filter under the toggles: spot types + how see-through others' spots are */
   .visMoreBtn{
     display:flex;align-items:center;gap:8px;width:100%;min-height:20px;
@@ -428,17 +415,10 @@
   /* everything lives in the fold-out (closed by default); the panel itself is just the "Filter" button */
   #visMore{display:flex;flex-direction:column;gap:10px;margin-top:2px;}
   .visCol{display:flex;flex-direction:column;gap:8px;}
-  .visSwatch--depth svg, .visSwatch--track svg, .visSwatch--wx svg{width:13px;height:13px;}
+  .visSwatch--track svg, .visSwatch--wx svg{width:13px;height:13px;}
   #visMore[hidden]{display:none;}
   #visTypes{display:flex;flex-direction:column;gap:8px;}
   .visHead{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin-top:1px;}
-  .visSeg{display:flex;gap:3px;padding:2px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;}
-  .visSeg button{
-    flex:1 1 0;min-width:0;border:none;background:transparent;color:var(--text-muted);
-    font-family:inherit;font-size:11.5px;font-weight:700;padding:5px 0;border-radius:6px;
-    white-space:nowrap;cursor:pointer;-webkit-tap-highlight-color:transparent;
-  }
-  .visSeg button.active{background:var(--amber);color:var(--navy);}
   #waypoints.othersDim .wpPin--other{opacity:.5;}
 
   #menuBtn{
@@ -591,9 +571,6 @@
   @media (max-width:420px){
     .kicker{font-size:19px;}
     #legend{width:111px;padding:5px 7px 4px;}
-    #locateBtn{width:50px;height:50px;}
-    #measureBtn{width:40px;height:40px;right:72px;bottom:calc(env(safe-area-inset-bottom,0px) + 82px);}
-    #addHereBtn{right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 80px);}
     #visPanel{padding:7px 9px;gap:6px;}
     .visLabel{font-size:11px;}
   }
@@ -601,18 +578,12 @@
   @media (orientation:landscape) and (max-height:520px){
     #visPanel{padding:7px 9px;gap:6px;}
     #visTypes{gap:6px;}
-    /* landscape: the opened filter goes in a column to the LEFT of the toggles,
-       so the panel stays short and clear of the buttons in the bottom-right corner */
     /* landscape: the two groups side by side, so the open panel stays short */
     #visMore{flex-direction:row;align-items:flex-start;gap:0;}
     #visMore .visCol{gap:6px;}
     #visMore .visCol + .visCol{margin-left:11px;padding-left:11px;border-left:1px solid rgba(255,255,255,.14);}
     #legend{bottom:calc(env(safe-area-inset-bottom,0px) + 8px);}
     #scalebar{bottom:calc(env(safe-area-inset-bottom,0px) + 50px);}
-    #locateBtn{bottom:calc(env(safe-area-inset-bottom,0px) + 8px);width:46px;height:46px;}
-    #anBtn{bottom:calc(env(safe-area-inset-bottom,0px) + 13px);width:38px;height:38px;right:68px;}
-    #addHereBtn{bottom:calc(env(safe-area-inset-bottom,0px) + 62px);}
-    #measureBtn{bottom:calc(env(safe-area-inset-bottom,0px) + 62px);width:38px;height:38px;right:68px;}
     #speedPill{left:148px;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);}
     /* landscape: along the bottom edge, in a row with the depth scale and the
        knot meter, between them and the buttons on the right -- out of the
@@ -664,7 +635,6 @@
     display:flex;align-items:center;justify-content:center;
   }
   .wpPin .pinHead svg{width:20px;height:20px;display:block;color:var(--ink);}
-  .wpPin .pinHead .fishEye{fill:var(--offwhite);}
   /* type = colour of the pin: Markering (neutral, a position dot), Abborre,
      Gädda, Gös (fish). Owner = the edge: dark on your own, white on others'. */
   /* strong, saturated colours that stand out from the depth colours (the
@@ -741,7 +711,6 @@
     white-space:normal;max-width:150px;line-height:1.4;pointer-events:none;
   }
   .boatName>span{white-space:nowrap;}
-  .boatPip.boatPip--noName .boatName{display:none;}
 
   #longPressRing{
     position:absolute;left:0;top:0;width:54px;height:54px;
@@ -818,7 +787,6 @@
   .miniType, .adminTag{display:inline-block;font-size:10.5px;font-weight:700;border-radius:6px;padding:1px 7px;margin-left:6px;vertical-align:1px;color:#14181C;}
   .miniType.light{color:#fff;}
   .adminTag{background:rgba(232,163,61,.2);color:var(--amber);letter-spacing:.06em;}
-  .sheetLabel{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:6px;}
   .sheetMeta{font-size:11.5px;color:var(--text-muted);margin:-6px 0 12px;}
   #wpName:disabled{opacity:.75;}
   #wpName{
@@ -943,16 +911,14 @@
 
   /* ---- the spot sheet: what's under the spot (4 tiles + a line about the terrain) ---- */
   #wpName{font-size:17px;font-weight:700;margin-top:2px;}
-  .wpData{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:10px 0 2px;}
+  .wpData{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:10px 0 12px;}
   .wpData:empty{display:none;}
   .wpTile{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:5px 8px 6px;min-width:0;}
   .wpTile i{display:block;font-style:normal;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);}
   .wpTile b{display:block;font-size:15px;color:var(--offwhite);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;}
-  .wpTile small{display:block;font-size:10.5px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .wpTerrain{grid-column:1 / -1;font-size:12px;color:#dbe4e7;padding:1px 2px;}
   .wpTerrain b{color:var(--amber);}
   .sheetMeta b.who{color:#fff;font-weight:700;}
-  .wpData{margin-bottom:12px !important;}
   /* a finger on these may also pan the map */
   .wpPin, .wpFara, .wpBeacon, .boatPip, .msgBub, .anLbl{touch-action:none;}
   /* ---- weather: small chip under your name, tap for details ---- */
@@ -1013,7 +979,6 @@
   #ltRadarCv{width:100px;height:100px;display:block;}
   #ltRadar span{font-size:10px;color:rgba(255,255,255,.75);text-shadow:0 1px 2px rgba(0,0,0,.8);}
   .wxH .wxArrow{margin:1px auto;}
-  .wxFoot{font-size:10.5px;color:#8FA3AB;margin-top:8px;text-align:right;}
   @media (orientation:landscape) and (max-height:520px){
     #wxCard{top:calc(env(safe-area-inset-top,0px) + 10px);left:auto;right:auto;left:50%;transform:translateX(-50%);width:440px;max-height:calc(100vh - 20px);overflow-y:auto;}
     .wxGrid{grid-template-columns:repeat(4,1fr);}
@@ -1285,8 +1250,7 @@
   .anLbl.hole{border-color:#6fd6ff;}
   .anLbl.sim{border-color:#ff50a0;width:24px;height:24px;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#ff50a0;}
   #anBtn{
-    position:absolute;right:76px;bottom:calc(env(safe-area-inset-bottom,0px) + 25px);z-index:22;
-    width:44px;height:44px;border-radius:50%;
+    position:absolute;z-index:22;border-radius:50%;      /* (size and place: 90-buttons.css) */
     background:var(--navy-glass);backdrop-filter:blur(6px);color:var(--offwhite);border:1px solid rgba(255,255,255,.16);
     display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.35);-webkit-tap-highlight-color:transparent;padding:0;
   }
@@ -1307,9 +1271,9 @@
   .anChips.pre button{border-color:rgba(232,163,61,.45);}
   .anSub{margin-top:11px;font-size:10.5px;font-weight:700;letter-spacing:.08em;color:var(--text-muted);text-transform:uppercase;}
   #anControls{margin-top:6px;}
-  .anRange{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12.5px;color:#dbe4e7;}
+  .anRange{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12.5px;color:#dbe4e7;}
   .anRange label{flex:0 0 58px;}
-  .anRange input[type=range]{flex:1;accent-color:var(--amber);}
+  .anRange input[type=range]{flex:1;accent-color:var(--amber);height:26px;}
   .anRange output{flex:0 0 48px;text-align:right;font-weight:700;color:var(--amber);}
   #anResult{margin-top:9px;font-size:13px;color:#dbe4e7;line-height:1.4;}
   #anResult b{color:var(--amber);}
@@ -1321,7 +1285,6 @@
   #anRefSel{width:100%;margin-top:8px;background:rgba(255,255,255,.08);color:var(--offwhite);border:1px solid rgba(255,255,255,.18);border-radius:9px;padding:7px 8px;font:inherit;font-size:14px;}
   #anRefSel option{color:#000;}
   @media (orientation:landscape) and (max-height:520px){
-    #anBtn{width:40px;height:40px;right:72px;}
     #anPanel{left:auto;width:420px;right:0;max-height:88vh;}
   }
   /* ---- Kartanalys: the greyed-out map (a 2nd canvas desaturates what's under it), the depth-range slider ---- */
@@ -1333,8 +1296,6 @@
   .anSel{position:absolute;top:9px;height:16px;border:2.5px solid #fff;border-radius:8px;box-sizing:border-box;margin-left:-3px;padding-right:6px;box-shadow:0 0 0 1px rgba(0,0,0,.35);}
   .anKnob{position:absolute;top:4px;width:26px;height:26px;margin-left:-13px;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.55);}
   .anTicks{display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin:2px 6px 0;}
-  .anRange{margin-top:10px;}
-  .anRange input[type=range]{height:26px;}
   /* ---- Liknande: what to compare + how big an area ---- */
   .anFactors{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
   .anFactors button{font:inherit;font-size:12px;padding:5px 9px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.16);color:var(--text-muted);cursor:pointer;}
@@ -1409,7 +1370,7 @@
   @media (orientation:landscape) and (max-height:520px){ #hmPanel, #hmCard{left:auto;width:420px;right:0;max-height:88vh;} }
   /* ================= Snabbmeddelanden (quick messages) ================= */
   /* ---- quick messages: a small button at the bottom, bubbles at the boats (15 min) ---- */
-  #msgBtn{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 20px);transform:translateX(-50%);z-index:22;
+  #msgBtn{position:absolute;left:50%;transform:translateX(-50%);z-index:22;      /* (its height: 90-buttons.css) */
     width:42px;height:42px;border-radius:50%;background:var(--navy-glass);backdrop-filter:blur(6px);color:var(--offwhite);
     border:1px solid rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.35);padding:0;-webkit-tap-highlight-color:transparent;}
   #msgBtn svg{width:20px;height:20px;}
@@ -1429,7 +1390,7 @@
   .msgBub small{font-weight:400;color:#557;margin-left:4px;}
   .msgBub.mine{background:#FFE7B8;} .msgBub.mine::after{border-top-color:#FFE7B8;}
   @media (orientation:landscape) and (max-height:520px){
-    #msgBtn{width:38px;height:38px;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);}
+    #msgBtn{width:38px;height:38px;}
   }
   /* ---- quick messages: fading, the rainbow edge while new, the panel when tapped ---- */
   .msgBub{transition:opacity 1s;}
@@ -1479,15 +1440,14 @@
   #anPanel .grab::before, #msgCard .grab::before, #hmPanel .grab::before, #hmCard .grab::before{content:'';width:40px;height:5px;border-radius:3px;background:rgba(255,255,255,.3);}
   #anPanel .grab, #wpSheet .sheetGrab, #msgCard .grab, #hmPanel .grab, #hmCard .grab{touch-action:none;}
   #wpSheet{overflow-y:auto;max-height:88vh;}
-  #anPanel .grab, #msgCard .grab{position:sticky;}
   /* ================= the four buttons bottom right: one 2 x 2 grid, all the same size =================
-     (last: it sets their size/place over everything above -- also the message button's height) */
+     (the only place their size and place are set -- also the message button's height) */
   :root{--bb:48px;--bgap:12px;--bb0:calc(env(safe-area-inset-bottom,0px) + 20px);}
-  #locateBtn, #anBtn, #measureBtn, #addHereBtn{width:var(--bb) !important;height:var(--bb) !important;}
-  #locateBtn{right:16px !important;bottom:var(--bb0) !important;}
-  #anBtn{right:calc(16px + var(--bb) + var(--bgap)) !important;bottom:var(--bb0) !important;}
-  #addHereBtn{right:16px !important;bottom:calc(var(--bb0) + var(--bb) + var(--bgap)) !important;}
-  #measureBtn{right:calc(16px + var(--bb) + var(--bgap)) !important;bottom:calc(var(--bb0) + var(--bb) + var(--bgap)) !important;}
+  #locateBtn, #anBtn, #measureBtn, #addHereBtn{width:var(--bb);height:var(--bb);}
+  #locateBtn{right:16px;bottom:var(--bb0);}
+  #anBtn{right:calc(16px + var(--bb) + var(--bgap));bottom:var(--bb0);}
+  #addHereBtn{right:16px;bottom:calc(var(--bb0) + var(--bb) + var(--bgap));}
+  #measureBtn{right:calc(16px + var(--bb) + var(--bgap));bottom:calc(var(--bb0) + var(--bb) + var(--bgap));}
   #addHereBtn .addPin{left:calc(50% - (var(--bb) - 14px) / 2);top:2px;width:calc(var(--bb) - 14px);height:calc(var(--bb) - 14px);}
   #locateBtn svg{width:24px;height:24px;}
   #msgBtn{bottom:calc(var(--bb0) + 3px);}
@@ -1987,14 +1947,6 @@
         <span class="visLabel">Båtar</span>
         <span class="toggle">
           <input type="checkbox" id="toggleBoats" checked>
-          <span class="toggleTrack"><span class="toggleThumb"></span></span>
-        </span>
-      </label>
-      <label class="visRow" id="visRowNames" hidden>
-        <span class="visSwatch visSwatch--name">Aa</span>
-        <span class="visLabel">Namn</span>
-        <span class="toggle">
-          <input type="checkbox" id="toggleNames" checked>
           <span class="toggleTrack"><span class="toggleThumb"></span></span>
         </span>
       </label>
@@ -2613,7 +2565,6 @@
     });
     return best;
   }
-  function detailWanted(){ return !!detailLevel(); }
   function placeTile(el, z, c, r){
     var size = DETAIL.tile * Math.pow(2, ZOOM - z) * S * scale;   // a piece on screen (css px)
     // whole pixels + 1 px overlap: no hairline gaps between the pieces
@@ -3015,12 +2966,10 @@
     if (vo !== null) showOthers = vo === '1';
   } catch(e){}
 
-  var showBoats = true, showBoatNames = true;
+  var showBoats = true;          // (the boats' names are always shown -- no "Namn" switch)
   try {
     var sb = localStorage.getItem('regnaren_vis_boats_v1');
-    var sn = localStorage.getItem('regnaren_vis_boatnames_v1');
     if (sb !== null) showBoats = sb === '1';
-    // ("Namn" is no longer in Filter -- the names are always shown)
   } catch(e){}
   var boatsLayer = document.getElementById('boatsLayer');
   var boatPositions = {}; // uid -> {lat, lon, name, uid, updatedAt}
@@ -3720,7 +3669,6 @@
           });
           boatsLayer.appendChild(el);
         }
-        el.classList.toggle('boatPip--noName', !showBoatNames);
         el.classList.toggle('boatPip--group', c.names.length > 1);
         el.classList.toggle('boatPip--stale', (now - c.updatedAt) > BOAT_GRAY_MS);
         var nameEl = el.querySelector('.boatName');
@@ -3744,24 +3692,10 @@
   }
 
   var toggleBoatsEl = document.getElementById('toggleBoats');
-  var toggleNamesEl = document.getElementById('toggleNames');
-  var visRowNamesEl = document.getElementById('visRowNames');
   toggleBoatsEl.checked = showBoats;
-  toggleNamesEl.checked = showBoatNames;
-  function updateNamesRowEnabled(){
-    visRowNamesEl.classList.toggle('disabled', !showBoats);
-    toggleNamesEl.disabled = !showBoats;
-  }
-  updateNamesRowEnabled();
   toggleBoatsEl.addEventListener('change', function(){
     showBoats = toggleBoatsEl.checked;
     try { localStorage.setItem('regnaren_vis_boats_v1', showBoats ? '1' : '0'); } catch(e){}
-    updateNamesRowEnabled();
-    renderBoats();
-  });
-  toggleNamesEl.addEventListener('change', function(){
-    showBoatNames = toggleNamesEl.checked;
-    try { localStorage.setItem('regnaren_vis_boatnames_v1', showBoatNames ? '1' : '0'); } catch(e){}
     renderBoats();
   });
 
@@ -5050,7 +4984,6 @@
      app is just the chosen name, and the Firestore rules (not this page)
      are what actually decide who may read/write what. Only a SHA-256 hash
      of the code is stored here, never the code itself. */
-  var ADMIN_NAME_SLUG = 'filip';
   var ADMIN_PIN_HASH = '08b9a012b423837c8dfa73b63ee55c2a3f2328e1657db955e7a4ca1ceee0eaf7';
   var ADMIN_UNLOCK_KEY = 'ffmap_admin_unlock_v1';
 
@@ -7446,7 +7379,7 @@
     var want = m + (m === 'similar' ? anSpots().length : '');
     if (anCtlMode === want){ anDualPlace(); return; }            // (don't rebuild while dragging)
     anCtlMode = want;
-    var fm = function(v){ return fmtDepth(+v) + ' m'; }, h = '';
+    var h = '';
     if (m === 'depth') h = anDualRow('depth');
     else if (m === 'steep') h = anRangeRow('anSlope', 'Lutning', 4, 30, 1, anSet.slope, function(v){ return v + ' %'; }) + anDualRow('steep');
     else if (m === 'tops') h = anRangeRow('anTopP', 'Grynnor', 0.3, 2.5, 0.1, anSet.topP, function(v){ return '≥ ' + fmtDepth(+v) + ' m'; }) +

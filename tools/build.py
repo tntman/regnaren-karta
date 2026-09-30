@@ -54,10 +54,5 @@ for lk in lakes:
     need = os.path.join(out, 'lakes', lk['id'], lk['mapFile'].replace('{style}', lk['styles'][0]['id']))
     if not os.path.exists(need):
         print('WARNING: %s missing -- run tools/genesis_render.py %s' % (need, lk['id']))
-# old single-lake files from before lakes/ existed
-for f in os.listdir(out):
-    if f.startswith('map_v1_') and f.endswith('.jpg'):
-        os.remove(os.path.join(out, f))
-
 n = sum(len(fs) for _, _, fs in os.walk(os.path.join(out, 'lakes')))
 print('docs/index.html', len(html) // 1024, 'kB;', len(lakes), 'lakes:', ', '.join(l['id'] for l in lakes), '(%d files)' % n)

@@ -135,7 +135,6 @@
     box-shadow:0 4px 14px rgba(0,0,0,.35);
     width:126px; /* compact: 25 % shorter than before (168px) */
   }
-  #legend .ttl{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:6px;}
   #legend .bar{
     height:7px;border-radius:4px;
     background:linear-gradient(to right,#d62728 0%,#ff7f0e 18%,#ffdd00 36%,#2ca02c 55%,#17becf 72%,#1f4fd6 87%,#0a1a5c 100%);
@@ -156,18 +155,14 @@
   #zoomLabel{font-size:10px;opacity:.85;font-variant-numeric:tabular-nums;}
   #zoomLabel b{font-weight:700;color:#fff;margin-left:3px;}
 
-  #locateBtn{
-    position:absolute;right:16px;
-    bottom:calc(env(safe-area-inset-bottom,0px) + 20px);
-    z-index:22;
-    width:54px;height:54px;border-radius:50%;
+  #locateBtn{          /* (size and place: 90-buttons.css) */
+    position:absolute;z-index:22;border-radius:50%;
     background:var(--amber);color:var(--navy);
     border:none;display:flex;align-items:center;justify-content:center;
     box-shadow:0 5px 16px rgba(0,0,0,.45);
     -webkit-tap-highlight-color:transparent;
   }
   #locateBtn:active{transform:scale(.93);}
-  #locateBtn svg{width:26px;height:26px;}
   #locateBtn.tracking{background:var(--offwhite);}
   #locateBtn:disabled{opacity:.4;}
 

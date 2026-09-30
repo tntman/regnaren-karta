@@ -6,4 +6,3 @@
   #anPanel .grab::before, #msgCard .grab::before, #hmPanel .grab::before, #hmCard .grab::before{content:'';width:40px;height:5px;border-radius:3px;background:rgba(255,255,255,.3);}
   #anPanel .grab, #wpSheet .sheetGrab, #msgCard .grab, #hmPanel .grab, #hmCard .grab{touch-action:none;}
   #wpSheet{overflow-y:auto;max-height:88vh;}
-  #anPanel .grab, #msgCard .grab{position:sticky;}

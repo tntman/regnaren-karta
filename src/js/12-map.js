@@ -137,7 +137,6 @@
     });
     return best;
   }
-  function detailWanted(){ return !!detailLevel(); }
   function placeTile(el, z, c, r){
     var size = DETAIL.tile * Math.pow(2, ZOOM - z) * S * scale;   // a piece on screen (css px)
     // whole pixels + 1 px overlap: no hairline gaps between the pieces

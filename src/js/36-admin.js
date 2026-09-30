@@ -3,7 +3,6 @@
      app is just the chosen name, and the Firestore rules (not this page)
      are what actually decide who may read/write what. Only a SHA-256 hash
      of the code is stored here, never the code itself. */
-  var ADMIN_NAME_SLUG = 'filip';
   var ADMIN_PIN_HASH = '08b9a012b423837c8dfa73b63ee55c2a3f2328e1657db955e7a4ca1ceee0eaf7';
   var ADMIN_UNLOCK_KEY = 'ffmap_admin_unlock_v1';
 

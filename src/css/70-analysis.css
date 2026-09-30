@@ -9,8 +9,7 @@
   .anLbl.hole{border-color:#6fd6ff;}
   .anLbl.sim{border-color:#ff50a0;width:24px;height:24px;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#ff50a0;}
   #anBtn{
-    position:absolute;right:76px;bottom:calc(env(safe-area-inset-bottom,0px) + 25px);z-index:22;
-    width:44px;height:44px;border-radius:50%;
+    position:absolute;z-index:22;border-radius:50%;      /* (size and place: 90-buttons.css) */
     background:var(--navy-glass);backdrop-filter:blur(6px);color:var(--offwhite);border:1px solid rgba(255,255,255,.16);
     display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.35);-webkit-tap-highlight-color:transparent;padding:0;
   }
@@ -31,9 +30,9 @@
   .anChips.pre button{border-color:rgba(232,163,61,.45);}
   .anSub{margin-top:11px;font-size:10.5px;font-weight:700;letter-spacing:.08em;color:var(--text-muted);text-transform:uppercase;}
   #anControls{margin-top:6px;}
-  .anRange{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12.5px;color:#dbe4e7;}
+  .anRange{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12.5px;color:#dbe4e7;}
   .anRange label{flex:0 0 58px;}
-  .anRange input[type=range]{flex:1;accent-color:var(--amber);}
+  .anRange input[type=range]{flex:1;accent-color:var(--amber);height:26px;}
   .anRange output{flex:0 0 48px;text-align:right;font-weight:700;color:var(--amber);}
   #anResult{margin-top:9px;font-size:13px;color:#dbe4e7;line-height:1.4;}
   #anResult b{color:var(--amber);}
@@ -45,7 +44,6 @@
   #anRefSel{width:100%;margin-top:8px;background:rgba(255,255,255,.08);color:var(--offwhite);border:1px solid rgba(255,255,255,.18);border-radius:9px;padding:7px 8px;font:inherit;font-size:14px;}
   #anRefSel option{color:#000;}
   @media (orientation:landscape) and (max-height:520px){
-    #anBtn{width:40px;height:40px;right:72px;}
     #anPanel{left:auto;width:420px;right:0;max-height:88vh;}
   }
   /* ---- Kartanalys: the greyed-out map (a 2nd canvas desaturates what's under it), the depth-range slider ---- */
@@ -57,8 +55,6 @@
   .anSel{position:absolute;top:9px;height:16px;border:2.5px solid #fff;border-radius:8px;box-sizing:border-box;margin-left:-3px;padding-right:6px;box-shadow:0 0 0 1px rgba(0,0,0,.35);}
   .anKnob{position:absolute;top:4px;width:26px;height:26px;margin-left:-13px;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.55);}
   .anTicks{display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin:2px 6px 0;}
-  .anRange{margin-top:10px;}
-  .anRange input[type=range]{height:26px;}
   /* ---- Liknande: what to compare + how big an area ---- */
   .anFactors{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
   .anFactors button{font:inherit;font-size:12px;padding:5px 9px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.16);color:var(--text-muted);cursor:pointer;}
