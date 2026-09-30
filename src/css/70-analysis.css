@@ -87,3 +87,9 @@
   .anChips .anClr:disabled{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);color:rgba(183,196,201,.4);font-weight:400;cursor:default;}
   .anChips .anClr:disabled::after{display:none;}
   @media (prefers-reduced-motion:reduce){ .anChips .anClr::after{animation:none;display:none;} }
+  /* "Återställ" done: green "✓ Återställt" for a moment, the tick turns in (resetDone) */
+  .rsIc{display:inline-block;}
+  .anChips .rsBtn.rsDone{background:rgba(127,216,138,.12);border-color:rgba(127,216,138,.6);color:#7fd88a;font-weight:700;}
+  .rsDone .rsIc{animation:rsTick .45s cubic-bezier(.16,1,.3,1);}
+  @keyframes rsTick{from{transform:rotate(-270deg) scale(.5);opacity:0;}to{transform:none;opacity:1;}}
+  @media (prefers-reduced-motion:reduce){ .rsDone .rsIc{animation-name:fadeIn;} }

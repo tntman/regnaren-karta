@@ -636,7 +636,16 @@
   document.getElementById('anReset').addEventListener('click', function(){
     var d = JSON.parse(AN_DEFAULTS); Object.keys(d).forEach(function(k){ if (k !== 'mode' && k !== 'dim') anSet[k] = d[k]; });
     anExtraRef = null; anSave(); anCtlMode = '#'; anCompute();
+    resetDone(this);
   });
+  // "Återställ" (Kartanalys, Heatmap) says it's done: a green "✓ Återställt" for a moment (the tick turns in),
+  // then the usual grey "↺ Återställ" (nothing left to reset)
+  function resetDone(btn){
+    var ic = btn.querySelector('.rsIc'), tx = btn.querySelector('.rsTx');
+    clearTimeout(btn._rsT); btn.classList.remove('rsDone'); void btn.offsetWidth;
+    btn.classList.add('rsDone'); ic.textContent = '✓'; tx.textContent = 'Återställt';
+    btn._rsT = setTimeout(function(){ btn.classList.remove('rsDone'); ic.textContent = '↺'; tx.textContent = 'Återställ'; }, 1600);
+  }
   anLabelsEl.addEventListener('pointerdown', function(e){ e.stopPropagation(); if (e.target.closest && e.target.closest('.anLbl')) mapPointerDown(e, true); });
   anLabelsEl.addEventListener('click', function(e){
     var l = e.target.closest ? e.target.closest('.anLbl') : null; if (!l) return;

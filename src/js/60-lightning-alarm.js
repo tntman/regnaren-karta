@@ -48,15 +48,38 @@
       ltAlarmed[s.k] = 1;
       if (now - s.t > 5 * 60000) return;
       var km = haversineKm(ref.lat, ref.lon, s.lat, s.lon);
-      if (km <= ltAlarm.km && (!hit || km < hit.km)) hit = { km: km, br: ltBearing(ref, s), age: (now - s.t) / 60000 };
+      if (km <= ltAlarm.km && (!hit || km < hit.km)) hit = { km: km, br: ltBearing(ref, s), age: (now - s.t) / 60000, t: s.t };
     });
-    if (!hit) return;
-    document.getElementById('ltAlarmMain').textContent = '⚡ Blixt ' + ltKm(hit.km) + ' km bort!';
-    document.getElementById('ltAlarmSub').textContent = wxCompass(hit.br) + ' · ' + (hit.age < 1 ? 'nyss' : 'för ' + Math.round(hit.age) + ' min sedan') + ' – sök skydd';
-    document.getElementById('ltAlarm').classList.add('show');
+    if (!hit){ ltCheckClear(); return; }
+    ltClearSet(Math.max(ltClearGet(), hit.t));
+    ltShowNote(false, '⚡ Blixt ' + ltKm(hit.km) + ' km bort!', wxCompass(hit.br) + ' · ' + (hit.age < 1 ? 'nyss' : 'för ' + Math.round(hit.age) + ' min sedan') + ' – sök skydd');
     window.__ltAlarms = (window.__ltAlarms || 0) + 1;
     if (ltAlarm.sound) ltBeep();
     if (ltAlarm.vib && navigator.vibrate) try { navigator.vibrate([400, 200, 400, 200, 400]); } catch(e){}
+  }
+  function ltShowNote(clear, main, sub){
+    var a = document.getElementById('ltAlarm');
+    a.classList.toggle('clear', clear);
+    document.getElementById('ltAlarmMain').textContent = main;
+    document.getElementById('ltAlarmSub').textContent = sub;
+    document.getElementById('ltAlarmOk').textContent = clear ? 'OK' : 'OK, jag har sett';
+    a.classList.add('show');
+  }
+  // "Åskan har dragit förbi": after a warning, when no strike has come within the distance for a whole
+  // FMI window (30 min, fresh data), a calm green note -- once. The newest strike near you is remembered
+  // over a reload (turning the phone); after 3 h it's just forgotten (no "all clear" the next day).
+  var LT_CLEAR_KEY = 'ffmap_lt_clear_v1';
+  function ltClearGet(){ try { return +localStorage.getItem(LT_CLEAR_KEY) || 0; } catch(e){ return 0; } }
+  function ltClearSet(t){ try { if (t) localStorage.setItem(LT_CLEAR_KEY, String(t)); else localStorage.removeItem(LT_CLEAR_KEY); } catch(e){} }
+  function ltCheckClear(){
+    var last = ltClearGet(); if (!last) return;
+    var now = Date.now(), ref = ltRef(), near = 0;
+    ltStrikes.forEach(function(s){ if (haversineKm(ref.lat, ref.lon, s.lat, s.lon) <= ltAlarm.km) near = Math.max(near, s.t); });
+    if (near > last){ ltClearSet(near); return; }
+    if (now - last > 3 * 3600000){ ltClearSet(0); return; }
+    if (near || now - last < LT_WIN_MIN * 60000) return;
+    ltClearSet(0);
+    ltShowNote(true, '✓ Åskan har dragit förbi', 'Ingen blixt inom ' + ltAlarm.km + ' km på ' + LT_WIN_MIN + ' min');
   }
   document.getElementById('ltAlarmOk').addEventListener('click', function(){ document.getElementById('ltAlarm').classList.remove('show'); });
 

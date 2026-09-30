@@ -169,7 +169,7 @@
   });
   document.getElementById('hmClose').addEventListener('click', function(){ hmShowPanel(false); });
   document.getElementById('hmOff').addEventListener('click', function(){ hmSetOn(false); });
-  document.getElementById('hmReset').addEventListener('click', function(){ hmSet = JSON.parse(HM_DEFAULTS); hmSave(); hmHeatCache = null; hmRenderPanel(); hmDraw(); });
+  document.getElementById('hmReset').addEventListener('click', function(){ hmSet = JSON.parse(HM_DEFAULTS); hmSave(); hmHeatCache = null; hmRenderPanel(); hmDraw(); resetDone(this); });
   sheetSwipe(hmPanel, function(){ hmShowPanel(false); });
 
   // ---- drawing (a screen canvas like Kartanalys: the map toned down, the catches on top) ----

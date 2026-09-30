@@ -67,6 +67,9 @@ with sync_playwright() as p:
     check('settings changed: "Återställ" next to "Stäng av heatmap"', pg.is_enabled('#hmReset') and pg.inner_text('#hmReset') == '↺ Återställ')
     pg.click('#hmReset'); pg.wait_for_timeout(300)
     check('..."Återställ": back to the start (radius 70 m), still on; then greyed out', pg.inner_text('#hmOut_rad') == '70 m' and heat(pg)['on'] and pg.is_disabled('#hmReset'), pg.inner_text('#hmOut_rad'))
+    check('...and it says so: a green "✓ Återställt" for a moment', pg.inner_text('#hmReset') == '✓ Återställt' and pg.eval_on_selector('#hmReset', 'e => e.classList.contains("rsDone")'), pg.inner_text('#hmReset'))
+    pg.wait_for_timeout(1600)
+    check('...then the usual grey "↺ Återställ"', pg.inner_text('#hmReset') == '↺ Återställ' and not pg.eval_on_selector('#hmReset', 'e => e.classList.contains("rsDone")'))
     check('the "Heatmap" pill under the weather chip', pg.is_visible('#hmPill') and pg.inner_text('#hmPill').strip() == 'Heatmap' and
           pg.evaluate("document.getElementById('hmPill').getBoundingClientRect().top > document.getElementById('wxChip').getBoundingClientRect().bottom - 1"))
     pg.screenshot(path='shot_heat_heat.png')

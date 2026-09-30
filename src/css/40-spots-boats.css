@@ -287,6 +287,9 @@
     border-radius:12px;padding:4px 10px 4px 8px;width:max-content;
     max-width:min(300px, calc(100vw - 28px));
   }
+  /* coverage back: green for 3 s, then gone */
+  #netBadge.back{border-color:rgba(127,216,138,.6);}
+  #netBadge.back .netDot{background:#35D24A;}
 
   /* ---- the spot sheet: what's under the spot (4 tiles + a line about the terrain) ---- */
   #wpName{font-size:17px;font-weight:700;margin-top:2px;}

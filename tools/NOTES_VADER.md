@@ -44,3 +44,11 @@ tryck = Inställningar vid varningen). OK-knappen: "OK, jag har sett", hela bred
 Inställningar: Av/5/10/20 km, ljud, vibration; standard 10 km. Nytt nedslag < 5 min och inom
 avståndet → `#ltAlarm` + pip (WebAudio, låses upp vid första tryck) + vibration (finns inte på
 iPhone). Varje nedslag larmar en gång.
+**"Åskan har dragit förbi":** efter en varning sparas det senaste nedslaget inom avståndet
+(`ffmap_lt_clear_v1`, överlever vridning). När en hämtning visar att inget nedslag kommit inom avståndet
+på ett helt fönster (30 min) visas samma ruta i lugnt blått med grön kant (`#ltAlarm.clear`): "✓ Åskan
+har dragit förbi · Ingen blixt inom 10 km på 30 min", knappen "OK". En gång; glöms efter 3 h.
+
+## Solnedgång
+Inom 45 min före solnedgången visar väderchipet en orange sol som går ner + minuter kvar (`.sunset`,
+räknas ner varje minut) – tänk på vägen hem. Tiden kommer från Open-Meteo (`daily.sunset`).

@@ -39,6 +39,7 @@
   .wxRainCol{display:block;min-height:26px;margin-top:3px;}
   .wxDrop{display:inline-block;flex:0 0 auto;}
   #wxChip .rain{display:inline-flex;align-items:center;gap:3px;color:#7cc4ff;}
+  #wxChip .sunset{display:inline-flex;align-items:center;gap:3px;color:#FFB23F;}   /* the sun goes down within 45 min */
   /* lightning warning under the weather chip: orange within 30 km, red under 10 km */
   #ltPill{
     display:none;align-items:center;gap:9px;margin:6px 0 0 -50px;width:max-content;max-width:calc(100vw - 150px);
@@ -60,7 +61,7 @@
     #wxCard{top:calc(env(safe-area-inset-top,0px) + 10px);left:auto;right:auto;left:50%;transform:translateX(-50%);width:440px;max-height:calc(100vh - 20px);overflow-y:auto;}
     .wxGrid{grid-template-columns:repeat(4,1fr);}
   }
-  #netBadge.show{display:inline-flex;}
+  #netBadge.show{display:flex;}   /* its own row under the weather, like the other pills */
   #netBadge .netDot{width:8px;height:8px;border-radius:50%;background:var(--danger);flex:0 0 auto;}
   #netBadge .netText{font-size:11px;line-height:1.25;color:var(--offwhite);}
   #netBadge .netText b{font-weight:700;}
@@ -213,6 +214,10 @@
   #ltAlarm small{font-size:14px;opacity:.95;}
   #ltAlarmOk{margin-top:12px;width:100%;min-height:48px;border:2px solid rgba(255,255,255,.85);border-radius:14px;background:none;color:#fff;font:inherit;font-weight:700;font-size:16px;cursor:pointer;}
   #ltAlarmOk:active{background:rgba(255,255,255,.18);}
+  /* the all clear after a warning ("Åskan har dragit förbi"): calm, sea-chart blue with a green edge */
+  #ltAlarm.clear{background:rgba(11,42,58,.97);border-color:#7fd88a;}
+  #ltAlarm.clear b{font-size:20px;color:#7fd88a;}
+  #ltAlarm.clear #ltAlarmOk{border-color:rgba(127,216,138,.7);}
   /* the warning is switched off: a pill under the weather chip, like it -- tap = Inställningar */
   #ltOffPill{display:flex;align-items:center;gap:7px;margin:6px 0 0 -50px;pointer-events:auto;width:max-content;
     background:rgba(11,42,58,.9);border:1.5px solid #ff8a80;border-radius:12px;padding:4px 11px 4px 8px;

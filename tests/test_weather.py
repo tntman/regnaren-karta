@@ -35,6 +35,8 @@ def _main():
       check('chip: falling pressure arrow', pg.query_selector('#wxChip .down') is not None)
       cr = pg.eval_on_selector('#wxChip', 'e=>e.getBoundingClientRect().left'); mr = pg.eval_on_selector('#menuBtn', 'e=>e.getBoundingClientRect().left')
       check('chip flush with the left margin (same as the menu button)', abs(cr - mr) < 1, (cr, mr))
+      left = (datetime.datetime.now().replace(hour=19, minute=8, second=0, microsecond=0) - datetime.datetime.now()).total_seconds()
+      check('sunset at 19:08: in the chip only when it is within 45 min', (pg.query_selector('#wxChip .sunset') is not None) == (0 < left <= 45 * 60), left)
       pg.evaluate("document.getAnimations().forEach(a => { try { a.pause(); a.currentTime = 700; } catch(e){} })")
       pg.screenshot(path='wx_real_chip.png')
       pg.click('#wxChip'); pg.wait_for_timeout(300)
@@ -48,6 +50,14 @@ def _main():
       check('dragging the map: the card stays', pg.is_visible('#wxCard'))
       pg.wait_for_timeout(600); pg.mouse.click(200, 600); pg.wait_for_timeout(300)
       check('a tap on the map closes it', not pg.is_visible('#wxCard'))
+      # the sun goes down in 30 min: the chip says so (in amber-orange, counting down)
+      def handle_sunset(route):
+          d = wx_json(); d['daily']['sunset'][0] = (datetime.datetime.now() + datetime.timedelta(minutes=30)).strftime('%Y-%m-%dT%H:%M')
+          route.fulfill(status=200, content_type='application/json', body=json.dumps(d), headers={'Access-Control-Allow-Origin': '*'})
+      pg.unroute('**/api.open-meteo.com/**'); ctx.route('**/api.open-meteo.com/**', handle_sunset)
+      pg.evaluate("localStorage.removeItem('ffmap_weather_v1')"); pg.reload(); pg.wait_for_timeout(1800)
+      ss = pg.query_selector('#wxChip .sunset')
+      check('sunset in 30 min: "29/30 min" with a sun going down in the chip', ss is not None and ss.inner_text().strip() in ('29 min', '30 min') and ss.query_selector('svg') is not None, ss.inner_text() if ss else None)
       # offline: the last forecast stays
       pg.unroute('**/api.open-meteo.com/**'); ctx.route('**/api.open-meteo.com/**', lambda r: r.abort())
       pg.reload(); pg.wait_for_timeout(1800)

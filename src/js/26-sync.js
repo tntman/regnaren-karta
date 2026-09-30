@@ -36,14 +36,20 @@
   var netText = document.getElementById('netText');
   var syncFromCache = false;
   var localOnlyMode = false;
-  var offlineTimer = null;
+  var offlineTimer = null, netBackT = null;
   function updateNetBadge(){
     var offline = localOnlyMode || navigator.onLine === false || (USE_FIREBASE && syncFromCache);
     if (!offline){
       if (offlineTimer){ clearTimeout(offlineTimer); offlineTimer = null; }
-      netBadge.classList.remove('show');
+      // it was showing "Offline": say it's back (green) for 3 s, then go
+      if (netBadge.classList.contains('show') && !netBadge.classList.contains('back')){
+        netText.innerHTML = '<b>Täckning igen</b> · det du sparat skickas nu';
+        netBadge.classList.add('back');
+        clearTimeout(netBackT); netBackT = setTimeout(function(){ netBadge.classList.remove('show', 'back'); }, 3000);
+      }
       return;
     }
+    clearTimeout(netBackT); netBadge.classList.remove('back');
     netText.innerHTML = localOnlyMode
       ? '<b>Offline</b> · fiskeplatser sparas bara på telefonen'
       : '<b>Offline</b> · synkas när du får täckning';

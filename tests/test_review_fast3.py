@@ -81,8 +81,12 @@ with sync_playwright() as p:
     pg.wait_for_timeout(2600)
     check('offline badge waits ~3 s, then shows', (not early) and pg.eval_on_selector('#netBadge', 'e => e.classList.contains("show")'), pg.inner_text('#netBadge'))
     pg.screenshot(path='./shot_review_offline.png')
+    wx = pg.evaluate("document.getElementById('wxChip').getBoundingClientRect().bottom"); nb = pg.evaluate("document.getElementById('netBadge').getBoundingClientRect().top")
+    check('...on its own row under the weather (like the other pills)', nb >= wx - 1, (wx, nb))
     pg.evaluate('window.__setFromCache(false)'); pg.wait_for_timeout(200)
-    check('offline badge hides when back online', not pg.eval_on_selector('#netBadge', 'e => e.classList.contains("show")'))
+    check('back online: green "Täckning igen" for a moment', pg.eval_on_selector('#netBadge', 'e => e.classList.contains("show") && e.classList.contains("back")') and 'Täckning igen' in pg.inner_text('#netBadge'), pg.inner_text('#netBadge'))
+    pg.wait_for_timeout(3100)
+    check('...then the badge hides', not pg.eval_on_selector('#netBadge', 'e => e.classList.contains("show")'))
 
     # demo banner no longer covers the legend
     pg.click('#menuBtn'); pg.click('#menuItemSettings'); pg.wait_for_timeout(200)

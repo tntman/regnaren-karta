@@ -30,7 +30,11 @@ with sync_playwright() as p:
     check('home-screen app, upright: the top fades from the status bar blue (no edge) to clear', pg.evaluate("document.documentElement.classList.contains('iosApp')") and bg.startswith('linear-gradient(rgb(6, 20, 28) 0%') and 'rgba(6, 20, 28, 0) 100%' in bg, bg)
     check('the status bar colour (theme-color) and the map background are the same blue', pg.evaluate("document.querySelector('meta[name=theme-color]').content") == '#06141C' and pg.evaluate("getComputedStyle(document.getElementById('stage')).backgroundColor") == 'rgb(6, 20, 28)')
     pg.screenshot(path='shot_standalone_top.png', clip={'x': 0, 'y': 0, 'width': 390, 'height': 260})
-    pg.set_viewport_size({'width': 844, 'height': 390}); pg.wait_for_timeout(500)
+    # (the home-screen app reloads itself 450 ms after it's turned -- wait for that, not a fixed time:
+    # reading the page in the middle of the reload was a flaky "Execution context was destroyed")
+    with pg.expect_navigation(timeout=8000):
+        pg.set_viewport_size({'width': 844, 'height': 390})
+    pg.wait_for_load_state('load'); pg.wait_for_timeout(800)
     check('...on its side (no status bar): the usual fade', 'rgba(6, 20, 28, 0.85)' in pg.evaluate("getComputedStyle(document.querySelector('header')).backgroundImage"))
     b.close()
 print('\n%d/%d passed' % (sum(results), len(results)))

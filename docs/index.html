@@ -949,6 +949,9 @@
     border-radius:12px;padding:4px 10px 4px 8px;width:max-content;
     max-width:min(300px, calc(100vw - 28px));
   }
+  /* coverage back: green for 3 s, then gone */
+  #netBadge.back{border-color:rgba(127,216,138,.6);}
+  #netBadge.back .netDot{background:#35D24A;}
 
   /* ---- the spot sheet: what's under the spot (4 tiles + a line about the terrain) ---- */
   #wpName{font-size:17px;font-weight:700;margin-top:2px;}
@@ -1003,6 +1006,7 @@
   .wxRainCol{display:block;min-height:26px;margin-top:3px;}
   .wxDrop{display:inline-block;flex:0 0 auto;}
   #wxChip .rain{display:inline-flex;align-items:center;gap:3px;color:#7cc4ff;}
+  #wxChip .sunset{display:inline-flex;align-items:center;gap:3px;color:#FFB23F;}   /* the sun goes down within 45 min */
   /* lightning warning under the weather chip: orange within 30 km, red under 10 km */
   #ltPill{
     display:none;align-items:center;gap:9px;margin:6px 0 0 -50px;width:max-content;max-width:calc(100vw - 150px);
@@ -1024,7 +1028,7 @@
     #wxCard{top:calc(env(safe-area-inset-top,0px) + 10px);left:auto;right:auto;left:50%;transform:translateX(-50%);width:440px;max-height:calc(100vh - 20px);overflow-y:auto;}
     .wxGrid{grid-template-columns:repeat(4,1fr);}
   }
-  #netBadge.show{display:inline-flex;}
+  #netBadge.show{display:flex;}   /* its own row under the weather, like the other pills */
   #netBadge .netDot{width:8px;height:8px;border-radius:50%;background:var(--danger);flex:0 0 auto;}
   #netBadge .netText{font-size:11px;line-height:1.25;color:var(--offwhite);}
   #netBadge .netText b{font-weight:700;}
@@ -1177,6 +1181,10 @@
   #ltAlarm small{font-size:14px;opacity:.95;}
   #ltAlarmOk{margin-top:12px;width:100%;min-height:48px;border:2px solid rgba(255,255,255,.85);border-radius:14px;background:none;color:#fff;font:inherit;font-weight:700;font-size:16px;cursor:pointer;}
   #ltAlarmOk:active{background:rgba(255,255,255,.18);}
+  /* the all clear after a warning ("Åskan har dragit förbi"): calm, sea-chart blue with a green edge */
+  #ltAlarm.clear{background:rgba(11,42,58,.97);border-color:#7fd88a;}
+  #ltAlarm.clear b{font-size:20px;color:#7fd88a;}
+  #ltAlarm.clear #ltAlarmOk{border-color:rgba(127,216,138,.7);}
   /* the warning is switched off: a pill under the weather chip, like it -- tap = Inställningar */
   #ltOffPill{display:flex;align-items:center;gap:7px;margin:6px 0 0 -50px;pointer-events:auto;width:max-content;
     background:rgba(11,42,58,.9);border:1.5px solid #ff8a80;border-radius:12px;padding:4px 11px 4px 8px;
@@ -1374,6 +1382,12 @@
   .anChips .anClr:disabled{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);color:rgba(183,196,201,.4);font-weight:400;cursor:default;}
   .anChips .anClr:disabled::after{display:none;}
   @media (prefers-reduced-motion:reduce){ .anChips .anClr::after{animation:none;display:none;} }
+  /* "Återställ" done: green "✓ Återställt" for a moment, the tick turns in (resetDone) */
+  .rsIc{display:inline-block;}
+  .anChips .rsBtn.rsDone{background:rgba(127,216,138,.12);border-color:rgba(127,216,138,.6);color:#7fd88a;font-weight:700;}
+  .rsDone .rsIc{animation:rsTick .45s cubic-bezier(.16,1,.3,1);}
+  @keyframes rsTick{from{transform:rotate(-270deg) scale(.5);opacity:0;}to{transform:none;opacity:1;}}
+  @media (prefers-reduced-motion:reduce){ .rsDone .rsIc{animation-name:fadeIn;} }
   /* ================= Heatmap (fångster): map-style list -> a bottom panel like Kartanalys ================= */
   #hmLayer, #hmSat{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;display:none;}
   #hmSat{mix-blend-mode:saturation;}
@@ -1996,7 +2010,7 @@
     <div class="anChips" id="anDataChips"></div>
     <div id="anControls"></div>
     <div id="anResult"></div>
-    <div class="anChips anBottom"><button type="button" id="anClear" class="anClr" disabled>✕ Stäng av kartanalys</button><button type="button" id="anReset">↺ Återställ</button></div>
+    <div class="anChips anBottom"><button type="button" id="anClear" class="anClr" disabled>✕ Stäng av kartanalys</button><button type="button" id="anReset" class="rsBtn"><span class="rsIc">↺</span> <span class="rsTx">Återställ</span></button></div>
   </div>
   <div id="undoToast" role="status"><span id="undoTxt"></span><svg viewBox="0 0 26 26" width="26" height="26" aria-hidden="true"><circle cx="13" cy="13" r="10" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="3"></circle><circle cx="13" cy="13" r="10" fill="none" stroke="#E8A33D" stroke-width="3" stroke-dasharray="63" transform="rotate(-90 13 13)"></circle></svg><button type="button" id="undoBtn">Ångra</button></div>
   <div id="hmPanel" role="dialog" aria-label="Heatmap">
@@ -2010,7 +2024,7 @@
     <div class="anChips" id="hmComp"></div>
     <div id="hmCtl"></div>
     <div id="hmResult"></div>
-    <div class="anChips anBottom"><button type="button" id="hmOff" class="anClr">✕ Stäng av heatmap</button><button type="button" id="hmReset">↺ Återställ</button></div>
+    <div class="anChips anBottom"><button type="button" id="hmOff" class="anClr">✕ Stäng av heatmap</button><button type="button" id="hmReset" class="rsBtn"><span class="rsIc">↺</span> <span class="rsTx">Återställ</span></button></div>
   </div>
   <div id="hmCard" role="dialog" aria-label="Fångst"><div class="grab"><button type="button" id="hmCardClose" class="gripX" aria-label="Stäng">✕</button></div>
     <div id="hmCardKick"></div><div id="hmCardTitle"></div>
@@ -4235,14 +4249,20 @@
   var netText = document.getElementById('netText');
   var syncFromCache = false;
   var localOnlyMode = false;
-  var offlineTimer = null;
+  var offlineTimer = null, netBackT = null;
   function updateNetBadge(){
     var offline = localOnlyMode || navigator.onLine === false || (USE_FIREBASE && syncFromCache);
     if (!offline){
       if (offlineTimer){ clearTimeout(offlineTimer); offlineTimer = null; }
-      netBadge.classList.remove('show');
+      // it was showing "Offline": say it's back (green) for 3 s, then go
+      if (netBadge.classList.contains('show') && !netBadge.classList.contains('back')){
+        netText.innerHTML = '<b>Täckning igen</b> · det du sparat skickas nu';
+        netBadge.classList.add('back');
+        clearTimeout(netBackT); netBackT = setTimeout(function(){ netBadge.classList.remove('show', 'back'); }, 3000);
+      }
       return;
     }
+    clearTimeout(netBackT); netBadge.classList.remove('back');
     netText.innerHTML = localOnlyMode
       ? '<b>Offline</b> · fiskeplatser sparas bara på telefonen'
       : '<b>Offline</b> · synkas när du får täckning';
@@ -6490,6 +6510,7 @@
   function wxIn(ms){ var m = Math.max(0, Math.round(ms / 60000)); return m < 60 ? m + ' min' : Math.floor(m / 60) + ' h ' + (m % 60) + ' min'; }
   // local "YYYY-MM-DDTHH:MM" (the API's own time zone = Swedish time) -> ms
   function wxT(s){ var p = s.split(/[-T:]/); return new Date(+p[0], +p[1] - 1, +p[2], +p[3] || 0, +p[4] || 0).getTime(); }
+  var WX_SUNSET = '<svg class="wxSunset" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5.5 16a6.5 6.5 0 0 1 13 0"></path><path d="M2 19.5h20"></path><path d="M12 4v5M9.5 6.5 12 9l2.5-2.5"></path></svg>';
   var WX_DROP = '<svg class="wxDrop" viewBox="0 0 24 24" width="11" height="11"><path d="M12 2.5C9 7 6 10.4 6 14.2a6 6 0 0 0 12 0C18 10.4 15 7 12 2.5z" fill="#7cc4ff"></path></svg>';
   // rain in the 3 hours starting at hourly index ix: total mm and highest chance
   function wxRainAt(h, ix, n){
@@ -6537,6 +6558,10 @@
       '<span class="sep"></span><span>' + wxNum(c.temperature_2m) + '°</span>';
     var soon = wxRainSoon();
     if (soon) wxChip.innerHTML += '<span class="sep"></span><span class="rain">' + WX_DROP + soon + '</span>';
+    // the sun goes down within 45 min: say so in the chip (think of the way home); it counts down every minute
+    var dd = wx.data.daily, setT = dd && dd.sunset ? wxT(dd.sunset[0]) : 0, left = setT - Date.now();
+    if (left > 0 && left <= 45 * 60000)
+      wxChip.innerHTML += '<span class="sep"></span><span class="sunset" title="Solnedgång om ' + wxIn(left) + '">' + WX_SUNSET + wxIn(left) + '</span>';
     if (!wxCard.classList.contains('show')) return;
     // pressure curve: last 12 h up to now
     var h = wx.data.hourly, now = Date.now(), pts = [];
@@ -7707,7 +7732,16 @@
   document.getElementById('anReset').addEventListener('click', function(){
     var d = JSON.parse(AN_DEFAULTS); Object.keys(d).forEach(function(k){ if (k !== 'mode' && k !== 'dim') anSet[k] = d[k]; });
     anExtraRef = null; anSave(); anCtlMode = '#'; anCompute();
+    resetDone(this);
   });
+  // "Återställ" (Kartanalys, Heatmap) says it's done: a green "✓ Återställt" for a moment (the tick turns in),
+  // then the usual grey "↺ Återställ" (nothing left to reset)
+  function resetDone(btn){
+    var ic = btn.querySelector('.rsIc'), tx = btn.querySelector('.rsTx');
+    clearTimeout(btn._rsT); btn.classList.remove('rsDone'); void btn.offsetWidth;
+    btn.classList.add('rsDone'); ic.textContent = '✓'; tx.textContent = 'Återställt';
+    btn._rsT = setTimeout(function(){ btn.classList.remove('rsDone'); ic.textContent = '↺'; tx.textContent = 'Återställ'; }, 1600);
+  }
   anLabelsEl.addEventListener('pointerdown', function(e){ e.stopPropagation(); if (e.target.closest && e.target.closest('.anLbl')) mapPointerDown(e, true); });
   anLabelsEl.addEventListener('click', function(e){
     var l = e.target.closest ? e.target.closest('.anLbl') : null; if (!l) return;
@@ -7970,15 +8004,38 @@
       ltAlarmed[s.k] = 1;
       if (now - s.t > 5 * 60000) return;
       var km = haversineKm(ref.lat, ref.lon, s.lat, s.lon);
-      if (km <= ltAlarm.km && (!hit || km < hit.km)) hit = { km: km, br: ltBearing(ref, s), age: (now - s.t) / 60000 };
+      if (km <= ltAlarm.km && (!hit || km < hit.km)) hit = { km: km, br: ltBearing(ref, s), age: (now - s.t) / 60000, t: s.t };
     });
-    if (!hit) return;
-    document.getElementById('ltAlarmMain').textContent = '⚡ Blixt ' + ltKm(hit.km) + ' km bort!';
-    document.getElementById('ltAlarmSub').textContent = wxCompass(hit.br) + ' · ' + (hit.age < 1 ? 'nyss' : 'för ' + Math.round(hit.age) + ' min sedan') + ' – sök skydd';
-    document.getElementById('ltAlarm').classList.add('show');
+    if (!hit){ ltCheckClear(); return; }
+    ltClearSet(Math.max(ltClearGet(), hit.t));
+    ltShowNote(false, '⚡ Blixt ' + ltKm(hit.km) + ' km bort!', wxCompass(hit.br) + ' · ' + (hit.age < 1 ? 'nyss' : 'för ' + Math.round(hit.age) + ' min sedan') + ' – sök skydd');
     window.__ltAlarms = (window.__ltAlarms || 0) + 1;
     if (ltAlarm.sound) ltBeep();
     if (ltAlarm.vib && navigator.vibrate) try { navigator.vibrate([400, 200, 400, 200, 400]); } catch(e){}
+  }
+  function ltShowNote(clear, main, sub){
+    var a = document.getElementById('ltAlarm');
+    a.classList.toggle('clear', clear);
+    document.getElementById('ltAlarmMain').textContent = main;
+    document.getElementById('ltAlarmSub').textContent = sub;
+    document.getElementById('ltAlarmOk').textContent = clear ? 'OK' : 'OK, jag har sett';
+    a.classList.add('show');
+  }
+  // "Åskan har dragit förbi": after a warning, when no strike has come within the distance for a whole
+  // FMI window (30 min, fresh data), a calm green note -- once. The newest strike near you is remembered
+  // over a reload (turning the phone); after 3 h it's just forgotten (no "all clear" the next day).
+  var LT_CLEAR_KEY = 'ffmap_lt_clear_v1';
+  function ltClearGet(){ try { return +localStorage.getItem(LT_CLEAR_KEY) || 0; } catch(e){ return 0; } }
+  function ltClearSet(t){ try { if (t) localStorage.setItem(LT_CLEAR_KEY, String(t)); else localStorage.removeItem(LT_CLEAR_KEY); } catch(e){} }
+  function ltCheckClear(){
+    var last = ltClearGet(); if (!last) return;
+    var now = Date.now(), ref = ltRef(), near = 0;
+    ltStrikes.forEach(function(s){ if (haversineKm(ref.lat, ref.lon, s.lat, s.lon) <= ltAlarm.km) near = Math.max(near, s.t); });
+    if (near > last){ ltClearSet(near); return; }
+    if (now - last > 3 * 3600000){ ltClearSet(0); return; }
+    if (near || now - last < LT_WIN_MIN * 60000) return;
+    ltClearSet(0);
+    ltShowNote(true, '✓ Åskan har dragit förbi', 'Ingen blixt inom ' + ltAlarm.km + ' km på ' + LT_WIN_MIN + ' min');
   }
   document.getElementById('ltAlarmOk').addEventListener('click', function(){ document.getElementById('ltAlarm').classList.remove('show'); });
 
@@ -8512,7 +8569,7 @@
   });
   document.getElementById('hmClose').addEventListener('click', function(){ hmShowPanel(false); });
   document.getElementById('hmOff').addEventListener('click', function(){ hmSetOn(false); });
-  document.getElementById('hmReset').addEventListener('click', function(){ hmSet = JSON.parse(HM_DEFAULTS); hmSave(); hmHeatCache = null; hmRenderPanel(); hmDraw(); });
+  document.getElementById('hmReset').addEventListener('click', function(){ hmSet = JSON.parse(HM_DEFAULTS); hmSave(); hmHeatCache = null; hmRenderPanel(); hmDraw(); resetDone(this); });
   sheetSwipe(hmPanel, function(){ hmShowPanel(false); });
 
   // ---- drawing (a screen canvas like Kartanalys: the map toned down, the catches on top) ----

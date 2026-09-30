@@ -26,6 +26,7 @@
   function wxIn(ms){ var m = Math.max(0, Math.round(ms / 60000)); return m < 60 ? m + ' min' : Math.floor(m / 60) + ' h ' + (m % 60) + ' min'; }
   // local "YYYY-MM-DDTHH:MM" (the API's own time zone = Swedish time) -> ms
   function wxT(s){ var p = s.split(/[-T:]/); return new Date(+p[0], +p[1] - 1, +p[2], +p[3] || 0, +p[4] || 0).getTime(); }
+  var WX_SUNSET = '<svg class="wxSunset" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5.5 16a6.5 6.5 0 0 1 13 0"></path><path d="M2 19.5h20"></path><path d="M12 4v5M9.5 6.5 12 9l2.5-2.5"></path></svg>';
   var WX_DROP = '<svg class="wxDrop" viewBox="0 0 24 24" width="11" height="11"><path d="M12 2.5C9 7 6 10.4 6 14.2a6 6 0 0 0 12 0C18 10.4 15 7 12 2.5z" fill="#7cc4ff"></path></svg>';
   // rain in the 3 hours starting at hourly index ix: total mm and highest chance
   function wxRainAt(h, ix, n){
@@ -73,6 +74,10 @@
       '<span class="sep"></span><span>' + wxNum(c.temperature_2m) + '°</span>';
     var soon = wxRainSoon();
     if (soon) wxChip.innerHTML += '<span class="sep"></span><span class="rain">' + WX_DROP + soon + '</span>';
+    // the sun goes down within 45 min: say so in the chip (think of the way home); it counts down every minute
+    var dd = wx.data.daily, setT = dd && dd.sunset ? wxT(dd.sunset[0]) : 0, left = setT - Date.now();
+    if (left > 0 && left <= 45 * 60000)
+      wxChip.innerHTML += '<span class="sep"></span><span class="sunset" title="Solnedgång om ' + wxIn(left) + '">' + WX_SUNSET + wxIn(left) + '</span>';
     if (!wxCard.classList.contains('show')) return;
     // pressure curve: last 12 h up to now
     var h = wx.data.hourly, now = Date.now(), pts = [];
