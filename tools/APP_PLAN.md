@@ -38,12 +38,29 @@ Webbversionen (GitHub Pages, `docs/`) ska fortsätta fungera från samma kod.
 
 **Fas 0 – Förbered** ✅ (2026-10-01): grenen `app`, klonad till `E:\github\ffmap-app`.
 
-**Fas 1 – Förslag och beslut (Claude)**
-1. Förslag: kartorna inpackade i appen eller hämtade från GitHub Pages?
-2. Förslag: hur offline-kartor fungerar i appen (utan service worker).
-3. Förslag: vilket plugin för bakgrunds-GPS (t.ex. @capacitor-community/background-geolocation) och hur
-   positionen skickas när appen ligger i bakgrunden.
-4. Du väljer.
+**Fas 1 – Förslag och beslut** ✅ (2026-10-01)
+1. **Kartor: mellanväg.** Inpackat i appen (~15 MB): översiktskartan (zoom 14, `map_v*_*.jpg`) för alla sjöar
+   och kartlägen, tumnaglar, djup- och bottendata. Detaljbitarna (`tiles_v*/`, zoom 15–18) hämtas från
+   GitHub Pages. Ordning: det som säger vilken kartversion som gäller – nätet först; kartbilderna – sparad
+   eller inpackad kopia först (versionen står i filnamnet, så en sparad bild blir aldrig gammal), annars nätet.
+   Bitar man tittat på sparas automatiskt (som service workern gör på webben).
+2. **Offline: filer i appens egen mapp** (Capacitor Filesystem) i stället för Cache API. Inställningar →
+   Offline ser ut och fungerar som idag (samma lista, pausa/fortsätt, ny version, Ta bort). Firebase-biblioteken
+   packas in så att appen startar utan nät. sw.js packas inte med i appen.
+3. **Bakgrunds-GPS: @capacitor-community/background-geolocation** (gratis). Android: notisen
+   "FF Map delar din position" håller GPS:en igång; iPhone: blå markering i statusraden, troligen räcker
+   "Medan appen används" (testas i Fas 4; annars "Alltid"). Punkterna går till samma `maybeBroadcastPosition`
+   (samma intervall, nära sjön, samma `positions`-post). I bakgrunden skrivs posten med ett vanligt anrop till
+   Firestores REST-API (samma inloggning och fält) eftersom SDK:ts anslutning stryps. Stilla vid ankar: pluginet
+   ställs in så att det ändå ger punkter, så båten inte blir grå. Svept bort app = delningen slutar.
+   (Valdes bort: Transistorsoft – Android-licens ~4 000 kr.)
+4. **Krokar läggs på `main`** (via "regnaren-karta"-chatten), gör inget på webben:
+   - `lakeUrl(path)` (10-core.js) – alla sjöfiler: `mapFile`/`thumbFile`, detaljbitarnas `src`, djup- och bottendata.
+   - `lakeImgError(el)` (10-core.js) – först i bildernas `onerror`; `true` = hanterat.
+   - `offStore` (18-offline.js) – `has/size/put/clear` i stället för Cache API direkt.
+   - `writeOwnPosition(data)` (24-boats.js) – själva skrivningen av den egna positionen.
+   Ingen krok behövs för vridnings-omladdningen (bara `navigator.standalone`) eller service workern (sw.js saknas i appen).
+   Appens kod: `src/js/95-native.js` (byter ut krokarna när `Capacitor.isNativePlatform()`).
 
 **Fas 2 – Android först (gratis)**
 5. Du: installera Android Studio.
