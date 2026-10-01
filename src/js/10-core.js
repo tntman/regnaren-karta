@@ -20,7 +20,7 @@
   try { localStorage.setItem(LAKE_KEY, LAKE_ID); } catch(e){}
   var LAKE = LAKES.filter(function(l){ return l.id === LAKE_ID; })[0];
   var LAKE_DIR = 'lakes/' + LAKE_ID + '/';
-  // Hooks for the app (src/js/95-native.js on the branch "app" replaces them) -- on the web they do nothing.
+  // Hooks for the app (src/js/11-native.js on the branch "app" replaces them) -- on the web they do nothing.
   // Don't remove them. lakeUrl: every lake file is loaded through it; lakeImgError: a map picture / detail
   // piece that failed -- true = the app dealt with it, skip the usual handling.
   function lakeUrl(p){ return p; }

@@ -2555,7 +2555,7 @@
   try { localStorage.setItem(LAKE_KEY, LAKE_ID); } catch(e){}
   var LAKE = LAKES.filter(function(l){ return l.id === LAKE_ID; })[0];
   var LAKE_DIR = 'lakes/' + LAKE_ID + '/';
-  // Hooks for the app (src/js/95-native.js on the branch "app" replaces them) -- on the web they do nothing.
+  // Hooks for the app (src/js/11-native.js on the branch "app" replaces them) -- on the web they do nothing.
   // Don't remove them. lakeUrl: every lake file is loaded through it; lakeImgError: a map picture / detail
   // piece that failed -- true = the app dealt with it, skip the usual handling.
   function lakeUrl(p){ return p; }
@@ -3752,7 +3752,7 @@
   var offRunning = false, offStop = false;
   document.getElementById('offTitle').textContent = 'Ladda ner ' + LAKE.name + ' för offline';
   // Where the downloaded files are kept. Here: the browser's Cache API. A hook for the app
-  // (src/js/95-native.js on the branch "app" swaps it for files on the phone) -- don't remove it.
+  // (src/js/11-native.js on the branch "app" swaps it for files on the phone) -- don't remove it.
   var offStore = {
     _c: null,
     _open: function(){ return this._c || (this._c = caches.open(OFF_CACHE)); },
@@ -4223,7 +4223,7 @@
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
   }
-  // Your own position document, merged. A hook for the app (src/js/95-native.js on the branch "app":
+  // Your own position document, merged. A hook for the app (src/js/11-native.js on the branch "app":
   // the background GPS writes through it too) -- don't remove it.
   function writeOwnPosition(data){
     try {

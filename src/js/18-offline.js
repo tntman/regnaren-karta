@@ -13,7 +13,7 @@
   var offRunning = false, offStop = false;
   document.getElementById('offTitle').textContent = 'Ladda ner ' + LAKE.name + ' för offline';
   // Where the downloaded files are kept. Here: the browser's Cache API. A hook for the app
-  // (src/js/95-native.js on the branch "app" swaps it for files on the phone) -- don't remove it.
+  // (src/js/11-native.js on the branch "app" swaps it for files on the phone) -- don't remove it.
   var offStore = {
     _c: null,
     _open: function(){ return this._c || (this._c = caches.open(OFF_CACHE)); },

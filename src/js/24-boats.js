@@ -204,7 +204,7 @@
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
   }
-  // Your own position document, merged. A hook for the app (src/js/95-native.js on the branch "app":
+  // Your own position document, merged. A hook for the app (src/js/11-native.js on the branch "app":
   // the background GPS writes through it too) -- don't remove it.
   function writeOwnPosition(data){
     try {
