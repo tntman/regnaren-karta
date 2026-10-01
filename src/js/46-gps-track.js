@@ -134,8 +134,8 @@
     document.getElementById('scaleLabel').textContent = meters >= 1000 ? (meters/1000) + ' km' : meters + ' m';
     // zoom like web maps / Genesis, and which level's picture (lines) is shown
     var L = detailLevel();
-    document.getElementById('zoomLabel').innerHTML = 'Zoom ' + currentZoom().toFixed(1).replace('.', ',') +
-      '<b>lager ' + (L ? L.z : ZOOM) + '</b>';
+    document.getElementById('zoomLabel').innerHTML = currentZoom().toFixed(1).replace('.', ',') + ' ×' +   // "15,3 × L 14" (short, Filip)
+      '<b>L ' + (L ? L.z : ZOOM) + '</b>';
   }
 
   function onFix(lat, lon, accM, speedMs, gpsHeading){

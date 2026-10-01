@@ -24,6 +24,7 @@ i avsnitt, Ångra, åskvarningen alltid + "dragit förbi", solnedgången, Täckn
 - [ ] 2026-09-30 – NY SJÖ: Sibbofjärden i menyn. Hjälp: Kartan (texten "Byt sjö i menyn ☰ (Regnaren, Sjösjön, Vågsfjärden)" → lägg till Sibbofjärden). Nyhet: "Ny sjö: <b>Sibbofjärden</b>" (NYTT)
 - [ ] 2026-10-01 – Gös är blå och Hem brun överallt (pinnar, typknappar, Filter-prickar, Kartanalys, Heatmap). Hjälp: Fiskeplatser (texten "Hem (blått hus …)" → "brunt hus") + animeringar med gös/hem (`platser`, `andra`, `filter`, `logg`, `heatmap`, `analys`). Nyhet: "Gös är blå och Hem brun" (BÄTTRE)
 - [ ] 2026-10-01 – Ny ikon för Kartanalys: karta med lupp (knappen nere till höger, skylten, Filter). Hjälp: Kartanalys (texten "förstoringsglaset nere till höger" → "kartan med luppen") + animeringar där knappen syns (spela in alla). Nyhet: "Ny ikon för Kartanalys" (BÄTTRE)
+- [ ] 2026-10-01 – Tryck på lodets ruta = sätt en markering där (ljus sveper över rutan); zoomtexten "15,3 × L 14". Hjälp: Lodet (ny rad: "tryck på rutan för att sätta en markering där") + Kartan ("Zoom 15,3 lager 15" → "15,3 × L 15") + animering `lodet`. Nyhet: "Tryck på lodets ruta för att sätta en markering där" (NYTT)
 
 <!-- mall:
 - [ ] ÅÅÅÅ-MM-DD – Vad som ändrats. Hjälp: avsnitt X (text) + animering `namn`. Nyhet: "…" (NYTT/BÄTTRE/FIXAT)

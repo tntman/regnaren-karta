@@ -75,18 +75,18 @@ with sync_playwright() as p:
         check('depth at a %g m label: %s m' % (want, got), v is not None and abs(v - want) <= 1.0, got)
 
     # ---- zoom in: sharper pieces appear, only for what's on screen
-    zf = lambda s: float(s.split()[1].replace(',', '.').replace('lager', ''))
-    lv = lambda s: int(s.split('lager ')[1])
+    zf = lambda s: float(s.split()[0].replace(',', '.'))          # "15,3 × L 14"
+    lv = lambda s: int(s.split('L ')[-1])
     rnd = lambda x: int(math.floor(x + 0.5))
     z_start = pg.inner_text('#zoomLabel')
-    check('zoom + level shown next to the scale; level = the zoom, rounded', z_start.startswith('Zoom ') and lv(z_start) == min(18, max(14, rnd(zf(z_start)))), z_start)
+    check('zoom + level shown next to the scale; level = the zoom, rounded', '×' in z_start and lv(z_start) == min(18, max(14, rnd(zf(z_start)))), z_start)
     # all the way out: the zoom-14 picture only (12-13 are never used)
     pg.mouse.move(195, 422)
     for i in range(12):
         pg.mouse.wheel(0, 400); pg.wait_for_timeout(60)
     pg.wait_for_timeout(800)
     z0 = pg.inner_text('#zoomLabel')
-    check('zoomed all the way out: lager 14, no pieces on top', z0.endswith('lager 14') and zf(z0) < 14 and pg.eval_on_selector_all('#detailLayer img', 'e=>e.length') == 0, z0)
+    check('zoomed all the way out: lager 14, no pieces on top', z0.endswith('L 14') and zf(z0) < 14 and pg.eval_on_selector_all('#detailLayer img', 'e=>e.length') == 0, z0)
     pg.mouse.move(195, 422)
     for i in range(12):
         pg.mouse.wheel(0, -400); pg.wait_for_timeout(60)

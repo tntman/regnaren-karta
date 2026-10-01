@@ -236,6 +236,13 @@
   #probe .pbWt svg{display:block;}
   #probe .pbTag{position:absolute;left:0;bottom:34px;transform:translateX(-50%);white-space:nowrap;display:flex;align-items:center;gap:7px;padding:3px 8px;
     background:rgba(11,42,58,.96);color:#F4F7F8;border:1.2px solid rgba(255,255,255,.25);border-radius:9px;box-shadow:0 4px 12px rgba(0,0,0,.5);}
+  /* the tag can be tapped: "set a spot here" -- a light sweeps across it now and then so it reads as a button */
+  #probe .pbTag{pointer-events:auto;cursor:pointer;overflow:hidden;-webkit-tap-highlight-color:transparent;}
+  #probe .pbTag::after{content:'';position:absolute;top:0;bottom:0;left:-60%;width:45%;pointer-events:none;
+    background:linear-gradient(100deg,transparent,rgba(255,255,255,.22),transparent);animation:pbSweep 3.2s ease-in-out 1s infinite;}
+  @keyframes pbSweep{0%{left:-60%;}45%,100%{left:120%;}}
+  #probe .pbTag:active{border-color:var(--amber);}
+  @media (prefers-reduced-motion:reduce){ #probe .pbTag::after{animation:none;display:none;} }
   #probe .pbD{font-weight:800;font-size:15px;line-height:1.05;}
   #probe .pbD small{font-size:10px;font-weight:700;color:#FFB23F;}
   #probe .pbDiv{width:1px;height:16px;background:rgba(255,255,255,.22);}
@@ -2652,6 +2659,18 @@
   var probeTimer = null;
   var probeEl = document.getElementById('probe');
   function cancelProbeTap(){ if (probeTimer){ clearTimeout(probeTimer); probeTimer = null; } }
+  // a tap on the lead line's tag: a spot right where the lead is ("sätt en markering" opens, like a long press);
+  // a finger that starts on it and drags pans the map, as on the pins
+  var probeTagEl = probeEl.querySelector('.pbTag');
+  probeTagEl.setAttribute('role', 'button'); probeTagEl.setAttribute('aria-label', 'Sätt en markering här');
+  probeTagEl.addEventListener('pointerdown', function(e){ e.stopPropagation(); mapPointerDown(e, true); });
+  probeTagEl.addEventListener('click', function(e){
+    e.stopPropagation();
+    if (mapDraggedJustNow() || !probe || measureMode) return;
+    var sx = originX + probe.x * scale, sy = originY + probe.y * scale;
+    setProbe(null);
+    placeWaypointAtScreen(sx, sy);
+  });
   function scheduleProbeTap(sx, sy, hadMenu){
     cancelProbeTap();
     // wait a moment: a second tap right after means double tap = zoom
@@ -6392,8 +6411,8 @@
     document.getElementById('scaleLabel').textContent = meters >= 1000 ? (meters/1000) + ' km' : meters + ' m';
     // zoom like web maps / Genesis, and which level's picture (lines) is shown
     var L = detailLevel();
-    document.getElementById('zoomLabel').innerHTML = 'Zoom ' + currentZoom().toFixed(1).replace('.', ',') +
-      '<b>lager ' + (L ? L.z : ZOOM) + '</b>';
+    document.getElementById('zoomLabel').innerHTML = currentZoom().toFixed(1).replace('.', ',') + ' ×' +   // "15,3 × L 14" (short, Filip)
+      '<b>L ' + (L ? L.z : ZOOM) + '</b>';
   }
 
   function onFix(lat, lon, accM, speedMs, gpsHeading){

@@ -44,6 +44,18 @@
   var probeTimer = null;
   var probeEl = document.getElementById('probe');
   function cancelProbeTap(){ if (probeTimer){ clearTimeout(probeTimer); probeTimer = null; } }
+  // a tap on the lead line's tag: a spot right where the lead is ("sätt en markering" opens, like a long press);
+  // a finger that starts on it and drags pans the map, as on the pins
+  var probeTagEl = probeEl.querySelector('.pbTag');
+  probeTagEl.setAttribute('role', 'button'); probeTagEl.setAttribute('aria-label', 'Sätt en markering här');
+  probeTagEl.addEventListener('pointerdown', function(e){ e.stopPropagation(); mapPointerDown(e, true); });
+  probeTagEl.addEventListener('click', function(e){
+    e.stopPropagation();
+    if (mapDraggedJustNow() || !probe || measureMode) return;
+    var sx = originX + probe.x * scale, sy = originY + probe.y * scale;
+    setProbe(null);
+    placeWaypointAtScreen(sx, sy);
+  });
   function scheduleProbeTap(sx, sy, hadMenu){
     cancelProbeTap();
     // wait a moment: a second tap right after means double tap = zoom

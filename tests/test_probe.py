@@ -69,6 +69,17 @@ with sync_playwright() as p:
     far = [(58.89509, 15.74791), (58.89762, 15.75976), (58.87496, 15.77418), (58.89172, 15.76216), (58.8956, 15.7814)]
     rs = [pg.evaluate('a => __ffGeo.route(a[0], a[1], a[2], a[3])', [ME2[0], ME2[1], la, lo]) for la, lo in far]
     check('a way by water to places all over Regnaren', all(r and r['m'] > 300 for r in rs), rs)
+    # tap the lead line's tag: a spot right there ("sätt en markering"), the lead goes
+    x, y = pg.evaluate('([a, b]) => __ffGeo.screenOf(a, b)', [58.887421, 15.775569])
+    pg.mouse.click(x, y); pg.wait_for_timeout(700)
+    if not state(pg)['show']: pg.mouse.click(x, y); pg.wait_for_timeout(700)     # (the tap removed an earlier lead)
+    check('the tag: a light sweeps across it (it can be tapped)', pg.evaluate("getComputedStyle(document.querySelector('#probe .pbTag'), '::after').animationName") == 'pbSweep')
+    n0 = pg.evaluate("document.querySelectorAll('#waypoints .wpPin').length")
+    pg.click('#probe .pbTag'); pg.wait_for_timeout(900)
+    tip = pg.evaluate("(() => { var p = Array.from(document.querySelectorAll('#waypoints .wpPin')).pop().getBoundingClientRect(); return [p.left + p.width / 2, p.bottom]; })()")
+    check('...tap it: "sätt en markering" opens, a new spot at the lead, the lead gone', pg.eval_on_selector('#wpSheet', 'e => e.classList.contains("show")') and
+          pg.evaluate("document.querySelectorAll('#waypoints .wpPin').length") == n0 + 1 and abs(tip[0] - x) < 4 and abs(tip[1] - y) < 5 and not state(pg)['show'], (tip, x, y, state(pg)))
+    pg.click('#wpCancel'); pg.wait_for_timeout(400)
     check('no page errors', not errs, errs)
     b.close()
 print('\n%d/%d passed' % (sum(results), len(results)))

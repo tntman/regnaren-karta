@@ -35,6 +35,13 @@
   #probe .pbWt svg{display:block;}
   #probe .pbTag{position:absolute;left:0;bottom:34px;transform:translateX(-50%);white-space:nowrap;display:flex;align-items:center;gap:7px;padding:3px 8px;
     background:rgba(11,42,58,.96);color:#F4F7F8;border:1.2px solid rgba(255,255,255,.25);border-radius:9px;box-shadow:0 4px 12px rgba(0,0,0,.5);}
+  /* the tag can be tapped: "set a spot here" -- a light sweeps across it now and then so it reads as a button */
+  #probe .pbTag{pointer-events:auto;cursor:pointer;overflow:hidden;-webkit-tap-highlight-color:transparent;}
+  #probe .pbTag::after{content:'';position:absolute;top:0;bottom:0;left:-60%;width:45%;pointer-events:none;
+    background:linear-gradient(100deg,transparent,rgba(255,255,255,.22),transparent);animation:pbSweep 3.2s ease-in-out 1s infinite;}
+  @keyframes pbSweep{0%{left:-60%;}45%,100%{left:120%;}}
+  #probe .pbTag:active{border-color:var(--amber);}
+  @media (prefers-reduced-motion:reduce){ #probe .pbTag::after{animation:none;display:none;} }
   #probe .pbD{font-weight:800;font-size:15px;line-height:1.05;}
   #probe .pbD small{font-size:10px;font-weight:700;color:#FFB23F;}
   #probe .pbDiv{width:1px;height:16px;background:rgba(255,255,255,.22);}
