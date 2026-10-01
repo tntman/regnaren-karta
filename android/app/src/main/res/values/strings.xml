@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">FF Map</string>
+    <string name="title_activity_main">FF Map</string>
+    <string name="package_name">se.fiskfiskarna.ffmap</string>
+    <string name="custom_url_scheme">se.fiskfiskarna.ffmap</string>
+    <!-- background GPS (@capacitor-community/background-geolocation) -->
+    <string name="capacitor_background_geolocation_notification_channel_name">Positionsdelning</string>
+    <string name="capacitor_background_geolocation_notification_icon">drawable/ic_stat_ffmap</string>
+    <string name="capacitor_background_geolocation_notification_color">#FF8A1F</string>
+</resources>

@@ -1,0 +1,10 @@
+{
+  "appId": "se.fiskfiskarna.ffmap",
+  "appName": "FF Map",
+  "webDir": "app/www",
+  "backgroundColor": "#06141C",
+  "android": {
+    "backgroundColor": "#06141C",
+    "useLegacyBridge": true
+  }
+}

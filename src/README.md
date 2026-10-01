@@ -41,6 +41,7 @@ specificitet.
 | `50-sheets.html` | platsens ruta, namnrutan, båtinfo |
 | **js/** | |
 | `10-core.js` | start på skriptet, sjöar (`LAKES`), geo-referens, `MAX_ZOOM` |
+| `11-native.js` | bara grenen `app`: appens kod (krokarna, sparade kartbitar, bakgrunds-GPS) – `tools/APP.md` |
 | `12-map.js` | panorera/zooma, lodet, zoomnivåer (detaljbitar), fingrar/mus (`mapPointerDown`) |
 | `14-spots.js` | fiskeplatser (pinnar) |
 | `16-map-settings.js` | platsstorlek, kartstil, kartlägesknappen |
@@ -77,7 +78,7 @@ specificitet.
 ## Krokar för appen (får inte tas bort)
 
 Grenen `app` (mappen `E:\github\ffmap-app`, "FF Map - app" i GitHub Desktop) gör webbappen till en riktig
-iPhone/Android-app med Capacitor. Dess kod ligger i `src/js/95-native.js` (bara på grenen `app`) och byter ut
+iPhone/Android-app med Capacitor. Dess kod ligger i `src/js/11-native.js` (bara på grenen `app`) och byter ut
 de här krokarna. På webben gör de ingenting – men **ta inte bort dem och gå inte förbi dem**, annars slutar
 appen fungera när `main` förs över till `app`.
 

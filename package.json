@@ -1,0 +1,17 @@
+{
+  "name": "ffmap-app",
+  "private": true,
+  "description": "FF Map som app (Capacitor) – se tools/APP.md",
+  "scripts": {
+    "build": "py -3 tools/build.py && npx cap sync android"
+  },
+  "dependencies": {
+    "@capacitor-community/background-geolocation": "^1.2.26",
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/core": "^8.5.2",
+    "@capacitor/filesystem": "^8.1.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.5.2"
+  }
+}

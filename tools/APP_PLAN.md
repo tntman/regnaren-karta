@@ -86,8 +86,15 @@ Webbversionen (GitHub Pages, `docs/`) ska fortsätta fungera från samma kod.
      ~15 MB, Firebase-biblioteken lokalt i stället för gstatic; utan sw.js och utan `tiles_v*/`),
      `capacitor.config.json`, `package.json`, `android/` (vanligt Capacitor-projekt; `node_modules/` checkas inte in),
      `tools/APP.md` (anteckningar för appen).
-7. Du: öppna `android` i Android Studio → ▶ Run på mobilen (Claude guidar klick för klick).
-8. Du: testa – minimera, lås skärmen, syns båten hos någon annan?
+   **Byggt 2026-10-01** (Filip sa ja; app-id `se.fiskfiskarna.ffmap`). Hur: `tools/APP.md`. Avvikelser från förslaget:
+   appkoden heter `11-native.js` (en fil efter 92-rotation.js når inte krokarna); `build.py` orörd (`npm run build`
+   kör build.py + build_app.py + cap sync); notisen syns så länge du är vid sjön, även med appen öppen (pluginet).
+   **Filip har ingen Android-mobil** → emulatorn i Android Studio först, sedan testar någon i gruppen en APK.
+7. Du: Android Studio första gången (SDK + emulator); Claude bygger och kör i emulatorn.
+   **Gjort 2026-10-01:** emulatorn Pixel 8 (Android 17), SVM påslaget i BIOS. Provkörning med namnet "Test app"
+   (riktiga Firebase, Filips ok): minimerad + låst skärm → positionen skrevs via REST var 20:e s (17 st, alla 200),
+   notisen syntes; utloggad efteråt.
+8. Testa – emulatorn (låtsad GPS-rutt), sedan en Android-användare i gruppen: minimera, lås skärmen, syns båten?
 9. Claude: rättar; gör en APK som gruppens Android-användare kan installera.
 
 **Fas 3 – Apple-konton (Du)**
