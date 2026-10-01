@@ -174,8 +174,8 @@
           el.alt = ''; el.draggable = false; el.decoding = 'async';
           el._z = L.z; el._c = c; el._r = r;
           el.onload = function(){ this.classList.add('ok'); scheduleRender(); };
-          el.onerror = function(){ this.classList.add('bad'); scheduleRender(); };
-          el.src = LAKE_DIR + DETAIL.file.replace('{z}', L.z).replace('{style}', mapStyle).replace('{c}', c).replace('{r}', r);
+          el.onerror = function(){ if (lakeImgError(this)) return; this.classList.add('bad'); scheduleRender(); };
+          el.src = lakeUrl(LAKE_DIR + DETAIL.file.replace('{z}', L.z).replace('{style}', mapStyle).replace('{c}', c).replace('{r}', r));
           detailLayer.appendChild(el);
           detailEls[key] = el;
         }

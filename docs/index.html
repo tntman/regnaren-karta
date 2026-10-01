@@ -2555,6 +2555,11 @@
   try { localStorage.setItem(LAKE_KEY, LAKE_ID); } catch(e){}
   var LAKE = LAKES.filter(function(l){ return l.id === LAKE_ID; })[0];
   var LAKE_DIR = 'lakes/' + LAKE_ID + '/';
+  // Hooks for the app (src/js/95-native.js on the branch "app" replaces them) -- on the web they do nothing.
+  // Don't remove them. lakeUrl: every lake file is loaded through it; lakeImgError: a map picture / detail
+  // piece that failed -- true = the app dealt with it, skip the usual handling.
+  function lakeUrl(p){ return p; }
+  function lakeImgError(el){ return false; }
   // Per-lake storage key. Regnaren (the first lake) keeps its old key, so
   // nothing already saved on anyone's phone is lost.
   function lakeKey(legacy, name){ return LAKE_ID === 'regnaren' ? legacy : 'lake_' + LAKE_ID + '_' + name; }
@@ -2789,8 +2794,8 @@
           el.alt = ''; el.draggable = false; el.decoding = 'async';
           el._z = L.z; el._c = c; el._r = r;
           el.onload = function(){ this.classList.add('ok'); scheduleRender(); };
-          el.onerror = function(){ this.classList.add('bad'); scheduleRender(); };
-          el.src = LAKE_DIR + DETAIL.file.replace('{z}', L.z).replace('{style}', mapStyle).replace('{c}', c).replace('{r}', r);
+          el.onerror = function(){ if (lakeImgError(this)) return; this.classList.add('bad'); scheduleRender(); };
+          el.src = lakeUrl(LAKE_DIR + DETAIL.file.replace('{z}', L.z).replace('{style}', mapStyle).replace('{c}', c).replace('{r}', r));
           detailLayer.appendChild(el);
           detailEls[key] = el;
         }
@@ -3425,8 +3430,8 @@
   var MAP_STYLE_KEY = lakeKey('ffmap_map_style_v1', 'map_style_v1');
   var mapStyle = DEFAULT_STYLE;
   try { var savedStyle = localStorage.getItem(MAP_STYLE_KEY); if (MAP_STYLES.some(function(st){ return st.id === savedStyle; })) mapStyle = savedStyle; } catch(e){}
-  function mapFile(id){ return LAKE_DIR + LAKE.mapFile.replace('{style}', id); }
-  function thumbFile(id){ return LAKE_DIR + LAKE.thumbFile.replace('{style}', id); }
+  function mapFile(id){ return lakeUrl(LAKE_DIR + LAKE.mapFile.replace('{style}', id)); }
+  function thumbFile(id){ return lakeUrl(LAKE_DIR + LAKE.thumbFile.replace('{style}', id)); }
   var mapStyleList = document.getElementById('mapStyleList');
   var mapStyleMsg = document.getElementById('mapStyleMsg');
   mapStyleList.innerHTML = MAP_STYLES.map(function(st){
@@ -3469,6 +3474,7 @@
       if (!isStart) scheduleRender(); // detail pieces of the new style
     };
     probe.onerror = function(){
+      if (lakeImgError(probe)) return;                 // (the app's hook)
       markStyle(mapStyle, null);
       if (isStart && id !== DEFAULT_STYLE){ loadMapStyle(DEFAULT_STYLE, true); return; } // (the default is always kept on the phone)
       mapLoadingEl.classList.remove('show');
@@ -3557,16 +3563,33 @@
       offFill = document.getElementById('offBarFill'), offStatus = document.getElementById('offStatus');
   var offRunning = false, offStop = false;
   document.getElementById('offTitle').textContent = 'Ladda ner ' + LAKE.name + ' för offline';
+  // Where the downloaded files are kept. Here: the browser's Cache API. A hook for the app
+  // (src/js/95-native.js on the branch "app" swaps it for files on the phone) -- don't remove it.
+  var offStore = {
+    _c: null,
+    _open: function(){ return this._c || (this._c = caches.open(OFF_CACHE)); },
+    available: function(){ return !!window.caches; },
+    has: function(url){ return this._open().then(function(c){ return c.match(url); }).then(function(r){ return !!r; }); },
+    size: function(url){ return this._open().then(function(c){ return c.match(url); }).then(function(r){ return r ? r.blob().then(function(b){ return b.size; }) : 0; }); },
+    put: function(url, response){ return this._open().then(function(c){ return c.put(url, response); }); },
+    clear: function(){                                   // (every download of this lake, every map version)
+      this._c = null;
+      if (!window.caches) return Promise.resolve();
+      return caches.keys().then(function(keys){
+        return Promise.all(keys.filter(function(k){ return k.indexOf('ffmap-offline-' + LAKE_ID + '-') === 0; }).map(function(k){ return caches.delete(k); }));
+      });
+    }
+  };
   function offlineFiles(){
-    var list = [LAKE_DIR + LAKE.depth.file];
-    if (LAKE.bottom) list.push(LAKE_DIR + LAKE.bottom.file);     // (Kartanalys: vegetation + hardness)
+    var list = [lakeUrl(LAKE_DIR + LAKE.depth.file)];
+    if (LAKE.bottom) list.push(lakeUrl(LAKE_DIR + LAKE.bottom.file));     // (Kartanalys: vegetation + hardness)
     QUICK_STYLES.forEach(function(sid){
       list.push(mapFile(sid), thumbFile(sid));
       ((DETAIL && DETAIL.levels) || []).forEach(function(L){
         if (L.styles.indexOf(sid) === -1) return;
         for (var r = 0; r < L.rows; r++) for (var c = 0; c < L.cols; c++){
           if (L.have.charAt(r * L.cols + c) === '1')
-            list.push(LAKE_DIR + DETAIL.file.replace('{z}', L.z).replace('{style}', sid).replace('{c}', c).replace('{r}', r));
+            list.push(lakeUrl(LAKE_DIR + DETAIL.file.replace('{z}', L.z).replace('{style}', sid).replace('{c}', c).replace('{r}', r)));
         }
       });
     });
@@ -3591,20 +3614,17 @@
     }
   }
   function offRemove(){
-    if (!window.caches) return Promise.resolve();
-    return caches.keys().then(function(keys){
-      return Promise.all(keys.filter(function(k){ return k.indexOf('ffmap-offline-' + LAKE_ID + '-') === 0; }).map(function(k){ return caches.delete(k); }));
-    }).then(function(){ try { localStorage.removeItem(OFF_KEY); } catch(e){} });
+    return offStore.clear().then(function(){ try { localStorage.removeItem(OFF_KEY); } catch(e){} });
   }
   function offDownload(){
-    if (!window.caches){ offStatus.textContent = 'Den här webbläsaren kan inte spara kartan offline.'; return; }
+    if (!offStore.available()){ offStatus.textContent = 'Den här webbläsaren kan inte spara kartan offline.'; return; }
     if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(function(){});
     var s = offSaved();
     var start = (s && s.ver !== OFF_VER) ? offRemove() : Promise.resolve();
     offRunning = true; offStop = false;
     offBtn.textContent = 'Pausa'; offBtn.classList.add('ghost'); offBar.hidden = false;
     var list = offlineFiles(), i = 0, done = 0, bytes = 0, failed = 0;
-    start.then(function(){ return caches.open(OFF_CACHE); }).then(function(cache){
+    start.then(function(){
       function step(){
         offFill.style.transform = 'scaleX(' + (done / list.length).toFixed(3) + ')';
         offStatus.textContent = 'Laddar ner… ' + done + ' av ' + list.length + ' · ' + fmtMB(bytes);
@@ -3613,11 +3633,11 @@
       function one(){
         if (offStop || i >= list.length) return Promise.resolve();
         var url = new URL(list[i++], location.href).href;
-        return cache.match(url).then(function(hit){
-          if (hit) return hit.clone().blob().then(function(b){ bytes += b.size; });
+        return offStore.has(url).then(function(hit){
+          if (hit) return offStore.size(url).then(function(n){ bytes += n; });
           return fetch(url).then(function(r){
             if (!r.ok) throw new Error(r.status);
-            return r.clone().blob().then(function(b){ bytes += b.size; return cache.put(url, r); });
+            return r.clone().blob().then(function(b){ bytes += b.size; return offStore.put(url, r); });
           });
         }).catch(function(){ failed++; }).then(function(){ done++; if (done % 10 === 0 || done === list.length) step(); return one(); });
       }
@@ -4010,11 +4030,16 @@
     lastPosWriteAt = now;
     lastWrittenLatLon = { lat: lat, lon: lon };
     addUsage('w', 1);
+    writeOwnPosition({
+      lat: lat, lon: lon, name: userName || '', uid: myUid, lake: LAKE_ID,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  }
+  // Your own position document, merged. A hook for the app (src/js/95-native.js on the branch "app":
+  // the background GPS writes through it too) -- don't remove it.
+  function writeOwnPosition(data){
     try {
-      posCol.doc(posDocId(myUid)).set({
-        lat: lat, lon: lon, name: userName || '', uid: myUid, lake: LAKE_ID,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      }, { merge: true }).catch(function(e){ console.warn('kunde inte dela position', e); });
+      posCol.doc(posDocId(myUid)).set(data, { merge: true }).catch(function(e){ console.warn('kunde inte dela position', e); });
     } catch(e){ console.warn('kunde inte dela position', e); }
   }
 
@@ -5742,7 +5767,7 @@
   var DEPTH_B64 = null;
   var depthGrid = null;
   function fetchDepthGrid(){
-    fetch(LAKE_DIR + LAKE.depth.file).then(function(r){ return r.ok ? r.text() : null; }).then(function(t){
+    fetch(lakeUrl(LAKE_DIR + LAKE.depth.file)).then(function(r){ return r.ok ? r.text() : null; }).then(function(t){
       if (!t) return;
       DEPTH_B64 = t.trim();
       if (typeof updateProbeText === 'function') updateProbeText();
@@ -7298,7 +7323,7 @@
   function anLoadBottom(){
     if (anBottom || anBottomLoading || !LAKE.bottom || typeof fetch !== 'function') return;
     anBottomLoading = true;
-    fetch(LAKE_DIR + LAKE.bottom.file).then(function(r){ return r.ok ? r.text() : null; }).then(function(t){
+    fetch(lakeUrl(LAKE_DIR + LAKE.bottom.file)).then(function(r){ return r.ok ? r.text() : null; }).then(function(t){
       anBottomLoading = false; if (!t) return;
       var bin = atob(t.trim()), b = new Uint8Array(DEPTH_W * DEPTH_H), j = 0;
       for (var i = 0; i < bin.length && j < b.length; i++){

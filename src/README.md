@@ -73,3 +73,17 @@ specificitet.
 | `68-heatmap.js` | Heatmap: ritning (värme, per art, rutor, prickar), bottenrutan, fångstrutan, tryck på kartan |
 | `90-boot.js` | start (`boot()`) |
 | `92-rotation.js` | vridning: spara/återställ läget, service worker-registrering, slutet på skriptet |
+
+## Krokar för appen (får inte tas bort)
+
+Grenen `app` (mappen `E:\github\ffmap-app`, "FF Map - app" i GitHub Desktop) gör webbappen till en riktig
+iPhone/Android-app med Capacitor. Dess kod ligger i `src/js/95-native.js` (bara på grenen `app`) och byter ut
+de här krokarna. På webben gör de ingenting – men **ta inte bort dem och gå inte förbi dem**, annars slutar
+appen fungera när `main` förs över till `app`.
+
+| Krok | Fil | Vad |
+|---|---|---|
+| `lakeUrl(p)` | `10-core.js` | varje sjöfil laddas genom den: `mapFile()`/`thumbFile()`, detaljbitarna, djup- och bottendata, offline-listan |
+| `lakeImgError(el)` | `10-core.js` | anropas först när en kartbild/detaljbit inte laddas; `true` = appen tog hand om det |
+| `offStore` | `18-offline.js` | offline-lagringen (`available`, `has`, `size`, `put`, `clear`) – här Cache API |
+| `writeOwnPosition(data)` | `24-boats.js` | skriver din egen position (merge) – appens bakgrunds-GPS skriver också genom den |

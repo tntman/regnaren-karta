@@ -199,11 +199,16 @@
     lastPosWriteAt = now;
     lastWrittenLatLon = { lat: lat, lon: lon };
     addUsage('w', 1);
+    writeOwnPosition({
+      lat: lat, lon: lon, name: userName || '', uid: myUid, lake: LAKE_ID,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  }
+  // Your own position document, merged. A hook for the app (src/js/95-native.js on the branch "app":
+  // the background GPS writes through it too) -- don't remove it.
+  function writeOwnPosition(data){
     try {
-      posCol.doc(posDocId(myUid)).set({
-        lat: lat, lon: lon, name: userName || '', uid: myUid, lake: LAKE_ID,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      }, { merge: true }).catch(function(e){ console.warn('kunde inte dela position', e); });
+      posCol.doc(posDocId(myUid)).set(data, { merge: true }).catch(function(e){ console.warn('kunde inte dela position', e); });
     } catch(e){ console.warn('kunde inte dela position', e); }
   }
 

@@ -12,16 +12,33 @@
       offFill = document.getElementById('offBarFill'), offStatus = document.getElementById('offStatus');
   var offRunning = false, offStop = false;
   document.getElementById('offTitle').textContent = 'Ladda ner ' + LAKE.name + ' för offline';
+  // Where the downloaded files are kept. Here: the browser's Cache API. A hook for the app
+  // (src/js/95-native.js on the branch "app" swaps it for files on the phone) -- don't remove it.
+  var offStore = {
+    _c: null,
+    _open: function(){ return this._c || (this._c = caches.open(OFF_CACHE)); },
+    available: function(){ return !!window.caches; },
+    has: function(url){ return this._open().then(function(c){ return c.match(url); }).then(function(r){ return !!r; }); },
+    size: function(url){ return this._open().then(function(c){ return c.match(url); }).then(function(r){ return r ? r.blob().then(function(b){ return b.size; }) : 0; }); },
+    put: function(url, response){ return this._open().then(function(c){ return c.put(url, response); }); },
+    clear: function(){                                   // (every download of this lake, every map version)
+      this._c = null;
+      if (!window.caches) return Promise.resolve();
+      return caches.keys().then(function(keys){
+        return Promise.all(keys.filter(function(k){ return k.indexOf('ffmap-offline-' + LAKE_ID + '-') === 0; }).map(function(k){ return caches.delete(k); }));
+      });
+    }
+  };
   function offlineFiles(){
-    var list = [LAKE_DIR + LAKE.depth.file];
-    if (LAKE.bottom) list.push(LAKE_DIR + LAKE.bottom.file);     // (Kartanalys: vegetation + hardness)
+    var list = [lakeUrl(LAKE_DIR + LAKE.depth.file)];
+    if (LAKE.bottom) list.push(lakeUrl(LAKE_DIR + LAKE.bottom.file));     // (Kartanalys: vegetation + hardness)
     QUICK_STYLES.forEach(function(sid){
       list.push(mapFile(sid), thumbFile(sid));
       ((DETAIL && DETAIL.levels) || []).forEach(function(L){
         if (L.styles.indexOf(sid) === -1) return;
         for (var r = 0; r < L.rows; r++) for (var c = 0; c < L.cols; c++){
           if (L.have.charAt(r * L.cols + c) === '1')
-            list.push(LAKE_DIR + DETAIL.file.replace('{z}', L.z).replace('{style}', sid).replace('{c}', c).replace('{r}', r));
+            list.push(lakeUrl(LAKE_DIR + DETAIL.file.replace('{z}', L.z).replace('{style}', sid).replace('{c}', c).replace('{r}', r)));
         }
       });
     });
@@ -46,20 +63,17 @@
     }
   }
   function offRemove(){
-    if (!window.caches) return Promise.resolve();
-    return caches.keys().then(function(keys){
-      return Promise.all(keys.filter(function(k){ return k.indexOf('ffmap-offline-' + LAKE_ID + '-') === 0; }).map(function(k){ return caches.delete(k); }));
-    }).then(function(){ try { localStorage.removeItem(OFF_KEY); } catch(e){} });
+    return offStore.clear().then(function(){ try { localStorage.removeItem(OFF_KEY); } catch(e){} });
   }
   function offDownload(){
-    if (!window.caches){ offStatus.textContent = 'Den här webbläsaren kan inte spara kartan offline.'; return; }
+    if (!offStore.available()){ offStatus.textContent = 'Den här webbläsaren kan inte spara kartan offline.'; return; }
     if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(function(){});
     var s = offSaved();
     var start = (s && s.ver !== OFF_VER) ? offRemove() : Promise.resolve();
     offRunning = true; offStop = false;
     offBtn.textContent = 'Pausa'; offBtn.classList.add('ghost'); offBar.hidden = false;
     var list = offlineFiles(), i = 0, done = 0, bytes = 0, failed = 0;
-    start.then(function(){ return caches.open(OFF_CACHE); }).then(function(cache){
+    start.then(function(){
       function step(){
         offFill.style.transform = 'scaleX(' + (done / list.length).toFixed(3) + ')';
         offStatus.textContent = 'Laddar ner… ' + done + ' av ' + list.length + ' · ' + fmtMB(bytes);
@@ -68,11 +82,11 @@
       function one(){
         if (offStop || i >= list.length) return Promise.resolve();
         var url = new URL(list[i++], location.href).href;
-        return cache.match(url).then(function(hit){
-          if (hit) return hit.clone().blob().then(function(b){ bytes += b.size; });
+        return offStore.has(url).then(function(hit){
+          if (hit) return offStore.size(url).then(function(n){ bytes += n; });
           return fetch(url).then(function(r){
             if (!r.ok) throw new Error(r.status);
-            return r.clone().blob().then(function(b){ bytes += b.size; return cache.put(url, r); });
+            return r.clone().blob().then(function(b){ bytes += b.size; return offStore.put(url, r); });
           });
         }).catch(function(){ failed++; }).then(function(){ done++; if (done % 10 === 0 || done === list.length) step(); return one(); });
       }

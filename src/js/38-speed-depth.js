@@ -107,7 +107,7 @@
   var DEPTH_B64 = null;
   var depthGrid = null;
   function fetchDepthGrid(){
-    fetch(LAKE_DIR + LAKE.depth.file).then(function(r){ return r.ok ? r.text() : null; }).then(function(t){
+    fetch(lakeUrl(LAKE_DIR + LAKE.depth.file)).then(function(r){ return r.ok ? r.text() : null; }).then(function(t){
       if (!t) return;
       DEPTH_B64 = t.trim();
       if (typeof updateProbeText === 'function') updateProbeText();
