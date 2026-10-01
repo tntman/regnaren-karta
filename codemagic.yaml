@@ -1,0 +1,45 @@
+# iPhone: every push of the branch "app" builds FF Map on a Mac at Codemagic and sends it to TestFlight.
+# Setup (Fas 4 in tools/APP_PLAN.md): Codemagic → Teams → Integrations → App Store Connect (API key named "FF Map"),
+# and Code signing identities → iOS certificates → generate one. See tools/APP.md.
+workflows:
+  ios-testflight:
+    name: iPhone → TestFlight
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    integrations:
+      app_store_connect: FF Map
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: se.fiskfiskarna.ffmap
+      vars:
+        APP_STORE_APPLE_ID: 0000000000   # TODO: App Store Connect → Appar → FF Map → Appinformation → Apple-ID
+      node: 22
+      xcode: latest
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: app
+          include: true
+    scripts:
+      - name: npm
+        script: npm ci
+      - name: Appens innehåll (app/www) + Capacitor
+        script: |
+          python3 tools/build_app.py
+          npx cap sync ios
+      - name: Signering
+        script: xcode-project use-profiles
+      - name: Byggnummer (senaste i TestFlight + 1)
+        script: |
+          cd ios/App
+          agvtool new-version -all $(($(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID") + 1))
+      - name: Bygg
+        script: xcode-project build-ipa --project ios/App/App.xcodeproj --scheme App
+    artifacts:
+      - build/ios/ipa/*.ipa
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true

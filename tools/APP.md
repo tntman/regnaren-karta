@@ -10,6 +10,8 @@ Planen och besluten: `tools/APP_PLAN.md`. Här står hur det är byggt.
 | `capacitor.config.json` | app-id `se.fiskfiskarna.ffmap`, namn FF Map, `android.useLegacyBridge` (annars stannar bakgrunds-GPS:en efter 5 min). |
 | `package.json` | Capacitor 8 + `@capacitor-community/background-geolocation` + `@capacitor/filesystem`. `node_modules/` checkas inte in. |
 | `android/` | vanligt Capacitor-projekt. Egna ändringar: `MainActivity.java` (frågar om aviseringar, Android 13+), `res/values/strings.xml` (notisens kanal, ikon, färg), `res/drawable/ic_stat_ffmap.xml` (notisikonen), ikoner och startbild (gjorda av `docs/icon-512.png`), `styles.xml` (startbildens färg). |
+| `ios/` | Capacitor-projekt (Swift Package Manager, ingen CocoaPods – skapat på Windows, byggs på Mac hos Codemagic). Egna ändringar: `App/App/Info.plist` (platsfrågornas texter, `UIBackgroundModes` = location, `ITSAppUsesNonExemptEncryption` = false så TestFlight inte frågar om kryptering, språk sv), ikon 1024 px (förstorad `icon-512.png` – SVG:n är bara fisken) och startbild. |
+| `codemagic.yaml` | iPhone: push av grenen `app` → npm ci, build_app.py, cap sync ios, signering (Codemagic hämtar/gör profil), byggnummer = senaste i TestFlight + 1, bygge, TestFlight. Kräver integrationen "FF Map" (App Store Connect API-nyckel) och ett iOS-certifikat i Codemagic, samt `APP_STORE_APPLE_ID` (appens Apple-ID-nummer). |
 | `tests/test_native.py` | appkoden med en låtsad Capacitor i testwebbläsaren. |
 
 ## Bygga
@@ -19,7 +21,7 @@ py -3 tools/build_app.py      (app/www/)
 npx cap sync android          (kopierar in i android/ + plugins)
 android\gradlew assembleDebug (i android/; JAVA_HOME = Android Studios jbr)
 ```
-`npm run build` gör de tre första. APK:n: `android/app/build/outputs/apk/debug/app-debug.apk`.
+`npm run build` gör de tre första (och `cap sync` för iOS). docs/ måste vara byggd och pushad – Codemagic kör bara build_app.py. APK:n: `android/app/build/outputs/apk/debug/app-debug.apk`.
 
 ## Hur det fungerar
 - **Kartor:** översiktskartor, tumnaglar, djup/botten och Hjälp är inpackade (relativa adresser, som på webben).
