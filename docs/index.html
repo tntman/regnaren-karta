@@ -7256,7 +7256,8 @@
     return A;
   }
   var anSet = { simF: { d: 1, s: 1, h: 1, v: 1, t: 1 }, simR: 0, mode: null, lo: 4, hi: 6, slope: 10, elo: 0, ehi: AN_DMAX, topP: 0.6, holeP: 0.8, hmin: 3, hlo: 0, hhi: AN_DMAX, dim: 0.72, ref: null,
-               cF: { d: 1, s: 1, h: 1, v: 1, l: 1, t: 1 }, cCov: 7, cView: 'area' };   // (c* = "Från fångsterna", 57-an-catches.js)
+               cF: { d: 1, s: 1, h: 1, v: 1, l: 1, t: 1 }, cCov: 7, cView: 'area',   // (c* = "Från fångsterna", 57-an-catches.js)
+               combo: [], near: { tops: 0, veg: 15, hard: 15, wind: 15 } };   // Kartdata combined (mode 'combo'): the parts, "inom … m"
   var AN_DEFAULTS = JSON.stringify(anSet);   // (for "Återställ")
   anSet.cat = 'map';                            // the category shown: map / rule / data / similar
   try { var sv = JSON.parse(localStorage.getItem(AN_KEY) || 'null'); if (sv) for (var k0 in sv) anSet[k0] = sv[k0]; } catch(e){}
@@ -7335,7 +7336,8 @@
       if (typeof editingWpInfo !== 'undefined' && editingWpInfo && wpSheet.classList.contains('show')) refreshSheetMeta();
     }).catch(function(){ anBottomLoading = false; });
   }
-  function anNeedsBottom(m){ return (m && m.indexOf('c_') === 0) || m === 'veg' || m === 'hard' || m === 'similar' || m === 'abborre' || m === 'gadda' || m === 'gos'; }
+  function anNeedsBottom(m){ return (m && m.indexOf('c_') === 0) || m === 'veg' || m === 'hard' || m === 'similar' || m === 'abborre' || m === 'gadda' || m === 'gos' ||
+    (m === 'combo' && (anSet.combo.indexOf('veg') >= 0 || anSet.combo.indexOf('hard') >= 0)); }
   // connected groups of cells (4-neighbours) of a mask
   function anBlobs(mask, W, H){
     var lab = new Int32Array(W * H), out = [], st = [];
@@ -7424,13 +7426,42 @@
     var m = anSet.mode, A = anBase();
     if (m && A && anNeedsBottom(m) && !anBottom){ anLoadBottom(); if (!anBottom){ anRes = { wait: true }; anRender(); return; } }
     if (!m || !A){ anRender(); return; }
+    var r = m === 'combo' ? anCombo(A) : anOne(m, A, {});
+    anRes = { M: r.empty ? null : r.M, n: r.n, labels: r.labels, list: r.list, text: r.text, note: r.note, color: m === 'combo' ? null : AN_COLORS[m], ver: anVer, G: r.G || null, pts: r.pts || null };
+    anRender();
+  }
+  // Kartdata combined: what's lit = where ALL the parts are true. The "spots" (grynnor/hålor, växter, hård
+  // botten, vindkant) count within "inom … m" of them; with Djup in it, Branta kanter / Hård botten use Djup's
+  // range instead of their own. The lit area shows the map's own colours (like Djup).
+  var AN_NEAR = { tops: 1, veg: 1, hard: 1, wind: 1 };
+  function anName(k){ return (AN_MODES.filter(function(x){ return x[0] === k; })[0] || [k, k])[1]; }
+  function anCombo(A){
+    var parts = anSet.combo, hasD = parts.indexOf('depth') >= 0, N = A.N, M = new Uint8Array(N), i, n = 0, labels = [], steps = [], zero = null;
+    for (i = 0; i < N; i++) if (A.wat[i]) M[i] = 1;
+    for (var p = 0; p < parts.length; p++){
+      var k = parts[p], r = anOne(k, A, { noRange: hasD && k !== 'depth' }), mk = r.M, d = anSet.near[k] || 0;
+      if (r.empty || !mk) return { M: null, n: 0, labels: [], text: r.text, note: r.note, empty: true };   // (e.g. no wind yet)
+      if (AN_NEAR[k] && d > 0){ var b = new Uint8Array(N); for (i = 0; i < N; i++) b[i] = mk[i] ? 1 : 0; mk = anNear(b, A.W, A.H, Math.max(1, Math.round(d / A.cell))); }
+      n = 0; for (i = 0; i < N; i++){ if (M[i] && !mk[i]) M[i] = 0; if (M[i]) n++; }
+      steps.push((p ? '+ ' : '') + anName(k) + (AN_NEAR[k] ? (d ? ' inom ' + d + ' m' : ' (exakt)') : '') + ': ' + anPct(n));
+      if (k === 'tops') labels = r.labels;
+      if (!n && !zero) zero = k;
+    }
+    labels = labels.filter(function(l){ return M[l.i]; });
+    var text = n ? parts.map(anName).join(' + ') + ' · <b>' + anPct(n) + '</b> av sjön'
+      : 'Inget kvar – <b>' + anName(zero) + '</b> tar bort det sista. ' + (AN_NEAR[zero] ? 'Prova större avstånd (inom … m).' : 'Prova att ändra dess reglage.');
+    return { M: M, n: n, labels: labels, text: text, note: steps.join(' → '), empty: false };
+  }
+  // one filter (or a rule of thumb / the catches / Liknande) -> a mask (1 = main colour, 2 = second colour),
+  // labels and a result text. opt.noRange: Branta kanter / Hård botten without their own depth range.
+  function anOne(m, A, opt){
     var N = A.N, M = new Uint8Array(N), i, n = 0, labels = [], list = null, text = '', note = '';
     var wat = A.wat, dep = A.dep;
     if (m === 'depth'){
       for (i = 0; i < N; i++) if (wat[i] && dep[i] >= anSet.lo && dep[i] <= anSet.hi){ M[i] = 1; n++; }
       text = '<b>' + fmtDepth(anSet.lo) + '–' + fmtDepth(anSet.hi) + ' m</b> · ' + anPct(n) + ' av sjön';   // (as the mock-up)
     } else if (m === 'steep'){
-      for (i = 0; i < N; i++) if (wat[i] && A.slope[i] >= anSet.slope && dep[i] >= anSet.elo && dep[i] <= anSet.ehi){ M[i] = 1; n++; }
+      for (i = 0; i < N; i++) if (wat[i] && A.slope[i] >= anSet.slope && (opt.noRange || dep[i] >= anSet.elo && dep[i] <= anSet.ehi)){ M[i] = 1; n++; }
       text = 'Lutning över <b>' + anSet.slope + ' %</b> på ' + fmtDepth(anSet.elo) + '–' + fmtDepth(anSet.ehi) + ' m · ' + anPct(n) + ' av sjön';
     } else if (m === 'tops'){
       anDomes(A);
@@ -7454,7 +7485,7 @@
       note = 'Där ekolodet sett växtlighet (Genesis). Kanten mot öppet vatten är ofta bäst.';
     } else if (m === 'hard'){
       var meas = 0;
-      for (i = 0; i < N; i++){ var hv = anBottom[i] & 7; if (hv) meas++; if (hv >= anSet.hmin && wat[i] && dep[i] >= anSet.hlo && dep[i] <= anSet.hhi){ M[i] = 1; n++; } }
+      for (i = 0; i < N; i++){ var hv = anBottom[i] & 7; if (hv) meas++; if (hv >= anSet.hmin && wat[i] && (opt.noRange || dep[i] >= anSet.hlo && dep[i] <= anSet.hhi)){ M[i] = 1; n++; } }
       text = n ? '<b>' + AN_HARD[anSet.hmin - 1] + '</b> botten eller hårdare, ' + fmtDepth(anSet.hlo) + '–' + fmtDepth(anSet.hhi) + ' m · ' + anPct(n) + ' av sjön' : 'Ingen sådan botten mätt här.';
       note = 'Bara där ekolodet mätt hårdhet (' + anPct(meas) + ' av sjön).';
     } else if (m === 'wind'){
@@ -7514,8 +7545,7 @@
       note = 'Tumregler från vanliga fiskeråd – inte fångstdata. Fisken läser inte kartan 🙂';
     }
     var empty = (m === 'similar' && !list) || (m === 'wind' && !n && !note) || !!cEmpty;
-    anRes = { M: empty ? null : M, n: n, labels: labels, list: list, text: text, note: note, color: AN_COLORS[m], ver: anVer, G: cG || null, pts: cPts || null };
-    anRender();
+    return { M: M, n: n, labels: labels, list: list, text: text, note: note, empty: empty, G: cG, pts: cPts };
   }
   function anPct(n){ var w = 0, A = AN; for (var i = 0; i < A.N; i++) w += A.wat[i]; var p = 100 * n / Math.max(1, w); return (p < 1 && p > 0 ? '<1' : Math.round(p)) + ' %'; }
   function escHtml(t){ return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
@@ -7656,7 +7686,9 @@
     document.getElementById('anPresets').hidden = cat !== 'rule';
     document.getElementById('anDataChips').hidden = cat !== 'data';
     document.getElementById('anReset').disabled = anIsDefault();
-    Array.prototype.forEach.call(document.querySelectorAll('#anChips button[data-m], #anPresets button[data-m], #anDataChips button[data-m]'), function(b){ b.classList.toggle('on', b.getAttribute('data-m') === m); });
+    Array.prototype.forEach.call(document.querySelectorAll('#anChips button[data-m], #anPresets button[data-m], #anDataChips button[data-m]'), function(b){
+      var on = b.getAttribute('data-m') === m || (m === 'combo' && anSet.combo.indexOf(b.getAttribute('data-m')) >= 0);
+      b.classList.toggle('on', on); if (b.parentNode.id === 'anChips') b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
     var R = anRes, res = document.getElementById('anResult'), lst = document.getElementById('anListBox');
     lst.innerHTML = '';
     if (!m) res.innerHTML = { map: 'Välj vad du vill hitta på kartan. Det som matchar lyser, resten tonas ner.', rule: 'Tumregler från vanliga fiskeråd – inte fångstdata.',
@@ -7709,16 +7741,25 @@
   var anCtlMode = '#';
   function anControls(){
     var m = anSet.mode, el = document.getElementById('anControls');
-    var want = m + (m === 'similar' ? anSpots().length : '');
+    var want = m + (m === 'similar' ? anSpots().length : m === 'combo' ? anSet.combo.join(',') : '');
     if (anCtlMode === want){ anDualPlace(); return; }            // (don't rebuild while dragging)
     anCtlMode = want;
+    var hasD = m === 'combo' && anSet.combo.indexOf('depth') >= 0;
+    el.innerHTML = m === 'combo'
+      ? anSet.combo.map(function(k){ return anCtlFor(k, { noRange: hasD && k !== 'depth' }) +     // each part's own controls, + "inom … m" for the spots
+          (AN_NEAR[k] ? anRangeRow('anNear_' + k, anName(k) + ' · inom', 0, 50, 5, anSet.near[k] || 0, function(v){ return v + ' m'; }) : ''); }).join('')
+      : anCtlFor(m, {});
+    if (m && m.indexOf('c_') === 0) anCatchDots();
+    anDualPlace();
+  }
+  function anCtlFor(m, opt){
     var h = '';
     if (m === 'depth') h = anDualRow('depth');
-    else if (m === 'steep') h = anRangeRow('anSlope', 'Lutning', 4, 30, 1, anSet.slope, function(v){ return v + ' %'; }) + anDualRow('steep');
+    else if (m === 'steep') h = anRangeRow('anSlope', 'Lutning', 4, 30, 1, anSet.slope, function(v){ return v + ' %'; }) + (opt.noRange ? '' : anDualRow('steep'));
     else if (m === 'tops') h = anRangeRow('anTopP', 'Grynnor', 0.3, 2.5, 0.1, anSet.topP, function(v){ return '≥ ' + fmtDepth(+v) + ' m'; }) +
       anRangeRow('anHoleP', 'Hålor', 0.3, 2.5, 0.1, anSet.holeP, function(v){ return '≥ ' + fmtDepth(+v) + ' m'; });
     else if (m && m.indexOf('c_') === 0) h = anCatchControls();
-    else if (m === 'hard') h = anRangeRow('anHmin', 'Minst', 1, 4, 1, anSet.hmin, function(v){ return AN_HARD[v - 1]; }) + anDualRow('hard');
+    else if (m === 'hard') h = anRangeRow('anHmin', 'Minst', 1, 4, 1, anSet.hmin, function(v){ return AN_HARD[v - 1]; }) + (opt.noRange ? '' : anDualRow('hard'));
     else if (m === 'similar'){
       var sp = anSpots();
       h = sp.length ? '<div class="anRefRow"><select id="anRefSel" aria-label="Plats att jämföra med">' + sp.map(function(w){
@@ -7728,9 +7769,7 @@
         '<div class="anLbl2">Område runt platsen</div><div class="anSeg" id="anSimR">' + AN_SIMR.map(function(r){ return '<button type="button" data-r="' + r + '" class="' + (anSet.simR === r ? 'on' : '') + '">' + (r ? r + ' m' : 'Bara platsen') + '</button>'; }).join('') + '</div>' +
         '<div class="anNote"><b>Bara platsen</b> jämför det som finns precis under pinnen (en ruta på ca 5 × 5 m). <b>25–100 m</b> jämför i stället <b>snittet</b> inom den radien – både runt din plats och runt varje ställe i sjön. Då hittar du liknande <i>omgivningar</i> (t.ex. en kant med växter), inte bara en likadan punkt.<br>Listan: områdena som är mest lika, bäst först (inte slump). Platsen själv lyser men står inte i listan.</div>' : '';
     }
-    el.innerHTML = h;
-    if (m && m.indexOf('c_') === 0) anCatchDots();
-    anDualPlace();
+    return h;
   }
   var anDimSet = document.getElementById('anDimSet');
   anDimSet.value = anSet.dim; document.getElementById('anDimOut').textContent = Math.round(anSet.dim * 100) + ' %';
@@ -7742,6 +7781,7 @@
   function anLater(){ anSave(); clearTimeout(anTimer); anTimer = setTimeout(anCompute, 60); }
   document.getElementById('anControls').addEventListener('input', function(e){
     var t = e.target, v = parseFloat(t.value);
+    if (t.id.indexOf('anNear_') === 0){ anSet.near[t.id.slice(7)] = v; t.nextSibling.textContent = v + ' m'; anLater(); return; }   // (combined: "inom … m")
     var map = { anSlope: 'slope', anTopP: 'topP', anHoleP: 'holeP', anHmin: 'hmin', anCCov: 'cCov' };
     if (!map[t.id]) return;
     anSet[map[t.id]] = v;
@@ -7788,8 +7828,17 @@
   document.getElementById('anControls').addEventListener('change', function(e){
     if (e.target.id === 'anRefSel'){ anSet.ref = e.target.value; anSave(); anCompute(); }
   });
-  function anSetMode(m){
-    anSet.mode = anSet.mode === m ? null : m; if (anSet.mode) anSet.cat = anCatOf(anSet.mode); anSave(); anCtlMode = '#';
+  function anSetMode(m){ anApplyMode(anSet.mode === m ? null : m); }
+  // Kartdata's buttons switch on / off: one on = that filter (as before), more = combined ('combo')
+  function anMapList(){ var m = anSet.mode; return m === 'combo' ? anSet.combo.slice() : AN_MODES.some(function(x){ return x[0] === m; }) ? [m] : []; }
+  function anToggleMap(k){
+    var L = anMapList(), j = L.indexOf(k);
+    if (j >= 0) L.splice(j, 1); else L.push(k);
+    anSet.combo = L.length > 1 ? L : [];
+    anApplyMode(L.length > 1 ? 'combo' : L[0] || null);
+  }
+  function anApplyMode(m){
+    anSet.mode = m; if (m !== 'combo') anSet.combo = []; if (anSet.mode) anSet.cat = anCatOf(anSet.mode); anSave(); anCtlMode = '#';
     if (anSet.mode && hmOn) hmSetOn(false);      // (not together with the heat map)
     if (anSet.mode && !anShow){ anShow = true; toggleAnEl.checked = true; try { localStorage.setItem(SHOW_AN_KEY, '1'); } catch(e){} }
     anCompute();
@@ -7807,7 +7856,7 @@
       return;
     }
     var b = e.target.closest ? e.target.closest('button[data-m]') : null;
-    if (b){ anSetMode(b.getAttribute('data-m')); return; }
+    if (b){ if (b.parentNode.id === 'anChips') anToggleMap(b.getAttribute('data-m')); else anSetMode(b.getAttribute('data-m')); return; }
     var g = e.target.closest ? e.target.closest('button[data-go]') : null;
     if (g && anRes && anRes.list){ var it = anRes.list[+g.getAttribute('data-go') - 1]; if (it){ showAnPanel(false); startNav('Liknande #' + it.n, it.x, it.y); } }
   });
@@ -7827,11 +7876,13 @@
   anPill.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
   anPill.addEventListener('click', function(e){ e.stopPropagation(); showAnPanel(!anPanel.classList.contains('show')); });
   document.getElementById('anClose').addEventListener('click', function(){ showAnPanel(false); });
-  document.getElementById('anClear').addEventListener('click', function(){ anSet.mode = null; anSave(); anCtlMode = '#'; anCompute(); });
+  document.getElementById('anClear').addEventListener('click', function(){ anSet.mode = null; anSet.combo = []; anSave(); anCtlMode = '#'; anCompute(); });
   // "Återställ": every setting in the panel back to how it was from the start (what's shown stays; "Mörkare" is in Inställningar)
-  function anIsDefault(){ var d = JSON.parse(AN_DEFAULTS); return Object.keys(d).every(function(k){ return k === 'mode' || k === 'dim' || JSON.stringify(anSet[k]) === JSON.stringify(d[k]); }); }
+  // (what is shown -- mode, the combined parts -- and "Mörkare" stay)
+  function anKeep(k){ return k === 'mode' || k === 'combo' || k === 'dim'; }
+  function anIsDefault(){ var d = JSON.parse(AN_DEFAULTS); return Object.keys(d).every(function(k){ return anKeep(k) || JSON.stringify(anSet[k]) === JSON.stringify(d[k]); }); }
   document.getElementById('anReset').addEventListener('click', function(){
-    var d = JSON.parse(AN_DEFAULTS); Object.keys(d).forEach(function(k){ if (k !== 'mode' && k !== 'dim') anSet[k] = d[k]; });
+    var d = JSON.parse(AN_DEFAULTS); Object.keys(d).forEach(function(k){ if (!anKeep(k)) anSet[k] = d[k]; });
     anExtraRef = null; anSave(); anCtlMode = '#'; anCompute();
     resetDone(this);
   });
