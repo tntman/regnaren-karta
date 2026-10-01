@@ -54,11 +54,14 @@ Webbversionen (GitHub Pages, `docs/`) ska fortsätta fungera från samma kod.
    Firestores REST-API (samma inloggning och fält) eftersom SDK:ts anslutning stryps. Stilla vid ankar: pluginet
    ställs in så att det ändå ger punkter, så båten inte blir grå. Svept bort app = delningen slutar.
    (Valdes bort: Transistorsoft – Android-licens ~4 000 kr.)
-4. **Krokar läggs på `main`** (via "regnaren-karta"-chatten), gör inget på webben:
+4. **Krokar på `main`** ✅ (inslagna i `app` 2026-10-01), gör inget på webben:
    - `lakeUrl(path)` (10-core.js) – alla sjöfiler: `mapFile`/`thumbFile`, detaljbitarnas `src`, djup- och bottendata.
    - `lakeImgError(el)` (10-core.js) – först i bildernas `onerror`; `true` = hanterat.
-   - `offStore` (18-offline.js) – `has/size/put/clear` i stället för Cache API direkt.
-   - `writeOwnPosition(data)` (24-boats.js) – själva skrivningen av den egna positionen.
+   - `offStore` (18-offline.js) – `available/has/size/put/clear` i stället för Cache API direkt.
+     `put(url, response)` får ett fetch-svar. Offline-listan (`offlineFiles()`) går genom `lakeUrl`, så
+     appens `lakeUrl` måste ge samma adress varje gång för samma fil (den adressen = nyckeln i `offStore`).
+   - `writeOwnPosition(data)` (24-boats.js) – själva skrivningen av den egna positionen. `data.updatedAt` är
+     SDK:ts `serverTimestamp()` – REST-varianten i bakgrunden måste ersätta den (serverns tid via `updateTransforms`).
    Ingen krok behövs för vridnings-omladdningen (bara `navigator.standalone`) eller service workern (sw.js saknas i appen).
    Appens kod: `src/js/95-native.js` (byter ut krokarna när `Capacitor.isNativePlatform()`).
 
