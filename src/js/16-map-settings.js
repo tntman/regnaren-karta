@@ -46,8 +46,8 @@
   var MAP_STYLE_KEY = lakeKey('ffmap_map_style_v1', 'map_style_v1');
   var mapStyle = DEFAULT_STYLE;
   try { var savedStyle = localStorage.getItem(MAP_STYLE_KEY); if (MAP_STYLES.some(function(st){ return st.id === savedStyle; })) mapStyle = savedStyle; } catch(e){}
-  function mapFile(id){ return LAKE_DIR + LAKE.mapFile.replace('{style}', id); }
-  function thumbFile(id){ return LAKE_DIR + LAKE.thumbFile.replace('{style}', id); }
+  function mapFile(id){ return lakeUrl(LAKE_DIR + LAKE.mapFile.replace('{style}', id)); }
+  function thumbFile(id){ return lakeUrl(LAKE_DIR + LAKE.thumbFile.replace('{style}', id)); }
   var mapStyleList = document.getElementById('mapStyleList');
   var mapStyleMsg = document.getElementById('mapStyleMsg');
   mapStyleList.innerHTML = MAP_STYLES.map(function(st){
@@ -90,6 +90,7 @@
       if (!isStart) scheduleRender(); // detail pieces of the new style
     };
     probe.onerror = function(){
+      if (lakeImgError(probe)) return;                 // (the app's hook)
       markStyle(mapStyle, null);
       if (isStart && id !== DEFAULT_STYLE){ loadMapStyle(DEFAULT_STYLE, true); return; } // (the default is always kept on the phone)
       mapLoadingEl.classList.remove('show');

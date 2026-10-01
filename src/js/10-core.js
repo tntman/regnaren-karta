@@ -20,6 +20,11 @@
   try { localStorage.setItem(LAKE_KEY, LAKE_ID); } catch(e){}
   var LAKE = LAKES.filter(function(l){ return l.id === LAKE_ID; })[0];
   var LAKE_DIR = 'lakes/' + LAKE_ID + '/';
+  // Hooks for the app (src/js/95-native.js on the branch "app" replaces them) -- on the web they do nothing.
+  // Don't remove them. lakeUrl: every lake file is loaded through it; lakeImgError: a map picture / detail
+  // piece that failed -- true = the app dealt with it, skip the usual handling.
+  function lakeUrl(p){ return p; }
+  function lakeImgError(el){ return false; }
   // Per-lake storage key. Regnaren (the first lake) keeps its old key, so
   // nothing already saved on anyone's phone is lost.
   function lakeKey(legacy, name){ return LAKE_ID === 'regnaren' ? legacy : 'lake_' + LAKE_ID + '_' + name; }

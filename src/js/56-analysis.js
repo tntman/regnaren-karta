@@ -129,7 +129,7 @@
   function anLoadBottom(){
     if (anBottom || anBottomLoading || !LAKE.bottom || typeof fetch !== 'function') return;
     anBottomLoading = true;
-    fetch(LAKE_DIR + LAKE.bottom.file).then(function(r){ return r.ok ? r.text() : null; }).then(function(t){
+    fetch(lakeUrl(LAKE_DIR + LAKE.bottom.file)).then(function(r){ return r.ok ? r.text() : null; }).then(function(t){
       anBottomLoading = false; if (!t) return;
       var bin = atob(t.trim()), b = new Uint8Array(DEPTH_W * DEPTH_H), j = 0;
       for (var i = 0; i < bin.length && j < b.length; i++){
