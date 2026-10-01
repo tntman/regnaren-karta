@@ -5,7 +5,7 @@
 # The tests run side by side (each has its own browser): 6 at a time, or
 # $env:TEST_JOBS (1 = one after the other, like before).
 # Only some: name them, e.g.  run_all.ps1 heatmap filter  (= test_*heatmap*.py, test_*filter*.py).
-# While working: the area's tests; before saying "klart": always ALL of them.
+# Small changes: the area's tests + the ones that mention what changed; bigger ones (or Filip asks): ALL.
 $ErrorActionPreference = 'Continue'
 Set-Location $PSScriptRoot
 $env:PYTHONIOENCODING = 'utf-8'
@@ -52,5 +52,5 @@ foreach ($n in ($done.Keys | Sort-Object)) {
 }
 Remove-Item $tmp -Recurse -Force -ErrorAction SilentlyContinue
 '({0:N0} s, {1} at a time)' -f ((Get-Date) - $t0).TotalSeconds, $jobs
-if ($fail) { 'NAGOT TEST MISSLYCKADES' } elseif ($args.Count) { 'URVALET OK (' + $done.Count + ' filer) - kor hela sviten innan "klart"' } else { 'ALLA TESTER OK' }
+if ($fail) { 'NAGOT TEST MISSLYCKADES' } elseif ($args.Count) { 'URVALET OK (' + $done.Count + ' filer) - hela sviten vid storre andringar' } else { 'ALLA TESTER OK' }
 exit $fail

@@ -20,11 +20,14 @@ All text i appen är på svenska. Svara Filip på svenska, kort och tydligt.
   låtsas vara Firebase). Kör alltid testerna efter ändringar och lägg till tester för ny funktion.
   Parallellt (6 åt gången, `TEST_JOBS`), ~3,5 min, mot `tests/serve.py` (egen webbserver med lång
   anslutningskö). Tester får inte ändra filer i `docs/` – blockera i webbläsaren (`pg.route`).
-  **Urval:** `tests
-un_all.ps1 heatmap filter` kör bara `test_*heatmap*.py` och `test_*filter*.py`.
-  Ordning: under arbetet bara områdets tester → när allt är byggt HELA sviten → rätta, kör om →
-  först när alla går igenom säga "klart" + GitHub Desktop-text (Filip gör commit; allt i `docs/` ska
-  vara testat i sin helhet). Allt är ett skript – en ändring kan bryta tester i helt andra filer.
+  **Urval:** `tests\run_all.ps1 heatmap filter` kör bara `test_*heatmap*.py` och `test_*filter*.py`.
+  **Hur mycket som testas (Filips regel, 2026-10-01):** kör INTE hela sviten för små ändringar (text,
+  färg, småfix). Kör områdets tester med urval + de testfiler som nämner det jag ändrat (sök i `tests/`
+  efter id, klass, färg eller text jag rört – hittar "oväntade" tester, t.ex. test_types vid färgbyte).
+  Skriv tydligt i svaret: "testat med urval: …". HELA sviten körs när Filip säger "klart"/"kör alla
+  tester", vid större ändringar som rör flera filer/områden (gör det självmant när det känns så), och
+  alltid innan en Hjälp-omgång. **Påminn Filip** att köra hela sviten när flera urvals-ändringar har
+  samlats sedan senaste hela körningen. Allt är ett skript – en ändring kan bryta tester i helt andra filer.
 - **Testerna får aldrig nå riktiga Firebase**: `fakefb.py` blockerar Firebase-SDK:t och googleapis
   i varje context, spärrar service workers (deras anrop går förbi blockeringen – opt-in med
   `new_page(..., sw=True)`) och låser `window.firebase` så att riktiga SDK:t inte kan ersätta

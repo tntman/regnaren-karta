@@ -62,7 +62,9 @@ with sync_playwright() as p:
     edge = pg.evaluate("""() => { var c = document.getElementById('hmLayer'), d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data, n = 0;
       for (var i = 0; i < d.length; i += 4) if (d[i] > 120 && d[i + 1] > 120 && d[i + 2] > 120 && Math.abs(d[i] - d[i + 2]) < 20 && d[i + 3] > 200) n++; return n; }""")
     check('the edge of the lake: a thin white line, like in Kartanalys', edge > 100, edge)
+    check('Återställ greyed out while everything is as from the start', pg.is_disabled('#hmReset'))
     pg.evaluate("(() => { var e = document.querySelector('#hmCtl input[data-r=rad]'); e.value = 150; e.dispatchEvent(new Event('input', { bubbles: true })); })()"); pg.wait_for_timeout(300)
+    check('...dragging Radie (Värme): ↺ can be pressed at once', pg.is_enabled('#hmReset'))
     pg.click('#hmStyleSeg button[data-s="hex"]'); pg.wait_for_timeout(200); pg.click('#hmStyleSeg button[data-s="heat"]'); pg.wait_for_timeout(200)
     check('settings changed: ↺ Återställ next to ⏻ Stäng av heatmap in the top row', pg.is_enabled('#hmReset') and pg.get_attribute('#hmReset', 'aria-label') == 'Återställ' and pg.get_attribute('#hmOff', 'aria-label') == 'Stäng av heatmap')
     pg.click('#hmReset'); pg.wait_for_timeout(300)

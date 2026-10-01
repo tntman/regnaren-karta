@@ -8647,6 +8647,7 @@
     var k = e.target.getAttribute && e.target.getAttribute('data-r'); if (!k) return;
     hmSet[k] = +e.target.value; hmSave();
     var o = document.getElementById('hmOut_' + k); if (o) o.textContent = hmOutTxt(k);
+    document.getElementById('hmReset').disabled = JSON.stringify(hmSet) === HM_DEFAULTS;   // (↺ at once, while dragging)
     hmHeatCache = null; hmDraw();
   });
   document.getElementById('hmClose').addEventListener('click', function(){ hmShowPanel(false); });
