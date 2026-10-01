@@ -66,9 +66,26 @@ Webbversionen (GitHub Pages, `docs/`) ska fortsätta fungera från samma kod.
    Appens kod: `src/js/95-native.js` (byter ut krokarna när `Capacitor.isNativePlatform()`).
 
 **Fas 2 – Android först (gratis)**
-5. Du: installera Android Studio.
+5. Du: installera Android Studio ✅ (2026-10-01) + **Node.js** (nodejs.org → LTS, klicka Next).
+   **Körs lokalt** (Claude Code i `E:\github\ffmap-app`, beslut 2026-10-01): Claude kör npm/`npx cap sync` och
+   bygger själv med Android Studios SDK (`android\gradlew assembleDebug`, `adb install` när mobilen sitter i USB),
+   så byggfel hittas innan Filip trycker Run. Filip kör fortfarande ingen terminal själv.
 6. Claude: Capacitor + Android-projekt, bakgrunds-GPS-plugin, behörighetstext + notis
    ("FF Map delar din position"), samma Firestore-post och intervall som idag.
+   **Förslaget (godkänt i princip – visa kort igen och få "ja" innan bygget):**
+   - App: namn **FF Map**, app-id **`se.fiskfiskarna.ffmap`** (låses i Fas 3 – bekräfta med Filip).
+   - Vad Filip ser: appen ser ut som webbappen. Första start: Android frågar om plats ("När appen används")
+     och aviseringar (Tillåt – behövs för notisen). När appen minimeras/skärmen låses, med valt namn och nära en
+     sjö (`isNearLake`): fast notis **"FF Map delar din position"**, båten rör sig hos andra (20 s rörelse / 60 s
+     stilla, admin-inställningen). Långt från sjön: ingen bakgrunds-GPS, ingen notis. Svept bort app = slut.
+   - Ny rad i Inställningar → Båten, bara i appen (läggs dit av 95-native.js): **"Dela position när appen är
+     minimerad"**, på som standard.
+   - Filer (nya, utom en rad i `tools/build.py` som även kör `build_app.py`):
+     `src/js/95-native.js` (krokarna + bakgrunds-GPS + raden i Inställningar, gör inget på webben),
+     `tools/build_app.py` (appens innehåll av `docs/`: sidan, ikoner, översiktskartor + tumnaglar + djup/botten
+     ~15 MB, Firebase-biblioteken lokalt i stället för gstatic; utan sw.js och utan `tiles_v*/`),
+     `capacitor.config.json`, `package.json`, `android/` (vanligt Capacitor-projekt; `node_modules/` checkas inte in),
+     `tools/APP.md` (anteckningar för appen).
 7. Du: öppna `android` i Android Studio → ▶ Run på mobilen (Claude guidar klick för klick).
 8. Du: testa – minimera, lås skärmen, syns båten hos någon annan?
 9. Claude: rättar; gör en APK som gruppens Android-användare kan installera.
