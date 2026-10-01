@@ -37,7 +37,7 @@ with sync_playwright() as p:
     b, ctx, pg, errs = new_page(p, geo=REG, cfg=cfg, name='Filip')
     src = lambda: pg.get_attribute('#mapImg', 'src')
     lakes = pg.eval_on_selector_all('#lakeList .menuItem', 'e=>e.map(x=>x.textContent.trim())')
-    check('lake menu lists all lakes, Regnaren first', lakes == ['Regnaren', 'Sjösjön', 'Vågsfjärden'], lakes)
+    check('lake menu lists all lakes, Regnaren first', lakes == ['Regnaren', 'Sibbofjärden', 'Sjösjön', 'Vågsfjärden'], lakes)
     pg.wait_for_function("(document.getElementById('mapImg').getAttribute('src') || '').length > 0", timeout=15000)
     check('starts on Regnaren (as before)', src() == 'lakes/regnaren/map_v4_s1.jpg', src())
     check("Regnaren shows only Regnaren's spot", titles(pg) == ['Regnarplatsen'])
@@ -139,5 +139,19 @@ with sync_playwright() as p:
     ticks = pg.eval_on_selector_all('#legendTicks span', 'e=>e.map(x=>x.textContent)')
     check('Sjösjön legend: 0 / 7 / 14 m (max 13,5 m)', ticks == ['0 m', '7 m', '14 m'], ticks)
     check('Sjösjön: no page errors', not errs, errs)
+    b.close()
+    # ---- Sibbofjärden: opens, and the depth matches Genesis' own labels (lakes/sibbo/raw/depth_labels.json #20, #41, #53)
+    SIB_POINTS = [(58.777728, 17.29557, 4.0), (58.786086, 17.307876, 8.0), (58.779502, 17.311438, 10.5)]
+    b, ctx, pg, errs = new_page(p, geo=SIB_POINTS[0][:2], cfg=cfg, name='Filip')
+    pg.goto('http://localhost:8899/index.html?lake=sibbo'); pg.wait_for_timeout(1500)
+    check('?lake=sibbo opens Sibbofjärden', pg.get_attribute('#mapImg', 'src') == 'lakes/sibbo/map_v1_s1.jpg' and pg.inner_text('#lakeTitle') == 'SIBBOFJÄRDEN', pg.get_attribute('#mapImg', 'src'))
+    for la, lo, want in SIB_POINTS:
+        ctx.set_geolocation({'latitude': la, 'longitude': lo, 'accuracy': 5}); pg.wait_for_timeout(1500)
+        got = pg.inner_text('#depthVal')
+        v = float(got.replace(',', '.')) if re.match(r'^[0-9]+,?[0-9]*$', got) else None
+        check('Sibbofjärden: depth at a %g m label: %s m' % (want, got), v is not None and abs(v - want) <= 1.0, got)
+    ticks = pg.eval_on_selector_all('#legendTicks span', 'e=>e.map(x=>x.textContent)')
+    check('Sibbofjärden legend: 0 / 4 / 8 / 12 m (max 11,2 m)', ticks == ['0 m', '4 m', '8 m', '12 m'], ticks)
+    check('Sibbofjärden: no page errors', not errs, errs)
     b.close()
 print('\n%d/%d passed' % (sum(results), len(results)))

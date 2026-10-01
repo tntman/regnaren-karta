@@ -274,3 +274,13 @@ djup = färgens rang (ej kalibrerat) × 10 m; utjämning σ 4,5 px; Sobel-lutnin
 - [x] Sjösjön (mwID 1270210, OSM relation 2375527, 62,5600–62,5808 N, 17,8037–17,8253 O):
       21 avlästa siffror, 90 % inom 0,11 m, maxdjup 13,5 m, `grid_div` 4 (liten sjö), filer v1,
       18 MB. Norra delen av sjön (OSM) saknar Genesis-data → okänt djup. Tog ~5 min totalt.
+- [x] Sibbofjärden (`sibbo`, mwID 1206257, OSM relation 1924380, 58,7540–58,8125 N, 17,2760–17,3365 O):
+      57 avlästa siffror, 90 % inom 0,12 m, maxdjup 11,2 m (legend 0/4/8/12), `grid_div` 8, filer v1,
+      97 MB, ~26 000 rutor (z18 i 3 shards per lager, ~15 min nedladdning). 2026-09-30.
+- [ ] **Stora sjöar (Mälaren):** Filips utsnitt Bålsta–Ekerö var ~42 × 33 km ≈ 45 × Regnaren → uppskattat
+      6–7 GB i docs/, ~3 GB offline, ~1,8 miljoner Genesis-rutor. Går inte: GitHub Pages ~1 GB totalt,
+      zoom 14-bilden (~7 600 × 7 000 px) för stor för iPhone Safari, Kartanalys räknar hela sjön. Ett
+      utsnitt på ~8 × 6 km (≈ Regnaren) går bra. Hela Mälaren kräver ombyggnad (översiktskarta i bitar,
+      djup per område, analys bara det som syns, filerna någon annanstans än GitHub). Utökning av ett
+      utsnitt senare = ny bbox, hämtar bara nya rutor (cachat). Tumregel: docs-storlek ∝ vattenyta
+      (Regnaren 143 MB, Vågsfjärden 102, Sibbo 97, Sjösjön 19; totalt ~360 MB).

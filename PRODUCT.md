@@ -16,7 +16,7 @@ web
 
 ## Product Purpose
 
-En gemensam karta för tävlingsdagen. För sjöarna gruppen fiskar i (nu Regnaren, Sjösjön och Vågsfjärden) visar den
+En gemensam karta för tävlingsdagen. För sjöarna gruppen fiskar i (nu Regnaren, Sibbofjärden, Sjösjön och Vågsfjärden) visar den
 - djupkarta
 - egen position
 - gruppens fiskeplatser
@@ -63,7 +63,7 @@ Appen kombinerar detaljerade djupkartor (C-MAP Genesis) över just gruppens sjö
 ## Evidence on Hand
 
 - **Tävlingsfångster:** CSV med 902 fångster från 2026-03-28 till 2026-09-27, 20 personer och flera sjöar. 190 av dem finns i appens sjöar: Regnaren 88 och Vågsfjärden 102. Arterna är abborre, gädda och gös.
-- **Kartor:** Genesis-kartor och djup- och bottendata för Regnaren, Sjösjön och Vågsfjärden (`lakes/`, `docs/lakes/`).
+- **Kartor:** Genesis-kartor och djup- och bottendata för Regnaren, Sibbofjärden, Sjösjön och Vågsfjärden (`lakes/`, `docs/lakes/`).
 - **Hjälp-sidan** med animeringar av varje funktion (`docs/help/`).
 - Det finns inga omdömen, användarsiffror eller pressklipp, och sådant ska inte hittas på.
 
