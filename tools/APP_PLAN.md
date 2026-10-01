@@ -19,6 +19,21 @@ Webbversionen (GitHub Pages, `docs/`) ska fortsätta fungera från samma kod.
 - Filip kör Windows (ingen Mac, ingen terminal): iOS byggs i Codemagic, Android i Android Studio.
 - Filip vill se förslag innan något byggs. Inga git-kommandon – Filip gör commit/push i GitHub Desktop.
 
+## Två chattar, två grenar – regler
+
+- **"regnaren-karta"** (`E:\github\regnaren-karta`, gren `main`): webbappen, en egen Claude Code-chatt.
+  Nya funktioner, fixar, Hjälp och sjöar görs DÄR – inte här.
+- **"FF Map - app"** (`E:\github\ffmap-app`, gren `app`, den här mappen): bara det som gör webbappen till en
+  riktig app – Capacitor-skalet (ios/, android/, capacitor.config, codemagic.yaml), bakgrunds-GPS och
+  app-anpassningar.
+- **Appens kod i egna filer:** t.ex. `src/js/95-native.js` (och egen css-fil vid behov) som bara gör något när
+  den körs i appen (`window.Capacitor && Capacitor.isNativePlatform()`). Ändra befintliga filer i `src/` så lite
+  som möjligt – helst en liten krok – annars blir det konflikter när `main` förs in hit.
+- **Nyheter från main:** Filip gör GitHub Desktop → Branch → Update from main i "FF Map - app".
+  Blir det konflikt: Claude hjälper till att lösa den.
+- Behövs en ändring som är bra även för webben: säg det till Filip, så görs den i "regnaren-karta"-chatten.
+- Senare (beslutas då): grenen `app` slås ihop med `main` när appen fungerar – appdelarna gör inget på webben.
+
 ## Faserna (Du = Filip, Claude = Claude Code)
 
 **Fas 0 – Förbered** ✅ (2026-10-01): grenen `app`, klonad till `E:\github\ffmap-app`.
