@@ -77,7 +77,7 @@ specificitet.
 ## Krokar för appen (får inte tas bort)
 
 Grenen `app` (mappen `E:\github\ffmap-app`, "FF Map - app" i GitHub Desktop) gör webbappen till en riktig
-iPhone/Android-app med Capacitor. Dess kod ligger i `src/js/95-native.js` (bara på grenen `app`) och byter ut
+iPhone/Android-app med Capacitor. Dess kod ligger i `src/js/11-native.js` (bara på grenen `app`) och byter ut
 de här krokarna. På webben gör de ingenting – men **ta inte bort dem och gå inte förbi dem**, annars slutar
 appen fungera när `main` förs över till `app`.
 

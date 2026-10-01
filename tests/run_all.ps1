@@ -14,14 +14,19 @@ $env:PYTHONIOENCODING = 'utf-8'
 $edge = "${env:ProgramFiles(x86)}\Microsoft\Edge\Application\msedge.exe"
 if (-not $env:CHROMIUM -and (Test-Path $edge)) { $env:CHROMIUM = $edge }
 $jobs = 6; if ($env:TEST_JOBS) { $jobs = [int]$env:TEST_JOBS }
+function PortUp { try { $c = [Net.Sockets.TcpClient]::new(); $c.Connect('127.0.0.1', 8899); $c.Close(); $true } catch { $false } }
+# py.exe (the launcher) starts python.exe as a child: stop the whole tree, or the server stays behind
+function StopTree($id) { & taskkill /PID $id /T /F 2>&1 | Out-Null }
+if (PortUp) { 'Port 8899 var redan upptagen (en gammal testserver?) - stang den forst'; exit 1 }
 $srv = Start-Process py -ArgumentList '-3', 'serve.py', '8899', '..\docs' `
     -WindowStyle Hidden -PassThru
-Start-Sleep -Seconds 1
+$w = 0; while (-not (PortUp) -and $w -lt 100) { Start-Sleep -Milliseconds 100; $w++ }   # (up to 10 s; ~1,2 s normally)
+if (-not (PortUp)) { 'Testservern startade inte'; StopTree $srv.Id; exit 1 }
 $tmp = Join-Path ([IO.Path]::GetTempPath()) ('ffmap_tests_' + [guid]::NewGuid().ToString('N').Substring(0, 8))
 New-Item -ItemType Directory $tmp | Out-Null
 $files = if ($args.Count) { $args | ForEach-Object { Get-ChildItem "test_*$_*.py" } } else { Get-ChildItem test_*.py }
 $queue = [System.Collections.Queue]::new(); $files | Sort-Object Name -Unique | ForEach-Object { $queue.Enqueue($_.Name) }
-if (-not $queue.Count) { 'Inga tester matchar: ' + ($args -join ' '); Stop-Process -Id $srv.Id -Force -ErrorAction SilentlyContinue; exit 1 }
+if (-not $queue.Count) { 'Inga tester matchar: ' + ($args -join ' '); StopTree $srv.Id; exit 1 }
 $running = @(); $done = @{}; $t0 = Get-Date
 try {
     while ($queue.Count -or $running.Count) {
@@ -37,8 +42,8 @@ try {
         $running = $still
     }
 } finally {
-    foreach ($r in $running) { Stop-Process -Id $r.Proc.Id -Force -ErrorAction SilentlyContinue }
-    Stop-Process -Id $srv.Id -Force -ErrorAction SilentlyContinue
+    foreach ($r in $running) { StopTree $r.Proc.Id }
+    StopTree $srv.Id
 }
 $fail = 0
 foreach ($n in ($done.Keys | Sort-Object)) {
