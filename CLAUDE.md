@@ -7,9 +7,12 @@ flera sjöar (Regnaren, Sibbofjärden, Sjösjön, Vågsfjärden – väljs i men
 All text i appen är på svenska. Svara Filip på svenska, kort och tydligt.
 
 ## Arbetssätt
-- Repot ligger i `E:\github\regnaren-karta` (Windows). Filip använder inte terminalen
-  själv och git är inte installerat: kör **inga git-kommandon**. Filip gör commit och
-  push själv i GitHub Desktop.
+- Repot ligger i `E:\github\regnaren-karta` (Windows, gren `main` = webbappen). Appen (Capacitor) ligger i
+  `E:\github\ffmap-app` (gren `app`, egen chatt – `tools/APP_PLAN.md`). Filip använder inte terminalen själv.
+  **Git (beslut 2026-10-01):** Claude committar själv när en ändring är klar (sammanfattning + beskrivning på
+  svenska, bara filer som hör till ändringen). **Push bara efter Filips ok** (main = live för gruppen; `app` =
+  iPhone-bygge i Codemagic). Main in i `app`: `git fetch` + `git merge origin/main`, konflikter löser Claude.
+  Aldrig force-push, aldrig skriva om historik. GitHub Desktop finns kvar – Filip kan använda den när han vill.
 - **Källa: `src/`** – `css/`, `html/`, `js/` (en fil per del, klistras ihop i namnordning till EN
   sida). **Läs `src/README.md`** (vilken fil som innehåller vad; alla js-filer är ETT skript i en
   funktion – ordningen spelar roll).
