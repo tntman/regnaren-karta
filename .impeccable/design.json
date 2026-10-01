@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-30T15:26:09Z",
+  "generatedAt": "2026-10-01T00:28:30Z",
   "title": "Design System: FF Map",
   "extensions": {
     "colorMeta": {
@@ -157,16 +157,16 @@
       "art-gos": {
         "role": "signal",
         "displayName": "Gös",
-        "canonical": "oklch(87.7% 0.176 92.7)",
+        "canonical": "oklch(63.7% 0.195 259.5)",
         "tonalRamp": [
-          "#1E0200",
-          "#3D1C00",
-          "#5F3A00",
-          "#835A00",
-          "#A67C00",
-          "#C8A100",
-          "#EAC648",
-          "#FFEC7F"
+          "#000048",
+          "#001371",
+          "#00379C",
+          "#0959C9",
+          "#347DF1",
+          "#5FA3FF",
+          "#88C9FF",
+          "#B2F0FF"
         ]
       },
       "art-fara": {
@@ -202,16 +202,16 @@
       "art-hem": {
         "role": "signal",
         "displayName": "Hem",
-        "canonical": "oklch(63.7% 0.195 259.5)",
+        "canonical": "oklch(58.0% 0.102 55.8)",
         "tonalRamp": [
-          "#000048",
-          "#001371",
-          "#00379C",
-          "#0959C9",
-          "#347DF1",
-          "#5FA3FF",
-          "#88C9FF",
-          "#B2F0FF"
+          "#210000",
+          "#421600",
+          "#663202",
+          "#8B5122",
+          "#AF7245",
+          "#D2966C",
+          "#F5BB94",
+          "#FFE2BD"
         ]
       },
       "greppglod": {
@@ -483,7 +483,7 @@
       "kind": "custom",
       "refersTo": "type-dot",
       "description": "Typerna som en rad artfärgade prickar: ifylld = visas, grå ring = dold. Tryck = byt.",
-      "html": "<div class=\"ds-dots\"><label><input type=\"checkbox\" checked><span class=\"d\" style=\"--c:#E4E9EC\"></span><i>Mark</i></label><label><input type=\"checkbox\" checked><span class=\"d\" style=\"--c:#FF7A1A\"></span><i>Abb</i></label><label><input type=\"checkbox\"><span class=\"d\" style=\"--c:#35D24A\"></span><i>Gädda</i></label><label><input type=\"checkbox\" checked><span class=\"d\" style=\"--c:#FFD21A\"></span><i>Gös</i></label><label><input type=\"checkbox\" checked><span class=\"d\" style=\"--c:#FFB23F\"></span><i>Träff</i></label><label><input type=\"checkbox\" checked><span class=\"d\" style=\"--c:#3A86FF\"></span><i>Hem</i></label></div>",
+      "html": "<div class=\"ds-dots\"><label><input type=\"checkbox\" checked><span class=\"d\" style=\"--c:#E4E9EC\"></span><i>Mark</i></label><label><input type=\"checkbox\" checked><span class=\"d\" style=\"--c:#FF7A1A\"></span><i>Abb</i></label><label><input type=\"checkbox\"><span class=\"d\" style=\"--c:#35D24A\"></span><i>Gädda</i></label><label><input type=\"checkbox\" checked><span class=\"d\" style=\"--c:#3A86FF\"></span><i>Gös</i></label><label><input type=\"checkbox\" checked><span class=\"d\" style=\"--c:#FFB23F\"></span><i>Träff</i></label><label><input type=\"checkbox\" checked><span class=\"d\" style=\"--c:#A8693A\"></span><i>Hem</i></label></div>",
       "css": ":host{--sjokortsbla:#0B2A3A;--glas:rgba(11,42,58,.72);--barnsten:#E8A33D;--dimma:#F4F7F8;--vass:#B7C4C9;} .ds-dots{display:flex;gap:4px;padding:12px;width:170px;background:var(--glas);border-radius:12px;font-family:Calibri,\"Segoe UI\",system-ui,-apple-system,sans-serif;} .ds-dots label{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;} .ds-dots input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer;} .ds-dots .d{width:24px;height:24px;border-radius:50%;box-sizing:border-box;border:2px solid #14181C;background:var(--c);transition:background-color .15s;} .ds-dots input:not(:checked)~.d{background:transparent;border-color:rgba(255,255,255,.4);} .ds-dots i{font-style:normal;font-size:10.5px;color:var(--dimma);} .ds-dots input:not(:checked)~i{color:var(--vass);} .ds-dots input:focus-visible~.d{outline:2px solid var(--barnsten);outline-offset:2px;}"
     },
     {
@@ -501,7 +501,7 @@
     "keyCharacteristics": [
       "Kartan fyller hela skärmen; gränssnittet svävar som mörkt, halvgenomskinligt glas ovanpå.",
       "Bärnsten är enda gränssnittsaccenten och betyder alltid \"valt / på\".",
-      "Artfärger (abborre orange, gädda grön, gös gul, fara röd, hem blå) är signaler på kartan, inte dekoration.",
+      "Artfärger (abborre orange, gädda grön, gös blå, fara röd, hem brun) är signaler på kartan, inte dekoration.",
       "Bottenrutor med greppremsa är den gemensamma formen för allt som öppnas.",
       "Mjuka toningar i över- och underkant (nattvatten) i stället för hårda kanter mot kartan."
     ],
@@ -518,7 +518,7 @@
       },
       {
         "name": "The Species Is Its Color Rule",
-        "body": "Abborre är alltid orange (#FF7A1A), gädda grön (#35D24A), gös gul (#FFD21A), fara röd, hem blå – på pinnar, prickar, chips och skalor.",
+        "body": "Abborre är alltid orange (#FF7A1A), gädda grön (#35D24A), gös blå (#3A86FF), fara röd, hem brun (#A8693A) – på pinnar, prickar, chips och skalor (Kartanalys, Heatmap).",
         "section": "colors"
       },
       {

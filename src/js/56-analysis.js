@@ -18,8 +18,8 @@
   ];
   var AN_HARD = ['Mjuk', 'Medelhård', 'Hård', 'Mycket hård'];      // Genesis' 4 levels
   var AN_COLORS = { depth: null, steep: [255, 70, 200], tops: [255, 190, 40], veg: [90, 235, 80], hard: [240, 70, 10],
-                    wind: [255, 178, 63], similar: [255, 80, 160], abborre: [255, 210, 26], gadda: [120, 255, 120], gos: [255, 210, 26],
-                    c_abborre: [255, 122, 26], c_gadda: [53, 210, 74], c_gos: [255, 210, 26] };   // (c_ = from the catches: the species' colours)
+                    wind: [255, 178, 63], similar: [255, 80, 160], abborre: [255, 210, 26], gadda: [120, 255, 120], gos: [58, 134, 255],
+                    c_abborre: [255, 122, 26], c_gadda: [53, 210, 74], c_gos: [58, 134, 255] };   // (c_ = from the catches: the species' colours)
   // the depth scale of the sliders = the legend's (0 .. the lake's max depth, same colours)
   var AN_DMAX = parseFloat(String((LAKE.legendTicks || []).slice(-1)[0] || '').replace(',', '.')) || Math.ceil(LAKE.depth.max || 20);
   var AN_SIMF = [['d', 'Djup'], ['s', 'Lutning'], ['h', 'Botten'], ['v', 'Växter'], ['t', 'Grynna/håla']];

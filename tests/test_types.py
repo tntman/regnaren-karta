@@ -35,7 +35,7 @@ with sync_playwright() as p:
     old = [x for x in info if 'wpPin--mark' in x['cls']]
     check('old spot without type shows as Markering (dot, neutral)', len(old) == 1 and not old[0]['fish'] and old[0]['bg'] == 'rgb(228, 233, 236)')
     gos = [x for x in info if 'wpPin--gos' in x['cls']][0]
-    check('Gös pin: #FFD21A + fish', gos['bg'] == 'rgb(255, 210, 26)' and gos['fish'])
+    check('Gös pin: blue #3A86FF + fish', gos['bg'] == 'rgb(58, 134, 255)' and gos['fish'])
     other = [x for x in info if 'wpPin--other' in x['cls']][0]
     check("others' Gädda spot: #35D24A drop shape like mine, no fish", other['bg'] == 'rgb(53, 210, 74)' and other['radius'] == '50%/0px' and not other['iconShown'], other)
     check('pins have a white outline', gos['border'] == 'rgb(255, 255, 255)', gos['border'])

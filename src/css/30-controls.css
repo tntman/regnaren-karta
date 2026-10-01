@@ -41,7 +41,7 @@
   .visSwatch.ws-mark{background-color:var(--t-mark);}
   .visSwatch.ws-abborre{background-color:var(--t-abborre);}
   .visSwatch.ws-gadda{background-color:var(--t-gadda);}
-  .visSwatch.ws-gos{background-color:var(--t-gos);}
+  .visSwatch.ws-gos{background-color:var(--t-gos);color:#fff;}
   .visSwatch.ws-fara{background-color:var(--t-fara);color:#fff;}
   .visSwatch.ws-meet{background-color:var(--t-meet);}
   .visSwatch.ws-hem{background-color:var(--t-hem);color:#fff;}

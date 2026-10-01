@@ -92,7 +92,7 @@ Uppdatera rätt anteckning när något ändras.
 - **Djupdata:** `docs/lakes/<id>/depth_v<V>.txt` (byte = djup/steg, 252 = sjö utan djupdata,
   255 land, 251/253 = packade rader). `lakes/<id>/raw/depth_raw.npz` = full upplösning (testerna).
   `isLakeAtImgPx()` = sjö eller land.
-- **Typer:** Markering, Abborre, Gädda, Gös, Hem (blått hus, inte i Liknande), Fara (röd
+- **Typer:** Markering, Abborre (orange), Gädda (grön), Gös (blå #3A86FF), Hem (brunt hus #A8693A, inte i Liknande), Fara (röd
   stoppskylt `.wpFara`, likadan för allas, ALDRIG dold av filter), Träffpunkt (`meet`: fyr med
   ringar, `expiresAt` = +1 h, en per person, bara ägaren/admin tar bort; utgångna döljs och
   ägarens app raderar dem).

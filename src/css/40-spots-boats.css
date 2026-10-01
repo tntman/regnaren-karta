@@ -2,7 +2,7 @@
      Gädda, Gös (fish). Owner = the edge: dark on your own, white on others'. */
   /* strong, saturated colours that stand out from the depth colours (the
      white outline + dark edge separate them even over the shallows) */
-  :root{ --t-mark:#E4E9EC; --t-abborre:#FF7A1A; --t-gadda:#35D24A; --t-gos:#FFD21A; --t-fara:#E5322D; --t-meet:#FFB23F; --t-hem:#3A86FF; }
+  :root{ --t-mark:#E4E9EC; --t-abborre:#FF7A1A; --t-gadda:#35D24A; --t-gos:#3A86FF; --t-fara:#E5322D; --t-meet:#FFB23F; --t-hem:#A8693A; }   /* gös blue, hem brown (Filip, 2026-10-01) */
   /* "Fara": a red stop sign with a white X -- not a drop like the other spots, the same
      for everyone's, never hidden by a filter, on top of the other spots. About the size
      of others' pins, a bit bigger; follows "Storlek på fiskeplatser". Centred on the spot. */
@@ -31,6 +31,7 @@
   .wpPin--gos{background-color:var(--t-gos);}
   .wpPin--hem{background-color:var(--t-hem);}
   .wpPin--hem .pinHead svg{color:#fff;width:17px;height:17px;}
+  .wpPin--gos .pinHead svg{color:#fff;}
   .wpPin--mark .pinHead svg{width:15px;height:15px;}
   /* OTHERS' spots: the same drop and style as your own, but 70 % of the size
      and with no icon -- just the type colour. Drawn under your own. (Outline
@@ -130,6 +131,8 @@
   .typeSeg button[data-type="meet"]{--tc:var(--t-meet);}
   .typeSeg button[data-type="hem"]{--tc:var(--t-hem);}
   .typeSeg button[data-type="fara"]:not(.active){color:#FF6B63;}      /* (the stop-sign red is too dark to read on navy) */
+  .typeSeg button[data-type="hem"]:not(.active){color:#D9A06E;}       /* (the same for the brown) */
+  .typeSeg button[data-type="hem"].active, .typeSeg button[data-type="gos"].active{color:#fff;}
   .typeSeg button.active{background:var(--tc);color:var(--ink);position:relative;overflow:hidden;}
   .typeSeg button.active::after{content:'';position:absolute;top:0;bottom:0;left:-60%;width:50%;pointer-events:none;
     background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);animation:pillSweep 2.8s ease-in-out infinite;}

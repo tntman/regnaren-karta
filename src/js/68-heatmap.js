@@ -22,7 +22,7 @@
   var hmCanvas = document.getElementById('hmLayer'), hmCtx = hmCanvas.getContext('2d');
   var hmSatCanvas = document.getElementById('hmSat'), hmSatCtx = hmSatCanvas.getContext('2d');
   var hmPanel = document.getElementById('hmPanel'), hmCard = document.getElementById('hmCard'), hmPill = document.getElementById('hmPill'), toggleHmEl = document.getElementById('toggleHeatmap');
-  var HM_COL = { abborre: [255, 122, 26], gadda: [53, 210, 74], gos: [255, 210, 26] };
+  var HM_COL = { abborre: [255, 122, 26], gadda: [53, 210, 74], gos: [58, 134, 255] };
   var HM_SP = [['abborre', 'Abborre', 'abborren'], ['gadda', 'Gädda', 'gäddan'], ['gos', 'Gös', 'gösen']];
   var HM_MON = ['jan', 'feb', 'mar', 'apr', 'maj', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
   function hmSpName(sp, i){ var s = HM_SP.filter(function(x){ return x[0] === sp; })[0]; return s ? s[i || 1] : sp; }

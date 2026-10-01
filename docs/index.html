@@ -373,7 +373,7 @@
   .visSwatch.ws-mark{background-color:var(--t-mark);}
   .visSwatch.ws-abborre{background-color:var(--t-abborre);}
   .visSwatch.ws-gadda{background-color:var(--t-gadda);}
-  .visSwatch.ws-gos{background-color:var(--t-gos);}
+  .visSwatch.ws-gos{background-color:var(--t-gos);color:#fff;}
   .visSwatch.ws-fara{background-color:var(--t-fara);color:#fff;}
   .visSwatch.ws-meet{background-color:var(--t-meet);}
   .visSwatch.ws-hem{background-color:var(--t-hem);color:#fff;}
@@ -664,7 +664,7 @@
      Gädda, Gös (fish). Owner = the edge: dark on your own, white on others'. */
   /* strong, saturated colours that stand out from the depth colours (the
      white outline + dark edge separate them even over the shallows) */
-  :root{ --t-mark:#E4E9EC; --t-abborre:#FF7A1A; --t-gadda:#35D24A; --t-gos:#FFD21A; --t-fara:#E5322D; --t-meet:#FFB23F; --t-hem:#3A86FF; }
+  :root{ --t-mark:#E4E9EC; --t-abborre:#FF7A1A; --t-gadda:#35D24A; --t-gos:#3A86FF; --t-fara:#E5322D; --t-meet:#FFB23F; --t-hem:#A8693A; }   /* gös blue, hem brown (Filip, 2026-10-01) */
   /* "Fara": a red stop sign with a white X -- not a drop like the other spots, the same
      for everyone's, never hidden by a filter, on top of the other spots. About the size
      of others' pins, a bit bigger; follows "Storlek på fiskeplatser". Centred on the spot. */
@@ -693,6 +693,7 @@
   .wpPin--gos{background-color:var(--t-gos);}
   .wpPin--hem{background-color:var(--t-hem);}
   .wpPin--hem .pinHead svg{color:#fff;width:17px;height:17px;}
+  .wpPin--gos .pinHead svg{color:#fff;}
   .wpPin--mark .pinHead svg{width:15px;height:15px;}
   /* OTHERS' spots: the same drop and style as your own, but 70 % of the size
      and with no icon -- just the type colour. Drawn under your own. (Outline
@@ -792,6 +793,8 @@
   .typeSeg button[data-type="meet"]{--tc:var(--t-meet);}
   .typeSeg button[data-type="hem"]{--tc:var(--t-hem);}
   .typeSeg button[data-type="fara"]:not(.active){color:#FF6B63;}      /* (the stop-sign red is too dark to read on navy) */
+  .typeSeg button[data-type="hem"]:not(.active){color:#D9A06E;}       /* (the same for the brown) */
+  .typeSeg button[data-type="hem"].active, .typeSeg button[data-type="gos"].active{color:#fff;}
   .typeSeg button.active{background:var(--tc);color:var(--ink);position:relative;overflow:hidden;}
   .typeSeg button.active::after{content:'';position:absolute;top:0;bottom:0;left:-60%;width:50%;pointer-events:none;
     background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);animation:pillSweep 2.8s ease-in-out infinite;}
@@ -7165,8 +7168,8 @@
   ];
   var AN_HARD = ['Mjuk', 'Medelhård', 'Hård', 'Mycket hård'];      // Genesis' 4 levels
   var AN_COLORS = { depth: null, steep: [255, 70, 200], tops: [255, 190, 40], veg: [90, 235, 80], hard: [240, 70, 10],
-                    wind: [255, 178, 63], similar: [255, 80, 160], abborre: [255, 210, 26], gadda: [120, 255, 120], gos: [255, 210, 26],
-                    c_abborre: [255, 122, 26], c_gadda: [53, 210, 74], c_gos: [255, 210, 26] };   // (c_ = from the catches: the species' colours)
+                    wind: [255, 178, 63], similar: [255, 80, 160], abborre: [255, 210, 26], gadda: [120, 255, 120], gos: [58, 134, 255],
+                    c_abborre: [255, 122, 26], c_gadda: [53, 210, 74], c_gos: [58, 134, 255] };   // (c_ = from the catches: the species' colours)
   // the depth scale of the sliders = the legend's (0 .. the lake's max depth, same colours)
   var AN_DMAX = parseFloat(String((LAKE.legendTicks || []).slice(-1)[0] || '').replace(',', '.')) || Math.ceil(LAKE.depth.max || 20);
   var AN_SIMF = [['d', 'Djup'], ['s', 'Lutning'], ['h', 'Botten'], ['v', 'Växter'], ['t', 'Grynna/håla']];
@@ -8500,7 +8503,7 @@
   var hmCanvas = document.getElementById('hmLayer'), hmCtx = hmCanvas.getContext('2d');
   var hmSatCanvas = document.getElementById('hmSat'), hmSatCtx = hmSatCanvas.getContext('2d');
   var hmPanel = document.getElementById('hmPanel'), hmCard = document.getElementById('hmCard'), hmPill = document.getElementById('hmPill'), toggleHmEl = document.getElementById('toggleHeatmap');
-  var HM_COL = { abborre: [255, 122, 26], gadda: [53, 210, 74], gos: [255, 210, 26] };
+  var HM_COL = { abborre: [255, 122, 26], gadda: [53, 210, 74], gos: [58, 134, 255] };
   var HM_SP = [['abborre', 'Abborre', 'abborren'], ['gadda', 'Gädda', 'gäddan'], ['gos', 'Gös', 'gösen']];
   var HM_MON = ['jan', 'feb', 'mar', 'apr', 'maj', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
   function hmSpName(sp, i){ var s = HM_SP.filter(function(x){ return x[0] === sp; })[0]; return s ? s[i || 1] : sp; }

@@ -13,10 +13,10 @@ colors:
   art-markering: "#E4E9EC"
   art-abborre: "#FF7A1A"
   art-gadda: "#35D24A"
-  art-gos: "#FFD21A"
+  art-gos: "#3A86FF"
   art-fara: "#E5322D"
   art-traffpunkt: "#FFB23F"
-  art-hem: "#3A86FF"
+  art-hem: "#A8693A"
   greppglod: "#58B4FF"
   glod-lag: "#5A1482"
   glod-mitt: "#BE288C"
@@ -150,7 +150,7 @@ Täthet och tempo följer tävlingsdagen: allt viktigt nås med en hand, texter 
 **Key Characteristics:**
 - Kartan fyller hela skärmen; gränssnittet svävar som mörkt, halvgenomskinligt glas ovanpå.
 - Bärnsten är enda gränssnittsaccenten och betyder alltid "valt / på".
-- Artfärger (abborre orange, gädda grön, gös gul, fara röd, hem blå) är signaler på kartan, inte dekoration.
+- Artfärger (abborre orange, gädda grön, gös blå, fara röd, hem brun) är signaler på kartan, inte dekoration.
 - Bottenrutor med greppremsa är den gemensamma formen för allt som öppnas.
 - Mjuka toningar i över- och underkant (nattvatten) i stället för hårda kanter mot kartan.
 
@@ -182,7 +182,7 @@ Ett mörkt, kallt sjökortsgränssnitt med en enda varm accent, där all övrig 
 
 **The Map Owns Color Rule.** Gränssnittet självt är sjökortsblått, dimvitt och grått. Färgstarka ytor hör till kartan (djup, lä, analys, heatmap) och till arterna.
 
-**The Species Is Its Color Rule.** Abborre är alltid orange (#FF7A1A), gädda grön (#35D24A), gös gul (#FFD21A), fara röd, hem blå – på pinnar, prickar, chips och skalor.
+**The Species Is Its Color Rule.** Abborre är alltid orange (#FF7A1A), gädda grön (#35D24A), gös blå (#3A86FF), fara röd, hem brun (#A8693A) – på pinnar, prickar, chips och skalor (Kartanalys, Heatmap).
 
 ## Typography
 
