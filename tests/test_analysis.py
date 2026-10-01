@@ -15,7 +15,9 @@ cfg = {'waypoints': [{'lat': 58.88651, 'lon': 15.777774, 'name': 'Djupa hålet',
 def an(pg): return pg.evaluate('window.__ffAnalysis()')
 CAT = {'abborre': 'rule', 'gadda': 'rule', 'gos': 'rule', 'similar': 'similar'}
 def pick(pg, m, wait=1300):
-    # the category first (the row on top), then the choice in it (Liknande: the category is the choice)
+    # the category first (the row on top), then the choice in it (Liknande: the category is the choice).
+    # Kartdata's buttons combine, so switch off what's on first (one at a time here)
+    if CAT.get(m, 'map') == 'map' and pg.is_enabled('#anClear') and an(pg)['mode'] != m: pg.click('#anClear'); pg.wait_for_timeout(150)
     pg.click('#anCatSeg button[data-cat="%s"]' % CAT.get(m, 'map')); pg.wait_for_timeout(150)
     if m != 'similar': pg.click('#anPanel button[data-m="%s"]' % m)
     pg.wait_for_timeout(wait); return an(pg)
@@ -191,5 +193,32 @@ with sync_playwright() as p:
     pg.wait_for_load_state('load'); pg.wait_for_timeout(3500)
     check('turning the phone (reload): Kartanalys still on and drawn', pg.evaluate('window.__rc') is None and an(pg)['mode'] == 'depth' and an(pg)['ready'] and lit(pg) > 1000, an(pg))
     check('no page errors', not errs, errs)
+    b.close()
+    # ---- Kartdata combined: the buttons switch on / off; more than one = ALL of them (in the map's own colours)
+    b, ctx, pg, errs = new_page(p, geo=B3, cfg=cfg, name='Filip'); pg.wait_for_timeout(1800)
+    pg.click('#anBtn'); pg.wait_for_timeout(400)
+    pg.click('#anChips button[data-m="depth"]'); pg.wait_for_timeout(1500); n1 = an(pg)['n']
+    pg.click('#anChips button[data-m="steep"]'); pg.wait_for_timeout(1500); a = an(pg)
+    check('Djup + Branta kanter: combined, smaller than Djup alone, both buttons on', a['mode'] == 'combo' and 0 < a['n'] < n1 and 'Djup + Branta kanter' in a['text']
+          and pg.eval_on_selector_all('#anChips button.on', 'e => e.map(x => x.dataset.m)') == ['depth', 'steep'], (n1, a))
+    check('...the map\'s own colours inside (no colour of its own), Branta without its own depth range (Djup\'s is used)',
+          pg.evaluate("document.querySelectorAll('#anControls .anDual').length") == 1 and pg.is_visible('#anSlope'))
+    pg.click('#anChips button[data-m="hard"]'); pg.wait_for_timeout(2500); a2 = an(pg)
+    check('+ Hård botten: smaller again, with "inom … m" (15 m)', a2['n'] <= a['n'] and pg.input_value('#anNear_hard') == '15', (a['n'], a2['n']))
+    pg.click('#anPanel .pnInfoBtn'); pg.wait_for_timeout(300)
+    info = pg.inner_text('#anPanel .pnInfo')
+    check('ⓘ: how much each step leaves', 'Djup:' in info and '+ Branta kanter:' in info and '+ Hård botten inom 15 m:' in info and '→' in info, info)
+    pg.click('#anPanel .pnInfoBtn'); pg.wait_for_timeout(200)
+    pg.click('#anChips button[data-m="steep"]'); pg.click('#anChips button[data-m="hard"]'); pg.wait_for_timeout(1500)
+    check('switch the others off again: just Djup, as before', an(pg)['mode'] == 'depth' and an(pg)['n'] == n1)
+    pg.click('#anClear'); pg.wait_for_timeout(300)
+    # nothing left: says which part took the last bit away
+    pg.evaluate("localStorage.setItem('ffmap_analysis_v1', JSON.stringify(Object.assign(JSON.parse(localStorage.getItem('ffmap_analysis_v1')), { lo: 11.5, hi: 12, near: { tops: 0, veg: 0, hard: 15, wind: 15 } })))")
+    pg.reload(); pg.wait_for_timeout(2000); pg.click('#anBtn'); pg.wait_for_timeout(400)
+    pg.click('#anChips button[data-m="depth"]'); pg.wait_for_timeout(1200); pg.click('#anChips button[data-m="veg"]'); pg.wait_for_timeout(3000)
+    # (no water 11,5-12 m deep in Regnaren: Djup takes everything; växter / hård botten are almost everywhere, so they can't be made to)
+    check('nothing left: says which part took the last bit ("Inget kvar – Djup tar bort det sista. Prova att ändra dess reglage")', an(pg)['n'] == 0 and
+          'Inget kvar – Djup tar bort det sista' in pg.inner_text('#anResult') and 'ändra dess reglage' in pg.inner_text('#anResult'), (an(pg)['n'], lit(pg), pg.inner_text('#anResult')))
+    check('combined: no page errors', not errs, errs)
     b.close()
 print('\n%d/%d passed' % (sum(results), len(results)))

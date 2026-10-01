@@ -57,7 +57,15 @@ raderas den då (`pagehide`).
   `resetDone`) och **⏻ Stäng av** (`#anClear`, bärnsten när något är på). Sedan **kategoriraden**
   (`#anCatSeg`: Kartdata / Tumregler / Fångster / Liknande – `anSet.cat`, `anCatOf(mode)`; kategorin med det
   som är på får en amber understrykning) och bara den kategorins knappar, en rad som skrollar i sidled.
-  Två reglage sida vid sida. Liknande-listan i `#anListBox`. Liknande = kategorin själv (inget extra val). Dra = mindre, snärt/hela vägen = stäng (`sheetSwipe`, tools/UI.md).
+  Två reglage sida vid sida. Liknande-listan i `#anListBox`. Liknande = kategorin själv (inget extra val).
+- **Kombinera i Kartdata** (2026-10-01): Kartdata-knapparna slås på/av (`anToggleMap`, `aria-pressed`). En på = som
+  förut (`anSet.mode` = den), fler = läget `'combo'` med delarna i `anSet.combo`. Tänt = där ALLA delar stämmer
+  (`anCombo`, varje del räknas av `anOne(m, A, opt)`). Fläckarna (grynnor/hålor, växter, hård botten, vindkant,
+  `AN_NEAR`) räknas "inom … m" (`anSet.near`, reglage `#anNear_<del>`, 0–50 m, 0 = exakt; standard 15, grynnor 0) med
+  `anNear`. Är Djup med använder Branta kanter / Hård botten Djups intervall (`opt.noRange`, deras eget djupreglage
+  döljs). Området visar kartans egna färger (ingen egen färg), resten grått. Blir inget kvar: "Inget kvar – <del>
+  tar bort det sista" + tips. ⓘ visar stegen ("Djup: 23 % → + Branta kanter: 1 % → …"). Återställ behåller delarna.
+  Tumregler och Fångster blandas inte in. Dra = mindre, snärt/hela vägen = stäng (`sheetSwipe`, tools/UI.md).
 - **Liknande**: välj vad som jämförs (djup, lutning, botten, växter, grynna/håla) och område
   (bara platsen/25/50/100 m = snittet inom radien, `anSimFeatures`), med förklaring. Platsen
   själv lyser och får en rosa ring (`.anLbl.simRef`), men står inte i listan (inget inom 60 m);
