@@ -128,6 +128,14 @@
   }
   #menuBtn:active{transform:scale(.92);}
   #menuBtn svg{width:19px;height:19px;}
+  #menuAva{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;}
+  #menuBtn.hasAva{padding:0;border-color:rgba(255,255,255,.35);}
+  #menuChev{
+    position:absolute;right:-4px;bottom:-4px;width:17px;height:17px;border-radius:50%;
+    background:var(--navy);border:1px solid rgba(255,255,255,.35);color:var(--offwhite);
+    display:flex;align-items:center;justify-content:center;
+  }
+  #menuChev svg{width:11px;height:11px;}
 
   #menuPanel{
     position:absolute;left:14px;

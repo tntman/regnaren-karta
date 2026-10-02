@@ -52,7 +52,8 @@ specificitet.
 | `28-menu.js` | meny, byta sjö |
 | `30-help.js` | Hjälp, `HELP_NEWS` |
 | `32-demo.js` | Demo Mode |
-| `34-name.js` | ditt namn |
+| `33-avatars.js` | profilbilderna (`AVATARS`, genereras av `tools/make_avatars.py` ur `tools/fiskare/`) |
+| `34-name.js` | ditt namn, profilbild på menyknappen, "Logga ut" i menyn |
 | `36-admin.js` | admin, export (GPX/CSV) |
 | `38-speed-depth.js` | fart, riktningspilen, djup |
 | `40-route.js` | rutten sjövägen, snittfart |

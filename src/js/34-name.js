@@ -37,19 +37,20 @@
     return (v || '').trim();
   }
   userName = canonicalName(userName);
-  var headerUserEl = document.getElementById('headerUser');
-  var HEADER_USER_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"></path></svg>';
+  var menuAva = document.getElementById('menuAva');
+  var menuChev = document.getElementById('menuChev');
+  var menuBurger = document.querySelector('#menuBtn > svg');
+  var menuItemLogout = document.getElementById('menuItemLogout');
   function showUserName(){
     updateAdminVisibility();
     settingsNameDisplay.textContent = userName;
-    if (userName){
-      headerUserEl.innerHTML = HEADER_USER_ICON;
-      var t = document.createElement('span');
-      t.textContent = userName;
-      headerUserEl.appendChild(t);
-    } else {
-      headerUserEl.innerHTML = '';
-    }
+    var pic = AVATARS[userName];
+    menuAva.hidden = menuChev.hidden = !pic;
+    menuBurger.style.display = pic ? 'none' : '';
+    menuBtn.classList.toggle('hasAva', !!pic);
+    if (pic) menuAva.src = pic;
+    menuItemLogout.hidden = document.getElementById('menuLogoutSep').hidden = !userName;
+    document.getElementById('menuLogoutText').textContent = 'Logga ut ' + userName;
   }
   showUserName();
 
@@ -144,6 +145,7 @@
   // Name is locked once set — the only way to change identity is to log out
   // and re-enter a (possibly new) name via the mandatory modal.
   var logoutBtn = document.getElementById('logoutBtn');
+  menuItemLogout.addEventListener('click', function(){ toggleMenu(false); logoutBtn.click(); });
   logoutBtn.addEventListener('click', function(){
     expireOwnPosition(); // so the old name's pip disappears for everyone now, not in an hour
     try { localStorage.removeItem(USER_NAME_KEY); } catch(e){}

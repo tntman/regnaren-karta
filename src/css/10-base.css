@@ -72,15 +72,6 @@
     text-shadow:0 1px 6px rgba(0,0,0,.5);
   }
   .sub{font-size:12.5px;color:var(--text-muted);margin-top:2px;letter-spacing:.01em;}
-  /* logged-in name, small and discreet under the lake name */
-  #headerUser{
-    display:flex;align-items:center;gap:4px;margin-top:1px;
-    font-size:11.5px;color:var(--text-muted);letter-spacing:.02em;
-    text-shadow:0 1px 4px rgba(0,0,0,.6);
-    max-width:170px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  }
-  #headerUser:empty{display:none;}
-  #headerUser svg{width:11px;height:11px;flex:0 0 auto;opacity:.85;}
 
   #marker{position:absolute;left:0;top:0;z-index:17;pointer-events:none;display:none;} /* own GPS dot: above boats and fishing spots (never blocks taps -- pointer-events:none) */
   #accRing{

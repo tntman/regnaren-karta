@@ -138,7 +138,7 @@ with sync_playwright() as p:
     rotate(pg, 390, 844)
     check('name picker kept "Annat namn" + typed text', pg.eval_on_selector('#nameModal', 'e=>e.classList.contains("show")') and pg.input_value('#nameInput') == 'Kalle Anka', pg.input_value('#nameInput'))
     pg.click('#nameSave'); pg.wait_for_timeout(500)
-    check('logged in as the typed name', 'Kalle Anka' in pg.inner_text('#headerUser'))
+    check('logged in as the typed name', 'Kalle Anka' in pg.inner_text('#menuItemLogout'))
     check('no page errors', not errs, errs)
     b.close()
 
