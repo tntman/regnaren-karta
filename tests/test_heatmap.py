@@ -72,6 +72,20 @@ with sync_playwright() as p:
     check('...and it says so: green with a tick for a moment', pg.get_attribute('#hmReset', 'aria-label') == 'Återställt' and pg.eval_on_selector('#hmReset', 'e => e.classList.contains("rsDone")'))
     pg.wait_for_timeout(1600)
     check('...then the usual grey ↺', pg.get_attribute('#hmReset', 'aria-label') == 'Återställ' and not pg.eval_on_selector('#hmReset', 'e => e.classList.contains("rsDone")'))
+    # ---- "När": a bar per hour, press / drag = a time window filtering the map ----
+    nbar = pg.eval_on_selector_all('#hmTime .hmBars i', 'e => e.length')
+    check('"När": a bar per hour of the day with catches + "Bäst kl"', nbar >= 2 and pg.is_visible('#hmTime') and 'Bäst kl' in pg.inner_text('#hmTime'), nbar)
+    n_all = heat(pg)['n']
+    hrs = pg.evaluate("(() => { var r = %s; return r.filter(x => x[1] !== 'fiskfiskOpen').map(x => new Date(x[0]).getHours()); })()" % json.dumps([[r[0], r[1]] for r in ROWS]))
+    h0 = min(hrs); n0 = sum(1 for h in hrs if h == h0)
+    bb2 = pg.locator('#hmTime .hmBars').bounding_box(); lo = int(pg.get_attribute('#hmTime', 'data-lo')); hi = int(pg.get_attribute('#hmTime', 'data-hi'))
+    pg.mouse.click(bb2['x'] + bb2['width'] * ((h0 - lo) + 0.5) / (hi - lo + 1), bb2['y'] + bb2['height'] - 4); pg.wait_for_timeout(300)
+    check('press the first hour: only the catches from then on the map; ↺ can be pressed', heat(pg)['n'] == n0 and n0 < n_all and pg.is_enabled('#hmReset') and ('kl %02d–%02d' % (h0, h0 + 1)) in pg.inner_text('#hmResult'), (heat(pg)['n'], n0, n_all))
+    pg.mouse.click(bb2['x'] + bb2['width'] * ((h0 - lo) + 0.5) / (hi - lo + 1), bb2['y'] + bb2['height'] - 4); pg.wait_for_timeout(300)
+    check('...press the same hour again: all hours', heat(pg)['n'] == n_all, heat(pg)['n'])
+    pg.mouse.move(bb2['x'] + 3, bb2['y'] + 40); pg.mouse.down(); pg.mouse.move(bb2['x'] + bb2['width'] - 3, bb2['y'] + 40, steps=8); pg.mouse.up(); pg.wait_for_timeout(300)
+    check('drag over all bars: everything again, window still set to the whole day', heat(pg)['n'] == n_all, heat(pg)['n'])
+    pg.click('#hmReset'); pg.wait_for_timeout(1800)
     check('the "Heatmap" pill under the weather chip', pg.is_visible('#hmPill') and pg.inner_text('#hmPill').strip() == 'Heatmap' and
           pg.evaluate("document.getElementById('hmPill').getBoundingClientRect().top > document.getElementById('wxChip').getBoundingClientRect().bottom - 1"))
     pg.screenshot(path='shot_heat_heat.png')

@@ -1455,6 +1455,14 @@
   #hmLegend{display:flex;align-items:center;gap:6px;margin-top:3px;font-size:11px;color:var(--text-muted);}   /* (in the top row, under the result) */
   #hmLegend .bar{width:80px;height:6px;border-radius:3px;background:linear-gradient(90deg,rgba(90,20,130,.6),#be288c,#f56e3c,#ffbe46,#fff5c8);}
   #hmLegend:empty{display:none;}
+  #hmTime{margin-top:10px;touch-action:none;user-select:none;-webkit-user-select:none;}
+  #hmTime:empty{display:none;}
+  .hmTimeHead{display:flex;align-items:baseline;gap:8px;margin-bottom:6px;}
+  .hmTimeBest{font-size:12.5px;color:var(--amber,#E8A33D);}
+  .hmBars{display:flex;align-items:flex-end;gap:2px;height:64px;}
+  .hmBars i{flex:1;border-radius:2px 2px 0 0;opacity:.4;min-width:0;}
+  .hmBars i.on{opacity:1;}
+  .hmAx{display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-top:3px;}
   .hmSpDot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:0;}
   #hmCard{position:absolute;left:0;right:0;bottom:0;z-index:27;background:var(--navy);border-top:1px solid rgba(255,255,255,.14);border-radius:18px 18px 0 0;
     padding:8px 16px calc(env(safe-area-inset-bottom,0px) + 16px);box-shadow:0 -10px 30px rgba(0,0,0,.45);transform:translateY(105%);transition:transform .25s ease;overflow-y:auto;}
@@ -2063,6 +2071,7 @@
     <div class="anSeg" id="hmStyleSeg"><button type="button" data-s="heat">Värme</button><button type="button" data-s="species">Per art</button><button type="button" data-s="hex">Rutor</button><button type="button" data-s="dots">Prickar</button></div>
     <div class="anChips" id="hmSp"></div>
     <div class="anChips" id="hmComp"></div>
+    <div id="hmTime"></div>
     <div id="hmCtl"></div>
   </div>
   <div id="hmCard" role="dialog" aria-label="Fångst"><div class="grab"><button type="button" id="hmCardClose" class="gripX" aria-label="Stäng">✕</button></div>
@@ -8593,7 +8602,7 @@
      Liknande. Not together with Kartanalys (both tone the map down). Off after a restart,
      kept through a rotation. The panel closed: a "Heatmap" pill under the weather chip. */
   var HM_KEY = lakeKey('ffmap_heatmap_v1', 'heatmap_v1');
-  var hmSet = { style: 'heat', sp: 'all', spOn: { abborre: 1, gadda: 1, gos: 1 }, comp: 'all', rad: 70, str: 50, hexM: 60, cnt: 1, big: 1, names: 0 };
+  var hmSet = { style: 'heat', sp: 'all', spOn: { abborre: 1, gadda: 1, gos: 1 }, comp: 'all', rad: 70, str: 50, hexM: 60, cnt: 1, big: 1, names: 0, h0: 0, h1: 23 };
   var HM_DEFAULTS = JSON.stringify(hmSet);   // (for "Återställ")
   try { var hsv = JSON.parse(localStorage.getItem(HM_KEY) || 'null'); if (hsv) for (var hk in hsv) hmSet[hk] = hsv[hk]; } catch(e){}
   function hmSave(){ try { localStorage.setItem(HM_KEY, JSON.stringify(hmSet)); } catch(e){} }
@@ -8635,9 +8644,12 @@
     return Object.keys(by).map(function(k){ return { id: k, list: by[k] }; }).sort(function(a, b){ return b.list[0].t - a.list[0].t; });
   }
   function hmInComp(c){ return hmSet.comp === 'all' || c.comp === hmSet.comp; }
-  function hmVisible(){
+  function hmHour(c){ return new Date(c.t).getHours(); }
+  function hmHourOn(){ return hmSet.h0 > 0 || hmSet.h1 < 23; }
+  function hmVisible(anyHour){   // (anyHour: ignore the time window -- the "När" graph shows the whole day)
     return hmAll().filter(function(c){
       if (!hmInComp(c)) return false;
+      if (!anyHour && hmHourOn() && (hmHour(c) < hmSet.h0 || hmHour(c) > hmSet.h1)) return false;
       return hmSet.style === 'species' ? !!hmSet.spOn[c.sp] : (hmSet.sp === 'all' || c.sp === hmSet.sp);
     });
   }
@@ -8720,17 +8732,62 @@
       : st === 'species' ? rng('rad', 'Radie', 20, 200, 10)
       : st === 'hex' ? '<div class="pnRow2"><div class="anSeg" aria-label="Rutans storlek">' + [30, 60, 120].map(function(m){ return '<button type="button" data-hx="' + m + '" class="' + (hmSet.hexM === m ? 'on' : '') + '">' + m + ' m</button>'; }).join('') + '</div><div class="anChips">' + tog('cnt', 'Visa antal') + '</div></div>'
       : '<div class="anChips">' + tog('big', 'Större prick = större fisk') + tog('names', 'Visa namn') + '</div>';
+    hmRenderTime();
     var res = document.getElementById('hmResult'), all = hmAll();
     if (!catchData) res.innerHTML = 'Hämtar fångster…';
     else if (!all.length) res.innerHTML = catchErr ? 'Kunde inte hämta fångsterna (ingen anslutning?).' : 'Inga fångster i ' + escHtml(LAKE.name) + ' än.<span class="note">Admin läser in dem i Inställningar → Admin → Fångster.</span>';
     else {
       var v = hmVisible(), c2 = { abborre: 0, gadda: 0, gos: 0 }; v.forEach(function(c){ c2[c.sp]++; });
-      res.innerHTML = '<b>' + v.length + ' fångster</b> i ' + escHtml(LAKE.name) + ' · ' + HM_SP.map(function(x){ return c2[x[0]] + ' ' + x[1].toLowerCase(); }).join(', ') +
+      res.innerHTML = '<b>' + v.length + ' fångster</b> i ' + escHtml(LAKE.name) + (hmHourOn() ? ' · kl ' + hmHourTxt() : '') + ' · ' + HM_SP.map(function(x){ return c2[x[0]] + ' ' + x[1].toLowerCase(); }).join(', ') +
         '<span class="note">' + (st === 'dots' ? 'Tryck på en prick för allt om fångsten.' : st === 'hex' ? 'Tryck på en ruta för fångsterna i den.' : 'Tryck på kartan där det är färg för fångsterna där.') + '</span>' +
         (!hmShow ? '<span class="pnHid"> · Dold – slå på Heatmap i Filter</span>' : '');
     }
     pnInfo(hmPanel);
   }
+  // "När": a bar per hour of the day (catches passing species + competition); press / drag = a time window that filters the map
+  function hmHourTxt(){ return ('0' + hmSet.h0).slice(-2) + '–' + ('0' + (hmSet.h1 + 1)).slice(-2); }
+  function hmRenderTime(){
+    var el = document.getElementById('hmTime'), L = hmAll().length ? hmVisible(true) : [], n = [];
+    if (!L.length){ el.innerHTML = ''; return; }
+    var lo = 24, hi = -1, h, i; for (h = 0; h < 24; h++) n[h] = 0;
+    L.forEach(function(c){ n[hmHour(c)]++; });
+    for (h = 0; h < 24; h++) if (n[h]){ lo = Math.min(lo, h); hi = Math.max(hi, h); }
+    var mx = Math.max.apply(null, n), best = 0, bs = -1;                     // (best 3 hours in a row)
+    for (h = 0; h <= 21; h++){ var s = n[h] + n[h + 1] + n[h + 2]; if (s > bs){ bs = s; best = h; } }
+    var bars = '';
+    for (h = lo; h <= hi; h++){
+      var v = n[h] / mx, rgba = hmRamp(0.25 + 0.75 * v);   // (never the see-through dark end)
+      bars += '<i data-h="' + h + '" class="' + (h >= hmSet.h0 && h <= hmSet.h1 ? 'on' : '') + '" style="height:' + Math.max(4, Math.round(v * 100)) + '%;background:rgb(' + Math.round(rgba[0]) + ',' + Math.round(rgba[1]) + ',' + Math.round(rgba[2]) + ')"></i>';
+    }
+    el.setAttribute('data-lo', lo); el.setAttribute('data-hi', hi);
+    el.innerHTML = '<div class="hmTimeHead"><span class="rowLbl">När</span><span class="hmTimeBest">Bäst kl ' + ('0' + best).slice(-2) + '–' + ('0' + (best + 3)).slice(-2) + ' · ' + Math.round(100 * bs / L.length) + ' %</span></div>' +
+      '<div class="hmBars">' + bars + '</div><div class="hmAx"><span>' + ('0' + lo).slice(-2) + '</span><span>' + ('0' + hi).slice(-2) + '</span></div>';
+  }
+  (function(){
+    var el = document.getElementById('hmTime'), a = -1, moved = false, prev = null;
+    function hourAt(e){
+      var b = el.querySelector('.hmBars'); if (!b) return -1;
+      var r = b.getBoundingClientRect(), lo = +el.getAttribute('data-lo'), hi = +el.getAttribute('data-hi');
+      return lo + Math.max(0, Math.min(hi - lo, Math.floor((e.clientX - r.left) / r.width * (hi - lo + 1))));
+    }
+    function apply(h){ hmSet.h0 = Math.min(a, h); hmSet.h1 = Math.max(a, h); hmSave(); hmHeatCache = null; hmRenderPanel(); hmDraw(); }
+    el.addEventListener('pointerdown', function(e){
+      e.stopPropagation(); if (!el.querySelector('.hmBars')) return;
+      a = hourAt(e); moved = false; prev = [hmSet.h0, hmSet.h1];
+      try { el.setPointerCapture(e.pointerId); } catch(x){}
+      apply(a);
+    });
+    el.addEventListener('pointermove', function(e){
+      if (a < 0) return; var h = hourAt(e); if (h === (hmSet.h0 === a ? hmSet.h1 : hmSet.h0)) return;
+      moved = true; apply(h);
+    });
+    function up(){
+      if (a < 0) return;
+      if (!moved && prev[0] === a && prev[1] === a){ hmSet.h0 = 0; hmSet.h1 = 23; hmSave(); hmHeatCache = null; hmRenderPanel(); hmDraw(); }   // (the same hour again = all)
+      a = -1;
+    }
+    el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
+  })();
   function hmOutTxt(k){ return k === 'rad' ? hmSet.rad + ' m' : hmSet.str < 34 ? 'Svag' : hmSet.str < 67 ? 'Mellan' : 'Stark'; }
   hmPanel.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
   hmPanel.addEventListener('click', function(e){

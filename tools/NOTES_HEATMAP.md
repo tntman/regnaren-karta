@@ -18,6 +18,7 @@ bottenrutan, fångstrutan, tryck på kartan), `src/css/72-heatmap.css`, HTML i `
   **Liknande** (Kartanalys Liknande med fångsten som plats: `anExtraRef` i `anSpots()`; heatmapen stängs).
 - **Inte samtidigt som Kartanalys**: heatmap på → Kartanalys-läget av; ett Kartanalys-läge valt → heatmap av.
 - Översta raden (`.pnHead`, som Kartanalys): resultatet + teckenförklaringen (`#hmLegend`), **ⓘ** (`pnInfo`: noterna i `#hmResult .note` i en ruta), **↺ Återställ** (`HM_DEFAULTS`, grå när allt är som från start) och **⏻ Stäng av heatmap** (`#hmOff`). Art/Tävling: radens namn först (`.rowLbl`), en rad var som skrollar i sidled.
+- **När** (`#hmTime`, `hmRenderTime`, sist i bottenrutan): stapel per timme på dygnet (bara timmar med fångster; färg = glöd), "Bäst kl 11–14 · 95 %" (bästa tre timmarna i rad). Tryck en timme / dra över flera = tidsfönster `hmSet.h0..h1` som filtrerar kartan via `hmVisible()` (grafen själv ignorerar fönstret: `hmVisible(true)`); samma timme igen eller ↺ = alla. Resultatraden säger "kl 11–14". Timmar i enhetens lokala tid.
 - Sjöns kant: tunn vit linje 50 % som i Kartanalys (`hmShoreLayer`: `anField` med egen cache, `edgeW`).
 - Rutan stängd: skylten **Heatmap** under väderchipet (`#hmPill`, klass `.mapPill` som Kartanalys `#anPill`) öppnar den igen.
 - **Filter → Lager → Heatmap** (`#toggleHeatmap`) visar/döljer bara, som Kartanalys: `hmOn` = påslagen (kartlägeslistan/rutan),
