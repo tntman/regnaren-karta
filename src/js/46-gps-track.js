@@ -117,6 +117,7 @@
     var accWebPx = lastFix.accM / WEB_METERS_PER_PX;
     var d = Math.max(16, Math.min(360, accWebPx * scale * 2));
     accRing.style.width = d + 'px'; accRing.style.height = d + 'px';
+    compassDraw(sx, sy);   // ("Kompass" -- further down)
   }
 
   function niceScaleMeters(target){

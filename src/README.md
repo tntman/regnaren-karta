@@ -62,6 +62,7 @@ specificitet.
 | `48-weather.js` | väder (Open-Meteo) |
 | `50-wind-lee.js` | vind och lä (`viewStep`, `drawLeeView`) |
 | `52-lightning.js` | blixtar (FMI) |
+| `53-compass.js` | Kompass: kil mot dit telefonen pekar (Filter → Lager) |
 | `54-panels.js` | bottenpaneler (`sheetSwipe`) |
 | `56-analysis.js` | Kartanalys |
 | `57-an-catches.js` | Kartanalys "Från fångsterna (data)": per art ur tävlingarnas fångster |

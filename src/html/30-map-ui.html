@@ -26,6 +26,7 @@
     <div id="accRing"></div>
     <div id="dotGlow"></div>
     <div id="dotGlow2"></div>
+    <svg id="compassWedge" viewBox="0 0 200 200" aria-hidden="true"><defs><radialGradient id="compassGrad" gradientUnits="userSpaceOnUse" cx="100" cy="100" r="100"><stop offset="0" stop-color="#FFD23F" stop-opacity=".6"></stop><stop offset="1" stop-color="#FFD23F" stop-opacity=".1"></stop></radialGradient></defs><path d="M100 100 L50 13.4 A100 100 0 0 1 150 13.4Z" fill="url(#compassGrad)" stroke="#FFD23F" stroke-opacity=".7" stroke-width="1.5" stroke-linejoin="round"></path></svg>
     <div id="dot"><span id="dotCenter"></span><svg id="dotArrow" viewBox="0 0 24 24"><path class="arrowHalo" d="M12 3.25l7 17.5-7-4.2-7 4.2z"></path><path class="arrowBody" d="M12 3.25l7 17.5-7-4.2-7 4.2z"></path></svg></div>
   </div>
 
@@ -204,6 +205,14 @@
         <span class="visLabel">Heatmap</span>
         <span class="toggle">
           <input type="checkbox" id="toggleHeatmap">
+          <span class="toggleTrack"><span class="toggleThumb"></span></span>
+        </span>
+      </label>
+      <label class="visRow">
+        <span class="visSwatch visSwatch--wx"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20 4.5 6.5a16 16 0 0 1 15 0z"></path></svg></span>
+        <span class="visLabel" id="compassLabel">Kompass</span>
+        <span class="toggle">
+          <input type="checkbox" id="toggleCompass">
           <span class="toggleTrack"><span class="toggleThumb"></span></span>
         </span>
       </label>

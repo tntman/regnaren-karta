@@ -124,6 +124,9 @@
     position:absolute;left:0;top:0;width:24px;height:24px;
     transform:translate(-50%,-50%);
   }
+  /* "Kompass" (Filter): a 60-degree wedge 500 m long from you, towards where the phone points
+     (js/53-compass.js sets size, place and turn) */
+  #compassWedge{position:absolute;display:none;overflow:visible;pointer-events:none;}
   #dotCenter{display:none;}
   #dotArrow{
     position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;
@@ -2022,6 +2025,7 @@
     <div id="accRing"></div>
     <div id="dotGlow"></div>
     <div id="dotGlow2"></div>
+    <svg id="compassWedge" viewBox="0 0 200 200" aria-hidden="true"><defs><radialGradient id="compassGrad" gradientUnits="userSpaceOnUse" cx="100" cy="100" r="100"><stop offset="0" stop-color="#FFD23F" stop-opacity=".6"></stop><stop offset="1" stop-color="#FFD23F" stop-opacity=".1"></stop></radialGradient></defs><path d="M100 100 L50 13.4 A100 100 0 0 1 150 13.4Z" fill="url(#compassGrad)" stroke="#FFD23F" stroke-opacity=".7" stroke-width="1.5" stroke-linejoin="round"></path></svg>
     <div id="dot"><span id="dotCenter"></span><svg id="dotArrow" viewBox="0 0 24 24"><path class="arrowHalo" d="M12 3.25l7 17.5-7-4.2-7 4.2z"></path><path class="arrowBody" d="M12 3.25l7 17.5-7-4.2-7 4.2z"></path></svg></div>
   </div>
 
@@ -2200,6 +2204,14 @@
         <span class="visLabel">Heatmap</span>
         <span class="toggle">
           <input type="checkbox" id="toggleHeatmap">
+          <span class="toggleTrack"><span class="toggleThumb"></span></span>
+        </span>
+      </label>
+      <label class="visRow">
+        <span class="visSwatch visSwatch--wx"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20 4.5 6.5a16 16 0 0 1 15 0z"></path></svg></span>
+        <span class="visLabel" id="compassLabel">Kompass</span>
+        <span class="toggle">
+          <input type="checkbox" id="toggleCompass">
           <span class="toggleTrack"><span class="toggleThumb"></span></span>
         </span>
       </label>
@@ -6446,6 +6458,7 @@
     var accWebPx = lastFix.accM / WEB_METERS_PER_PX;
     var d = Math.max(16, Math.min(360, accWebPx * scale * 2));
     accRing.style.width = d + 'px'; accRing.style.height = d + 'px';
+    compassDraw(sx, sy);   // ("Kompass" -- further down)
   }
 
   function niceScaleMeters(target){
@@ -7175,6 +7188,69 @@
   };
   window.__ffLightningFetch = function(){ ltFetchedAt = 0; ltTick(); };   // (tests / tools/help_anim.py: fetch now)
 
+  /* ================= "Kompass" (Filter, Lager) -- off by default =================
+     A wedge from your position (60 degrees wide, 500 m long) towards where the phone
+     points: hold it at an island and see where on the map that is. Heading from the phone's
+     compass (iOS webkitCompassHeading; Android 'deviceorientationabsolute'). iOS asks for
+     permission, and only when it's a tap -- the switch's change event is one. Remembered
+     for the session only (rotation reloads the page), not across app starts: the listener
+     costs battery. The compass can be 10-20 degrees off near metal and engines. */
+  var COMPASS_KEY = 'ffmap_compass_v1', COMPASS_M = 500;
+  var compassOn = false, compassHdg = null, compassSx = 0, compassSy = 0, compassLabelT = null;
+  try { compassOn = sessionStorage.getItem(COMPASS_KEY) === '1'; } catch(e){}
+  var compassWedge = document.getElementById('compassWedge'), toggleCompassEl = document.getElementById('toggleCompass');
+  function compassDraw(sx, sy){
+    if (typeof sx === 'number'){ compassSx = sx; compassSy = sy; }
+    if (!compassOn || compassHdg === null){ compassWedge.style.display = 'none'; return; }
+    var d = Math.max(60, Math.min(2400, 2 * COMPASS_M * scale / WEB_METERS_PER_PX));
+    var st = compassWedge.style;
+    st.display = 'block';
+    st.width = st.height = d + 'px';
+    st.left = compassSx + 'px'; st.top = compassSy + 'px';
+    st.transform = 'translate(-50%,-50%) rotate(' + compassHdg.toFixed(1) + 'deg)';
+  }
+  function compassOnEvent(e){
+    var h = null;
+    if (typeof e.webkitCompassHeading === 'number') h = e.webkitCompassHeading;                 // iOS: degrees from north
+    else if (e.absolute && typeof e.alpha === 'number') h = (360 - e.alpha) % 360;              // Android
+    if (h === null || !isFinite(h)) return;
+    // smoothed, the short way round (north is 0 and 360)
+    compassHdg = compassHdg === null ? h : (compassHdg + (((h - compassHdg) % 360 + 540) % 360 - 180) * 0.3 + 360) % 360;
+    compassDraw();
+  }
+  function compassListen(on){
+    ['deviceorientation', 'deviceorientationabsolute'].forEach(function(n){
+      if (on) window.addEventListener(n, compassOnEvent); else window.removeEventListener(n, compassOnEvent);
+    });
+  }
+  function compassSet(on){
+    compassOn = on; toggleCompassEl.checked = on;
+    try { sessionStorage.setItem(COMPASS_KEY, on ? '1' : '0'); } catch(e){}
+    compassListen(on);
+    if (!on) compassHdg = null;
+    compassDraw();
+  }
+  function compassDenied(){
+    compassSet(false);
+    var lbl = document.getElementById('compassLabel');
+    lbl.textContent = 'Kompass: inte tillåten';
+    clearTimeout(compassLabelT);
+    compassLabelT = setTimeout(function(){ lbl.textContent = 'Kompass'; }, 5000);
+  }
+  toggleCompassEl.checked = compassOn;
+  if (compassOn) compassListen(true);   // (after a rotation reload; if iOS has forgotten the permission nothing arrives -- switch off and on again)
+  toggleCompassEl.addEventListener('change', function(){
+    if (!toggleCompassEl.checked){ compassSet(false); return; }
+    var DOE = window.DeviceOrientationEvent;
+    if (DOE && typeof DOE.requestPermission === 'function'){   // iOS 13+: must be asked right here, in the tap
+      var req;
+      try { req = DOE.requestPermission(); } catch(e){ compassDenied(); return; }
+      req.then(function(r){ if (r === 'granted') compassSet(true); else compassDenied(); }).catch(compassDenied);
+    } else if (DOE){
+      compassSet(true);
+    } else compassDenied();
+  });
+  window.__ffCompass = function(){ return { on: compassOn, hdg: compassHdg, shown: compassWedge.style.display === 'block', w: parseFloat(compassWedge.style.width) || 0 }; };   // (for the tests)
   /* ---- swipe a bottom panel down to close it (like a spot's sheet) -- see tools/UI.md ----
      Drag from anywhere on the panel except its fields, buttons and sliders; the panel
      follows the finger (down only); let go far enough down -- or with a quick flick --

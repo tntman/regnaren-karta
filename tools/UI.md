@@ -76,7 +76,10 @@ vald = `.on`/`.active` (amber). För få, fasta val (Av/5/10/20 km, Bara platsen
 ## Av/på-rader (Filter, Inställningar)
 
 Filter = två `.visCol`: "Markeringar" (Mina, Andras, Båtar + `#visTypes`: typerna som prickar
-`.visDot` – en osynlig checkbox över en `.visSwatch` + kort namn; dold = grå ring) och "Lager".
+`.visDot` – en osynlig checkbox över en `.visSwatch` + kort namn; dold = grå ring) och "Lager" (Spår, Väder, Vind och lä, Blixtar, Kartanalys, Heatmap, Kompass).
+"Kompass" (`#toggleCompass`, `js/53-compass.js`): kil från din position mot telefonens kompass, 60° / 500 m
+(`#compassWedge` i `#marker`). iOS frågar om lov vid reglagets tryck (`requestPermission`); minns bara under
+sessionen (rotation), inte mellan appstarter.
 Liggande står de bredvid varandra.
 
 Inställningar = avsnitt `<details class="setSec" data-sec="…">` med `<summary>` (rubrik + `.setSecSum`,
