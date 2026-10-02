@@ -40,6 +40,13 @@ with sync_playwright() as p:
     r = pg.evaluate("""() => { var d = document.getElementById('compassDial').getBoundingClientRect(), l = document.getElementById('addHereBtn').getBoundingClientRect(), m = document.getElementById('measureBtn').getBoundingClientRect();
         return { above: d.bottom <= Math.min(l.top, m.top) + 1, cx: d.left + d.width/2 - (l.left + m.right)/2 }; }""")
     check('dial sits centred above the 2 x 2 buttons', r['above'] and abs(r['cx']) < 2, r)
+    # the dial's wedge turns about the circle's middle (its tip stays there) at every heading
+    for hh in (90, 200, 320):
+        for i in range(40): hdg(pg, hh)
+        o = pg.evaluate("""() => { var w = document.querySelector('#cdWedge path').getBoundingClientRect(), d = document.querySelector('#compassDial svg').getBoundingClientRect(), c = [d.left + d.width/2, d.top + d.height/2];
+            return { dist: Math.hypot(w.left + w.width/2 - c[0], w.top + w.height/2 - c[1]), inside: w.left >= d.left && w.right <= d.right && w.top >= d.top && w.bottom <= d.bottom,
+                     tip: [Math.min(Math.abs(w.left - c[0]), Math.abs(w.right - c[0])), Math.min(Math.abs(w.top - c[1]), Math.abs(w.bottom - c[1]))] }; }""")
+        check('dial wedge at %d deg: inside the circle, turning about its middle' % hh, o['inside'] and abs(o['dist'] - 8) < 2, o)
     # settings: length, angle, colour
     pg.evaluate("""() => { var l = document.getElementById('cpLen'); l.value = 1000; l.dispatchEvent(new Event('input', {bubbles: true}));
         var a = document.getElementById('cpAng'); a.value = 90; a.dispatchEvent(new Event('input', {bubbles: true}));

@@ -135,7 +135,6 @@
   #compassDial .cdTxt text{fill:#fff;fill-opacity:.8;font:600 10px sans-serif;text-anchor:middle;dominant-baseline:middle;}
   #compassDial .cdTxt text:first-child{fill:#FF5A4F;fill-opacity:1;}
   #cdWedge path{fill-opacity:.8;}
-  #cdWedge{transform-origin:40px 40px;}
   .cpColors{display:flex;gap:12px;margin-top:10px;}
   .cpColors button{width:34px;height:34px;border-radius:50%;border:3px solid transparent;box-shadow:0 0 0 1px rgba(255,255,255,.25);padding:0;cursor:pointer;}
   .cpColors button.active{border-color:#fff;}
@@ -2063,7 +2062,7 @@
     <svg id="compassWedge" viewBox="0 0 200 200" aria-hidden="true"><defs><radialGradient id="compassGrad" gradientUnits="userSpaceOnUse" cx="100" cy="100" r="100"><stop offset="0" stop-color="#FFD23F" stop-opacity=".6"></stop><stop offset="1" stop-color="#FFD23F" stop-opacity=".1"></stop></radialGradient></defs><path d="M100 100 L50 13.4 A100 100 0 0 1 150 13.4Z" fill="url(#compassGrad)" stroke="#FFD23F" stroke-opacity=".7" stroke-width="1.5" stroke-linejoin="round"></path></svg>
     <div id="dot"><span id="dotCenter"></span><svg id="dotArrow" viewBox="0 0 24 24"><path class="arrowHalo" d="M12 3.25l7 17.5-7-4.2-7 4.2z"></path><path class="arrowBody" d="M12 3.25l7 17.5-7-4.2-7 4.2z"></path></svg></div>
   </div>
-  <div id="compassDial" aria-hidden="true"><svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="36" class="cdDisc"></circle><g class="cdTxt"><text x="40" y="20">N</text><text x="62" y="44">Ö</text><text x="40" y="68">S</text><text x="18" y="44">V</text></g><g id="cdWedge"><path d="M40 40 L31 10 A31 31 0 0 1 49 10Z"></path></g><circle cx="40" cy="40" r="3" fill="#fff"></circle></svg></div>
+  <div id="compassDial" aria-hidden="true"><svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="36" class="cdDisc"></circle><g class="cdTxt"><text x="40" y="12">N</text><text x="68" y="40">Ö</text><text x="40" y="68">S</text><text x="12" y="40">V</text></g><g id="cdWedge"><path d="M40 40 L34.8 20.7 A20 20 0 0 1 45.2 20.7Z"></path></g><circle cx="40" cy="40" r="3" fill="#fff"></circle></svg></div>
 
   <div id="legend" data-contour="Djupkurvor var 1 m">
     <div class="bar"></div>
@@ -7256,7 +7255,7 @@
     var p = compassWedge.querySelector('path');
     p.setAttribute('d', compassSlice(100, 100, 100, compassCfg.ang)); p.setAttribute('stroke', c);
     var q = cdWedge.querySelector('path');
-    q.setAttribute('d', compassSlice(40, 40, 31, compassCfg.ang)); q.setAttribute('fill', c);
+    q.setAttribute('d', compassSlice(40, 40, 20, compassCfg.ang)); q.setAttribute('fill', c);
     compassDraw();
   }
   function compassDraw(sx, sy){

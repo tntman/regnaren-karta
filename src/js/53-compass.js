@@ -30,7 +30,7 @@
     var p = compassWedge.querySelector('path');
     p.setAttribute('d', compassSlice(100, 100, 100, compassCfg.ang)); p.setAttribute('stroke', c);
     var q = cdWedge.querySelector('path');
-    q.setAttribute('d', compassSlice(40, 40, 31, compassCfg.ang)); q.setAttribute('fill', c);
+    q.setAttribute('d', compassSlice(40, 40, 20, compassCfg.ang)); q.setAttribute('fill', c);
     compassDraw();
   }
   function compassDraw(sx, sy){

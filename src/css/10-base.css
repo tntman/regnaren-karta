@@ -107,7 +107,6 @@
   #compassDial .cdTxt text{fill:#fff;fill-opacity:.8;font:600 10px sans-serif;text-anchor:middle;dominant-baseline:middle;}
   #compassDial .cdTxt text:first-child{fill:#FF5A4F;fill-opacity:1;}
   #cdWedge path{fill-opacity:.8;}
-  #cdWedge{transform-origin:40px 40px;}
   .cpColors{display:flex;gap:12px;margin-top:10px;}
   .cpColors button{width:34px;height:34px;border-radius:50%;border:3px solid transparent;box-shadow:0 0 0 1px rgba(255,255,255,.25);padding:0;cursor:pointer;}
   .cpColors button.active{border-color:#fff;}
