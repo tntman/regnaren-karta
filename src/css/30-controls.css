@@ -1,7 +1,7 @@
   /* top-right column: the visibility toggles, and the Demo Mode sign right under them */
   #topRight{
     position:absolute;right:14px;top:calc(env(safe-area-inset-top,0px) + 14px);z-index:21;
-    display:flex;flex-direction:column;align-items:stretch;gap:8px;pointer-events:none;
+    display:flex;flex-direction:column;align-items:flex-end;gap:8px;pointer-events:none;
   }
   /* quick map-style button, just left of the Filter panel: tap = next of the
      four everyday styles, hold = all styles */
@@ -20,7 +20,7 @@
     display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.35);
     pointer-events:auto;cursor:pointer;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;padding:0;
   }
-  #hmBtn svg{width:22px;height:22px;display:block;opacity:.55;}
+  #hmBtn svg{width:26px;height:26px;display:block;opacity:.55;}
   #hmBtn.on{border:2px solid var(--amber);background:rgba(232,163,61,.18);}
   #hmBtn.on svg{opacity:1;}
   #hmBtn:active{transform:scale(.93);}
@@ -92,6 +92,9 @@
   .visChevronBox{width:34px;flex:0 0 auto;display:flex;justify-content:center;}
   .visChevron{width:15px;height:15px;display:block;transition:transform .2s ease;}
   .visMoreBtn[aria-expanded="true"] .visChevron{transform:rotate(180deg);}
+  /* closed: a narrow chip (icon + arrow); open: the arrow box is as wide as the toggles below so the rows line up */
+  .visMoreBtn[aria-expanded="false"] .visChevronBox{width:14px;}
+  .visMoreBtn[aria-expanded="false"]{gap:5px;}
   /* everything lives in the fold-out (closed by default); the panel itself is just the "Filter" button */
   #visMore{display:flex;flex-direction:column;gap:10px;margin-top:2px;}
   .visCol{display:flex;flex-direction:column;gap:8px;}
@@ -222,7 +225,8 @@
     animation:demoBannerBlink 3s ease-in-out infinite;
   }
   #demoBanner.show{display:block;}
-  #demoBanner{position:relative;}
+  /* own width; the negative margin keeps it out of #topRight's width, so the buttons stay next to the Filter chip */
+  #demoBanner{position:relative;width:max-content;margin-left:-300px;}
   /* the sign itself lets taps through to the map; only its cross is a button */
   #demoBannerClose{
     position:absolute;top:-7px;right:-7px;width:22px;height:22px;padding:0;border-radius:50%;
