@@ -174,19 +174,9 @@
       <div class="settingsRow">
         <div class="settingsRowText">
           <div class="settingsRowTitle">Spår</div>
-          <div class="settingsRowDesc">Din rutt ritas som en streckad linje på kartan (visa/dölj under Filter). "Börja om" suddar spåret hittills – det fortsätter sedan från där du är nu. Sparas bara på den här telefonen och börjar om varje morgon kl 06:00.</div>
+          <div class="settingsRowDesc">Din rutt sparas för varje sjö och finns kvar. Hur det ser ut, hur långt tillbaka du ser, stopp som ringar och andras spår väljer du i spårmenyn (du kommer dit även genom att trycka på Spår-ikonen i Filter). Spår sparas inte i Demo Mode.</div>
         </div>
-        <button id="trackClearBtn" class="btnAdmin small" type="button">Börja om</button>
-      </div>
-      <div class="settingsRow" style="flex-direction:column;align-items:stretch;">
-        <div class="settingsRowText">
-          <div class="settingsRowTitle">Spårets synlighet</div>
-          <div class="settingsRowDesc">Hur tydligt spåret syns på kartan.</div>
-        </div>
-        <div class="satRow">
-          <input type="range" class="satSlider trkSlider" id="trackOpSlider" min="10" max="100" step="5" value="60" aria-label="Spårets synlighet">
-          <span class="satVal" id="trackOpVal">60 %</span>
-        </div>
+        <button id="trkOpenBtn" class="btnAdmin small" type="button">Öppna</button>
       </div>
       <div class="settingsRow" style="flex-direction:column;align-items:stretch;">
         <div class="settingsRowText">

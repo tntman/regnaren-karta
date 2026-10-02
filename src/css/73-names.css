@@ -1,5 +1,5 @@
   /* ================= "Namn" (Filter, Lager): place names from OpenStreetMap -- off by default ================= */
-  #osmNames{position:absolute;inset:0;z-index:12;pointer-events:none;display:none;}   /* furthest back: under track, route, spots and boats, taps go through to the map */
+  #osmNames{position:absolute;inset:0;z-index:11;pointer-events:none;display:none;}   /* furthest back: under track, route, spots and boats, taps go through to the map */
   #osmNames.on{display:block;}
   .osmN{position:absolute;left:0;top:0;white-space:nowrap;will-change:transform;}
   .osmN::before{content:"";position:absolute;left:-3.5px;top:-3.5px;width:7px;height:7px;border-radius:50%;background:#fff;box-shadow:0 0 0 1.5px rgba(6,20,28,.8);}

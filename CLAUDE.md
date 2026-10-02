@@ -59,6 +59,7 @@ All text i appen är på svenska. Svara Filip på svenska, kort och tydligt.
 | Snabbmeddelanden | `tools/NOTES_MEDDELANDEN.md` |
 | Väder, vind och lä, blixtar, åskvarning | `tools/NOTES_VADER.md` |
 | Heatmap (fångster: data, CSV-inläsning, framtida live-källa) | `tools/NOTES_HEATMAP.md` |
+| Spår (sparas för evigt i Firestore `tracks`), Spår-menyn, stopp som ringar, Fog of war | `tools/NOTES_SPAR.md` |
 | Båtikoner (valbar ikon för din båt – idé, förslagsblad, ej byggt) | `tools/boaticons.md` |
 
 Uppdatera rätt anteckning när något ändras.
@@ -110,7 +111,7 @@ Uppdatera rätt anteckning när något ändras.
   "ladda ner igen". Regnaren ~1 200 bitar / 66 MB.
 - **Filter**: två grupper – **Markeringar** (Mina, Andras, Båtar + typerna som en rad prickar
   `.visDot`: ifylld = visas, grå ring = dold) och **Lager** (Spår, Väder, Vind och lä, Blixtar,
-  Kartanalys, Heatmap `#toggleHeatmap`, Kompass `#toggleCompass`: kil 40°/500 m, vit, mot telefonens kompass, iOS-lov vid trycket, `js/53-compass.js`, Namn `#toggleNames` (på som standard): OSM-namn på kartan ur `lakes/<id>/names.json`, `js/59-names.js`, KARTOR.md). Kartanalys och Heatmap i Filter visar/döljer bara –
+  Kartanalys, Heatmap `#toggleHeatmap`, Fog of war `#toggleFog` (mörkt utom där du varit, 50 m, `js/48-fog.js`, NOTES_SPAR.md), Kompass `#toggleCompass`: kil 40°/500 m, vit, mot telefonens kompass, iOS-lov vid trycket, `js/53-compass.js`, Namn `#toggleNames` (på som standard): OSM-namn på kartan ur `lakes/<id>/names.json`, `js/59-names.js`, KARTOR.md). Kartanalys och Heatmap i Filter visar/döljer bara –
   påslaget/avslaget sker i deras egna rutor. "Djup" (`#toggleDepth`), "Andras fiskeplatser 50/100 %" och
   "Håll skärmen tänd" ligger i Inställningar. Knapparna nere till höger = 2 × 2-rutnät (`--bb`).
 - **Panorera över markeringar**: ett finger som börjar på en plats, båt, bubbla eller etikett
@@ -137,6 +138,7 @@ positions: read auth; write kräver lat, lon (number) och name (string).
 usage: read auth; write kräver day (string) och r/w/d (number).
 config/{lake}: read auth; write kräver posIntervalS i [10,20,30,60].
 catches/{lake}: read auth; write kräver rows (string) och n (number) – heatmapens fångster (NOTES_HEATMAP.md).
+tracks/{id}: read auth; write kräver lake/uid/day/pts (string), n (number), pts ≤ 900 000 tecken – spåren (NOTES_SPAR.md). **Regeln ska läggas till i konsolen** (Filip) innan spår sparas i databasen.
 
 ## Idéer som diskuterats men inte gjorts
 - Riktig iPhone-app via Capacitor + TestFlight (bakgrundsposition). Kräver Mac + Apple-konto.

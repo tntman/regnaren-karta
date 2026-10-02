@@ -23,6 +23,7 @@ specificitet.
 | **css/** | |
 | `10-base.css` | färger (`:root`), layout, kartan, rubriken, din pil, skala/zoom |
 | `20-map-tools.css` | knopmätare, mätverktyg, lodet, rutten (+ "fågelvägen"), spår |
+| `22-track.css` | spårets linjer/stopp, Spår-menyn, Fog of war-lagret |
 | `30-controls.css` | Filter, kartlägesknapp, knappar, meny, Inställningar, GPS-rad, liggande läge |
 | `40-spots-boats.css` | platstyper (Fara, Träffpunkt, Hem …), andras platser, båtar, platsens ruta (+ faktarutorna) |
 | `50-weather-settings.css` | väder, blixtvarning/radar, kartstil, offline, admin, fart, åsklarm, håll skärmen tänd (solen, notisen) |
@@ -60,7 +61,9 @@ specificitet.
 | `40-route.js` | rutten sjövägen, snittfart |
 | `42-measure.js` | mätverktyget |
 | `44-demo-motion.js` | demo: simulerad rörelse |
-| `46-gps-track.js` | GPS, spår, tillbaka till appen |
+| `46-gps-track.js` | GPS, spår (historik, Firestore `tracks`, stopp, ritning), tillbaka till appen |
+| `47-track-panel.js` | Spår-menyn (bottenruta från Spår-ikonen i Filter) |
+| `48-fog.js` | Fog of war (Filter → Lager) |
 | `48-weather.js` | väder (Open-Meteo) |
 | `50-wind-lee.js` | vind och lä (`viewStep`, `drawLeeView`) |
 | `52-lightning.js` | blixtar (FMI) |

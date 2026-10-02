@@ -14,34 +14,112 @@
 
   var lastFix = null; // {px, py, accM, onMap}
 
-  /* ---- "Spår": your route today, drawn as a line under everything ----
-     Saved on this phone only ({day, segs:[[[lat,lon,t],...],...]}); a new
-     track starts every morning at 06:00. A new segment starts after a jump (>250 m, e.g.
-     a Demo reroll) or a long pause (>10 min), so no straight lines across
-     the lake. Points closer than 8 m aren't stored (GPS jitter at anchor). */
+  /* ---- "Spår": the route you drove, drawn as a line under everything (tools/NOTES_SPAR.md) ----
+     Today's track: {day, segs:[[[lat,lon,t],...],...]}, saved on this phone and uploaded to Firestore
+     `tracks` (one doc per person, lake and day -- kept for ever). A "track day" runs 06:00 - 06:00; when it
+     ends, the day moves to the history (trkHist, per lake) -- that is what "hur långt tillbaka" shows.
+     A new segment starts after a jump (>250 m, e.g. a Demo reroll) or a long pause (>10 min), so no
+     straight lines across the lake. Points closer than 8 m aren't stored (GPS jitter at anchor).
+     NOT recorded in Demo Mode (onFix skips recordTrack when demoMode). */
   var TRACK_KEY = lakeKey('ffmap_track_v1', 'track_v1'), SHOW_TRACK_KEY = 'ffmap_show_track_v1';
+  var TRKHIST_KEY = lakeKey('ffmap_trackhist_v1', 'trackhist_v1'), TRKSYNC_KEY = lakeKey('ffmap_tracksync_v1', 'tracksync_v1');
+  var TRKCFG_KEY = 'ffmap_track_cfg_v1';
   var TRACK_MAX_POINTS = 6000;
   var showTrack = true;
   try { if (localStorage.getItem(SHOW_TRACK_KEY) === '0') showTrack = false; } catch(e){}
-  // a "track day" runs 06:00 - 06:00 (so a night session doesn't split at midnight)
-  function todayStr(){ var d = new Date(Date.now() - 6 * 3600000); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
+  // what the Spår panel chooses (Mina / Andras, how far back, dashed, colour, stops as rings)
+  var trkCfg = { mine: true, others: false, range: 'today', dash: true, color: '#FF8A1F', stops: false };
+  try { var tcs = JSON.parse(localStorage.getItem(TRKCFG_KEY) || 'null'); if (tcs) for (var tck in trkCfg) if (tcs[tck] !== undefined) trkCfg[tck] = tcs[tck]; } catch(e){}
+  function trkCfgSave(){ try { localStorage.setItem(TRKCFG_KEY, JSON.stringify(trkCfg)); } catch(e){} }
+  function pad2(n){ return (n < 10 ? '0' : '') + n; }
+  function dayStr(ms){ var d = new Date(ms - 6 * 3600000); return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
+  function todayStr(){ return dayStr(Date.now()); }
+  function normDay(s){ var a = String(s || '').split('-'); return a.length === 3 ? a[0] + '-' + pad2(+a[1]) + '-' + pad2(+a[2]) : String(s || ''); }   // (older saves: "2026-10-2")
+  // packed track (history + Firestore): segments joined by |, points by ;, each "dLat,dLon,dSec" in base 36 (1e-6 deg)
+  function packSegs(segs){
+    return segs.filter(function(sg){ return sg.length; }).map(function(seg){
+      var pl = 0, po = 0, pt = 0;
+      return seg.map(function(p){
+        var la = Math.round(p[0] * 1e6), lo = Math.round(p[1] * 1e6), t = Math.round(p[2] / 1000);
+        var s = (la - pl).toString(36) + ',' + (lo - po).toString(36) + ',' + (t - pt).toString(36);
+        pl = la; po = lo; pt = t; return s;
+      }).join(';');
+    }).join('|');
+  }
+  function unpackSegs(str){
+    if (!str) return [];
+    return String(str).split('|').filter(Boolean).map(function(sg){
+      var pl = 0, po = 0, pt = 0;
+      return sg.split(';').map(function(s){ var a = s.split(','); pl += parseInt(a[0], 36); po += parseInt(a[1], 36); pt += parseInt(a[2], 36); return [pl / 1e6, po / 1e6, pt * 1000]; });
+    });
+  }
+  function simplifySegs(segs, m){   // (keeps the first and last point of every segment)
+    return segs.map(function(seg){
+      var out = [seg[0]];
+      for (var i = 1; i < seg.length; i++){
+        var l = out[out.length - 1];
+        if (i === seg.length - 1 || haversineKm(l[0], l[1], seg[i][0], seg[i][1]) * 1000 >= m) out.push(seg[i]);
+      }
+      return out;
+    }).filter(function(sg){ return sg[0]; });
+  }
+  // stops: points that stay within 40 m of where the stop began for >= 2 min -> [[lat, lon, minutes], ...]
+  function findStops(segs){
+    var pts = []; segs.forEach(function(sg){ sg.forEach(function(p){ pts.push(p); }); });
+    var out = [], i = 0;
+    while (i < pts.length){
+      var j = i + 1, sa = pts[i][0], so = pts[i][1], n = 1;
+      while (j < pts.length && haversineKm(pts[i][0], pts[i][1], pts[j][0], pts[j][1]) * 1000 <= 40){ sa += pts[j][0]; so += pts[j][1]; n++; j++; }
+      var min = (pts[j - 1][2] - pts[i][2]) / 60000;
+      if (n >= 2 && min >= 2){ out.push([Math.round(sa / n * 1e6) / 1e6, Math.round(so / n * 1e6) / 1e6, Math.round(min)]); i = j; } else i++;
+    }
+    return out;
+  }
+  function packStops(st){ return (st || []).map(function(s){ return s.join(','); }).join(';'); }
+  function unpackStops(str){ return str ? String(str).split(';').map(function(s){ return s.split(',').map(Number); }).filter(function(a){ return a.length === 3 && !isNaN(a[0]); }) : []; }
+  function segPointCount(segs){ var n = 0; segs.forEach(function(sg){ n += sg.length; }); return n; }
+  // the record of one day (history / Firestore): packed simplified points + the stops
+  function dayRecord(segs){ return { p: packSegs(simplifySegs(segs, 12)), s: findStops(segs), n: segPointCount(segs) }; }
+
   var track = { day: todayStr(), segs: [] };
+  var trkHist = {};     // day -> {p, s, n, u (uploaded)} -- this person's earlier days on this lake
+  try { var hs = JSON.parse(localStorage.getItem(TRKHIST_KEY) || 'null'); if (hs && typeof hs === 'object') trkHist = hs; } catch(e){}
+  function saveHist(){
+    for (var tries = 0; tries < 400; tries++){
+      try { localStorage.setItem(TRKHIST_KEY, JSON.stringify(trkHist)); return; } catch(e){
+        var ks = Object.keys(trkHist).sort(); if (ks.length <= 1) return;
+        delete trkHist[ks[0]];   // phone storage full: the oldest day goes (it stays in Firestore and comes back when needed)
+      }
+    }
+  }
+  var trkPx = {};       // cache: day key -> image-pixel version of the segments (so panning is only a multiply)
+  function trkPxDirty(){ trkPx = {}; }
+  function archiveTrack(tr){
+    if (!tr || !tr.segs || !segPointCount(tr.segs)) return;
+    trkHist[normDay(tr.day)] = dayRecord(tr.segs);
+    saveHist(); trkPxDirty(); flushTrackUploads(true);
+  }
   try {
     var savedTrack = JSON.parse(localStorage.getItem(TRACK_KEY) || 'null');
-    if (savedTrack && savedTrack.day === track.day && Array.isArray(savedTrack.segs)) track = savedTrack;
+    if (savedTrack && Array.isArray(savedTrack.segs)){
+      savedTrack.day = normDay(savedTrack.day);
+      if (savedTrack.day === track.day) track = savedTrack;
+      else archiveTrack(savedTrack);   // yesterday (or older) -- now history, not thrown away
+    }
   } catch(e){}
-  var trackDirty = false;
+  var trackDirty = false, trackUploadDirty = false, lastTrackUpAt = 0;
   function saveTrack(){
     if (!trackDirty) return;
     trackDirty = false;
     try { localStorage.setItem(TRACK_KEY, JSON.stringify(track)); } catch(e){}
   }
   setInterval(saveTrack, 10000);
-  document.addEventListener('visibilitychange', function(){ if (document.visibilityState === 'hidden') saveTrack(); });
+  document.addEventListener('visibilitychange', function(){ if (document.visibilityState === 'hidden'){ saveTrack(); flushTrackUploads(true); } });
   window.addEventListener('pagehide', saveTrack);
+  setInterval(function(){ flushTrackUploads(false); }, 60000);
   function recordTrack(lat, lon, acc){
     if (acc && acc > 40) return; // too uncertain to draw
-    if (track.day !== todayStr()) track = { day: todayStr(), segs: [] };
+    if (track.day !== todayStr()){ archiveTrack(track); track = { day: todayStr(), segs: [] }; trackDirty = true; }
     var now = Date.now();
     var seg = track.segs.length ? track.segs[track.segs.length - 1] : null;
     var last = seg && seg.length ? seg[seg.length - 1] : null;
@@ -50,31 +128,153 @@
       if (d < 8) return;
       if (d > 250 || now - last[2] > 10 * 60000) seg = null;
     }
+    var fresh = !seg;
     if (!seg){ seg = []; track.segs.push(seg); }
     seg.push([Math.round(lat * 1e6) / 1e6, Math.round(lon * 1e6) / 1e6, now]);
     var total = 0;
     track.segs.forEach(function(sg){ total += sg.length; });
     while (total > TRACK_MAX_POINTS && track.segs.length){ track.segs[0].shift(); total--; if (!track.segs[0].length) track.segs.shift(); }
-    trackDirty = true;
+    trackDirty = true; trackUploadDirty = true;
+    fogAddStep(fresh ? null : last, seg[seg.length - 1]);   // (Fog of war, 48-fog.js)
     renderTrack();
   }
+
+  /* ---- drawing: today + the chosen earlier days (Mina), other people's days (Andras), stops as rings ---- */
   var trackLayer = document.getElementById('trackLayer');
-  function renderTrack(){
-    trackLayer.classList.toggle('off', !showTrack);
-    if (!showTrack) return;
+  var trkLineEl = trackLayer.querySelector('.trkLine'), trkUnderEl = trackLayer.querySelector('.trkUnder'), trkOtherEl = trackLayer.querySelector('.trkOther'), trkStopsEl = trackLayer.querySelector('.trkStops');
+  var trkOthers = {};   // doc id -> {uid, name, day, p, s}  (fetched when "Andras" is on -- see fetchOthersTracks)
+  function pxSegs(key, ref, n, getSegs){
+    var c = trkPx[key];
+    if (c && c.r === ref && c.n === n) return c.s;
+    var s = getSegs().map(function(seg){
+      var a = new Array(seg.length * 2);
+      for (var i = 0; i < seg.length; i++){ var p = latLonToImgPx(seg[i][0], seg[i][1]); a[2 * i] = p.x; a[2 * i + 1] = p.y; }
+      return a;
+    });
+    trkPx[key] = { r: ref, n: n, s: s };
+    return s;
+  }
+  function trkRangeFrom(){ var r = trkCfg.range; return r === 'all' ? '' : r === 'today' ? todayStr() : dayStr(Date.now() - ((r === '7' ? 6 : 29) * 86400000)); }
+  function pathOfPx(list){
     var d = '';
-    track.segs.forEach(function(seg){
-      var lx = null, ly = null, n = 0;
-      for (var i = 0; i < seg.length; i++){
-        var p = latLonToImgPx(seg[i][0], seg[i][1]);
-        var x = originX + p.x * scale, y = originY + p.y * scale;
-        if (lx !== null && i < seg.length - 1 && Math.abs(x - lx) < 1.5 && Math.abs(y - ly) < 1.5) continue; // too close to see
-        d += (n ? 'L' : 'M') + x.toFixed(1) + ' ' + y.toFixed(1);
-        lx = x; ly = y; n++;
+    list.forEach(function(seg){
+      var n = seg.length / 2, lx = null, ly = null, k = 0;
+      for (var i = 0; i < n; i++){
+        var x = originX + seg[2 * i] * scale, y = originY + seg[2 * i + 1] * scale;
+        if (lx !== null && i < n - 1 && Math.abs(x - lx) < 1.5 && Math.abs(y - ly) < 1.5) continue; // too close to see
+        d += (k ? 'L' : 'M') + x.toFixed(1) + ' ' + y.toFixed(1);
+        lx = x; ly = y; k++;
       }
     });
-    trackLayer.firstElementChild.setAttribute('d', d);
-    trackLayer.lastElementChild.setAttribute('d', d);
+    return d;
+  }
+  var todayStopsCache = { n: -1, s: [] };
+  function todayStops(){
+    var n = segPointCount(track.segs);
+    if (todayStopsCache.n !== n) todayStopsCache = { n: n, s: findStops(track.segs) };
+    return todayStopsCache.s;
+  }
+  function trkMineDays(){   // earlier days (not today) inside the chosen range, oldest first
+    var from = trkRangeFrom(), td = todayStr();
+    return Object.keys(trkHist).filter(function(dk){ return dk >= from && dk !== td; }).sort();
+  }
+  function renderTrack(){
+    trackLayer.classList.toggle('off', !showTrack);
+    trackLayer.classList.toggle('solid', !trkCfg.dash);
+    if (!showTrack) return;
+    var c = trkCfg, from = trkRangeFrom(), stops = [], mine = [];
+    if (c.mine){
+      trkMineDays().forEach(function(dk){
+        var rec = trkHist[dk];
+        mine.push.apply(mine, pxSegs('h' + dk, rec, rec.p.length, function(){ return unpackSegs(rec.p); }));
+        if (c.stops) stops.push.apply(stops, rec.s || []);
+      });
+      if (track.day === todayStr()){
+        mine.push.apply(mine, pxSegs('today', track, segPointCount(track.segs), function(){ return track.segs; }));
+        if (c.stops) stops.push.apply(stops, todayStops());
+      }
+    }
+    var d = pathOfPx(mine);
+    trkLineEl.setAttribute('d', d); trkUnderEl.setAttribute('d', d);
+    trkLineEl.style.stroke = c.color;
+    var others = [];
+    if (c.others) Object.keys(trkOthers).forEach(function(id){
+      var o = trkOthers[id];
+      if (o.day >= from) others.push.apply(others, pxSegs('o' + id, o, o.p.length, function(){ return unpackSegs(o.p); }));
+    });
+    trkOtherEl.setAttribute('d', pathOfPx(others));
+    if (!c.stops || !stops.length){ if (trkStopsEl.firstChild) trkStopsEl.textContent = ''; return; }
+    var h = '';
+    stops.forEach(function(s){
+      var p = latLonToImgPx(s[0], s[1]), x = originX + p.x * scale, y = originY + p.y * scale;
+      if (x < -60 || y < -60 || x > stageW + 60 || y > stageH + 60) return;
+      var r = Math.min(34, 8 + Math.sqrt(s[2]) * 3.4);
+      h += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + r.toFixed(1) + '"></circle><text x="' + x.toFixed(1) + '" y="' + (y - r - 4).toFixed(1) + '">' + s[2] + ' min</text>';
+    });
+    trkStopsEl.innerHTML = h;
+  }
+
+  /* ---- Firestore `tracks` (one doc per person, lake and day) ---- */
+  function trkSafeUid(){ return String(myUid || '').replace(/[^a-z0-9åäö]+/g, '_'); }
+  function trkDocId(day){ return LAKE_ID + '_' + trkSafeUid() + '_' + day; }
+  function uploadTrackDay(day, rec){
+    if (!USE_FIREBASE || !tracksCol || !myUid) return;
+    addUsage('w', 1);
+    tracksCol.doc(trkDocId(day)).set({
+      lake: LAKE_ID, uid: myUid, name: userName || '', day: day, pts: rec.p, st: packStops(rec.s), n: rec.n || 0,
+      lakeDay: LAKE_ID + '_' + day, ownKey: LAKE_ID + '_' + trkSafeUid() + '_' + day,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).catch(function(e){ console.warn('spår kunde inte sparas', e && e.code); });
+  }
+  // finished days that aren't uploaded yet (+ today's, at most every 5 min or when the app goes to the background)
+  function flushTrackUploads(force){
+    if (!USE_FIREBASE || !tracksCol || !myUid) return;
+    var any = false;
+    Object.keys(trkHist).forEach(function(dk){
+      var rec = trkHist[dk];
+      if (!rec.u){ rec.u = 1; any = true; uploadTrackDay(dk, rec); }   // (marked first: Firestore keeps the write even offline)
+    });
+    if (any) saveHist();
+    if (trackUploadDirty && (force || Date.now() - lastTrackUpAt >= 5 * 60000)){
+      trackUploadDirty = false; lastTrackUpAt = Date.now();
+      uploadTrackDay(track.day, dayRecord(track.segs));
+    }
+  }
+  function trkReadDocs(snap, onDoc){
+    countGetReads(snap);
+    snap.forEach(function(doc){ var d = doc.data() || {}; if (d.lake && d.lake !== LAKE_ID) return; onDoc(doc.id, d); });
+  }
+  // a new phone (or cleared storage): get this person's own days back, once
+  function fetchMyTracks(){
+    var done = false; try { done = localStorage.getItem(TRKSYNC_KEY) === '1'; } catch(e){}
+    if (done || !tracksCol || !USE_FIREBASE || !myUid) return;
+    var pre = LAKE_ID + '_' + trkSafeUid() + '_';
+    tracksCol.where('ownKey', '>=', pre).where('ownKey', '<=', pre + '~').get().then(function(snap){
+      trkReadDocs(snap, function(id, d){
+        var dk = d.day; if (!dk) return;
+        if (dk === todayStr()){ if (!segPointCount(track.segs)){ track = { day: dk, segs: unpackSegs(d.pts) }; trackDirty = true; } return; }
+        if (!trkHist[dk]) trkHist[dk] = { p: d.pts || '', s: unpackStops(d.st), n: d.n || 0, u: 1 };
+      });
+      saveHist(); trkPxDirty(); try { localStorage.setItem(TRKSYNC_KEY, '1'); } catch(e){}
+      fogRebuild();
+      renderTrack(); trkRenderPanel();
+    }).catch(function(e){ console.warn('mina spår kunde inte hämtas', e && e.code); });
+  }
+  // other people's days: only when "Andras" is switched on (reads: one per person and day, kept until the page is closed)
+  var trkOthersFrom = null, trkOthersAt = 0, trkOthersBusy = false, trkOthersMsg = '';
+  function fetchOthersTracks(){
+    if (!trkCfg.others || !tracksCol || !USE_FIREBASE || trkOthersBusy) return;
+    var from = trkRangeFrom() || '0000-00-00';
+    if (trkOthersFrom !== null && from >= trkOthersFrom && Date.now() - trkOthersAt < 5 * 60000) return;   // (already have those days)
+    trkOthersBusy = true; trkOthersMsg = 'Laddar…'; trkRenderPanel();
+    tracksCol.where('lakeDay', '>=', LAKE_ID + '_' + from).where('lakeDay', '<=', LAKE_ID + '_9999-99-99').get().then(function(snap){
+      trkReadDocs(snap, function(id, d){ if (d.uid === myUid || !d.day) return; trkOthers[id] = { uid: d.uid, name: d.name || '', day: d.day, p: d.pts || '', s: unpackStops(d.st) }; });
+      trkOthersFrom = trkOthersFrom === null ? from : Math.min(trkOthersFrom, from); trkOthersAt = Date.now(); trkOthersBusy = false; trkOthersMsg = '';
+      renderTrack(); trkRenderPanel();
+    }).catch(function(e){
+      trkOthersBusy = false; trkOthersMsg = (e && e.code === 'permission-denied') ? 'Kunde inte hämta (databasens regler saknar "tracks")' : 'Kunde inte hämta andras spår';
+      trkRenderPanel();
+    });
   }
   var lastOwnLatLon = null; // {lat, lon} -- whatever position is currently shown as "you" (real or demo)
   var hasCenteredOnce = false;
@@ -145,7 +345,7 @@
     // (maybeBroadcastPosition itself skips anything not at the lake)
     maybeBroadcastPosition(lat, lon);
     recordSpeed(lat, lon, accM, speedMs); // knot meter + average speed (on the phone only)
-    if (isNearLake(lat, lon)) recordTrack(lat, lon, accM); // "Spår"
+    if (!demoMode && isNearLake(lat, lon)) recordTrack(lat, lon, accM); // "Spår" (never in Demo Mode -- only real driving counts)
     updateHeading(lat, lon, gpsHeading);  // the arrow in your GPS dot
     lastOwnLatLon = { lat: lat, lon: lon };
     var p = latLonToImgPx(lat, lon);

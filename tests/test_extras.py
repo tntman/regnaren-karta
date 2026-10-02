@@ -266,7 +266,7 @@ with sync_playwright() as p:
     check('Inställningar: the name on top, then Kartan, Båten, Varningar, Kartanalys, Offline, Avancerat -- all closed', secs == ['Kartan', 'Båten', 'Varningar', 'Kartanalys', 'Offline', 'Avancerat']
           and pg.is_visible('#settingsNameDisplay') and not pg.is_visible('#wpSizeSeg'), secs)
     sums = pg.eval_on_selector_all('.setSecSum', 'e => e.map(x => x.textContent)')
-    check('...each with a line of what is chosen', 'storlek' in sums[0] and 'färg 80 %' in sums[0] and sums[1].startswith('Spår 60 %') and 'kn marschfart' in sums[1] and sums[2] == 'Åskvarning 10 km · ljud · vibration'
+    check('...each with a line of what is chosen', 'storlek' in sums[0] and 'färg 80 %' in sums[0] and sums[1].startswith('Djupet') and 'kn marschfart' in sums[1] and sums[2] == 'Åskvarning 10 km · ljud · vibration'
           and sums[3].startswith('Tona ner') and sums[4].startswith('Inte nedladdad') and sums[5].startswith('Demo Mode av'), sums)
     pg.click('.setSec[data-sec="map"] summary'); pg.wait_for_timeout(200)
     check('tap Kartan: open, its settings shown', pg.is_visible('#wpSizeSeg') and pg.is_visible('#mapStyleList') and not pg.is_visible('#setSum-map'))

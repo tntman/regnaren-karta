@@ -11,11 +11,12 @@
     <div id="mapLoading">Laddar karta…</div>
   </div>
 
-  <svg id="trackLayer" aria-hidden="true"><path class="trkUnder"></path><path class="trkLine"></path></svg>
+  <svg id="trackLayer" aria-hidden="true"><path class="trkOther"></path><path class="trkUnder"></path><path class="trkLine"></path><g class="trkStops"></g></svg>
   <svg id="routeLayer" aria-hidden="true"><polyline class="rtUnder"></polyline><polyline class="rtLine"></polyline></svg>
   <div id="waypoints"></div>
   <svg id="measureLayer" aria-hidden="true"><polyline class="mlUnder"></polyline><polyline class="mlLine"></polyline><g class="mlPts"></g><text class="mlLabel"></text></svg>
   <div id="osmNames" aria-hidden="true"></div>
+  <canvas id="fogLayer" aria-hidden="true"></canvas>
   <div id="anLabels"></div>
   <div id="boatsLayer"></div>
   <div id="msgLayer"></div>

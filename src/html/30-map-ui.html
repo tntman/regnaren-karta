@@ -81,6 +81,32 @@
     <div id="anListBox"></div>
   </div>
   <div id="undoToast" role="status"><span id="undoTxt"></span><svg viewBox="0 0 26 26" width="26" height="26" aria-hidden="true"><circle cx="13" cy="13" r="10" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="3"></circle><circle cx="13" cy="13" r="10" fill="none" stroke="#E8A33D" stroke-width="3" stroke-dasharray="63" transform="rotate(-90 13 13)"></circle></svg><button type="button" id="undoBtn">Ångra</button></div>
+  <div id="trkPanel" role="dialog" aria-label="Spår">
+    <div class="grab"><button type="button" id="trkClose" class="gripX" aria-label="Stäng">✕</button></div>
+    <div class="pnHead"><div class="pnResCol"><div id="trkInfo" class="pnRes"></div></div></div>
+    <div class="trkLbl">Visa</div>
+    <div class="anChips" id="trkWho"><button type="button" data-w="mine">Mina</button><button type="button" data-w="others">Andras</button></div>
+    <div class="trkLbl">Hur långt tillbaka</div>
+    <div class="anSeg" id="trkRange"><button type="button" data-r="today">I dag</button><button type="button" data-r="7">7 dagar</button><button type="button" data-r="30">30 dagar</button><button type="button" data-r="all">Allt</button></div>
+    <div class="trkLbl">Linje</div>
+    <div class="anSeg" id="trkDash"><button type="button" data-d="1">Streckad</button><button type="button" data-d="0">Hel</button></div>
+    <div class="trkLbl">Färg</div>
+    <div class="cpColors" id="trkColors" role="radiogroup" aria-label="Spårets färg">
+      <button type="button" role="radio" data-c="#FF8A1F" aria-label="Orange" style="background:#FF8A1F"></button>
+      <button type="button" role="radio" data-c="#FFD23F" aria-label="Gul" style="background:#FFD23F"></button>
+      <button type="button" role="radio" data-c="#FFFFFF" aria-label="Vit" style="background:#FFFFFF"></button>
+      <button type="button" role="radio" data-c="#FF5A5A" aria-label="Röd" style="background:#FF5A5A"></button>
+      <button type="button" role="radio" data-c="#5FD068" aria-label="Grön" style="background:#5FD068"></button>
+      <button type="button" role="radio" data-c="#D98CFF" aria-label="Lila" style="background:#D98CFF"></button>
+    </div>
+    <div class="trkLbl">Synlighet <span id="trackOpVal">60 %</span></div>
+    <div class="satRow"><input type="range" class="satSlider trkSlider" id="trackOpSlider" min="10" max="100" step="5" value="60" aria-label="Spårets synlighet"></div>
+    <label class="trkRow" for="trkStopsToggle">
+      <span class="trkRowT"><b>Stopp som ringar</b><small>En ring där du legat still, med tiden. Större ring = längre stopp.</small></span>
+      <span class="toggle"><input type="checkbox" id="trkStopsToggle"><span class="toggleTrack"><span class="toggleThumb"></span></span></span>
+    </label>
+    <div class="trkRow"><span class="trkRowT"><b>Börja om</b><small>Suddar dagens spår hittills. Äldre dagar finns kvar.</small></span><button id="trackClearBtn" class="btnAdmin small" type="button">Börja om</button></div>
+  </div>
   <div id="hmPanel" role="dialog" aria-label="Heatmap">
     <div class="grab"><button type="button" id="hmClose" class="gripX" aria-label="Stäng">✕</button></div>
     <div class="pnHead"><div class="pnResCol"><div id="hmResult" class="pnRes"></div><div id="hmLegend"></div></div>
@@ -206,6 +232,14 @@
         <span class="visLabel">Heatmap</span>
         <span class="toggle">
           <input type="checkbox" id="toggleHeatmap">
+          <span class="toggleTrack"><span class="toggleThumb"></span></span>
+        </span>
+      </label>
+      <label class="visRow">
+        <span class="visSwatch visSwatch--wx"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4 4 0 0 1-.6-7.95A5.5 5.5 0 0 1 17 8.5a4.5 4.5 0 0 1 .5 9z"></path></svg></span>
+        <span class="visLabel">Fog of war</span>
+        <span class="toggle">
+          <input type="checkbox" id="toggleFog">
           <span class="toggleTrack"><span class="toggleThumb"></span></span>
         </span>
       </label>

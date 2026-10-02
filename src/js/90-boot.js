@@ -19,7 +19,7 @@
       localOnlyMode = !ok;
       updateNetBadge();
       if (!ok){ loadLocalWaypoints(); renderWaypoints(); }
-      else uploadLocalOnlySpots();
+      else { uploadLocalOnlySpots(); fetchMyTracks(); flushTrackUploads(false); fetchOthersTracks(); }
     });
   }
   // Spots saved only on this phone because the shared database wasn't

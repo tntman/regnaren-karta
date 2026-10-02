@@ -72,10 +72,10 @@ with sync_playwright() as p:
     check('track kept after reload / rotation', d2.count('L') >= 8, d2[:40])
     check('filter menu closed again after a fresh start', not pg.is_visible('#visMore'))
     pg.on('dialog', lambda dlg: dlg.accept())
-    pg.click('#menuBtn'); pg.click('#menuItemSettings'); pg.wait_for_timeout(200)
+    pg.click('#visMoreBtn'); pg.wait_for_timeout(150); pg.click('.visSwatch--track'); pg.wait_for_timeout(350)   # (the Spår icon in Filter opens the Spår panel)
     pg.click('#trackClearBtn'); pg.wait_for_timeout(200)
-    check('Settings "Börja om" wipes the track so far', 'L' not in (pg.get_attribute('#trackLayer .trkLine', 'd') or ''), pg.get_attribute('#trackLayer .trkLine', 'd'))
-    pg.click('#settingsBackBtn'); pg.wait_for_timeout(200)
+    check('Spår panel "Börja om" wipes the track so far', 'L' not in (pg.get_attribute('#trackLayer .trkLine', 'd') or ''), pg.get_attribute('#trackLayer .trkLine', 'd'))
+    pg.click('#trkClose'); pg.wait_for_timeout(350)
     for i in range(5):
         lat += 10 / 111320.0; ctx.set_geolocation({'latitude': lat, 'longitude': lon, 'accuracy': 5}); pg.wait_for_timeout(700)
     d3 = pg.get_attribute('#trackLayer .trkLine', 'd') or ''

@@ -145,6 +145,7 @@
     if (document.visibilityState === 'hidden') reportUsage(true);
   });
 
+  var tracksCol = null;
   function initSharedWaypoints(cb){
     if (!FIREBASE_CONFIG.apiKey || FIREBASE_CONFIG.apiKey.indexOf('DIN_') === 0 || typeof firebase === 'undefined'){
       cb(false); return;
@@ -158,6 +159,7 @@
       fsCol = fsdb.collection('waypoints');
       posCol = fsdb.collection('positions');
       usageCol = fsdb.collection('usage');
+      tracksCol = fsdb.collection('tracks');   // (the Spår: 46-gps-track.js)
       var started = false;
       auth.onAuthStateChanged(function(user){
         if (!user || started) return;
