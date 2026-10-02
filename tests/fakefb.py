@@ -187,10 +187,18 @@ FAKE_FIREBASE_JS = r"""
       window.__trackDocs[id] = JSON.parse(JSON.stringify(Object.assign({}, d, { updatedAt: null }))); return Promise.resolve();
     } }; }
   };
+  // trackusers/<lake> (who has tracks on the lake): cfg.trackusers = { regnaren: { users: { calle: {u:'calle', n:'Calle'} } } }
+  window.__trackUsersDocs = JSON.parse(JSON.stringify(cfg.trackusers || {})); window.__trackUserGets = 0; window.__trackUserSets = [];
+  var trackUsersCol = { doc: function(id){ return {
+    get: function(){ window.__trackUserGets++; var d = window.__trackUsersDocs[id]; return Promise.resolve({ exists: !!d, data: function(){ return d; }, metadata: { fromCache: false } }); },
+    set: function(d, opt){
+      window.__trackUserSets.push(JSON.parse(JSON.stringify(d)));
+      var cur = window.__trackUsersDocs[id] || { users: {} }; cur.users = Object.assign({}, cur.users, d.users || {}); window.__trackUsersDocs[id] = cur; return Promise.resolve();
+    } }; } };
   var fake = {
     initializeApp: function(){ return {}; },
     auth: function(){ return { signInAnonymously: function(){ return Promise.resolve(); }, onAuthStateChanged: function(cb){ cb({ uid:'anon' }); } }; },
-    firestore: function(){ return { collection: function(n){ return n === 'positions' ? posCol : (n === 'usage' ? usageCol : (n === 'config' ? configCol : (n === 'catches' ? catchesCol : (n === 'tracks' ? tracksCol : wpCol)))); }, enablePersistence: function(){ return Promise.resolve(); } }; }
+    firestore: function(){ return { collection: function(n){ return n === 'positions' ? posCol : (n === 'usage' ? usageCol : (n === 'config' ? configCol : (n === 'catches' ? catchesCol : (n === 'tracks' ? tracksCol : (n === 'trackusers' ? trackUsersCol : wpCol))))); }, enablePersistence: function(){ return Promise.resolve(); } }; }
   };
   fake.firestore.FieldValue = { serverTimestamp: function(){ return {}; } };
   fake.firestore.Timestamp = { fromMillis: function(ms){ return { __epoch: true, ms: ms }; } };

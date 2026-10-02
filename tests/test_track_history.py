@@ -132,6 +132,26 @@ with sync_playwright() as p:
     check('no page errors', not errs, errs[:3])
     b.close()
 
+    # ================= the drop-down only lists people who have tracks on this lake =================
+    reg = {'regnaren': {'users': {'calle': {'u': 'calle', 'n': 'Calle'}, 'maya': {'u': 'maya', 'n': 'Maya'}, 'filip': {'u': 'filip', 'n': 'Filip'}}}}
+    b, ctx, pg, errs = new_page(p, geo=ME, cfg={'trackusers': reg}, name='Filip')
+    check('the register is read only when the panel opens', pg.evaluate('window.__trackUserGets') == 0)
+    open_panel(pg); pg.wait_for_timeout(500)
+    opts = pg.eval_on_selector_all('#trkWhoSel option', 'a=>a.map(e=>e.textContent)')
+    check('with a register: only those with tracks (not yourself), sorted, "Ingen" first', opts == ['Ingen', 'Calle', 'Maya'], opts)
+    check('...one read, and not again on the next opening', pg.evaluate('window.__trackUserGets') == 1)
+    pg.click('#trkClose'); pg.wait_for_timeout(300); open_panel(pg); pg.wait_for_timeout(300)
+    check('...(cached for a few minutes)', pg.evaluate('window.__trackUserGets') == 1)
+    pg.evaluate("Object.defineProperty(document, 'visibilityState', {value: 'hidden', configurable: true}); document.dispatchEvent(new Event('visibilitychange'))"); pg.wait_for_timeout(300)
+    sets = pg.evaluate('window.__trackUserSets')
+    check('having a track to share -> you are added to the register (once)', len(sets) == 1 and sets[0]['users']['filip'] == {'u': 'filip', 'n': 'Filip'}, sets)
+    pg.evaluate("document.dispatchEvent(new Event('visibilitychange'))"); pg.wait_for_timeout(300)
+    check('...and not written again', len(pg.evaluate('window.__trackUserSets')) == 1)
+    pg.reload(); pg.wait_for_timeout(1800)
+    pg.evaluate("Object.defineProperty(document, 'visibilityState', {value: 'hidden', configurable: true}); document.dispatchEvent(new Event('visibilitychange'))"); pg.wait_for_timeout(300)
+    check('...nor after a restart (remembered per phone and lake)', not pg.evaluate('window.__trackUserSets'))
+    b.close()
+
     # ================= stops from a real dwell (today's own track) =================
     b, ctx, pg, errs = new_page(p, geo=ME, cfg={}, name='Filip')
     now = int(datetime.datetime.now().timestamp() * 1000)

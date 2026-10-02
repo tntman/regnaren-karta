@@ -63,3 +63,10 @@ spår 13, platser/båtar över. Byggs om vid start och när mina dagar hämtats 
 
 ## Idéer kvar
 Fart som färg, tonande svans, riktningspilar, "Utforskat x %" (förslagsbilder: `tools/track_ideas/`).
+
+## Register över spårägare (`trackusers/<sjö>`)
+Ett dokument per sjö: `{ users: { <safeUid>: { u, n } } }` (u = uid, n = namn). Skrivs av `registerTrackUser()`
+(46-gps-track.js) första gången man spelar in/laddar upp ett spår på sjön (en flagga per sjö, så bara en write).
+`fetchTrackUsers()` läser det (1 read när Spår-menyn öppnas, cachat 5 min) och `trkFillWho()` (47-track-panel.js)
+listar bara de personerna (aldrig dig själv); tills registret finns används medlemslistan `NAME_ROSTER`.
+Regel i Firebase: `match /trackusers/{lake} { allow read, write: if request.auth != null; }`

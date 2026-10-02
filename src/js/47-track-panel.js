@@ -7,8 +7,11 @@
   var trkPanel = document.getElementById('trkPanel');
   var trkSwatch = document.querySelector('.visSwatch--track');
   var trkWhoSel = document.getElementById('trkWhoSel');
-  function trkFillWho(){   // the member list without yourself (myUid is only known once you've picked your name)
-    trkWhoSel.innerHTML = '<option value="">Ingen</option>' + NAME_ROSTER.filter(function(n){ return nameSlug(n) !== myUid; }).map(function(n){ return '<option value="' + nameSlug(n) + '">' + n + '</option>'; }).join('');
+  function trkFillWho(){   // people who have tracks on this lake (the register, 46-gps-track.js) -- else the member list; never yourself
+    var list = trkUsers ? Object.keys(trkUsers).map(function(k){ return { u: trkUsers[k].u, n: trkUsers[k].n }; })
+                        : NAME_ROSTER.map(function(n){ return { u: nameSlug(n), n: n }; });
+    list = list.filter(function(x){ return x.u && x.u !== myUid; }).sort(function(a, b){ return String(a.n).localeCompare(String(b.n), 'sv'); });
+    trkWhoSel.innerHTML = '<option value="">Ingen</option>' + list.map(function(x){ return '<option value="' + x.u + '">' + x.n + '</option>'; }).join('');
   }
   trkFillWho();
   function trkRenderPanel(){
@@ -35,7 +38,7 @@
       if (anPanel.classList.contains('show')) showAnPanel(false);
       if (hmPanel.classList.contains('show')) hmShowPanel(false);
       if (!trkPanel.classList.contains('show') && trkPanel._resetSize) trkPanel._resetSize();
-      trkFillWho(); trkRenderPanel(); fetchOthersTracks();
+      trkFillWho(); trkRenderPanel(); fetchOthersTracks(); fetchTrackUsers();
     }
     trkPanel.classList.toggle('show', open);
   }

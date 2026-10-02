@@ -139,6 +139,7 @@ usage: read auth; write kräver day (string) och r/w/d (number).
 config/{lake}: read auth; write kräver posIntervalS i [10,20,30,60].
 catches/{lake}: read auth; write kräver rows (string) och n (number) – heatmapens fångster (NOTES_HEATMAP.md).
 tracks/{id}: read auth; write kräver lake/uid/day/pts (string), n (number), pts ≤ 900 000 tecken – spåren (NOTES_SPAR.md). **Regeln ska läggas till i konsolen** (Filip) innan spår sparas i databasen.
+trackusers/{lake}: read/write auth – register över vilka som har spår på sjön (`{users:{<safeUid>:{u,n}}}`), fyller Spår-menyns rullgardin. Filip har lagt regeln i konsolen.
 
 ## Idéer som diskuterats men inte gjorts
 - Riktig iPhone-app via Capacitor + TestFlight (bakgrundsposition). Kräver Mac + Apple-konto.

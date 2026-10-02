@@ -246,9 +246,31 @@
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     }).catch(function(e){ console.warn('spår kunde inte sparas', e && e.code); });
   }
+  // who has tracks on this lake: one small doc trackusers/<lake> = { users: { <safe uid>: {u, n} } } -- written once per phone and
+  // lake (the first time there is something to share), read once when the Spår panel opens (the "Andras" drop-down)
+  var TRKREG_KEY = lakeKey('ffmap_trackreg_v1', 'trackreg_v1'), trkRegBusy = false, trkUsers = null, trkUsersAt = 0;
+  function registerTrackUser(){
+    var done = false; try { done = localStorage.getItem(TRKREG_KEY) === '1'; } catch(e){}
+    if (done || trkRegBusy || !trackUsersCol || !(Object.keys(trkHist).length || segPointCount(track.segs))) return;
+    trkRegBusy = true;
+    var o = {}; o[trkSafeUid()] = { u: myUid, n: userName || myUid };
+    addUsage('w', 1);
+    trackUsersCol.doc(LAKE_ID).set({ users: o }, { merge: true }).then(function(){ try { localStorage.setItem(TRKREG_KEY, '1'); } catch(e){} })
+      .catch(function(e){ trkRegBusy = false; console.warn('kunde inte registrera spår-användare', e && e.code); });
+  }
+  function fetchTrackUsers(){
+    if (!trackUsersCol || !USE_FIREBASE || Date.now() - trkUsersAt < 5 * 60000) return;
+    trkUsersAt = Date.now();
+    trackUsersCol.doc(LAKE_ID).get().then(function(snap){
+      addUsage('r', 1);
+      trkUsers = snap.exists ? ((snap.data() || {}).users || {}) : null;   // (no register yet -> the member list)
+      trkFillWho(); trkRenderPanel();
+    }).catch(function(){ /* keep the member list */ });
+  }
   // finished days that aren't uploaded yet (+ today's, at most every 5 min or when the app goes to the background)
   function flushTrackUploads(force){
     if (!USE_FIREBASE || !tracksCol || !myUid) return;
+    registerTrackUser();
     var any = false;
     Object.keys(trkHist).forEach(function(dk){
       var rec = trkHist[dk];
