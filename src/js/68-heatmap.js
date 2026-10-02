@@ -165,7 +165,7 @@
     var bars = '';
     for (h = lo; h <= hi; h++){
       var v = n[h] / mx, rgba = hmRamp(0.25 + 0.75 * v);   // (never the see-through dark end)
-      bars += '<i data-h="' + h + '" class="' + (h >= hmSet.h0 && h <= hmSet.h1 ? 'on' : '') + '" style="height:' + Math.max(4, Math.round(v * 100)) + '%;background:rgb(' + Math.round(rgba[0]) + ',' + Math.round(rgba[1]) + ',' + Math.round(rgba[2]) + ')"></i>';
+      bars += '<i data-h="' + h + '" class="' + (h >= hmSet.h0 && h <= hmSet.h1 ? 'on' : '') + '" style="height:' + Math.max(4, Math.round(v * 100)) + '%;background:rgb(' + Math.round(rgba[0]) + ',' + Math.round(rgba[1]) + ',' + Math.round(rgba[2]) + ')"><b>' + n[h] + '</b></i>';
     }
     el.setAttribute('data-lo', lo); el.setAttribute('data-hi', hi);
     el.innerHTML = '<div class="hmTimeHead"><span class="rowLbl">När</span><span class="hmTimeBest">Bäst kl ' + ('0' + best).slice(-2) + '–' + ('0' + (best + 3)).slice(-2) + ' · ' + Math.round(100 * bs / L.length) + ' %</span></div>' +

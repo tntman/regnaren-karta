@@ -30,9 +30,10 @@
   #hmTime:empty{display:none;}
   .hmTimeHead{display:flex;align-items:baseline;gap:8px;margin-bottom:6px;}
   .hmTimeBest{font-size:12.5px;color:var(--amber,#E8A33D);}
-  .hmBars{display:flex;align-items:flex-end;gap:2px;height:64px;}
-  .hmBars i{flex:1;border-radius:2px 2px 0 0;opacity:.4;min-width:0;}
+  .hmBars{display:flex;align-items:flex-end;gap:2px;height:78px;padding-top:14px;box-sizing:border-box;}
+  .hmBars i{position:relative;flex:1;border-radius:2px 2px 0 0;opacity:.4;min-width:0;}
   .hmBars i.on{opacity:1;}
+  .hmBars b{font-style:normal;position:absolute;left:-3px;right:-3px;bottom:100%;text-align:center;font-size:10px;font-weight:600;line-height:13px;color:var(--offwhite,#e8f1f5);pointer-events:none;}
   .hmAx{display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-top:3px;}
   .hmSpDot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:0;}
   #hmCard{position:absolute;left:0;right:0;bottom:0;z-index:27;background:var(--navy);border-top:1px solid rgba(255,255,255,.14);border-radius:18px 18px 0 0;
