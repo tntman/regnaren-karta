@@ -34,7 +34,8 @@
   .hmBars i{position:relative;flex:1;border-radius:2px 2px 0 0;opacity:.4;min-width:0;}
   .hmBars i.on{opacity:1;}
   .hmBars b{font-style:normal;position:absolute;left:-3px;right:-3px;bottom:100%;text-align:center;font-size:10px;font-weight:600;line-height:13px;color:var(--offwhite,#e8f1f5);pointer-events:none;}
-  .hmAx{display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-top:3px;}
+  .hmAx{display:flex;gap:2px;font-size:10px;color:var(--text-muted);margin-top:3px;}
+  .hmAx span{flex:1;min-width:0;text-align:center;overflow:visible;}
   .hmSpDot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:0;}
   #hmCard{position:absolute;left:0;right:0;bottom:0;z-index:27;background:var(--navy);border-top:1px solid rgba(255,255,255,.14);border-radius:18px 18px 0 0;
     padding:8px 16px calc(env(safe-area-inset-bottom,0px) + 16px);box-shadow:0 -10px 30px rgba(0,0,0,.45);transform:translateY(105%);transition:transform .25s ease;overflow-y:auto;}

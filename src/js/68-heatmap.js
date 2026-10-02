@@ -148,14 +148,15 @@
     for (h = 0; h < 24; h++) if (n[h]){ lo = Math.min(lo, h); hi = Math.max(hi, h); }
     var mx = Math.max.apply(null, n), best = 0, bs = -1;                     // (best 3 hours in a row)
     for (h = 0; h <= 21; h++){ var s = n[h] + n[h + 1] + n[h + 2]; if (s > bs){ bs = s; best = h; } }
-    var bars = '';
+    var bars = '', hrs = '';
     for (h = lo; h <= hi; h++){
       var v = n[h] / mx, rgba = hmRamp(0.25 + 0.75 * v);   // (never the see-through dark end)
       bars += '<i data-h="' + h + '" class="' + (h >= hmSet.h0 && h <= hmSet.h1 ? 'on' : '') + '" style="height:' + Math.max(4, Math.round(v * 100)) + '%;background:rgb(' + Math.round(rgba[0]) + ',' + Math.round(rgba[1]) + ',' + Math.round(rgba[2]) + ')"><b>' + n[h] + '</b></i>';
+      hrs += '<span>' + ('0' + h).slice(-2) + '</span>';
     }
     el.setAttribute('data-lo', lo); el.setAttribute('data-hi', hi);
     el.innerHTML = '<div class="hmTimeHead"><span class="rowLbl">När</span><span class="hmTimeBest">Bäst kl ' + ('0' + best).slice(-2) + '–' + ('0' + (best + 3)).slice(-2) + ' · ' + Math.round(100 * bs / L.length) + ' %</span></div>' +
-      '<div class="hmBars">' + bars + '</div><div class="hmAx"><span>' + ('0' + lo).slice(-2) + '</span><span>' + ('0' + hi).slice(-2) + '</span></div>';
+      '<div class="hmBars">' + bars + '</div><div class="hmAx">' + hrs + '</div>';
   }
   (function(){
     var el = document.getElementById('hmTime'), a = -1, moved = false, prev = null;
