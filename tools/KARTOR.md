@@ -52,8 +52,11 @@ Alla kommandon körs från repots rot (`E:\github\regnaren-karta`), med `py -3`.
 7. **Rita:** `py -3 tools/genesis_render.py <id>` → kartbilder, nivåbitar,
    förhandsbilder, djupnät rakt in i `docs/lakes/<id>/`, och `lakes/<id>/lake.json`.
    (`… <id> grid` = bara djupnät + lake.json, snabbt.)
-8. **Bygg:** `py -3 tools/build.py` (sjön dyker upp i menyn av sig själv).
-9. **Testa:** `powershell -ExecutionPolicy Bypass -File tests\run_all.ps1`
+8. **Namn från OpenStreetMap:** `py -3 tools/osm_names.py <id>` → `lakes/<id>/names.json` (öar, uddar, vikar, gårdar,
+   byar med namn inom kartbildens yta; läser `lake.json` från steg 7, så kör den efter rit-steget). Visas som
+   Filter → Lager → Namn (se slutet av filen). Kolla utskriften: en sjö kan ha 0 namn i vattnet (Sibbof. har det).
+9. **Bygg:** `py -3 tools/build.py` (sjön dyker upp i menyn av sig själv; names.json bäddas in).
+10. **Testa:** `powershell -ExecutionPolicy Bypass -File tests\run_all.ps1`
    (parallellt, ~3 min). Titta också på bilderna själv – jämför med Genesis
    på samma ställe och samma zoom.
 
@@ -290,5 +293,5 @@ djup = färgens rang (ej kalibrerat) × 10 m; utjämning σ 4,5 px; Sobel-lutnin
 Filter → Lager → **Namn** (på som standard, `ffmap_names_v1` = 0 om avstängd): riktiga namn runt sjön som vit prick + text. Data i
 `lakes/<id>/names.json` = `[[lat, lon, namn, "w"|"p"], ...]` (w = ö, udde, vik, sund; p = gård, by), skapad av
 `py -3 tools/osm_names.py [sjö]` (Overpass, inom kartbildens yta, bara objekt med `name`; försöker igen om servern är
-upptagen). build.py bäddar in den som `LAKE.names`. Ny sjö: kör skriptet och bygg. `js/59-names.js` ritar; vatten-namn
+upptagen). build.py bäddar in den som `LAKE.names`. Ny sjö: steg 8 i receptet (kör skriptet, bygg). `js/59-names.js` ritar; vatten-namn
 går före land, krockande etiketter göms (zooma in = fler). Data © OpenStreetMap-bidragsgivare (ODbL).

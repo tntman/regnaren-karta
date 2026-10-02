@@ -85,7 +85,7 @@ Uppdatera rätt anteckning när något ändras.
   Undvik onödiga get().
 - **Flera sjöar:** en mapp per sjö, `lakes/<id>/` med `lake.json` (namn, center, geo-referens,
   djupskala, kartstilar, zoomnivåer) + `raw/`. build.py bäddar in alla lake.json som `LAKES`;
-  bilderna ligger bara i `docs/lakes/<id>/`. Vald sjö: localStorage `ffmap_lake_v1` (eller
+  bilderna ligger bara i `docs/lakes/<id>/`; `lakes/<id>/names.json` = OSM-namnen (`tools/osm_names.py`, steg 8 i KARTOR.md) som build.py också bäddar in. Vald sjö: localStorage `ffmap_lake_v1` (eller
   `?lake=<id>`); byte = omladdning. Sjöspecifika localStorage-nycklar via `lakeKey(gammalNyckel, namn)`
   – Regnaren behåller sina gamla nycklar. Firestore: allt märkt med `lake`, `config/<lake>` per sjö.
 - **Service worker** (`src/sw.js`): nätet först för sidan (4 s), cache för bilder. Sidan skickar
