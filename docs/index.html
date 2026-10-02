@@ -1511,7 +1511,7 @@
   #hmCardNav button{width:34px;height:30px;border-radius:9px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.07);color:var(--offwhite);font-size:18px;line-height:1;cursor:pointer;}
   @media (orientation:landscape) and (max-height:520px){ #hmPanel, #hmCard{left:auto;width:420px;right:0;max-height:88vh;} }
   /* ================= "Namn" (Filter, Lager): place names from OpenStreetMap -- off by default ================= */
-  #osmNames{position:absolute;inset:0;z-index:14;pointer-events:none;display:none;}   /* under spots and boats, taps go through to the map */
+  #osmNames{position:absolute;inset:0;z-index:12;pointer-events:none;display:none;}   /* furthest back: under track, route, spots and boats, taps go through to the map */
   #osmNames.on{display:block;}
   .osmN{position:absolute;left:0;top:0;white-space:nowrap;will-change:transform;}
   .osmN::before{content:"";position:absolute;left:-3.5px;top:-3.5px;width:7px;height:7px;border-radius:50%;background:#fff;box-shadow:0 0 0 1.5px rgba(6,20,28,.8);}
