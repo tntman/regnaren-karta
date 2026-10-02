@@ -135,7 +135,7 @@
     var on = function(id){ return el(id).checked; };
     var put = function(id, parts){ var t = parts.filter(Boolean).join(' · '); el('setSum-' + id).textContent = t.charAt(0).toUpperCase() + t.slice(1); };
     var st = document.querySelector('#mapStyleList .styleOpt.active .soName');
-    put('map', [act('wpSizeSeg') + ' storlek', st && st.textContent, 'färg ' + el('mapSatVal').textContent, 'andras ' + act('othersOpacitySeg')]);
+    put('map', [act('wpSizeSeg') + ' storlek', st && st.textContent, 'färg ' + el('mapSatVal').textContent, 'andras ' + act('othersOpacitySeg'), 'kompass ' + el('cpLenVal').textContent + ' ' + el('cpAngVal').textContent]);
     put('boat', ['spår ' + el('trackOpVal').textContent, on('toggleDepth') && 'djupet', on('gpsPulseToggle') && 'ring', on('toggleWake') && 'skärmen tänd',
       (el('cruiseInput').value || '–') + ' kn marschfart']);
     var km = act('ltAlarmSeg');

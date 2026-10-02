@@ -55,4 +55,4 @@ i avsnitt, Ångra, åskvarningen alltid + "dragit förbi", solnedgången, Täckn
 - 2026-09-29 – Hela Hjälp gjord och uppdaterad (20 avsnitt, 18 animeringar, sök).
 
 - 2026-10-02 – Heatmap: genväg överst (färgad karta vänster om kartknappen, på/av), Filter-knappen smalare (bara ikon + pil), heatmapen flyttar/zoomar inte längre kartan när den slås på. Förslag nyhetsrad: "Ny knapp överst för Heatmap".
-- 2026-10-02 – Kompass (Filter → Lager): kil 60° bred, 500 m lång från din position mot dit telefonen pekar. iPhone frågar om lov första gången. Av vid appstart. Avsnitt: Filter (+ ev. ny animering). Förslag nyhetsrad: "Ny: Kompass i Filter – se var telefonen pekar".
+- 2026-10-02 – Kompass (Filter → Lager): kil 60° bred, 500 m lång (justerbar: färg, längd, vinkel i Inställningar → Kartan) + rund kompassvisare nere till höger (N Ö S V) från din position mot dit telefonen pekar. iPhone frågar om lov första gången. Av vid appstart. Avsnitt: Filter (+ ev. ny animering). Förslag nyhetsrad: "Ny: Kompass i Filter – se var telefonen pekar".

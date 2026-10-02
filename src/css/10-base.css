@@ -99,6 +99,21 @@
   /* "Kompass" (Filter): a 60-degree wedge 500 m long from you, towards where the phone points
      (js/53-compass.js sets size, place and turn) */
   #compassWedge{position:absolute;display:none;overflow:visible;pointer-events:none;}
+  /* the dial bottom right (not a button: no tap, no fill like the buttons): N Ö S V stay put, the wedge turns.
+     Sits centred above the 2 x 2 buttons (size and place: 90-buttons.css) */
+  #compassDial{position:absolute;z-index:16;display:none;pointer-events:none;}
+  #compassDial svg{width:100%;height:100%;display:block;overflow:visible;}
+  #compassDial .cdDisc{fill:rgba(6,20,28,.5);stroke:#fff;stroke-opacity:.35;stroke-width:1.3;}
+  #compassDial .cdTxt text{fill:#fff;fill-opacity:.8;font:600 10px sans-serif;text-anchor:middle;dominant-baseline:middle;}
+  #compassDial .cdTxt text:first-child{fill:#FF5A4F;fill-opacity:1;}
+  #cdWedge path{fill-opacity:.8;}
+  #cdWedge{transform-origin:40px 40px;}
+  .cpColors{display:flex;gap:12px;margin-top:10px;}
+  .cpColors button{width:34px;height:34px;border-radius:50%;border:3px solid transparent;box-shadow:0 0 0 1px rgba(255,255,255,.25);padding:0;cursor:pointer;}
+  .cpColors button.active{border-color:#fff;}
+  .cpLbl{flex:0 0 auto;min-width:50px;font-size:14px;color:var(--offwhite);}
+  .satSlider.cpSlider::-webkit-slider-runnable-track{background:rgba(255,255,255,.28);}
+  .satSlider.cpSlider::-moz-range-track{background:rgba(255,255,255,.28);}
   #dotCenter{display:none;}
   #dotArrow{
     position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;

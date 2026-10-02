@@ -36,6 +36,23 @@ with sync_playwright() as p:
     for i in range(30): hdg(pg, 10)
     h = st(pg)['hdg']; check('across north: settles at 10, not via 180', abs(((h - 10 + 180) % 360) - 180) < 1, h)
     wd = st(pg)['w']
+    check('dial bottom right shown, not tappable', st(pg)['dial'] and pg.evaluate("getComputedStyle(document.getElementById('compassDial')).pointerEvents") == 'none')
+    r = pg.evaluate("""() => { var d = document.getElementById('compassDial').getBoundingClientRect(), l = document.getElementById('addHereBtn').getBoundingClientRect(), m = document.getElementById('measureBtn').getBoundingClientRect();
+        return { above: d.bottom <= Math.min(l.top, m.top) + 1, cx: d.left + d.width/2 - (l.left + m.right)/2 }; }""")
+    check('dial sits centred above the 2 x 2 buttons', r['above'] and abs(r['cx']) < 2, r)
+    # settings: length, angle, colour
+    pg.evaluate("""() => { var l = document.getElementById('cpLen'); l.value = 1000; l.dispatchEvent(new Event('input', {bubbles: true}));
+        var a = document.getElementById('cpAng'); a.value = 90; a.dispatchEvent(new Event('input', {bubbles: true}));
+        document.querySelector('#cpColors [data-c="#3A86FF"]').click(); }""")
+    pg.wait_for_timeout(100)
+    s = st(pg); wd = s['w']
+    check('settings change the cfg and are saved', s['cfg'] == {'c': '#3A86FF', 'len': 1000, 'ang': 90} and 'cfg_v1' in pg.evaluate("Object.keys(localStorage).join()"), s['cfg'])
+    d = pg.evaluate("[document.querySelector('#compassWedge path').getAttribute('stroke'), document.querySelector('#cdWedge path').getAttribute('fill'), document.querySelector('#compassWedge path').getAttribute('d')]")
+    check('wedge and dial take the colour; 90 deg wedge', d[0] == '#3A86FF' and d[1] == '#3A86FF' and d[2].startswith('M100 100 L29.3 29.3'), d)
+    pg.evaluate("""() => { var l = document.getElementById('cpLen'); l.value = 500; l.dispatchEvent(new Event('input', {bubbles: true})); }""")
+    pg.wait_for_timeout(100)
+    check('half the length = half the size', abs(st(pg)['w'] * 2 - wd) < 2, (wd, st(pg)['w']))
+    wd = st(pg)['w']
     pg.mouse.wheel(0, -400); pg.wait_for_timeout(500)
     check('wedge grows when zooming in (stays 500 m)', st(pg)['w'] > wd, (wd, st(pg)['w']))
     pg.screenshot(path='shot_compass.png')
@@ -45,7 +62,8 @@ with sync_playwright() as p:
     hdg(pg, 200); pg.wait_for_timeout(100)
     check('after a reload: wedge follows again', st(pg)['shown'] and abs(st(pg)['hdg'] - 200) < 0.5, st(pg))
     tap(pg); pg.wait_for_timeout(100)
-    s = st(pg); check('off: wedge gone, listener removed', not s['on'] and not s['shown'], s)
+    s = st(pg); check('off: wedge and dial gone, listener removed', not s['on'] and not s['shown'] and not s['dial'], s)
+    check('settings remembered after reload', s['cfg']['c'] == '#3A86FF' and s['cfg']['ang'] == 90, s['cfg'])
     hdg(pg, 45); pg.wait_for_timeout(100)
     check('events after off change nothing', not st(pg)['shown'] and st(pg)['hdg'] is None, st(pg))
     # Android: absolute alpha, no permission call

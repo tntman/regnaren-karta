@@ -127,6 +127,21 @@
   /* "Kompass" (Filter): a 60-degree wedge 500 m long from you, towards where the phone points
      (js/53-compass.js sets size, place and turn) */
   #compassWedge{position:absolute;display:none;overflow:visible;pointer-events:none;}
+  /* the dial bottom right (not a button: no tap, no fill like the buttons): N Ö S V stay put, the wedge turns.
+     Sits centred above the 2 x 2 buttons (size and place: 90-buttons.css) */
+  #compassDial{position:absolute;z-index:16;display:none;pointer-events:none;}
+  #compassDial svg{width:100%;height:100%;display:block;overflow:visible;}
+  #compassDial .cdDisc{fill:rgba(6,20,28,.5);stroke:#fff;stroke-opacity:.35;stroke-width:1.3;}
+  #compassDial .cdTxt text{fill:#fff;fill-opacity:.8;font:600 10px sans-serif;text-anchor:middle;dominant-baseline:middle;}
+  #compassDial .cdTxt text:first-child{fill:#FF5A4F;fill-opacity:1;}
+  #cdWedge path{fill-opacity:.8;}
+  #cdWedge{transform-origin:40px 40px;}
+  .cpColors{display:flex;gap:12px;margin-top:10px;}
+  .cpColors button{width:34px;height:34px;border-radius:50%;border:3px solid transparent;box-shadow:0 0 0 1px rgba(255,255,255,.25);padding:0;cursor:pointer;}
+  .cpColors button.active{border-color:#fff;}
+  .cpLbl{flex:0 0 auto;min-width:50px;font-size:14px;color:var(--offwhite);}
+  .satSlider.cpSlider::-webkit-slider-runnable-track{background:rgba(255,255,255,.28);}
+  .satSlider.cpSlider::-moz-range-track{background:rgba(255,255,255,.28);}
   #dotCenter{display:none;}
   #dotArrow{
     position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;
@@ -1605,6 +1620,7 @@
   #measureBtn{right:calc(16px + var(--bb) + var(--bgap));bottom:calc(var(--bb0) + var(--bb) + var(--bgap));}
   #addHereBtn .addPin{left:calc(50% - (var(--bb) - 14px) / 2);top:2px;width:calc(var(--bb) - 14px);height:calc(var(--bb) - 14px);}
   #locateBtn svg{width:24px;height:24px;}
+  #compassDial{width:64px;height:64px;right:calc(16px + var(--bb) + var(--bgap) / 2 - 32px);bottom:calc(var(--bb0) + 2 * var(--bb) + 2 * var(--bgap));}
   #msgBtn{bottom:calc(var(--bb0) + 3px);}
   @media (orientation:landscape) and (max-height:520px){
     :root{--bb:42px;--bgap:10px;--bb0:calc(env(safe-area-inset-bottom,0px) + 8px);}
@@ -1731,6 +1747,25 @@
           <input type="range" class="satSlider" id="mapSatSlider" min="0" max="100" step="5" value="80" aria-label="Kartans färgmättnad">
           <span class="satVal" id="mapSatVal">80 %</span>
         </div>
+      </div>
+      <div class="settingsRow" style="flex-direction:column;align-items:stretch;">
+        <div class="settingsRowText">
+          <div class="settingsRowTitle">Kompassen</div>
+          <div class="settingsRowDesc">Kilen som visar vart telefonen pekar (slås på under Filter → Kompass).</div>
+        </div>
+        <div class="cpColors" id="cpColors" role="radiogroup" aria-label="Kompassens färg">
+          <button type="button" role="radio" data-c="#FFD23F" aria-label="Gul" style="background:#FFD23F"></button>
+          <button type="button" role="radio" data-c="#FF7A00" aria-label="Orange" style="background:#FF7A00"></button>
+          <button type="button" role="radio" data-c="#3A86FF" aria-label="Blå" style="background:#3A86FF"></button>
+          <button type="button" role="radio" data-c="#4FD18B" aria-label="Grön" style="background:#4FD18B"></button>
+          <button type="button" role="radio" data-c="#F2F2F2" aria-label="Vit" style="background:#F2F2F2"></button>
+        </div>
+        <div class="satRow"><span class="cpLbl">Längd</span>
+          <input type="range" class="satSlider cpSlider" id="cpLen" min="100" max="2000" step="50" value="500" aria-label="Kompasskilens längd">
+          <span class="satVal" id="cpLenVal">500 m</span></div>
+        <div class="satRow"><span class="cpLbl">Vinkel</span>
+          <input type="range" class="satSlider cpSlider" id="cpAng" min="15" max="120" step="5" value="60" aria-label="Kompasskilens vinkel">
+          <span class="satVal" id="cpAngVal">60°</span></div>
       </div>
       <div class="settingsRow" style="flex-direction:column;align-items:stretch;">
         <div class="settingsRowText">
@@ -2028,6 +2063,7 @@
     <svg id="compassWedge" viewBox="0 0 200 200" aria-hidden="true"><defs><radialGradient id="compassGrad" gradientUnits="userSpaceOnUse" cx="100" cy="100" r="100"><stop offset="0" stop-color="#FFD23F" stop-opacity=".6"></stop><stop offset="1" stop-color="#FFD23F" stop-opacity=".1"></stop></radialGradient></defs><path d="M100 100 L50 13.4 A100 100 0 0 1 150 13.4Z" fill="url(#compassGrad)" stroke="#FFD23F" stroke-opacity=".7" stroke-width="1.5" stroke-linejoin="round"></path></svg>
     <div id="dot"><span id="dotCenter"></span><svg id="dotArrow" viewBox="0 0 24 24"><path class="arrowHalo" d="M12 3.25l7 17.5-7-4.2-7 4.2z"></path><path class="arrowBody" d="M12 3.25l7 17.5-7-4.2-7 4.2z"></path></svg></div>
   </div>
+  <div id="compassDial" aria-hidden="true"><svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="36" class="cdDisc"></circle><g class="cdTxt"><text x="40" y="20">N</text><text x="62" y="44">Ö</text><text x="40" y="68">S</text><text x="18" y="44">V</text></g><g id="cdWedge"><path d="M40 40 L31 10 A31 31 0 0 1 49 10Z"></path></g><circle cx="40" cy="40" r="3" fill="#fff"></circle></svg></div>
 
   <div id="legend" data-contour="Djupkurvor var 1 m">
     <div class="bar"></div>
@@ -4757,7 +4793,7 @@
     var on = function(id){ return el(id).checked; };
     var put = function(id, parts){ var t = parts.filter(Boolean).join(' · '); el('setSum-' + id).textContent = t.charAt(0).toUpperCase() + t.slice(1); };
     var st = document.querySelector('#mapStyleList .styleOpt.active .soName');
-    put('map', [act('wpSizeSeg') + ' storlek', st && st.textContent, 'färg ' + el('mapSatVal').textContent, 'andras ' + act('othersOpacitySeg')]);
+    put('map', [act('wpSizeSeg') + ' storlek', st && st.textContent, 'färg ' + el('mapSatVal').textContent, 'andras ' + act('othersOpacitySeg'), 'kompass ' + el('cpLenVal').textContent + ' ' + el('cpAngVal').textContent]);
     put('boat', ['spår ' + el('trackOpVal').textContent, on('toggleDepth') && 'djupet', on('gpsPulseToggle') && 'ring', on('toggleWake') && 'skärmen tänd',
       (el('cruiseInput').value || '–') + ' kn marschfart']);
     var km = act('ltAlarmSeg');
@@ -7195,20 +7231,66 @@
      permission, and only when it's a tap -- the switch's change event is one. Remembered
      for the session only (rotation reloads the page), not across app starts: the listener
      costs battery. The compass can be 10-20 degrees off near metal and engines. */
-  var COMPASS_KEY = 'ffmap_compass_v1', COMPASS_M = 500;
+  var COMPASS_KEY = 'ffmap_compass_v1', COMPASS_CFG_KEY = 'ffmap_compass_cfg_v1';
+  var compassCfg = { c: '#FFD23F', len: 500, ang: 60 };   // Inställningar → Kartan → Kompassen: colour, length (m), angle (deg)
+  try {
+    var cc = JSON.parse(localStorage.getItem(COMPASS_CFG_KEY) || 'null');
+    if (cc){
+      if (/^#[0-9A-Fa-f]{6}$/.test(cc.c)) compassCfg.c = cc.c;
+      if (isFinite(cc.len)) compassCfg.len = Math.max(100, Math.min(2000, +cc.len));
+      if (isFinite(cc.ang)) compassCfg.ang = Math.max(15, Math.min(120, +cc.ang));
+    }
+  } catch(e){}
   var compassOn = false, compassHdg = null, compassSx = 0, compassSy = 0, compassLabelT = null;
   try { compassOn = sessionStorage.getItem(COMPASS_KEY) === '1'; } catch(e){}
   var compassWedge = document.getElementById('compassWedge'), toggleCompassEl = document.getElementById('toggleCompass');
+  var compassDial = document.getElementById('compassDial'), cdWedge = document.getElementById('cdWedge');
+  // a pie slice pointing up from (cx,cy), radius r, angle ang
+  function compassSlice(cx, cy, r, ang){
+    var h = ang / 2 * Math.PI / 180, dx = r * Math.sin(h), dy = r * Math.cos(h);
+    return 'M' + cx + ' ' + cy + ' L' + (cx - dx).toFixed(1) + ' ' + (cy - dy).toFixed(1) + ' A' + r + ' ' + r + ' 0 0 1 ' + (cx + dx).toFixed(1) + ' ' + (cy - dy).toFixed(1) + 'Z';
+  }
+  function compassStyle(){
+    var c = compassCfg.c;
+    compassWedge.querySelectorAll('stop').forEach(function(s){ s.setAttribute('stop-color', c); });
+    var p = compassWedge.querySelector('path');
+    p.setAttribute('d', compassSlice(100, 100, 100, compassCfg.ang)); p.setAttribute('stroke', c);
+    var q = cdWedge.querySelector('path');
+    q.setAttribute('d', compassSlice(40, 40, 31, compassCfg.ang)); q.setAttribute('fill', c);
+    compassDraw();
+  }
   function compassDraw(sx, sy){
     if (typeof sx === 'number'){ compassSx = sx; compassSy = sy; }
-    if (!compassOn || compassHdg === null){ compassWedge.style.display = 'none'; return; }
-    var d = Math.max(60, Math.min(2400, 2 * COMPASS_M * scale / WEB_METERS_PER_PX));
+    var live = compassOn && compassHdg !== null;
+    compassDial.style.display = live ? 'block' : 'none';
+    if (!live){ compassWedge.style.display = 'none'; return; }
+    cdWedge.setAttribute('transform', 'rotate(' + compassHdg.toFixed(1) + ' 40 40)');
+    var d = Math.max(60, Math.min(2400, 2 * compassCfg.len * scale / WEB_METERS_PER_PX));
     var st = compassWedge.style;
     st.display = 'block';
     st.width = st.height = d + 'px';
     st.left = compassSx + 'px'; st.top = compassSy + 'px';
     st.transform = 'translate(-50%,-50%) rotate(' + compassHdg.toFixed(1) + 'deg)';
   }
+  // the settings: colour, length, angle
+  var cpColorsEl = document.getElementById('cpColors'), cpLenEl = document.getElementById('cpLen'), cpAngEl = document.getElementById('cpAng');
+  function compassCfgUi(){
+    cpLenEl.value = compassCfg.len; cpAngEl.value = compassCfg.ang;
+    document.getElementById('cpLenVal').textContent = compassCfg.len + ' m';
+    document.getElementById('cpAngVal').textContent = compassCfg.ang + '°';
+    Array.prototype.forEach.call(cpColorsEl.children, function(b){
+      var on = b.getAttribute('data-c').toLowerCase() === compassCfg.c.toLowerCase();
+      b.classList.toggle('active', on); b.setAttribute('aria-checked', on ? 'true' : 'false');
+    });
+  }
+  function compassCfgChanged(){
+    try { localStorage.setItem(COMPASS_CFG_KEY, JSON.stringify(compassCfg)); } catch(e){}
+    compassCfgUi(); compassStyle();
+  }
+  cpColorsEl.addEventListener('click', function(e){ var b = e.target.closest('button'); if (b){ compassCfg.c = b.getAttribute('data-c'); compassCfgChanged(); } });
+  cpLenEl.addEventListener('input', function(){ compassCfg.len = +cpLenEl.value; compassCfgChanged(); });
+  cpAngEl.addEventListener('input', function(){ compassCfg.ang = +cpAngEl.value; compassCfgChanged(); });
+  compassCfgUi(); compassStyle();
   function compassOnEvent(e){
     var h = null;
     if (typeof e.webkitCompassHeading === 'number') h = e.webkitCompassHeading;                 // iOS: degrees from north
@@ -7250,7 +7332,7 @@
       compassSet(true);
     } else compassDenied();
   });
-  window.__ffCompass = function(){ return { on: compassOn, hdg: compassHdg, shown: compassWedge.style.display === 'block', w: parseFloat(compassWedge.style.width) || 0 }; };   // (for the tests)
+  window.__ffCompass = function(){ return { on: compassOn, hdg: compassHdg, shown: compassWedge.style.display === 'block', w: parseFloat(compassWedge.style.width) || 0, dial: compassDial.style.display === 'block', cfg: compassCfg }; };   // (for the tests)
   /* ---- swipe a bottom panel down to close it (like a spot's sheet) -- see tools/UI.md ----
      Drag from anywhere on the panel except its fields, buttons and sliders; the panel
      follows the finger (down only); let go far enough down -- or with a quick flick --

@@ -94,6 +94,25 @@
       </div>
       <div class="settingsRow" style="flex-direction:column;align-items:stretch;">
         <div class="settingsRowText">
+          <div class="settingsRowTitle">Kompassen</div>
+          <div class="settingsRowDesc">Kilen som visar vart telefonen pekar (slås på under Filter → Kompass).</div>
+        </div>
+        <div class="cpColors" id="cpColors" role="radiogroup" aria-label="Kompassens färg">
+          <button type="button" role="radio" data-c="#FFD23F" aria-label="Gul" style="background:#FFD23F"></button>
+          <button type="button" role="radio" data-c="#FF7A00" aria-label="Orange" style="background:#FF7A00"></button>
+          <button type="button" role="radio" data-c="#3A86FF" aria-label="Blå" style="background:#3A86FF"></button>
+          <button type="button" role="radio" data-c="#4FD18B" aria-label="Grön" style="background:#4FD18B"></button>
+          <button type="button" role="radio" data-c="#F2F2F2" aria-label="Vit" style="background:#F2F2F2"></button>
+        </div>
+        <div class="satRow"><span class="cpLbl">Längd</span>
+          <input type="range" class="satSlider cpSlider" id="cpLen" min="100" max="2000" step="50" value="500" aria-label="Kompasskilens längd">
+          <span class="satVal" id="cpLenVal">500 m</span></div>
+        <div class="satRow"><span class="cpLbl">Vinkel</span>
+          <input type="range" class="satSlider cpSlider" id="cpAng" min="15" max="120" step="5" value="60" aria-label="Kompasskilens vinkel">
+          <span class="satVal" id="cpAngVal">60°</span></div>
+      </div>
+      <div class="settingsRow" style="flex-direction:column;align-items:stretch;">
+        <div class="settingsRowText">
           <div class="settingsRowTitle">Andras fiskeplatser</div>
           <div class="settingsRowDesc">Hur tydligt gruppens platser syns på kartan.</div>
         </div>
