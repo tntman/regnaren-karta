@@ -8350,14 +8350,14 @@
     anLikeSpot(wp);
   });
 
-  /* ================= "Namn" (Filter, Lager) -- off by default =================
+  /* ================= "Namn" (Filter, Lager) -- on by default =================
      The real place names around the lake from OpenStreetMap (islands, points, bays, farms, hamlets):
      a white dot and the name. Data: lakes/<id>/names.json (tools/osm_names.py), embedded in the page as
      LAKE.names = [[lat, lon, name, 'w' water | 'p' land], ...]. Names in the water come first; where two
      labels would overlap the later one is hidden (so zooming in shows more). Never takes a tap. */
   var NAMES_KEY = 'ffmap_names_v1';
-  var namesOn = false;
-  try { namesOn = localStorage.getItem(NAMES_KEY) === '1'; } catch(e){}
+  var namesOn = true;   // (on unless you switched it off: '0')
+  try { namesOn = localStorage.getItem(NAMES_KEY) !== '0'; } catch(e){}
   var namesEl = document.getElementById('osmNames'), toggleNamesEl = document.getElementById('toggleNames');
   var namesList = (LAKE.names || []).slice().sort(function(a, b){ return (a[3] === 'w' ? 0 : 1) - (b[3] === 'w' ? 0 : 1); }).map(function(n){
     var p = latLonToImgPx(n[0], n[1]);

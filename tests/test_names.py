@@ -11,13 +11,10 @@ with sync_playwright() as p:
     b, ctx, pg, errs = new_page(p, name='Filip')
     pg.wait_for_timeout(600)
     s = st(pg)
-    check('off at start: layer hidden, switch off, nothing drawn', not s['on'] and pg.evaluate("getComputedStyle(document.getElementById('osmNames')).display") == 'none'
-          and not pg.evaluate("document.getElementById('toggleNames').checked"), s)
+    check('on at start: layer visible, switch on, names drawn', s['on'] and s['shown'] >= 5 and pg.evaluate("getComputedStyle(document.getElementById('osmNames')).display") == 'block'
+          and pg.evaluate("document.getElementById('toggleNames').checked"), s)
     check('Regnaren has its names (islands + places)', s['total'] >= 20, s)
     check('the Filter row is called Namn, under Lager', 'Namn' in pg.inner_text('#toggleNames >> xpath=ancestor::label'))
-    pg.evaluate("document.getElementById('toggleNames').click()"); pg.wait_for_timeout(200)
-    s = st(pg)
-    check('on: layer visible and names shown', s['on'] and s['shown'] >= 5 and pg.evaluate("getComputedStyle(document.getElementById('osmNames')).display") == 'block', s)
     lab = pg.evaluate("""() => Array.prototype.filter.call(document.querySelectorAll('.osmN'), e => e.style.display !== 'none').map(e => e.textContent)""")
     check('real names are there (Fårön, Sanda holme), not "bäck"/"flowline"', 'Fårön' in lab and 'Sanda holme' in lab and 'bäck' not in lab and 'flowline' not in lab, lab)
     d = pg.evaluate("""() => { var e = document.querySelector('.osmN'), c = getComputedStyle(e, '::before'); return [c.backgroundColor, getComputedStyle(e).pointerEvents, getComputedStyle(document.getElementById('osmNames')).pointerEvents]; }""")
@@ -26,13 +23,14 @@ with sync_playwright() as p:
     ov = pg.evaluate("""() => { var r = Array.prototype.filter.call(document.querySelectorAll('.osmN'), e => e.style.display !== 'none').map(e => e.querySelector('span').getBoundingClientRect()), n = 0;
         for (var i = 0; i < r.length; i++) for (var j = i + 1; j < r.length; j++) if (r[i].left < r[j].right - 6 && r[i].right > r[j].left + 6 && r[i].top < r[j].bottom - 2 && r[i].bottom > r[j].top + 2) n++; return n; }""")
     check('no labels on top of each other', ov == 0, ov)
-    # zooming in shows more names
     pg.evaluate("document.getElementById('toggleNames').click()"); pg.wait_for_timeout(100)
-    check('off again: hidden', not st(pg)['on'])
-    pg.evaluate("document.getElementById('toggleNames').click()"); pg.wait_for_timeout(100)
-    # remembered over a reload (rotation)
+    check('switched off: hidden', not st(pg)['on'] and pg.evaluate("getComputedStyle(document.getElementById('osmNames')).display") == 'none')
+    # the choice is remembered over a reload (rotation)
     pg.reload(); pg.wait_for_timeout(1500)
-    check('remembered after a reload', st(pg)['on'] and pg.evaluate("document.getElementById('toggleNames').checked"), st(pg))
+    check('off is remembered after a reload', not st(pg)['on'] and not pg.evaluate("document.getElementById('toggleNames').checked"), st(pg))
+    pg.evaluate("document.getElementById('toggleNames').click()"); pg.wait_for_timeout(100)
+    pg.reload(); pg.wait_for_timeout(1500)
+    check('on again and remembered', st(pg)['on'], st(pg))
     # every lake has names, and the page has no errors
     for lake, minimum in (('sibbo', 5), ('sjosjon', 4), ('vagsfjarden', 4)):
         pg.goto('http://localhost:8899/index.html?lake=' + lake); pg.wait_for_timeout(1200)

@@ -35,7 +35,7 @@ with sync_playwright() as p:
     # ---- filter menu ----
     check('filter menu closed at start: only the Filter button', not pg.is_visible('#visMore') and not pg.is_visible('#toggleMine'))
     pg.click('#visMoreBtn'); pg.wait_for_timeout(200)
-    check('open: Mina/Andras/Båtar/Spår + types (no "Namn": names always shown; Djup is in Inställningar)', all(pg.is_visible('label:has(#%s)' % i) for i in ['toggleMine','toggleOthers','toggleBoats','toggleTrack']) and not pg.is_visible('label:has(#toggleNames)') and not pg.is_visible('label:has(#toggleDepth)'))
+    check('open: Mina/Andras/Båtar/Spår + types (Lager has "Namn" = map names from OSM; Djup is in Inställningar)', all(pg.is_visible('label:has(#%s)' % i) for i in ['toggleMine','toggleOthers','toggleBoats','toggleTrack']) and pg.is_visible('label:has(#toggleNames)') and not pg.is_visible('label:has(#toggleDepth)'))
     pg.screenshot(path='feat_filter_open.png')
     pg.click('label:has(#toggleBoats) .toggle'); pg.click('#visMoreBtn'); pg.wait_for_timeout(200)
     check('Båtar off -> dot on the closed Filter button', pg.is_visible('.visMoreDot'))
