@@ -53,7 +53,14 @@ with sync_playwright() as p:
         document.querySelector('#cpColors [data-c="#3A86FF"]').click(); }""")
     pg.wait_for_timeout(100)
     s = st(pg); wd = s['w']
-    check('settings change the cfg and are saved', s['cfg'] == {'c': '#3A86FF', 'len': 1000, 'ang': 90} and 'cfg_v1' in pg.evaluate("Object.keys(localStorage).join()"), s['cfg'])
+    check('settings change the cfg and are saved', s['cfg'] == {'c': '#3A86FF', 'len': 1000, 'ang': 90, 'wedge': True, 'dial': True} and 'cfg_v1' in pg.evaluate("Object.keys(localStorage).join()"), s['cfg'])
+    # kil/cirkel kan stängas av var för sig, men aldrig båda
+    o = pg.evaluate("""() => { var w = document.getElementById('cpShowWedge'), d = document.getElementById('cpShowDial'), r = {};
+        w.checked = false; w.dispatchEvent(new Event('change', {bubbles: true}));
+        r.dialLocked = d.disabled; r.wedgeHidden = getComputedStyle(document.getElementById('compassWedge')).display === 'none';
+        r.dialShown = getComputedStyle(document.getElementById('compassDial')).display === 'block';
+        w.checked = true; w.dispatchEvent(new Event('change', {bubbles: true})); return r; }""")
+    check('kil av: cirkeln visas kvar och kan inte stängas av', o['dialLocked'] and o['wedgeHidden'] and o['dialShown'], o)
     d = pg.evaluate("[document.querySelector('#compassWedge path').getAttribute('stroke'), document.querySelector('#cdWedge path').getAttribute('fill'), document.querySelector('#compassWedge path').getAttribute('d')]")
     check('wedge and dial take the colour; 90 deg wedge', d[0] == '#3A86FF' and d[1] == '#3A86FF' and d[2].startswith('M100 100 L29.3 29.3'), d)
     pg.evaluate("""() => { var l = document.getElementById('cpLen'); l.value = 500; l.dispatchEvent(new Event('input', {bubbles: true})); }""")

@@ -131,6 +131,7 @@
     if (on){
       setDemoCoords(randomDemoPoint()); // fresh random spot every time Demo Mode is switched on
       onFix(demoLat, demoLon, 8);
+      centerOnFix(); // visa var man är (onFix centrerar bara första gången)
       // simulated motion starts right away (switch it off under Settings if you want to stand still)
       setDemoMovePref(true);
       startDemoMotion();

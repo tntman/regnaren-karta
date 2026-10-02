@@ -1771,6 +1771,9 @@
           <div class="settingsRowTitle">Kompassen</div>
           <div class="settingsRowDesc">Kilen som visar vart telefonen pekar (slås på under Filter → Kompass).</div>
         </div>
+        <div class="satRow"><span class="cpLbl">Visa</span>
+          <label><input type="checkbox" id="cpShowWedge" checked> Kil</label>
+          <label style="margin-left:16px;"><input type="checkbox" id="cpShowDial" checked> Cirkel</label></div>
         <div class="cpColors" id="cpColors" role="radiogroup" aria-label="Kompassens färg">
           <button type="button" role="radio" data-c="#FFD23F" aria-label="Gul" style="background:#FFD23F"></button>
           <button type="button" role="radio" data-c="#FF7A00" aria-label="Orange" style="background:#FF7A00"></button>
@@ -5195,6 +5198,7 @@
     if (on){
       setDemoCoords(randomDemoPoint()); // fresh random spot every time Demo Mode is switched on
       onFix(demoLat, demoLon, 8);
+      centerOnFix(); // visa var man är (onFix centrerar bara första gången)
       // simulated motion starts right away (switch it off under Settings if you want to stand still)
       setDemoMovePref(true);
       startDemoMotion();
@@ -7263,11 +7267,13 @@
      for the session only (rotation reloads the page), not across app starts: the listener
      costs battery. The compass can be 10-20 degrees off near metal and engines. */
   var COMPASS_KEY = 'ffmap_compass_v1', COMPASS_CFG_KEY = 'ffmap_compass_cfg_v1';
-  var compassCfg = { c: '#F2F2F2', len: 500, ang: 40 };   // Inställningar → Kartan → Kompassen: colour, length (m), angle (deg)
+  var compassCfg = { c: '#F2F2F2', len: 500, ang: 40, wedge: true, dial: true };   // Inställningar → Kartan → Kompassen: colour, length (m), angle (deg)
   try {
     var cc = JSON.parse(localStorage.getItem(COMPASS_CFG_KEY) || 'null');
     if (cc){
       if (/^#[0-9A-Fa-f]{6}$/.test(cc.c)) compassCfg.c = cc.c;
+      if (cc.wedge === false && cc.dial !== false) compassCfg.wedge = false;
+      else if (cc.dial === false) compassCfg.dial = false;   // aldrig båda av
       if (isFinite(cc.len)) compassCfg.len = Math.max(100, Math.min(2000, +cc.len));
       if (isFinite(cc.ang)) compassCfg.ang = Math.max(15, Math.min(120, +cc.ang));
     }
@@ -7293,8 +7299,8 @@
   function compassDraw(sx, sy){
     if (typeof sx === 'number'){ compassSx = sx; compassSy = sy; }
     var live = compassOn && compassHdg !== null;
-    compassDial.style.display = live ? 'block' : 'none';
-    if (!live){ compassWedge.style.display = 'none'; return; }
+    compassDial.style.display = live && compassCfg.dial ? 'block' : 'none';
+    if (!live || !compassCfg.wedge){ compassWedge.style.display = 'none'; return; }
     cdWedge.setAttribute('transform', 'rotate(' + compassHdg.toFixed(1) + ' 40 40)');
     var d = Math.max(60, Math.min(2400, 2 * compassCfg.len * scale / WEB_METERS_PER_PX));
     var st = compassWedge.style;
@@ -7305,8 +7311,11 @@
   }
   // the settings: colour, length, angle
   var cpColorsEl = document.getElementById('cpColors'), cpLenEl = document.getElementById('cpLen'), cpAngEl = document.getElementById('cpAng');
+  var cpWedgeEl = document.getElementById('cpShowWedge'), cpDialEl = document.getElementById('cpShowDial');
   function compassCfgUi(){
     cpLenEl.value = compassCfg.len; cpAngEl.value = compassCfg.ang;
+    cpWedgeEl.checked = compassCfg.wedge; cpDialEl.checked = compassCfg.dial;
+    cpWedgeEl.disabled = !compassCfg.dial; cpDialEl.disabled = !compassCfg.wedge;   // den enda som är på kan inte stängas av
     document.getElementById('cpLenVal').textContent = compassCfg.len + ' m';
     document.getElementById('cpAngVal').textContent = compassCfg.ang + '°';
     Array.prototype.forEach.call(cpColorsEl.children, function(b){
@@ -7319,6 +7328,8 @@
     compassCfgUi(); compassStyle();
   }
   cpColorsEl.addEventListener('click', function(e){ var b = e.target.closest('button'); if (b){ compassCfg.c = b.getAttribute('data-c'); compassCfgChanged(); } });
+  cpWedgeEl.addEventListener('change', function(){ compassCfg.wedge = cpWedgeEl.checked; compassCfgChanged(); });
+  cpDialEl.addEventListener('change', function(){ compassCfg.dial = cpDialEl.checked; compassCfgChanged(); });
   cpLenEl.addEventListener('input', function(){ compassCfg.len = +cpLenEl.value; compassCfgChanged(); });
   cpAngEl.addEventListener('input', function(){ compassCfg.ang = +cpAngEl.value; compassCfgChanged(); });
   compassCfgUi(); compassStyle();
