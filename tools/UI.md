@@ -77,7 +77,7 @@ vald = `.on`/`.active` (amber). För få, fasta val (Av/5/10/20 km, Bara platsen
 
 Filter = två `.visCol`: "Markeringar" (Mina, Andras, Båtar + `#visTypes`: typerna som prickar
 `.visDot` – en osynlig checkbox över en `.visSwatch` + kort namn; dold = grå ring) och "Lager" (Spår, Väder, Vind och lä, Blixtar, Kartanalys, Heatmap, Kompass).
-"Kompass" (`#toggleCompass`, `js/53-compass.js`): kil från din position mot telefonens kompass (färg/längd/vinkel i Inställningar → Kartan → Kompassen, `ffmap_compass_cfg_v1`, standard gul 500 m 60°) + visaren `#compassDial` (N Ö S V fasta, kilen vrids; ingen knapp, `pointer-events:none`) ovanför 2 × 2-knapparna
+"Kompass" (`#toggleCompass`, `js/53-compass.js`): kil från din position mot telefonens kompass (färg/längd/vinkel i Inställningar → Kartan → Kompassen, `ffmap_compass_cfg_v1`, standard vit 500 m 40°) + visaren `#compassDial` (N Ö S V fasta, kilen vrids; ingen knapp, `pointer-events:none`) ovanför 2 × 2-knapparna
 (`#compassWedge` i `#marker`). iOS frågar om lov vid reglagets tryck (`requestPermission`); minns bara under
 sessionen (rotation), inte mellan appstarter.
 Liggande står de bredvid varandra.

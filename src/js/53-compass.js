@@ -6,7 +6,7 @@
      for the session only (rotation reloads the page), not across app starts: the listener
      costs battery. The compass can be 10-20 degrees off near metal and engines. */
   var COMPASS_KEY = 'ffmap_compass_v1', COMPASS_CFG_KEY = 'ffmap_compass_cfg_v1';
-  var compassCfg = { c: '#FFD23F', len: 500, ang: 60 };   // Inställningar → Kartan → Kompassen: colour, length (m), angle (deg)
+  var compassCfg = { c: '#F2F2F2', len: 500, ang: 40 };   // Inställningar → Kartan → Kompassen: colour, length (m), angle (deg)
   try {
     var cc = JSON.parse(localStorage.getItem(COMPASS_CFG_KEY) || 'null');
     if (cc){
