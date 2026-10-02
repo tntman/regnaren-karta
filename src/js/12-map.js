@@ -200,6 +200,7 @@
     if (ltOn && ltCanvas) ltDrawMap();      // ("Blixtar" -- also further down)
     if (anCanvas) anDraw();                  // (Kartanalys, further down)
     if (hmCanvas) hmDraw();                  // (Heatmap, further down)
+    if (namesEl) namesDraw();                // (Namn, further down)
     if (msgLayerEl) renderMessages();         // (quick messages, further down)
     renderTrack();
     renderProbe();

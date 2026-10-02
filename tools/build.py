@@ -25,6 +25,8 @@ for d in sorted(os.listdir(os.path.join(ROOT, 'lakes'))):
     if os.path.exists(f):
         lk = json.load(open(f, encoding='utf-8'))
         assert lk['id'] == d, 'lake.json id must match its folder: ' + d
+        nf = os.path.join(ROOT, 'lakes', d, 'names.json')      # place names from OpenStreetMap (tools/osm_names.py)
+        if os.path.exists(nf): lk['names'] = json.load(open(nf, encoding='utf-8'))
         lakes.append(lk)
 lakes.sort(key=lambda l: (l.get('order', 0 if l['id'] == 'regnaren' else 100), l['name']))
 

@@ -29,6 +29,7 @@ specificitet.
 | `60-help.css` | Hjälp (+ sökrutan) |
 | `70-analysis.css` | Kartanalys och Liknande |
 | `72-heatmap.css` | Heatmap: lagren, skylten under väder, bottenrutan, fångstrutan |
+| `73-names.css` | Namn: OSM-namnen på kartan (vit prick + text) |
 | `75-messages.css` | snabbmeddelanden (knappen, valen, egen text, bubblorna, rutan) |
 | `80-panels.css` | bottenpanelerna: greppremsan, dra mindre / skrolla (Kartanalys, meddelande, plats) |
 | `85-touch.css` | stora tryckytor i bottenrutorna (blöta fingrar): chips 40, kategorirad 42, knapprader 46 px – kartans egna knappar orörda; läsbar småtext i rutorna (≥ 11 px), Inställningar som spalt på bred skärm, fokusring, "Reducera rörelse" för panelernas rörelser |
@@ -68,6 +69,7 @@ specificitet.
 | `56-analysis.js` | Kartanalys |
 | `57-an-catches.js` | Kartanalys "Från fångsterna (data)": per art ur tävlingarnas fångster |
 | `58-akhit-spotdata.js` | Åk hit, vad som finns under en plats |
+| `59-names.js` | Namn (Filter → Lager): OSM-namn ur `LAKE.names`, avlusning, av som standard |
 | `60-lightning-alarm.js` | åskvarning |
 | `62-wakelock.js` | håll skärmen tänd |
 | `64-messages.js` | snabbmeddelanden |

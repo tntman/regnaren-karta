@@ -284,3 +284,11 @@ djup = färgens rang (ej kalibrerat) × 10 m; utjämning σ 4,5 px; Sobel-lutnin
       djup per område, analys bara det som syns, filerna någon annanstans än GitHub). Utökning av ett
       utsnitt senare = ny bbox, hämtar bara nya rutor (cachat). Tumregel: docs-storlek ∝ vattenyta
       (Regnaren 143 MB, Vågsfjärden 102, Sibbo 97, Sjösjön 19; totalt ~360 MB).
+
+## Namn på kartan (OpenStreetMap)
+
+Filter → Lager → **Namn** (av som standard, `ffmap_names_v1`): riktiga namn runt sjön som vit prick + text. Data i
+`lakes/<id>/names.json` = `[[lat, lon, namn, "w"|"p"], ...]` (w = ö, udde, vik, sund; p = gård, by), skapad av
+`py -3 tools/osm_names.py [sjö]` (Overpass, inom kartbildens yta, bara objekt med `name`; försöker igen om servern är
+upptagen). build.py bäddar in den som `LAKE.names`. Ny sjö: kör skriptet och bygg. `js/59-names.js` ritar; vatten-namn
+går före land, krockande etiketter göms (zooma in = fler). Data © OpenStreetMap-bidragsgivare (ODbL).
