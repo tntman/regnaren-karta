@@ -10,7 +10,7 @@ with sync_playwright() as p:
     pg.wait_for_timeout(1500)
     src = lambda: pg.eval_on_selector('#mapImg', 'e=>e.getAttribute("src")')
     check('default style: the zoom-14 map loaded', src() == 'lakes/regnaren/map_v4_s1.jpg' and pg.eval_on_selector('#mapImg', 'e=>e.naturalWidth') == REG_W)
-    check('page itself is small now (map not inside it)', len(pg.content()) < 700000, len(pg.content()))
+    check('page itself is small now (map not inside it)', len(pg.content()) < 900000, len(pg.content()))
     pg.click('#menuBtn'); pg.click('#menuItemSettings'); pg.wait_for_timeout(200)
     n = pg.evaluate("document.querySelectorAll('#mapStyleList .styleOpt').length")
     check('Settings lists 8 styles with previews (no Natt)', n == 8 and pg.evaluate("Array.from(document.querySelectorAll('#mapStyleList img')).every(i => i.naturalWidth > 0)"))

@@ -80,7 +80,7 @@ with sync_playwright() as p:
     pg.reload(); pg.wait_for_timeout(1500)
     check('opening the app again: Hjälp does not pop up again', not pg.is_visible('#helpView'))
     pg.click('#menuBtn'); pg.wait_for_timeout(200)
-    check('Hjälp is in the menu (last)', pg.is_visible('#menuItemHelp') and pg.evaluate("document.querySelector('#menuPanel').lastElementChild.id") == 'menuItemHelp')
+    check('Hjälp is in the menu (last item; only "Logga ut" comes after, behind a separator)', pg.is_visible('#menuItemHelp') and pg.evaluate("document.querySelector('#menuPanel').lastElementChild.id") == 'menuItemLogout' and pg.evaluate("document.getElementById('menuItemHelp').nextElementSibling.id") == 'menuLogoutSep')
     pg.click('#menuItemHelp'); pg.wait_for_timeout(400)
     check('menu -> Hjälp opens it (no welcome this time), at the top', pg.is_visible('#helpView') and not pg.is_visible('#helpWelcome') and pg.evaluate("document.getElementById('helpBody').scrollTop") == 0)
     check('no page errors', not errs, errs)
