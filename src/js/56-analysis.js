@@ -686,7 +686,7 @@
   anPill.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
   anPill.addEventListener('click', function(e){ e.stopPropagation(); showAnPanel(!anPanel.classList.contains('show')); });
   document.getElementById('anClose').addEventListener('click', function(){ showAnPanel(false); });
-  document.getElementById('anClear').addEventListener('click', function(){ anSet.mode = null; anSet.combo = []; anSave(); anCtlMode = '#'; anCompute(); });
+  document.getElementById('anClear').addEventListener('click', function(){ anSet.mode = null; anSet.combo = []; anSave(); anCtlMode = '#'; anCompute(); showAnPanel(false); });
   // "Återställ": every setting in the panel back to how it was from the start (what's shown stays; "Mörkare" is in Inställningar)
   // (what is shown -- mode, the combined parts -- and "Mörkare" stay)
   function anKeep(k){ return k === 'mode' || k === 'combo' || k === 'dim'; }

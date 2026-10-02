@@ -18,6 +18,7 @@ def pick(pg, m, wait=1300):
     # the category first (the row on top), then the choice in it (Liknande: the category is the choice).
     # Kartdata's buttons combine, so switch off what's on first (one at a time here)
     if CAT.get(m, 'map') == 'map' and pg.is_enabled('#anClear') and an(pg)['mode'] != m: pg.click('#anClear'); pg.wait_for_timeout(150)
+    if not pg.evaluate("document.getElementById('anPanel').classList.contains('show')"): pg.click('#anBtn'); pg.wait_for_timeout(300)   # (clearing closes the panel)
     pg.click('#anCatSeg button[data-cat="%s"]' % CAT.get(m, 'map')); pg.wait_for_timeout(150)
     if m != 'similar': pg.click('#anPanel button[data-m="%s"]' % m)
     pg.wait_for_timeout(wait); return an(pg)
@@ -144,7 +145,7 @@ with sync_playwright() as p:
     a = pick(pg, 'gos')
     check('...something chosen: ⏻ active, amber (something is on)', pg.is_enabled('#anClear') and pg.evaluate("getComputedStyle(document.getElementById('anClear')).color") == 'rgb(232, 163, 61)')
     pg.click('#anClear'); pg.wait_for_timeout(300)
-    check('"Stäng av kartanalys": nothing chosen, nothing drawn', an(pg)['mode'] is None and lit(pg) == 0)
+    check('"Stäng av kartanalys": nothing chosen, nothing drawn; the panel closes (like Heatmap)', an(pg)['mode'] is None and lit(pg) == 0 and not pg.evaluate("document.getElementById('anPanel').classList.contains('show')"))
     # Återställ: every setting back to the start (what's on stays on)
     a = pick(pg, 'steep')
     pg.evaluate("(() => { var e = document.getElementById('anSlope'); e.value = 22; e.dispatchEvent(new Event('input', { bubbles: true })); })()"); pg.wait_for_timeout(900)
