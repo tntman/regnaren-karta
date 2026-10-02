@@ -53,3 +53,5 @@ i avsnitt, Ångra, åskvarningen alltid + "dragit förbi", solnedgången, Täckn
   `andra`, `fara`, `vader`, `filter`, `installningar`, `analys`, `akhit`, `meddelanden`.
 
 - 2026-09-29 – Hela Hjälp gjord och uppdaterad (20 avsnitt, 18 animeringar, sök).
+
+- 2026-10-02 – Heatmap: genväg överst (färgad karta vänster om kartknappen, på/av), Filter-knappen smalare (bara ikon + pil), heatmapen flyttar/zoomar inte längre kartan när den slås på. Förslag nyhetsrad: "Ny knapp överst för Heatmap".

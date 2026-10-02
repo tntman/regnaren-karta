@@ -139,3 +139,5 @@ iOS hemskärmsapp laddar om sidan vid vridning: öppna paneler/val måste sparas
 
 Varje ny UI-del ska ha test (Playwright): synlig/dold, val sparas, dra-för-att-stänga,
 rotation. Kolla också en skärmdump i stående och liggande (390 × 844 / 844 × 390).
+
+- Toppraden: `#hmBtn` (Heatmap på/av) · `#mapTypeBtn` · Filter (bara ikon + pil, `aria-label="Filter"`).

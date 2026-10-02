@@ -14,14 +14,13 @@
   var HM_DEFAULTS = JSON.stringify(hmSet);   // (for "Återställ")
   try { var hsv = JSON.parse(localStorage.getItem(HM_KEY) || 'null'); if (hsv) for (var hk in hsv) hmSet[hk] = hsv[hk]; } catch(e){}
   function hmSave(){ try { localStorage.setItem(HM_KEY, JSON.stringify(hmSet)); } catch(e){} }
-  var hmFitPending = false;  // (turned on by hand: show the catches if none is on screen)
   // hmOn = chosen (map-style list / its panel); hmShow = shown on the map (Filter → Lager → Heatmap, like Kartanalys)
   var HM_SHOW_KEY = 'ffmap_show_heatmap_v1', hmShow = true;
   try { hmShow = localStorage.getItem(HM_SHOW_KEY) !== '0'; } catch(e){}
   var hmOn = false, hmHeatCache = null, hmHexCells = null, hmCardList = null, hmCardI = 0, hmPendingCard = null;
   var hmCanvas = document.getElementById('hmLayer'), hmCtx = hmCanvas.getContext('2d');
   var hmSatCanvas = document.getElementById('hmSat'), hmSatCtx = hmSatCanvas.getContext('2d');
-  var hmPanel = document.getElementById('hmPanel'), hmCard = document.getElementById('hmCard'), hmPill = document.getElementById('hmPill'), toggleHmEl = document.getElementById('toggleHeatmap');
+  var hmPanel = document.getElementById('hmPanel'), hmCard = document.getElementById('hmCard'), hmPill = document.getElementById('hmPill'), toggleHmEl = document.getElementById('toggleHeatmap'), hmBtn = document.getElementById('hmBtn');
   var HM_COL = { abborre: [255, 122, 26], gadda: [53, 210, 74], gos: [58, 134, 255] };
   var HM_SP = [['abborre', 'Abborre', 'abborren'], ['gadda', 'Gädda', 'gäddan'], ['gos', 'Gös', 'gösen']];
   var HM_MON = ['jan', 'feb', 'mar', 'apr', 'maj', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
@@ -64,9 +63,8 @@
 
   // ---- on / off, the panel, the pill ----
   function hmSetOn(on, openPanel, restoring){
-    var was = hmOn; hmOn = !!on;
+    hmOn = !!on;
     if (hmOn){
-      if (!was && !restoring) hmFitPending = true;
       if (!restoring && !hmShow) hmSetShow(true);   // (turned on by hand: shown, like choosing a Kartanalys mode)
       loadCatches(false);
       if (anSet.mode){ anSet.mode = null; anSave(); anCtlMode = '#'; anCompute(); }   // (not together with Kartanalys)
@@ -75,21 +73,7 @@
     hmShowUi();
     hmHeatCache = null;
     if (openPanel) hmShowPanel(true);
-    hmRenderPanel(); hmDraw(); hmFitIfNone();
-  }
-  // fewer than half of the catches on screen (above the panel)? Move the map so they all are
-  function hmFitIfNone(){
-    if (!hmFitPending || !hmOn || !catchData || !catchData.fresh && catchLoading) return;
-    var L = hmVisible(); if (!L.length){ if (catchData.fresh) hmFitPending = false; return; }
-    hmFitPending = false;
-    var top = 150, bot = hmPanel.classList.contains('show') ? Math.min(stageH * 0.62, hmPanel.offsetHeight || stageH * 0.5) + 20 : 200, side = 40;
-    var seen = L.filter(function(c){ var x = originX + c.px * scale, y = originY + c.py * scale; return x > 0 && x < stageW && y > top && y < stageH - bot; }).length;
-    if (seen >= L.length / 2) return;
-    var x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
-    L.forEach(function(c){ x0 = Math.min(x0, c.px); y0 = Math.min(y0, c.py); x1 = Math.max(x1, c.px); y1 = Math.max(y1, c.py); });
-    var sc = Math.min((stageW - 2 * side) / Math.max(1, x1 - x0), (stageH - top - bot) / Math.max(1, y1 - y0));
-    sc = Math.max(minScale, Math.min(maxScale, Math.min(sc, fitScale * 6)));
-    animateTo(sc, stageW / 2 - (x0 + x1) / 2 * sc, top + (stageH - top - bot) / 2 - (y0 + y1) / 2 * sc, 600);
+    hmRenderPanel(); hmDraw();
   }
   function hmShowPanel(open){
     if (open && !hmOn){ hmSetOn(true, true); return; }
@@ -108,6 +92,7 @@
     hmCanvas.classList.toggle('on', vis); hmSatCanvas.classList.toggle('on', vis);
     hmPill.hidden = !vis;                               // (the pill: something is shown on the map)
     toggleHmEl.checked = hmShow;
+    hmBtn.classList.toggle('on', vis); hmBtn.setAttribute('aria-pressed', vis ? 'true' : 'false');
   }
   function hmSetShow(show){
     hmShow = !!show; try { localStorage.setItem(HM_SHOW_KEY, hmShow ? '1' : '0'); } catch(e){}
@@ -115,6 +100,7 @@
     hmShowUi(); hmHeatCache = null; hmRenderPanel(); hmDraw();
   }
   toggleHmEl.addEventListener('change', function(){ hmSetShow(toggleHmEl.checked); });
+  hmBtn.addEventListener('click', function(){ if (hmOn) hmSetOn(false); else hmSetOn(true, true); });   // (the quick on / off next to the map button)
   hmShowUi();
   hmPill.addEventListener('click', function(e){ e.stopPropagation(); hmShowPanel(!hmPanel.classList.contains('show')); });
 
@@ -430,7 +416,7 @@
   });
 
   catchListeners.push(function(){
-    hmHeatCache = null; hmRenderPanel(); hmDraw(); hmFitIfNone();
+    hmHeatCache = null; hmRenderPanel(); hmDraw();
     if (hmPendingCard && catchData && catchData.list.length){       // (a catch that was open before a rotation)
       var ids = hmPendingCard.ids, L = hmAll().filter(function(c){ return ids.indexOf(c.id) >= 0; });
       L.sort(function(a, b){ return ids.indexOf(a.id) - ids.indexOf(b.id); });

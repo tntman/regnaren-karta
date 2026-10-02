@@ -13,6 +13,18 @@
   }
   #mapTypeBtn svg{width:20px;height:20px;display:block;}
   #mapTypeBtn:active{transform:scale(.93);}
+  /* heatmap on / off: left of the map button; coloured map, dimmed when off */
+  #hmBtn{
+    position:absolute;right:calc(100% + 56px);top:0;width:40px;height:40px;border-radius:50%;
+    background:var(--navy-glass);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.16);
+    display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.35);
+    pointer-events:auto;cursor:pointer;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;padding:0;
+  }
+  #hmBtn svg{width:22px;height:22px;display:block;opacity:.55;}
+  #hmBtn.on{border:2px solid var(--amber);background:rgba(232,163,61,.18);}
+  #hmBtn.on svg{opacity:1;}
+  #hmBtn:active{transform:scale(.93);}
+  #visMoreBtn .visLabel{display:none;}
   #mapTypeToast{position:absolute;right:calc(100% + 8px);top:48px;white-space:nowrap;background:var(--navy);color:var(--amber);border:1px solid rgba(232,163,61,.5);
     border-radius:14px;padding:4px 11px;font-size:12px;font-weight:700;opacity:0;transition:opacity .2s;pointer-events:none;}
   #mapTypeToast.show{opacity:1;}

@@ -46,10 +46,6 @@ with sync_playwright() as p:
     check('...the catches fetched once (1 read)', pg.evaluate('window.__catchGets') == 1 and h['n'] == len(ROWS), (pg.evaluate('window.__catchGets'), h['n']))
     check('...the map toned down + greyed like Kartanalys', pg.is_visible('#hmLayer') and pg.evaluate("getComputedStyle(document.getElementById('hmSat')).mixBlendMode") == 'saturation')
     check('...Värme: coloured heat on the map', coloured(pg) > 200, coloured(pg))
-    pg.wait_for_timeout(700)
-    top = pg.evaluate("document.getElementById('hmPanel').getBoundingClientRect().top")
-    ys = [pg.evaluate('(id) => window.__ffHeatScreen(id)', '%d|%s|%s|%s' % (r[0], r[2], r[3], r[4]))[1] for r in ROWS]
-    check('...the catches were hidden behind the panel: the map moved so they show above it', all(120 < y < top for y in ys), (top, [round(y) for y in ys][:6]))
     res = pg.inner_text('#hmResult')
     check('the panel: 19 catches, 12 abborre, 6 gädda, 1 gös', '19 fångster' in res and '12 abborre' in res and '6 gädda' in res and '1 gös' in res, res)
     comps = pg.eval_on_selector_all('#hmComp button', 'e => e.map(x => x.textContent)')
@@ -169,6 +165,14 @@ with sync_playwright() as p:
     check('...its panel says so', 'Dold – slå på Heatmap i Filter' in pg.inner_text('#hmResult'))
     pg.click('#hmOff'); pg.wait_for_timeout(300); open_heat(pg)
     check('turned on by hand again: shown (like choosing a Kartanalys mode), the Filter switch follows', heat(pg)['on'] and heat(pg)['show'] and pg.is_checked('#toggleHeatmap') and pg.is_visible('#hmPill'))
+    # the quick button left of the map button: on / off, and the map stays where it is
+    pg.click('#hmClose'); pg.wait_for_timeout(300); pg.click('#hmBtn'); pg.wait_for_timeout(300)
+    check('shortcut button: heat map off, button not lit', not heat(pg)['on'] and pg.get_attribute('#hmBtn', 'aria-pressed') == 'false')
+    tf = pg.evaluate("getComputedStyle(document.getElementById('world')).transform")
+    pg.click('#hmBtn'); pg.wait_for_timeout(1200)
+    check('shortcut button: on, lit, panel open, left of the map button, map not moved', heat(pg)['on'] and heat(pg)['panel'] and pg.get_attribute('#hmBtn', 'aria-pressed') == 'true'
+          and pg.evaluate("document.getElementById('hmBtn').getBoundingClientRect().right < document.getElementById('mapTypeBtn').getBoundingClientRect().left")
+          and pg.evaluate("getComputedStyle(document.getElementById('world')).transform") == tf)
     legend = pg.evaluate("getComputedStyle(document.querySelector('#hmPill .hmDot')).backgroundImage")
     check('"glöd" scale: violet -> warm white (not the depth colours)', 'rgb(255, 245, 200)' in legend and 'rgb(0, 220, 230)' not in legend, legend)
     # Liknande from a catch

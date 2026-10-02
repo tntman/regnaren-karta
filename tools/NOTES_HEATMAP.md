@@ -51,3 +51,6 @@ match /catches/{lake} {
   allow write: if request.auth != null && request.resource.data.rows is string && request.resource.data.n is number;
 }
 ```
+
+## Genväg överst (2026-10-02)
+`#hmBtn` (färgad karta) ligger vänster om kartknappen: tryck = Heatmap på (panelen öppnas) / av. Tänd (gul ring) = på och visad i Filter. Kartan flyttas/zoomas aldrig när heatmapen slås på (förr: `hmFitIfNone`, borttagen). Filter-knappen visar bara ikon + pil.
