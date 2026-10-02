@@ -85,7 +85,7 @@
     <div class="grab"><button type="button" id="trkClose" class="gripX" aria-label="Stäng">✕</button></div>
     <div class="pnHead"><div class="pnResCol"><div id="trkInfo" class="pnRes"></div></div></div>
     <div class="trkLbl">Visa</div>
-    <div class="anChips" id="trkWho"><button type="button" data-w="mine">Mina</button><button type="button" data-w="others">Andras</button></div>
+    <div class="anChips" id="trkWho"><button type="button" data-w="mine">Mina</button><label class="trkSelL" for="trkWhoSel">Andras</label><select id="trkWhoSel" class="trkSel" aria-label="Visa en annans spår"></select></div>
     <div class="trkLbl">Hur långt tillbaka</div>
     <div class="anSeg" id="trkRange"><button type="button" data-r="today">I dag</button><button type="button" data-r="7">7 dagar</button><button type="button" data-r="30">30 dagar</button><button type="button" data-r="all">Allt</button></div>
     <div class="trkLbl">Linje</div>
@@ -105,7 +105,10 @@
       <span class="trkRowT"><b>Stopp som ringar</b><small>En ring där du legat still, med tiden. Större ring = längre stopp.</small></span>
       <span class="toggle"><input type="checkbox" id="trkStopsToggle"><span class="toggleTrack"><span class="toggleThumb"></span></span></span>
     </label>
-    <div class="trkRow"><span class="trkRowT"><b>Börja om</b><small>Suddar dagens spår hittills. Äldre dagar finns kvar.</small></span><button id="trackClearBtn" class="btnAdmin small" type="button">Börja om</button></div>
+    <div id="trkStopMinBox" hidden>
+      <div class="trkLbl">Minsta tid för ett stopp <span id="trkStopMinVal">5 min</span></div>
+      <div class="satRow"><input type="range" class="satSlider trkSlider" id="trkStopMin" min="2" max="30" step="1" value="5" aria-label="Minsta tid för ett stopp"></div>
+    </div>
   </div>
   <div id="hmPanel" role="dialog" aria-label="Heatmap">
     <div class="grab"><button type="button" id="hmClose" class="gripX" aria-label="Stäng">✕</button></div>

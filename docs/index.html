@@ -361,6 +361,11 @@
   #trkPanel .anChips{margin-top:6px;}
   #trkPanel .anSeg{margin-top:6px;}
   #trkPanel .cpColors{margin-top:8px;}
+  #trkWho{align-items:center;}
+  .trkSelL{font-size:12.5px;color:var(--text-muted);margin-left:6px;}
+  .trkSel{font:inherit;font-size:12.5px;padding:6px 10px;border-radius:14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:var(--offwhite);max-width:48%;}
+  .trkSel.on{background:var(--amber);color:var(--navy);font-weight:700;border-color:var(--amber);}
+  .trkSel option{background:var(--navy);color:var(--offwhite);font-weight:400;}
   .trkLbl{font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--text-muted);margin:14px 0 0;}
   .trkLbl:first-of-type{margin-top:4px;}
   #trackOpVal{color:var(--amber);margin-left:6px;}
@@ -1870,7 +1875,7 @@
       <div class="settingsRow">
         <div class="settingsRowText">
           <div class="settingsRowTitle">Spår</div>
-          <div class="settingsRowDesc">Din rutt sparas för varje sjö och finns kvar. Hur det ser ut, hur långt tillbaka du ser, stopp som ringar och andras spår väljer du i spårmenyn (du kommer dit även genom att trycka på Spår-ikonen i Filter). Spår sparas inte i Demo Mode.</div>
+          <div class="settingsRowDesc">Din rutt sparas för varje sjö och finns kvar. Hur det ser ut, hur långt tillbaka du ser, stopp som ringar och en annan persons spår väljer du i spårmenyn (du kommer dit även genom att trycka på Spår-ikonen i Filter). Spår sparas inte i Demo Mode.</div>
         </div>
         <button id="trkOpenBtn" class="btnAdmin small" type="button">Öppna</button>
       </div>
@@ -2164,7 +2169,7 @@
     <div class="grab"><button type="button" id="trkClose" class="gripX" aria-label="Stäng">✕</button></div>
     <div class="pnHead"><div class="pnResCol"><div id="trkInfo" class="pnRes"></div></div></div>
     <div class="trkLbl">Visa</div>
-    <div class="anChips" id="trkWho"><button type="button" data-w="mine">Mina</button><button type="button" data-w="others">Andras</button></div>
+    <div class="anChips" id="trkWho"><button type="button" data-w="mine">Mina</button><label class="trkSelL" for="trkWhoSel">Andras</label><select id="trkWhoSel" class="trkSel" aria-label="Visa en annans spår"></select></div>
     <div class="trkLbl">Hur långt tillbaka</div>
     <div class="anSeg" id="trkRange"><button type="button" data-r="today">I dag</button><button type="button" data-r="7">7 dagar</button><button type="button" data-r="30">30 dagar</button><button type="button" data-r="all">Allt</button></div>
     <div class="trkLbl">Linje</div>
@@ -2184,7 +2189,10 @@
       <span class="trkRowT"><b>Stopp som ringar</b><small>En ring där du legat still, med tiden. Större ring = längre stopp.</small></span>
       <span class="toggle"><input type="checkbox" id="trkStopsToggle"><span class="toggleTrack"><span class="toggleThumb"></span></span></span>
     </label>
-    <div class="trkRow"><span class="trkRowT"><b>Börja om</b><small>Suddar dagens spår hittills. Äldre dagar finns kvar.</small></span><button id="trackClearBtn" class="btnAdmin small" type="button">Börja om</button></div>
+    <div id="trkStopMinBox" hidden>
+      <div class="trkLbl">Minsta tid för ett stopp <span id="trkStopMinVal">5 min</span></div>
+      <div class="satRow"><input type="range" class="satSlider trkSlider" id="trkStopMin" min="2" max="30" step="1" value="5" aria-label="Minsta tid för ett stopp"></div>
+    </div>
   </div>
   <div id="hmPanel" role="dialog" aria-label="Heatmap">
     <div class="grab"><button type="button" id="hmClose" class="gripX" aria-label="Stäng">✕</button></div>
@@ -3909,16 +3917,6 @@
     applyTrackOpacity();
   });
   applyTrackOpacity();
-  document.getElementById('trackClearBtn').addEventListener('click', function(){
-    if (!confirm('Börja om spåret härifrån? Spåret hittills suddas.')) return;
-    if (demoMode){ trkClearDemo(); return; }
-    track = { day: todayStr(), segs: [] };
-    // the new track starts right where you are now, and keeps recording as you go
-    if (lastOwnLatLon && lastFix && lastFix.onMap) track.segs.push([[Math.round(lastOwnLatLon.lat * 1e6) / 1e6, Math.round(lastOwnLatLon.lon * 1e6) / 1e6, Date.now()]]);
-    trackDirty = true; saveTrack(); renderTrack();
-    var btn = document.getElementById('trackClearBtn');
-    btn.textContent = 'Klart ✓'; setTimeout(function(){ btn.textContent = 'Börja om'; }, 1800);
-  });
 
   var toggleMineEl = document.getElementById('toggleMine');
   var toggleOthersEl = document.getElementById('toggleOthers');
@@ -6503,8 +6501,8 @@
   var TRACK_MAX_POINTS = 6000;
   var showTrack = true;
   try { if (localStorage.getItem(SHOW_TRACK_KEY) === '0') showTrack = false; } catch(e){}
-  // what the Spår panel chooses (Mina / Andras, how far back, dashed, colour, stops as rings)
-  var trkCfg = { mine: true, others: false, range: 'today', dash: true, color: '#FF8A1F', stops: false };
+  // what the Spår panel chooses (Mina / one other person, how far back, dashed, colour, stops as rings + their minimum time)
+  var trkCfg = { mine: true, who: '', range: 'today', dash: true, color: '#FF8A1F', stops: false, stopMin: 5 };   // (who: another person's uid to show, '' = nobody)
   try { var tcs = JSON.parse(localStorage.getItem(TRKCFG_KEY) || 'null'); if (tcs) for (var tck in trkCfg) if (tcs[tck] !== undefined) trkCfg[tck] = tcs[tck]; } catch(e){}
   function trkCfgSave(){ try { localStorage.setItem(TRKCFG_KEY, JSON.stringify(trkCfg)); } catch(e){} }
   function pad2(n){ return (n < 10 ? '0' : '') + n; }
@@ -6688,13 +6686,14 @@
         if (c.stops) stops.push.apply(stops, demoStops());
       }
     }
+    stops = stops.filter(function(s){ return s[2] >= c.stopMin; });
     var d = pathOfPx(mine);
     trkLineEl.setAttribute('d', d); trkUnderEl.setAttribute('d', d);
     trkLineEl.style.stroke = c.color;
     var others = [];
-    if (c.others) Object.keys(trkOthers).forEach(function(id){
+    if (c.who) Object.keys(trkOthers).forEach(function(id){
       var o = trkOthers[id];
-      if (o.day >= from) others.push.apply(others, pxSegs('o' + id, o, o.p.length, function(){ return unpackSegs(o.p); }));
+      if (o.uid === c.who && o.day >= from) others.push.apply(others, pxSegs('o' + id, o, o.p.length, function(){ return unpackSegs(o.p); }));
     });
     trkOtherEl.setAttribute('d', pathOfPx(others));
     if (!c.stops || !stops.length){ if (trkStopsEl.firstChild) trkStopsEl.textContent = ''; return; }
@@ -6709,7 +6708,7 @@
   }
 
   /* ---- Firestore `tracks` (one doc per person, lake and day) ---- */
-  function trkSafeUid(){ return String(myUid || '').replace(/[^a-z0-9åäö]+/g, '_'); }
+  function trkSafeUid(u){ return String(u || myUid || '').replace(/[^a-z0-9åäö]+/g, '_'); }
   function trkDocId(day){ return LAKE_ID + '_' + trkSafeUid() + '_' + day; }
   function uploadTrackDay(day, rec){
     if (!USE_FIREBASE || !tracksCol || !myUid) return;
@@ -6754,22 +6753,25 @@
       renderTrack(); trkRenderPanel();
     }).catch(function(e){ console.warn('mina spår kunde inte hämtas', e && e.code); });
   }
-  // other people's days: only when "Andras" is switched on (reads: one per person and day, kept until the page is closed)
-  var trkOthersFrom = null, trkOthersAt = 0, trkOthersBusy = false, trkOthersMsg = '';
+  // one other person's days: only when you pick them in the panel (reads: one per day they have, kept until the page is closed)
+  var trkOthersFrom = {}, trkOthersAt = 0, trkOthersBusy = false, trkOthersMsg = '';   // (trkOthersFrom: uid -> earliest day fetched)
   function fetchOthersTracks(){
-    if (!trkCfg.others || !tracksCol || !USE_FIREBASE || trkOthersBusy) return;
-    var from = trkRangeFrom() || '0000-00-00';
-    if (trkOthersFrom !== null && from >= trkOthersFrom && Date.now() - trkOthersAt < 5 * 60000) return;   // (already have those days)
+    var who = trkCfg.who;
+    if (!who || !tracksCol || !USE_FIREBASE || trkOthersBusy) return;
+    var from = trkRangeFrom() || '0000-00-00', got = trkOthersFrom[who];
+    if (got !== undefined && from >= got && Date.now() - trkOthersAt < 5 * 60000) return;   // (already have those days)
+    var pre = LAKE_ID + '_' + trkSafeUid(who) + '_';
     trkOthersBusy = true; trkOthersMsg = 'Laddar…'; trkRenderPanel();
-    tracksCol.where('lakeDay', '>=', LAKE_ID + '_' + from).where('lakeDay', '<=', LAKE_ID + '_9999-99-99').get().then(function(snap){
-      trkReadDocs(snap, function(id, d){ if (d.uid === myUid || !d.day) return; trkOthers[id] = { uid: d.uid, name: d.name || '', day: d.day, p: d.pts || '', s: unpackStops(d.st) }; });
-      trkOthersFrom = trkOthersFrom === null ? from : Math.min(trkOthersFrom, from); trkOthersAt = Date.now(); trkOthersBusy = false; trkOthersMsg = '';
+    tracksCol.where('ownKey', '>=', pre + from).where('ownKey', '<=', pre + '~').get().then(function(snap){
+      trkReadDocs(snap, function(id, d){ if (!d.day || d.uid === myUid) return; trkOthers[id] = { uid: d.uid, name: d.name || '', day: d.day, p: d.pts || '', s: unpackStops(d.st) }; });
+      trkOthersFrom[who] = got === undefined ? from : Math.min(got, from); trkOthersAt = Date.now(); trkOthersBusy = false; trkOthersMsg = '';
       renderTrack(); trkRenderPanel();
     }).catch(function(e){
-      trkOthersBusy = false; trkOthersMsg = (e && e.code === 'permission-denied') ? 'Kunde inte hämta (databasens regler saknar "tracks")' : 'Kunde inte hämta andras spår';
+      trkOthersBusy = false; trkOthersMsg = (e && e.code === 'permission-denied') ? 'Kunde inte hämta (databasens regler saknar "tracks")' : 'Kunde inte hämta spåren';
       trkRenderPanel();
     });
   }
+
   var lastOwnLatLon = null; // {lat, lon} -- whatever position is currently shown as "you" (real or demo)
   var hasCenteredOnce = false;
 
@@ -6976,21 +6978,31 @@
   /* ================= Spår-menyn (bottenruta) =================
      Opens from the Spår icon in Filter (the icon has a small amber dot: it can be tapped) or from
      Inställningar -> Spår -> Öppna. What it chooses lives in trkCfg (46-gps-track.js, 'ffmap_track_cfg_v1'):
-     Mina / Andras (other people's days are fetched the moment it's switched on), how far back, dashed or
-     solid, colour, visibility (the old slider, js/20-map-look.js), stops as rings, "Börja om". tools/NOTES_SPAR.md */
+     Mina + one other person from a drop-down (only that person's days are fetched, the moment they are
+     picked), how far back, dashed or solid, colour, visibility (the old slider, js/20-map-look.js), stops as rings
+     with a minimum time. tools/NOTES_SPAR.md */
   var trkPanel = document.getElementById('trkPanel');
   var trkSwatch = document.querySelector('.visSwatch--track');
+  var trkWhoSel = document.getElementById('trkWhoSel');
+  function trkFillWho(){   // the member list without yourself (myUid is only known once you've picked your name)
+    trkWhoSel.innerHTML = '<option value="">Ingen</option>' + NAME_ROSTER.filter(function(n){ return nameSlug(n) !== myUid; }).map(function(n){ return '<option value="' + nameSlug(n) + '">' + n + '</option>'; }).join('');
+  }
+  trkFillWho();
   function trkRenderPanel(){
     var c = trkCfg;
     Array.from(document.querySelectorAll('#trkWho button')).forEach(function(b){ b.classList.toggle('on', !!c[b.getAttribute('data-w')]); });
+    if (c.who && !trkWhoSel.querySelector('option[value="' + c.who + '"]')) trkWhoSel.insertAdjacentHTML('beforeend', '<option value="' + c.who + '">' + c.who + '</option>');   // (a name that isn't on the member list)
+    trkWhoSel.value = c.who || ''; trkWhoSel.classList.toggle('on', !!c.who);
+    document.getElementById('trkStopMinBox').hidden = !c.stops;
+    document.getElementById('trkStopMin').value = String(c.stopMin); document.getElementById('trkStopMinVal').textContent = c.stopMin + ' min';
     Array.from(document.querySelectorAll('#trkRange button')).forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-r') === c.range); });
     Array.from(document.querySelectorAll('#trkDash button')).forEach(function(b){ b.classList.toggle('on', (b.getAttribute('data-d') === '1') === !!c.dash); });
     Array.from(document.querySelectorAll('#trkColors button')).forEach(function(b){ var on = b.getAttribute('data-c').toLowerCase() === String(c.color).toLowerCase(); b.classList.toggle('active', on); b.setAttribute('aria-checked', on ? 'true' : 'false'); });
     document.getElementById('trkStopsToggle').checked = !!c.stops;
     var days = Object.keys(trkHist).length + (segPointCount(track.segs) ? 1 : 0);
-    var oth = {}; Object.keys(trkOthers).forEach(function(id){ oth[trkOthers[id].uid + trkOthers[id].day] = 1; });
+    var oth = 0; Object.keys(trkOthers).forEach(function(id){ if (trkOthers[id].uid === c.who) oth++; });
     var t = days ? '<b>' + days + '</b> ' + (days === 1 ? 'dag' : 'dagar') + ' sparade av dig på ' + LAKE.name : 'Inga sparade dagar än – spåret sparas när du kör på riktigt (inte i Demo Mode).';
-    if (c.others) t += trkOthersMsg ? ' · ' + trkOthersMsg : ' · andras: <b>' + Object.keys(oth).length + '</b> dagar';
+    if (c.who) t += trkOthersMsg ? ' · ' + trkOthersMsg : ' · ' + ((trkWhoSel.selectedOptions[0] || {}).text || c.who) + ': <b>' + oth + '</b> ' + (oth === 1 ? 'dag' : 'dagar') + ' sparade';
     if (demoMode) t = '<b>Demo Mode:</b> spåret syns bara nu och sparas inte (inte i databasen heller). Det försvinner när Demo Mode stängs av.';
     document.getElementById('trkInfo').innerHTML = t;
   }
@@ -7000,7 +7012,7 @@
       if (anPanel.classList.contains('show')) showAnPanel(false);
       if (hmPanel.classList.contains('show')) hmShowPanel(false);
       if (!trkPanel.classList.contains('show') && trkPanel._resetSize) trkPanel._resetSize();
-      trkRenderPanel(); fetchOthersTracks();
+      trkFillWho(); trkRenderPanel(); fetchOthersTracks();
     }
     trkPanel.classList.toggle('show', open);
   }
@@ -7014,8 +7026,8 @@
   document.getElementById('trkWho').addEventListener('click', function(e){
     var b = e.target.closest ? e.target.closest('button[data-w]') : null; if (!b) return;
     var k = b.getAttribute('data-w'); trkCfg[k] = !trkCfg[k]; trkChanged();
-    if (k === 'others' && trkCfg.others) fetchOthersTracks();
   });
+  trkWhoSel.addEventListener('change', function(){ trkCfg.who = trkWhoSel.value; trkChanged(); fetchOthersTracks(); });
   document.getElementById('trkRange').addEventListener('click', function(e){
     var b = e.target.closest ? e.target.closest('button[data-r]') : null; if (!b) return;
     trkCfg.range = b.getAttribute('data-r'); trkChanged(); fetchOthersTracks();
@@ -7029,6 +7041,7 @@
     trkCfg.color = b.getAttribute('data-c'); trkChanged();
   });
   document.getElementById('trkStopsToggle').addEventListener('change', function(){ trkCfg.stops = this.checked; trkChanged(); });
+  document.getElementById('trkStopMin').addEventListener('input', function(){ trkCfg.stopMin = Math.max(2, Math.min(30, parseInt(this.value, 10) || 5)); trkCfgSave(); document.getElementById('trkStopMinVal').textContent = trkCfg.stopMin + ' min'; renderTrack(); });
   trkRenderPanel();
   /* ================= Fog of war (Filter, Lager) -- off by default =================
      The map is dark except where YOU have been: a soft hole (50 m radius, fading out) around every part of

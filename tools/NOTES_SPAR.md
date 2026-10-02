@@ -39,15 +39,15 @@ Båda frågorna är intervall på **ett** fält (`>=` och `<=`) – inga sammans
 
 **Kostnad:** skrivning = dagens dokument (≈ 40–60 kB) högst var 5:e min när det kommit nya punkter + när appen går i
 bakgrunden + färdiga dagar en gång. Ingen lyssnare, så ingen läser andras skrivningar. **Läsning:** mina dagar en gång
-per telefon (`fetchMyTracks`, flagga `ffmap_tracksync_v1`); andras bara när "Andras" är på – en read per person och dag
+per telefon (`fetchMyTracks`, flagga `ffmap_tracksync_v1`); en annan persons dagar bara när du väljer personen – en read per dag den personen har
 i valt intervall, sparade i minnet tills sidan stängs (`fetchOthersTracks`, nytt hämtande först vid bredare intervall
 eller efter 5 min).
 
 ## Spår-menyn `#trkPanel`
 Öppnas av **Spår-ikonen** i Filter (liten amber prick = går att trycka på; reglaget till höger är fortfarande på/av) eller
 Inställningar → Spår → Öppna. Stänger Filter och Kartanalys/Heatmap-rutan. Val i `trkCfg` (`ffmap_track_cfg_v1`):
-Mina/Andras, I dag · 7 · 30 · Allt, Streckad/Hel, färg (6), Synlighet (gamla reglaget `trackOpSlider`, flyttat hit),
-Stopp som ringar (av som standard), Börja om. Andras spår: en färg (ljusblå), tunnare, utan namn. Överlever rotation
+Mina + en person i rullgardin, I dag · 7 · 30 · Allt, Streckad/Hel, färg (6), Synlighet (gamla reglaget `trackOpSlider`, flyttat hit),
+Stopp som ringar (av som standard) + reglage för minsta tid (2–30 min, standard 5; stoppen sparas från 2 min, filtret är bara visning). **Börja om finns inte** – spåret kan inte suddas. En annan persons spår väljs i en **rullgardin** (medlemslistan utom du, "Ingen" först; `trkCfg.who`): då hämtas bara den personens dagar (fråga på `ownKey`, från valt intervall); en färg (ljusblå), tunnare. Överlever rotation
 (`st.trk` i `92-rotation.js`).
 
 ## Ritning
@@ -59,7 +59,7 @@ multiplikation.
 Mörkt (`rgba(6,20,28,.93)`) överallt utom där du varit: mjukt hål, **radie 50 m**, tonar ut. Bygger på **dina egna**
 spår (idag + historiken) på just den här sjön, plus där du är nu (även i demo). Hålen ritas en gång i en dold mask
 (4 m per pixel, ett hål per 10 m-ruta längs spåret) och skalas på kartan varje bildruta. z-ordning: namn 11, fog 12,
-spår 13, platser/båtar över. Byggs om vid start, efter "Börja om" och när mina dagar hämtats från databasen.
+spår 13, platser/båtar över. Byggs om vid start och när mina dagar hämtats från databasen.
 
 ## Idéer kvar
 Fart som färg, tonande svans, riktningspilar, "Utforskat x %" (förslagsbilder: `tools/track_ideas/`).

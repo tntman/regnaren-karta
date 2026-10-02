@@ -14,6 +14,11 @@
   #trkPanel .anChips{margin-top:6px;}
   #trkPanel .anSeg{margin-top:6px;}
   #trkPanel .cpColors{margin-top:8px;}
+  #trkWho{align-items:center;}
+  .trkSelL{font-size:12.5px;color:var(--text-muted);margin-left:6px;}
+  .trkSel{font:inherit;font-size:12.5px;padding:6px 10px;border-radius:14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:var(--offwhite);max-width:48%;}
+  .trkSel.on{background:var(--amber);color:var(--navy);font-weight:700;border-color:var(--amber);}
+  .trkSel option{background:var(--navy);color:var(--offwhite);font-weight:400;}
   .trkLbl{font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--text-muted);margin:14px 0 0;}
   .trkLbl:first-of-type{margin-top:4px;}
   #trackOpVal{color:var(--amber);margin-left:6px;}

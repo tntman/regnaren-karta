@@ -72,14 +72,11 @@ with sync_playwright() as p:
     check('track kept after reload / rotation', d2.count('L') >= 8, d2[:40])
     check('filter menu closed again after a fresh start', not pg.is_visible('#visMore'))
     pg.on('dialog', lambda dlg: dlg.accept())
-    pg.click('#visMoreBtn'); pg.wait_for_timeout(150); pg.click('.visSwatch--track'); pg.wait_for_timeout(350)   # (the Spår icon in Filter opens the Spår panel)
-    pg.click('#trackClearBtn'); pg.wait_for_timeout(200)
-    check('Spår panel "Börja om" wipes the track so far', 'L' not in (pg.get_attribute('#trackLayer .trkLine', 'd') or ''), pg.get_attribute('#trackLayer .trkLine', 'd'))
-    pg.click('#trkClose'); pg.wait_for_timeout(350)
+    check("no 'Börja om' any more: the track cannot be wiped", pg.evaluate("!document.getElementById('trackClearBtn')"))
     for i in range(5):
         lat += 10 / 111320.0; ctx.set_geolocation({'latitude': lat, 'longitude': lon, 'accuracy': 5}); pg.wait_for_timeout(700)
     d3 = pg.get_attribute('#trackLayer .trkLine', 'd') or ''
-    check('...and keeps recording from where you are', d3.startswith('M') and d3.count('M') == 1 and d3.count('L') >= 4, d3[:60])
+    check('...and keeps recording (the line just grows)', d3.startswith('M') and d3.count('L') > d2.count('L'), (d2.count('L'), d3.count('L')))
     # ---- offline start (service worker) ----
     ok = pg.evaluate("() => navigator.serviceWorker.ready.then(r => !!r.active)")
     pg.wait_for_timeout(2500)   # let it save its copy

@@ -1,7 +1,7 @@
 from playwright.sync_api import sync_playwright
 import fakefb, json, datetime
 from fakefb import new_page
-# Spår för evigt: historik, Spår-menyn, andras spår, uppladdning, Demo Mode (tillfälligt spår), stopp som ringar, Fog of war
+# Spår för evigt (ingen Börja om; en annan person väljs i en rullgardin): historik, Spår-menyn, andras spår, uppladdning, Demo Mode (tillfälligt spår), stopp som ringar, Fog of war
 results = []
 def check(name, cond, info=''):
     results.append(bool(cond)); print(('PASS ' if cond else 'FAIL ') + name + ('  -- ' + str(info) if info != '' else ''))
@@ -36,9 +36,9 @@ def seed(ctx, pg, items):   # items: {key: value|None}; applied once, at the sta
 def open_panel(pg):
     pg.click('#visMoreBtn'); pg.wait_for_timeout(120); pg.click('.visSwatch--track'); pg.wait_for_timeout(350)
 
-other = {'lake': 'regnaren', 'uid': 'anna', 'name': 'Anna', 'day': day_n(2), 'pts': pack([seg(2)]), 'st': '', 'n': 20, 'lakeDay': 'regnaren_' + day_n(2), 'ownKey': 'regnaren_anna_' + day_n(2)}
+other = {'lake': 'regnaren', 'uid': 'calle', 'name': 'Calle', 'day': day_n(2), 'pts': pack([seg(2)]), 'st': '', 'n': 20, 'lakeDay': 'regnaren_' + day_n(2), 'ownKey': 'regnaren_calle_' + day_n(2)}
 mine_remote = {'lake': 'regnaren', 'uid': 'filip', 'name': 'Filip', 'day': day_n(9), 'pts': pack([seg(9)]), 'st': '%f,%f,13' % (ME[0] + 0.0002, ME[1] + 0.0001), 'n': 20, 'lakeDay': 'regnaren_' + day_n(9), 'ownKey': 'regnaren_filip_' + day_n(9)}
-cfg = {'tracks': {'regnaren_anna_' + day_n(2): other, 'regnaren_filip_' + day_n(9): mine_remote}}
+cfg = {'tracks': {'regnaren_calle_' + day_n(2): other, 'regnaren_filip_' + day_n(9): mine_remote}}
 
 with sync_playwright() as p:
     # ================= history, the panel, Andras =================
@@ -79,12 +79,19 @@ with sync_playwright() as p:
     check('Hel -> solid line', pg.eval_on_selector('#trackLayer', 'e=>e.classList.contains("solid")') and pg.eval_on_selector('#trackLayer .trkLine', 'e=>getComputedStyle(e).strokeDasharray') == 'none')
     pg.click('#trkColors button[data-c="#FFFFFF"]'); pg.wait_for_timeout(150)
     check('colour -> the line is white', pg.eval_on_selector('#trackLayer .trkLine', 'e=>getComputedStyle(e).stroke') == 'rgb(255, 255, 255)', pg.eval_on_selector('#trackLayer .trkLine', 'e=>getComputedStyle(e).stroke'))
-    check('Andras not fetched before it is switched on', len(pg.evaluate('window.__trackGets')) == 1)
-    check('...and no one else\'s line drawn', M(pg, '#trackLayer .trkOther') == 0)
-    pg.click('#trkWho button[data-w="others"]'); pg.wait_for_timeout(500)
+    check('nobody else is fetched before you pick someone', len(pg.evaluate('window.__trackGets')) == 1)
+    check('...and nobody else line drawn', M(pg, '#trackLayer .trkOther') == 0)
+    opts = pg.eval_on_selector_all('#trkWhoSel option', 'a=>a.map(e=>e.textContent)')
+    check('the drop-down lists the member list (not yourself), "Ingen" first', opts[0] == 'Ingen' and 'Calle' in opts and 'Filip' not in opts, opts[:5])
+    pg.select_option('#trkWhoSel', 'calle'); pg.wait_for_timeout(500)
     gets = pg.evaluate('window.__trackGets')
-    check('Andras -> fetched now, by lake + day range', len(gets) == 2 and gets[1].startswith('lakeDay >= regnaren_' + day_n(29)) and 'lakeDay <= regnaren_9999' in gets[1], gets[-1])
-    check('...their line is drawn (not my own doc)', M(pg, '#trackLayer .trkOther') == 1, M(pg, '#trackLayer .trkOther'))
+    check('pick Calle -> only HIS days are fetched (by his key + day range)', len(gets) == 2 and gets[1].startswith('ownKey >= regnaren_calle_' + day_n(29)) and gets[1].endswith('ownKey <= regnaren_calle_~'), gets[-1])
+    check('...his line is drawn', M(pg, '#trackLayer .trkOther') == 1, M(pg, '#trackLayer .trkOther'))
+    check('...and the info line names him', 'Calle' in pg.inner_text('#trkInfo'), pg.inner_text('#trkInfo'))
+    pg.select_option('#trkWhoSel', ''); pg.wait_for_timeout(200)
+    check('Ingen -> his line is hidden again', M(pg, '#trackLayer .trkOther') == 0)
+    pg.select_option('#trkWhoSel', 'calle'); pg.wait_for_timeout(300)
+    check('...picking him again does not read the database twice', len(pg.evaluate('window.__trackGets')) == 2)
     pg.click('#trkWho button[data-w="mine"]'); pg.wait_for_timeout(150)
     check('Mina off -> my lines hidden', M(pg, '#trackLayer .trkLine') == 0 and M(pg, '#trackLayer .trkOther') == 1)
     pg.click('#trkWho button[data-w="mine"]'); pg.wait_for_timeout(150)
@@ -93,12 +100,17 @@ with sync_playwright() as p:
     pg.click('label[for="trkStopsToggle"] .toggle'); pg.wait_for_timeout(200)
     txt = pg.eval_on_selector_all('#trackLayer .trkStops text', 'a=>a.map(e=>e.textContent)')
     check('stops on -> a ring with "13 min" (from the day 9 d ago)', '13 min' in txt, txt)
+    check('...with a slider for the shortest stop that counts', pg.is_visible('#trkStopMin'))
+    pg.evaluate("(() => { const e = document.getElementById('trkStopMin'); e.value = '20'; e.dispatchEvent(new Event('input', {bubbles: true})); })()"); pg.wait_for_timeout(200)
+    txt = pg.eval_on_selector_all('#trackLayer .trkStops text', 'a=>a.map(e=>e.textContent)')
+    check('minimum 20 min -> the 13 min stop is hidden', '13 min' not in txt and pg.inner_text('#trkStopMinVal') == '20 min', txt)
+    pg.evaluate("(() => { const e = document.getElementById('trkStopMin'); e.value = '5'; e.dispatchEvent(new Event('input', {bubbles: true})); })()"); pg.wait_for_timeout(200)
     pg.screenshot(path='shot_trk_stops.png')
     # ---- settings survive a reload ----
     pg.evaluate("document.dispatchEvent(new Event('visibilitychange'))"); pg.reload(); pg.wait_for_timeout(1800)
     cfgs = pg.evaluate("JSON.parse(localStorage.getItem('ffmap_track_cfg_v1'))")
-    check('panel choices are remembered', cfgs['range'] == '30' and cfgs['dash'] is False and cfgs['color'] == '#FFFFFF' and cfgs['stops'] is True and cfgs['others'] is True, cfgs)
-    check('...Andras is fetched again at start (it was on)', any(g.startswith('lakeDay') for g in pg.evaluate('window.__trackGets')))
+    check('panel choices are remembered', cfgs['range'] == '30' and cfgs['dash'] is False and cfgs['color'] == '#FFFFFF' and cfgs['stops'] is True and cfgs['who'] == 'calle' and cfgs['stopMin'] == 5, cfgs)
+    check('...his days are fetched again at start (he was picked)', any(g.startswith('ownKey >= regnaren_calle_') for g in pg.evaluate('window.__trackGets')))
     # ---- upload of today ----
     sets0 = len(pg.evaluate('window.__trackSets'))
     ctx.set_geolocation({'latitude': la + 0.0002, 'longitude': lo, 'accuracy': 5}); pg.wait_for_timeout(900)
@@ -109,12 +121,8 @@ with sync_playwright() as p:
     pg.evaluate("document.dispatchEvent(new Event('visibilitychange'))"); pg.wait_for_timeout(200)
     check('...but not again when nothing new was recorded', len(pg.evaluate('window.__trackSets')) == n1)
     pg.evaluate("Object.defineProperty(document, 'visibilityState', {value: 'visible', configurable: true})")
-    # ---- Börja om (now in the panel) ----
-    pg.on('dialog', lambda dlg: dlg.accept())
     open_panel(pg) if not pg.eval_on_selector('#trkPanel', 'e=>e.classList.contains("show")') else None
-    pg.click('#trkRange button[data-r="today"]'); pg.click('#trackClearBtn'); pg.wait_for_timeout(250)
-    d = pg.get_attribute('#trackLayer .trkLine', 'd') or ''
-    check('"Börja om" in the panel wipes today (older days stay in the history)', d.count('L') == 0 and len(pg.evaluate("JSON.parse(localStorage.getItem('ffmap_trackhist_v1'))")) >= 3, d)
+    check('there is no "Börja om" (the track cannot be wiped)', pg.evaluate("!document.getElementById('trackClearBtn')"))
     pg.click('#trkClose'); pg.wait_for_timeout(350)
     check('✕ closes the panel', not pg.eval_on_selector('#trkPanel', 'e=>e.classList.contains("show")'))
     pg.click('#menuBtn'); pg.click('#menuItemSettings'); pg.wait_for_timeout(300)

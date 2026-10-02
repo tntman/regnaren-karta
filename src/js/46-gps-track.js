@@ -28,8 +28,8 @@
   var TRACK_MAX_POINTS = 6000;
   var showTrack = true;
   try { if (localStorage.getItem(SHOW_TRACK_KEY) === '0') showTrack = false; } catch(e){}
-  // what the Spår panel chooses (Mina / Andras, how far back, dashed, colour, stops as rings)
-  var trkCfg = { mine: true, others: false, range: 'today', dash: true, color: '#FF8A1F', stops: false };
+  // what the Spår panel chooses (Mina / one other person, how far back, dashed, colour, stops as rings + their minimum time)
+  var trkCfg = { mine: true, who: '', range: 'today', dash: true, color: '#FF8A1F', stops: false, stopMin: 5 };   // (who: another person's uid to show, '' = nobody)
   try { var tcs = JSON.parse(localStorage.getItem(TRKCFG_KEY) || 'null'); if (tcs) for (var tck in trkCfg) if (tcs[tck] !== undefined) trkCfg[tck] = tcs[tck]; } catch(e){}
   function trkCfgSave(){ try { localStorage.setItem(TRKCFG_KEY, JSON.stringify(trkCfg)); } catch(e){} }
   function pad2(n){ return (n < 10 ? '0' : '') + n; }
@@ -213,13 +213,14 @@
         if (c.stops) stops.push.apply(stops, demoStops());
       }
     }
+    stops = stops.filter(function(s){ return s[2] >= c.stopMin; });
     var d = pathOfPx(mine);
     trkLineEl.setAttribute('d', d); trkUnderEl.setAttribute('d', d);
     trkLineEl.style.stroke = c.color;
     var others = [];
-    if (c.others) Object.keys(trkOthers).forEach(function(id){
+    if (c.who) Object.keys(trkOthers).forEach(function(id){
       var o = trkOthers[id];
-      if (o.day >= from) others.push.apply(others, pxSegs('o' + id, o, o.p.length, function(){ return unpackSegs(o.p); }));
+      if (o.uid === c.who && o.day >= from) others.push.apply(others, pxSegs('o' + id, o, o.p.length, function(){ return unpackSegs(o.p); }));
     });
     trkOtherEl.setAttribute('d', pathOfPx(others));
     if (!c.stops || !stops.length){ if (trkStopsEl.firstChild) trkStopsEl.textContent = ''; return; }
@@ -234,7 +235,7 @@
   }
 
   /* ---- Firestore `tracks` (one doc per person, lake and day) ---- */
-  function trkSafeUid(){ return String(myUid || '').replace(/[^a-z0-9åäö]+/g, '_'); }
+  function trkSafeUid(u){ return String(u || myUid || '').replace(/[^a-z0-9åäö]+/g, '_'); }
   function trkDocId(day){ return LAKE_ID + '_' + trkSafeUid() + '_' + day; }
   function uploadTrackDay(day, rec){
     if (!USE_FIREBASE || !tracksCol || !myUid) return;
@@ -279,22 +280,25 @@
       renderTrack(); trkRenderPanel();
     }).catch(function(e){ console.warn('mina spår kunde inte hämtas', e && e.code); });
   }
-  // other people's days: only when "Andras" is switched on (reads: one per person and day, kept until the page is closed)
-  var trkOthersFrom = null, trkOthersAt = 0, trkOthersBusy = false, trkOthersMsg = '';
+  // one other person's days: only when you pick them in the panel (reads: one per day they have, kept until the page is closed)
+  var trkOthersFrom = {}, trkOthersAt = 0, trkOthersBusy = false, trkOthersMsg = '';   // (trkOthersFrom: uid -> earliest day fetched)
   function fetchOthersTracks(){
-    if (!trkCfg.others || !tracksCol || !USE_FIREBASE || trkOthersBusy) return;
-    var from = trkRangeFrom() || '0000-00-00';
-    if (trkOthersFrom !== null && from >= trkOthersFrom && Date.now() - trkOthersAt < 5 * 60000) return;   // (already have those days)
+    var who = trkCfg.who;
+    if (!who || !tracksCol || !USE_FIREBASE || trkOthersBusy) return;
+    var from = trkRangeFrom() || '0000-00-00', got = trkOthersFrom[who];
+    if (got !== undefined && from >= got && Date.now() - trkOthersAt < 5 * 60000) return;   // (already have those days)
+    var pre = LAKE_ID + '_' + trkSafeUid(who) + '_';
     trkOthersBusy = true; trkOthersMsg = 'Laddar…'; trkRenderPanel();
-    tracksCol.where('lakeDay', '>=', LAKE_ID + '_' + from).where('lakeDay', '<=', LAKE_ID + '_9999-99-99').get().then(function(snap){
-      trkReadDocs(snap, function(id, d){ if (d.uid === myUid || !d.day) return; trkOthers[id] = { uid: d.uid, name: d.name || '', day: d.day, p: d.pts || '', s: unpackStops(d.st) }; });
-      trkOthersFrom = trkOthersFrom === null ? from : Math.min(trkOthersFrom, from); trkOthersAt = Date.now(); trkOthersBusy = false; trkOthersMsg = '';
+    tracksCol.where('ownKey', '>=', pre + from).where('ownKey', '<=', pre + '~').get().then(function(snap){
+      trkReadDocs(snap, function(id, d){ if (!d.day || d.uid === myUid) return; trkOthers[id] = { uid: d.uid, name: d.name || '', day: d.day, p: d.pts || '', s: unpackStops(d.st) }; });
+      trkOthersFrom[who] = got === undefined ? from : Math.min(got, from); trkOthersAt = Date.now(); trkOthersBusy = false; trkOthersMsg = '';
       renderTrack(); trkRenderPanel();
     }).catch(function(e){
-      trkOthersBusy = false; trkOthersMsg = (e && e.code === 'permission-denied') ? 'Kunde inte hämta (databasens regler saknar "tracks")' : 'Kunde inte hämta andras spår';
+      trkOthersBusy = false; trkOthersMsg = (e && e.code === 'permission-denied') ? 'Kunde inte hämta (databasens regler saknar "tracks")' : 'Kunde inte hämta spåren';
       trkRenderPanel();
     });
   }
+
   var lastOwnLatLon = null; // {lat, lon} -- whatever position is currently shown as "you" (real or demo)
   var hasCenteredOnce = false;
 
