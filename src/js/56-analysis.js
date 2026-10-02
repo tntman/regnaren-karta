@@ -20,6 +20,7 @@
   var AN_COLORS = { depth: null, steep: [255, 70, 200], tops: [255, 190, 40], veg: [90, 235, 80], hard: [240, 70, 10],
                     wind: [255, 178, 63], similar: [255, 80, 160], abborre: [255, 210, 26], gadda: [120, 255, 120], gos: [58, 134, 255],
                     c_abborre: [255, 122, 26], c_gadda: [53, 210, 74], c_gos: [58, 134, 255] };   // (c_ = from the catches: the species' colours)
+  var AN_PLAIN = { depth: 1, steep: 1, tops: 1, veg: 1, hard: 1, wind: 1, combo: 1 };   // Kartdata: no colour, just the map shown through the mask
   // the depth scale of the sliders = the legend's (0 .. the lake's max depth, same colours)
   var AN_DMAX = parseFloat(String((LAKE.legendTicks || []).slice(-1)[0] || '').replace(',', '.')) || Math.ceil(LAKE.depth.max || 20);
   var AN_SIMF = [['d', 'Djup'], ['s', 'Lutning'], ['h', 'Botten'], ['v', 'Växter'], ['t', 'Grynna/håla']];
@@ -440,7 +441,7 @@
       }
       function cl(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
       var EA = edgeW(STEP, 1.1), ES = edgeW(STEP, 0.9);     // (line widths: see edgeW)
-      var c1col = col, c2col = anSet.mode === 'tops' ? [60, 200, 255] : [70, 200, 60], c2a = anSet.mode !== 'tops' ? 60 : 105;
+      var plain = !!AN_PLAIN[anSet.mode], c1col = col, c2col = anSet.mode === 'tops' ? [60, 200, 255] : [70, 200, 60], c2a = anSet.mode !== 'tops' ? 60 : 105;
       for (var y2 = 0; y2 < vh; y2++) for (var x2 = 0; x2 < vw; x2++){
         var q2 = y2 * vw + x2, k = q2 * 4;
         var d1 = sd(f1, q2, x2, y2), d2 = sd(f2, q2, x2, y2), dl = sd(fl, q2, x2, y2);
@@ -453,8 +454,10 @@
         // "Skala" (from the catches): the whole lake from unlike (blue, see-through) to most alike (red)
         var ra = 0;
         if (f3 && fl[q2] > 0.05){ var rc = hmRamp(Math.max(0, Math.min(1, f3[q2] / fl[q2]))); ra = rc[3] / 255 * Math.min(1, fl[q2] * 1.6); over(rc[0], rc[1], rc[2], 255 * ra); }
-        if (c1col) over(c1col[0], c1col[1], c1col[2], 105 * k1);
-        over(c2col[0], c2col[1], c2col[2], c2a * k2);
+        if (!plain){
+          if (c1col) over(c1col[0], c1col[1], c1col[2], 105 * k1);
+          over(c2col[0], c2col[1], c2col[2], c2a * k2);
+        }
         var e = Math.max(cl(1 - Math.abs(d1) / EA[0]), cl(1 - Math.abs(d2) / EA[0])) * EA[1];
         if (e > 0) over(255, 255, 255, 180 * e);        // (as thin and soft as the lee's edge)
         var es = cl(1 - Math.abs(dl) / ES[0]) * ES[1];

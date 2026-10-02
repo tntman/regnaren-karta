@@ -63,7 +63,7 @@ raderas den då (`pagehide`).
   (`anCombo`, varje del räknas av `anOne(m, A, opt)`). Fläckarna (grynnor/hålor, växter, hård botten, vindkant,
   `AN_NEAR`) räknas "inom … m" (`anSet.near`, reglage `#anNear_<del>`, 0–50 m, 0 = exakt; standard 15, grynnor 0) med
   `anNear`. **Bara Djup har ett djupreglage** (Branta kanter och Hård botten räknar på hela sjön – lägg till Djup för att
-  begränsa; deras gamla `elo/ehi/hlo/hhi` är borta). Knapparna som är på får ett "+" framför namnet när fler än en är på (`#anChips.combo`). Området visar kartans egna färger (ingen egen färg), resten grått. Blir inget kvar: "Inget kvar – <del>
+  begränsa; deras gamla `elo/ehi/hlo/hhi` är borta). Knapparna som är på får ett "+" framför namnet när fler än en är på (`#anChips.combo`). Området visar kartans egna färger, resten grått – det gäller ALLA Kartdata-lägen, även ett ensamt (`AN_PLAIN`, `anDraw`: ingen färgfyllning; hålor räknas med i samma mask; skyltarna med färgad kant, den tunna vita kanten och strandlinjen finns kvar). Tumregler, Liknande och Fångster behåller sina färger. Blir inget kvar: "Inget kvar – <del>
   tar bort det sista" + tips. ⓘ visar stegen ("Djup: 23 % → + Branta kanter: 1 % → …"). Återställ behåller delarna.
   Tumregler och Fångster blandas inte in. Dra = mindre, snärt/hela vägen = stäng (`sheetSwipe`, tools/UI.md).
 - **Liknande**: välj vad som jämförs (djup, lutning, botten, växter, grynna/håla) och område
