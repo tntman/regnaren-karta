@@ -1,6 +1,6 @@
   /* ---- weather: small chip under your name, tap for details ---- */
   #wxChip{
-    display:none;align-items:center;gap:7px;margin:5px 0 0 -50px;pointer-events:auto;
+    display:none;align-items:center;gap:7px;margin:17px 0 0 -50px;pointer-events:auto;
     background:rgba(11,42,58,.82);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:4px 10px 4px 8px;
     font:600 12px Calibri,"Segoe UI",system-ui,sans-serif;color:var(--offwhite);white-space:nowrap;
     box-shadow:0 4px 14px rgba(0,0,0,.3);cursor:pointer;-webkit-tap-highlight-color:transparent;
@@ -225,10 +225,9 @@
   #ltOffPill[hidden]{display:none;}
   .ltOffIc{color:#ff8a80;}
 
-  /* ---- "Håll skärmen tänd" on: a yellow sun by your name; tap = off (+ a note) ---- */
-  #headerUserRow{display:flex;align-items:center;gap:7px;}
+  /* ---- "Håll skärmen tänd" on: a yellow sun under the weather chip; tap = off (+ a note) ---- */
   #wakeBadge{pointer-events:auto;width:17px;height:17px;padding:0;border-radius:50%;border:1.5px solid #FFD21A;background:rgba(255,210,26,.18);color:#FFD21A;
-    display:flex;align-items:center;justify-content:center;margin-top:1px;box-shadow:0 0 8px rgba(255,210,26,.5);-webkit-tap-highlight-color:transparent;cursor:pointer;}
+    display:flex;align-items:center;justify-content:center;margin:6px 0 0 -50px;box-shadow:0 0 8px rgba(255,210,26,.5);-webkit-tap-highlight-color:transparent;cursor:pointer;}
   #wakeBadge[hidden]{display:none;}
   #wakeBadge svg{width:11px;height:11px;}
   @media (orientation:landscape) and (max-height:520px){ #wakeNote{top:calc(env(safe-area-inset-top,0px) + 110px);} }

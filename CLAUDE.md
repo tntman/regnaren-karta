@@ -122,7 +122,7 @@ Uppdatera rätt anteckning när något ändras.
 - **Skyltar under väderchipet**: `#hmPill` (Heatmap) och `#anPill` (Kartanalys, när något läge är
   på) – aldrig båda, lägena stänger av varandra. Tryck = rutan.
 - **Håll skärmen tänd** (Inställningar → Båten, av som standard, `ffmap_wakelock_v1`): Wake Lock, tas igen när
-  appen blir synlig. På = gul sol `#wakeBadge` vid namnet; tryck = av + notis `#wakeNote`.
+  appen blir synlig. På = gul sol `#wakeBadge` under väderchipet; tryck = av + notis `#wakeNote`.
 - **Hjälp** (menyn → Hjälp; öppnas själv efter första namnvalet): "Nytt i appen" = `HELP_NEWS`
   (`js/30-help.js`), animeringar av `tools/help_anim.py` – allt i `tools/HJALP.md`.
 - **Heatmap** (Kartlägen → Heatmap sist): fångster från tävlingarna, fyra stilar, egen bottenruta, inte
