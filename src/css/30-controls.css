@@ -289,6 +289,7 @@
   @media (max-width:420px){
     .kicker{font-size:19px;}
     #legend{width:111px;padding:5px 7px 4px;}
+    #speedPill{width:111px;}
     #visPanel{padding:7px 9px;gap:6px;}
     .visLabel{font-size:11px;}
   }

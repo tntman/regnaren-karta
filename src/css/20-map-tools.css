@@ -1,7 +1,7 @@
   /* ---- knot meter (under the scale bar) ---- */
   #speedPill{
     position:absolute;left:14px;bottom:calc(env(safe-area-inset-bottom,0px) + 56px);z-index:20;
-    display:none;align-items:baseline;gap:4px;pointer-events:none;
+    display:none;align-items:baseline;justify-content:center;box-sizing:border-box;width:126px;gap:4px;pointer-events:none;   /* as wide as the depth scale (#legend) */
     background:var(--navy-glass);backdrop-filter:blur(6px);
     border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:4px 10px;
     box-shadow:0 4px 14px rgba(0,0,0,.35);font-variant-numeric:tabular-nums;

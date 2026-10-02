@@ -1,6 +1,6 @@
   /* ---- weather: small chip under your name, tap for details ---- */
   #wxChip{
-    display:none;align-items:center;gap:7px;margin:17px 0 0 -50px;pointer-events:auto;
+    display:none;align-items:center;gap:7px;margin:14px 0 0 -50px;pointer-events:auto;
     background:rgba(11,42,58,.82);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:4px 10px 4px 8px;
     font:600 12px Calibri,"Segoe UI",system-ui,sans-serif;color:var(--offwhite);white-space:nowrap;
     box-shadow:0 4px 14px rgba(0,0,0,.3);cursor:pointer;-webkit-tap-highlight-color:transparent;

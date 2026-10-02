@@ -87,7 +87,7 @@ with sync_playwright() as p:
     check('on: the screen is kept on', pg.evaluate('window.__wakeReqs') == 1 and pg.evaluate('window.__ffWake()')['held'])
     pg.click('#settingsBackBtn'); pg.wait_for_timeout(300)
     check('...and a yellow sun under the weather chip', pg.is_visible('#wakeBadge') and pg.evaluate("document.getElementById('wakeBadge').getBoundingClientRect().top >= document.getElementById('wxChip').getBoundingClientRect().bottom"))
-    check('...weather chip clear of the menu button', pg.evaluate("document.getElementById('wxChip').getBoundingClientRect().top - document.getElementById('menuChev').getBoundingClientRect().bottom >= 5"))
+    check('...weather chip clear of the menu button', pg.evaluate("document.getElementById('wxChip').getBoundingClientRect().top - document.getElementById('menuChev').getBoundingClientRect().bottom >= 3"))
     pg.click('#wakeBadge'); pg.wait_for_timeout(300)
     check('tap the sun: off, and a note saying what it was and where to turn it on', not pg.evaluate('window.__ffWake()')['held'] and not pg.is_visible('#wakeBadge') and pg.is_visible('#wakeNote') and 'Inställningar' in pg.inner_text('#wakeNote'))
     check('...Inställningar shows it off', not pg.is_checked('#toggleWake'))
