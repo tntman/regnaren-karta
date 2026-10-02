@@ -7,7 +7,9 @@ Koden: `src/js/46-gps-track.js` (data, historik, Firestore, ritning), `47-track-
 - **Dagens spår** `{day, segs:[[[lat,lon,ms],...]]}` i localStorage (`ffmap_track_v1`, per sjö via `lakeKey`).
   Ett spårdygn går 06:00–06:00 (`dayStr()`, dag som `YYYY-MM-DD`). Ny segment efter hopp > 250 m eller paus > 10 min,
   punkter närmare än 8 m sparas inte, högst 6 000 punkter/dag.
-- **Spelas inte in i Demo Mode** (`onFix` hoppar över `recordTrack` när `demoMode`) – bara riktig körning räknas.
+- **Demo Mode:** egen tillfällig `demoTrack` (visas på skärmen så man kan testa Spår och Fog of war, ligger i
+  sessionStorage `ffmap_demotrack_v1` så att en rotation klarar den) – sparas aldrig i historiken eller databasen och
+  suddas när Demo Mode slås på/av (`trkClearDemo`, `js/32-demo.js`).
 - **Historik** per sjö `trkHist` (`ffmap_trackhist_v1`): `{ "2026-10-01": {p, s, n, u} }` där `p` = packat spår
   (förenklat till ≥ 12 m), `s` = stopp `[[lat,lon,min]]`, `n` = antal punkter, `u` = uppladdad. När dygnet byts
   (eller appen startas nästa dag) flyttas gårdagen hit (`archiveTrack`). Blir telefonens lagring full tas äldsta dagen

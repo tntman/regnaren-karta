@@ -1,7 +1,7 @@
 from playwright.sync_api import sync_playwright
 import fakefb, json, datetime
 from fakefb import new_page
-# Spår för evigt: historik, Spår-menyn, andras spår, uppladdning, Demo Mode, stopp som ringar, Fog of war
+# Spår för evigt: historik, Spår-menyn, andras spår, uppladdning, Demo Mode (tillfälligt spår), stopp som ringar, Fog of war
 results = []
 def check(name, cond, info=''):
     results.append(bool(cond)); print(('PASS ' if cond else 'FAIL ') + name + ('  -- ' + str(info) if info != '' else ''))
@@ -135,7 +135,7 @@ with sync_playwright() as p:
     check('a 5 min dwell in today\'s track becomes a "5 min" ring', '5 min' in txt, txt)
     b.close()
 
-    # ================= Demo Mode records nothing =================
+    # ================= Demo Mode: a temporary track, never saved =================
     b, ctx, pg, errs = new_page(p, geo=ME, cfg={}, name='Filip')
     seed(ctx, pg, {'ffmap_track_v1': None, 'regnaren_demo_mode_v1': '1', 'regnaren_demo_since_v1': '9999999999999', 'regnaren_demo_move_v1': '1'})
     pg.reload(); pg.wait_for_timeout(1500)
@@ -143,13 +143,23 @@ with sync_playwright() as p:
     for i in range(8):
         la += 12 / 111320.0; ctx.set_geolocation({'latitude': la, 'longitude': lo, 'accuracy': 5}); pg.wait_for_timeout(900)
     check('Demo Mode is on', pg.evaluate("document.getElementById('demoModeToggle').checked"))
+    pg.wait_for_timeout(5000)
+    d = pg.get_attribute('#trackLayer .trkLine', 'd') or ''
+    check('Demo Mode shows a track on the screen (to try the Spår out)', d.count('L') >= 1, d[:60])
     saved = pg.evaluate("localStorage.getItem('ffmap_track_v1')")
     n = 0
     try: n = sum(len(s) for s in json.loads(saved)['segs'])
     except Exception: pass
-    check('...and no track is recorded (neither shown nor saved)', n == 0 and M(pg, '#trackLayer .trkLine') == 0, (saved or '')[:80])
+    check('...but it is NOT saved on the phone (own track)', n == 0, (saved or '')[:80])
+    check('...only temporarily (sessionStorage, survives a rotation)', pg.evaluate("!!sessionStorage.getItem('ffmap_demotrack_v1')"))
     pg.evaluate("document.dispatchEvent(new Event('visibilitychange'))"); pg.wait_for_timeout(200)
-    check('...nor uploaded', not [s for s in pg.evaluate('window.__trackSets') if s['id'].endswith(day_n(0))])
+    check('...and never uploaded to Firestore', not pg.evaluate('window.__trackSets'), pg.evaluate('window.__trackSets'))
+    check('...nor added to the history', not pg.evaluate("localStorage.getItem('ffmap_trackhist_v1')") or pg.evaluate("localStorage.getItem('ffmap_trackhist_v1')") == '{}')
+    open_panel(pg)
+    check('the panel says the demo track is not saved', 'Demo Mode' in pg.inner_text('#trkInfo'), pg.inner_text('#trkInfo'))
+    pg.click('#trkClose'); pg.wait_for_timeout(300)
+    pg.click('#menuBtn'); pg.click('#menuItemSettings'); pg.wait_for_timeout(300); pg.click('#demoModeToggle'); pg.wait_for_timeout(600)
+    check('Demo Mode off -> the demo track is gone', 'L' not in (pg.get_attribute('#trackLayer .trkLine', 'd') or '') and not pg.evaluate("sessionStorage.getItem('ffmap_demotrack_v1')"), pg.get_attribute('#trackLayer .trkLine', 'd'))
     b.close()
 
     # ================= Fog of war =================

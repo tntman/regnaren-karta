@@ -40,6 +40,7 @@
     fogMaskCtx.clearRect(0, 0, fogMask.width, fogMask.height); fogCells = {};
     Object.keys(trkHist).forEach(function(dk){ fogSegs(unpackSegs(trkHist[dk].p)); });
     fogSegs(track.segs);
+    if (demoMode) fogSegs(demoTrack.segs);   // (Demo Mode: only while it is on)
     fogDirty = false;
     if (typeof scheduleRender === 'function') scheduleRender();
   }

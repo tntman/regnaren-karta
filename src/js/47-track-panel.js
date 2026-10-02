@@ -16,6 +16,7 @@
     var oth = {}; Object.keys(trkOthers).forEach(function(id){ oth[trkOthers[id].uid + trkOthers[id].day] = 1; });
     var t = days ? '<b>' + days + '</b> ' + (days === 1 ? 'dag' : 'dagar') + ' sparade av dig på ' + LAKE.name : 'Inga sparade dagar än – spåret sparas när du kör på riktigt (inte i Demo Mode).';
     if (c.others) t += trkOthersMsg ? ' · ' + trkOthersMsg : ' · andras: <b>' + Object.keys(oth).length + '</b> dagar';
+    if (demoMode) t = '<b>Demo Mode:</b> spåret syns bara nu och sparas inte (inte i databasen heller). Det försvinner när Demo Mode stängs av.';
     document.getElementById('trkInfo').innerHTML = t;
   }
   function trkShowPanel(open){

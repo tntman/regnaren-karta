@@ -111,7 +111,7 @@ Uppdatera rätt anteckning när något ändras.
   "ladda ner igen". Regnaren ~1 200 bitar / 66 MB.
 - **Filter**: två grupper – **Markeringar** (Mina, Andras, Båtar + typerna som en rad prickar
   `.visDot`: ifylld = visas, grå ring = dold) och **Lager** (Spår, Väder, Vind och lä, Blixtar,
-  Kartanalys, Heatmap `#toggleHeatmap`, Fog of war `#toggleFog` (mörkt utom där du varit, 50 m, `js/48-fog.js`, NOTES_SPAR.md), Kompass `#toggleCompass`: kil 40°/500 m, vit, mot telefonens kompass, iOS-lov vid trycket, `js/53-compass.js`, Namn `#toggleNames` (på som standard): OSM-namn på kartan ur `lakes/<id>/names.json`, `js/59-names.js`, KARTOR.md). Kartanalys och Heatmap i Filter visar/döljer bara –
+  Kartanalys, Heatmap `#toggleHeatmap`, Fog of war `#toggleFog` (mörkt utom där du varit, 50 m, Demo Mode ger ett tillfälligt spår som inte sparas, `js/48-fog.js`, NOTES_SPAR.md), Kompass `#toggleCompass`: kil 40°/500 m, vit, mot telefonens kompass, iOS-lov vid trycket, `js/53-compass.js`, Namn `#toggleNames` (på som standard): OSM-namn på kartan ur `lakes/<id>/names.json`, `js/59-names.js`, KARTOR.md). Kartanalys och Heatmap i Filter visar/döljer bara –
   påslaget/avslaget sker i deras egna rutor. "Djup" (`#toggleDepth`), "Andras fiskeplatser 50/100 %" och
   "Håll skärmen tänd" ligger i Inställningar. Knapparna nere till höger = 2 × 2-rutnät (`--bb`).
 - **Panorera över markeringar**: ett finger som börjar på en plats, båt, bubbla eller etikett

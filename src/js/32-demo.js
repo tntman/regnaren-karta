@@ -120,6 +120,7 @@
     if (moveToggle) moveToggle.checked = false;
     if (on){ demoAvg = { b: [] }; saveDemoAvg(); } // a fresh demo average every time
     demoSince = on ? Date.now() : 0;
+    trkClearDemo();                 // the demo's track is only for trying the Spår out -- gone when Demo Mode starts/stops
     try {
       localStorage.setItem(DEMO_KEY, on ? '1' : '0');
       if (on) localStorage.setItem(DEMO_SINCE_KEY, String(demoSince));

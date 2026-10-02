@@ -69,6 +69,7 @@
   applyTrackOpacity();
   document.getElementById('trackClearBtn').addEventListener('click', function(){
     if (!confirm('Börja om spåret härifrån? Spåret hittills suddas.')) return;
+    if (demoMode){ trkClearDemo(); return; }
     track = { day: todayStr(), segs: [] };
     // the new track starts right where you are now, and keeps recording as you go
     if (lastOwnLatLon && lastFix && lastFix.onMap) track.segs.push([[Math.round(lastOwnLatLon.lat * 1e6) / 1e6, Math.round(lastOwnLatLon.lon * 1e6) / 1e6, Date.now()]]);

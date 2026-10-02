@@ -20,7 +20,8 @@
      ends, the day moves to the history (trkHist, per lake) -- that is what "hur långt tillbaka" shows.
      A new segment starts after a jump (>250 m, e.g. a Demo reroll) or a long pause (>10 min), so no
      straight lines across the lake. Points closer than 8 m aren't stored (GPS jitter at anchor).
-     NOT recorded in Demo Mode (onFix skips recordTrack when demoMode). */
+     Demo Mode: a separate demoTrack, only on screen (and in sessionStorage so a rotation keeps it) -- never saved to
+     the history or Firestore, and gone when Demo Mode is switched off (js/32-demo.js -> trkClearDemo). */
   var TRACK_KEY = lakeKey('ffmap_track_v1', 'track_v1'), SHOW_TRACK_KEY = 'ffmap_show_track_v1';
   var TRKHIST_KEY = lakeKey('ffmap_trackhist_v1', 'trackhist_v1'), TRKSYNC_KEY = lakeKey('ffmap_tracksync_v1', 'tracksync_v1');
   var TRKCFG_KEY = 'ffmap_track_cfg_v1';
@@ -92,6 +93,12 @@
       }
     }
   }
+  var DEMOTRACK_KEY = 'ffmap_demotrack_v1', demoTrack = { segs: [] };
+  try { if (demoMode) demoTrack = JSON.parse(sessionStorage.getItem(DEMOTRACK_KEY) || 'null') || demoTrack; } catch(e){}
+  function trkClearDemo(){
+    demoTrack = { segs: [] }; try { sessionStorage.removeItem(DEMOTRACK_KEY); } catch(e){}
+    trkPxDirty(); fogRebuild(); renderTrack();
+  }
   var trkPx = {};       // cache: day key -> image-pixel version of the segments (so panning is only a multiply)
   function trkPxDirty(){ trkPx = {}; }
   function archiveTrack(tr){
@@ -119,9 +126,11 @@
   setInterval(function(){ flushTrackUploads(false); }, 60000);
   function recordTrack(lat, lon, acc){
     if (acc && acc > 40) return; // too uncertain to draw
-    if (track.day !== todayStr()){ archiveTrack(track); track = { day: todayStr(), segs: [] }; trackDirty = true; }
+    var demo = !!demoMode;
+    if (!demo && track.day !== todayStr()){ archiveTrack(track); track = { day: todayStr(), segs: [] }; trackDirty = true; }
+    var tr = demo ? demoTrack : track;   // (Demo Mode: its own little track, never saved)
     var now = Date.now();
-    var seg = track.segs.length ? track.segs[track.segs.length - 1] : null;
+    var seg = tr.segs.length ? tr.segs[tr.segs.length - 1] : null;
     var last = seg && seg.length ? seg[seg.length - 1] : null;
     if (last){
       var d = haversineKm(last[0], last[1], lat, lon) * 1000;
@@ -129,12 +138,13 @@
       if (d > 250 || now - last[2] > 10 * 60000) seg = null;
     }
     var fresh = !seg;
-    if (!seg){ seg = []; track.segs.push(seg); }
+    if (!seg){ seg = []; tr.segs.push(seg); }
     seg.push([Math.round(lat * 1e6) / 1e6, Math.round(lon * 1e6) / 1e6, now]);
     var total = 0;
-    track.segs.forEach(function(sg){ total += sg.length; });
-    while (total > TRACK_MAX_POINTS && track.segs.length){ track.segs[0].shift(); total--; if (!track.segs[0].length) track.segs.shift(); }
-    trackDirty = true; trackUploadDirty = true;
+    tr.segs.forEach(function(sg){ total += sg.length; });
+    while (total > TRACK_MAX_POINTS && tr.segs.length){ tr.segs[0].shift(); total--; if (!tr.segs[0].length) tr.segs.shift(); }
+    if (demo){ try { sessionStorage.setItem(DEMOTRACK_KEY, JSON.stringify(demoTrack)); } catch(e){} }
+    else { trackDirty = true; trackUploadDirty = true; }
     fogAddStep(fresh ? null : last, seg[seg.length - 1]);   // (Fog of war, 48-fog.js)
     renderTrack();
   }
@@ -168,11 +178,16 @@
     });
     return d;
   }
-  var todayStopsCache = { n: -1, s: [] };
+  var todayStopsCache = { n: -1, s: [] }, demoStopsCache = { n: -1, s: [] };
   function todayStops(){
     var n = segPointCount(track.segs);
     if (todayStopsCache.n !== n) todayStopsCache = { n: n, s: findStops(track.segs) };
     return todayStopsCache.s;
+  }
+  function demoStops(){
+    var n = segPointCount(demoTrack.segs);
+    if (demoStopsCache.n !== n) demoStopsCache = { n: n, s: findStops(demoTrack.segs) };
+    return demoStopsCache.s;
   }
   function trkMineDays(){   // earlier days (not today) inside the chosen range, oldest first
     var from = trkRangeFrom(), td = todayStr();
@@ -192,6 +207,10 @@
       if (track.day === todayStr()){
         mine.push.apply(mine, pxSegs('today', track, segPointCount(track.segs), function(){ return track.segs; }));
         if (c.stops) stops.push.apply(stops, todayStops());
+      }
+      if (demoMode && demoTrack.segs.length){
+        mine.push.apply(mine, pxSegs('demo', demoTrack, segPointCount(demoTrack.segs), function(){ return demoTrack.segs; }));
+        if (c.stops) stops.push.apply(stops, demoStops());
       }
     }
     var d = pathOfPx(mine);
@@ -345,7 +364,7 @@
     // (maybeBroadcastPosition itself skips anything not at the lake)
     maybeBroadcastPosition(lat, lon);
     recordSpeed(lat, lon, accM, speedMs); // knot meter + average speed (on the phone only)
-    if (!demoMode && isNearLake(lat, lon)) recordTrack(lat, lon, accM); // "Spår" (never in Demo Mode -- only real driving counts)
+    if (isNearLake(lat, lon)) recordTrack(lat, lon, accM); // "Spår" (Demo Mode: a temporary track, see recordTrack)
     updateHeading(lat, lon, gpsHeading);  // the arrow in your GPS dot
     lastOwnLatLon = { lat: lat, lon: lon };
     var p = latLonToImgPx(lat, lon);
