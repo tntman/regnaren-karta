@@ -55,6 +55,8 @@
     ownMsg = { text: text, at: Date.now() };
     writeMsg(text, ownMsg.at);
     renderMessages();
+    showMsgToast('Syns i 15 minuter, tryck på meddelandet för att ta bort.');
+    centerOnFix();
   }
   var msgToastT = null;
   function showMsgToast(t){

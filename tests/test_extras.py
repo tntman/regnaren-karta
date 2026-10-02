@@ -104,6 +104,7 @@ with sync_playwright() as p:
     w = [x for x in pg.evaluate('window.__posWrites') if x.get('msg')]
     check('sent with your position (for everyone)', w and w[-1]['msg'] == 'Åker in 🏠' and w[-1]['lat'] and not pg.is_visible('#msgPop'), w)
     check('your bubble at your boat', any(m['k'] == 'me' and 'Åker in' in m['t'] for m in pg.evaluate('window.__ffMsgs()')))
+    check('sent: the note "Syns i 15 minuter"', pg.is_visible('#msgToast') and 'Syns i 15 minuter' in pg.inner_text('#msgToast'))
     pg.screenshot(path='shot_msgs.png')
     check('a new message: the rainbow edge (first 5 min), round the tail too', pg.evaluate("(() => { var bb = document.querySelector('.mLine.mine').closest('.msgBub'), r = bb.querySelector('.msgRb'); return !!r && r.offsetHeight > bb.offsetHeight + 5; })()"))
     op = [[m['k'], m['o']] for m in pg.evaluate('window.__ffMsgs()')]
