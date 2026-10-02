@@ -76,7 +76,7 @@ specificitet.
 | `60-lightning-alarm.js` | åskvarning |
 | `62-wakelock.js` | håll skärmen tänd |
 | `64-messages.js` | snabbmeddelanden |
-| `66-catches.js` | fångsterna: format, källa (Firestore `catches/<lake>`), admins CSV-inläsning |
+| `66-catches.js` | fångsterna: format, källa (Firestore `catches/<lake>`) |
 | `68-heatmap.js` | Heatmap: ritning (värme, per art, rutor, prickar), bottenrutan, fångstrutan, tryck på kartan |
 | `90-boot.js` | start (`boot()`) |
 | `92-rotation.js` | vridning: spara/återställ läget, service worker-registrering, slutet på skriptet |

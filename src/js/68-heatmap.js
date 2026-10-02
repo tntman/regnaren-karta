@@ -129,7 +129,7 @@
     hmRenderTime();
     var res = document.getElementById('hmResult'), all = hmAll();
     if (!catchData) res.innerHTML = 'Hämtar fångster…';
-    else if (!all.length) res.innerHTML = catchErr ? 'Kunde inte hämta fångsterna (ingen anslutning?).' : 'Inga fångster i ' + escHtml(LAKE.name) + ' än.<span class="note">Admin läser in dem i Inställningar → Admin → Fångster.</span>';
+    else if (!all.length) res.innerHTML = catchErr ? 'Kunde inte hämta fångsterna (ingen anslutning?).' : 'Inga fångster i ' + escHtml(LAKE.name) + ' än.';
     else {
       var v = hmVisible(), c2 = { abborre: 0, gadda: 0, gos: 0 }; v.forEach(function(c){ c2[c.sp]++; });
       res.innerHTML = '<b>' + v.length + ' fångster</b> i ' + escHtml(LAKE.name) + (hmHourOn() ? ' · kl ' + hmHourTxt() : '') + ' · ' + HM_SP.map(function(x){ return c2[x[0]] + ' ' + x[1].toLowerCase(); }).join(', ') +

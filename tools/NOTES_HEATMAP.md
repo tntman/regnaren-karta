@@ -1,6 +1,6 @@
 # Heatmap (fångster)
 
-Kod: `src/js/66-catches.js` (datan: format, källa, CSV-inläsning), `src/js/68-heatmap.js` (ritning,
+Kod: `src/js/66-catches.js` (datan: format, källa), `src/js/68-heatmap.js` (ritning,
 bottenrutan, fångstrutan, tryck på kartan), `src/css/72-heatmap.css`, HTML i `src/html/30-map-ui.html`
 (`#hmPill`, `#hmPanel`, `#hmCard`), `10-map.html` (`#hmSat`, `#hmLayer`), admin-kortet i
 `20-menu-settings.html`. Test: `tests/test_heatmap.py`.
@@ -32,15 +32,12 @@ bottenrutan, fångstrutan, tryck på kartan), `src/css/72-heatmap.css`, HTML i `
 
 ## Datan – byggd för att bytas
 - Allt blir samma lilla post: `{ id, t, comp, who, sp: 'abborre'|'gadda'|'gos', cm, lat, lon, px, py }`
-  (`normCatch` tål CSV:ns kolumnnamn och liknande namn; komma-decimaler; "Gädda"/"Gadda"/"gadda").
+  (`normCatch` tål olika kolumn-/fältnamn; komma-decimaler; "Gädda"/"Gadda"/"gadda").
   `id` = tid|namn|art|cm (dubbletter känns igen).
-- **Sjö = position**: inom sjöns karta (`catchLakeOf`, geo i lake.json); står det ett sjönamn får det inte
-  säga en annan sjö (en grannsjö inom samma kartbild).
 - **Källa nu** (`CATCH_SOURCE`): Firestore `catches/<lake>` = `{ lake, n, rows: '<json [[t, comp, who, sp, cm,
   lat, lon], ...]>', updatedBy, updatedAt }` – en läsning när heatmapen används (+ kopia i localStorage).
   Ett dokument rymmer ~14 000 fångster (1 MiB).
-- **Admin → Fångster (heatmap) → Läs in CSV-fil**: sorterar på sjö, lägger till nya, hoppar över dubbletter,
-  andra sjöar och rader utan position – samma fil kan läsas in igen.
+- **CSV-inläsningen är borttagen** (2026-10-02): fångsterna ska komma från en databas online. Firestore-källan ovan ligger kvar tills den nya är inkopplad.
 - **Senare (live-databasen)**: skriv en ny källa med samma `load(lakeId, cb)` som ger poster via
   `normCatch` och peka `CATCH_SOURCE` på den – ritning och rutor behöver inte ändras.
 

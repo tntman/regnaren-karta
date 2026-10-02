@@ -203,35 +203,7 @@ with sync_playwright() as p:
     # ---- no catches yet ----
     b, ctx, pg, errs = new_page(p, geo=B3, cfg={}, name='Filip')
     pg.wait_for_timeout(1200); open_heat(pg)
-    pg.click('#hmPanel .pnInfoBtn'); pg.wait_for_timeout(300)
-    check('no catches for the lake: says so, and (ⓘ) where the admin reads them in', 'Inga fångster' in pg.inner_text('#hmResult') and 'Admin' in pg.inner_text('#hmPanel .pnInfo'), pg.inner_text('#hmResult'))
+    check('no catches for the lake: says so', 'Inga fångster' in pg.inner_text('#hmResult'), pg.inner_text('#hmResult'))
     b.close()
 
-    # ---- the admin reads a CSV file in ----
-    CSV = ('timestamp,competitionId,name,species,cm,lat,lng,lake,,\n'
-           '2026-09-26T09:00:00.000Z,regnaren1,Henrik,Abborre,33,"58,886510","15,777774",Regnaren,,// kommentar\n'
-           '2026-09-26T09:05:00.000Z,regnaren1,Filip,Gadda,71,58.887421,15.775569,Regnaren,,\n'
-           '2026-09-26T09:06:00.000Z,regnaren1,Filip,Gädda,40,,,Regnaren,,\n'
-           '2026-05-22T09:00:00.000Z,vagsfjarden4,Camilla,Gos,55,62.92,18.27,Vågsfjärden,,\n'
-           '2026-03-28T13:32:32.019Z,malarenOpen,Stisse,Gadda,96,59.452845,17.549482,Mälaren,,\n'
-           '2026-09-27T10:07:52.901Z,regnaren1,Filip,Gadda,63,58.99150217888783,15.72027356365297,Östra Vitten,,\n')
-    b, ctx, pg, errs = new_page(p, geo=B3, cfg={}, name='Filip')
-    pg.wait_for_timeout(1200)
-    pg.click('#menuBtn'); pg.click('#menuItemSettings'); pg.wait_for_timeout(200)
-    pg.click('#adminOpenBtn'); pg.wait_for_timeout(200); pg.fill('#pinInput', fakefb.TEST_PIN); pg.press('#pinInput', 'Enter'); pg.wait_for_timeout(500)
-    check('Admin: "Fångster (heatmap)" with a CSV button', pg.is_visible('#adminCatchBtn') and 'Fångster' in pg.inner_text('#adminBody'))
-    pg.set_input_files('#adminCatchFile', files=[{'name': 'fangster.csv', 'mimeType': 'text/csv', 'buffer': CSV.encode('utf-8')}]); pg.wait_for_timeout(1200)
-    st = pg.inner_text('#adminCatchStatus')
-    docs = pg.evaluate('window.__catchDocs')
-    check('read in: Regnaren 2 new, Vågsfjärden 1 new; skipped: 2 in other lakes, 1 without position', 'Regnaren: 2 nya' in st and 'Vågsfjärden: 1 nya' in st and '2 i sjöar som inte finns' in st and '1 utan position' in st, st)
-    rr = json.loads(docs['regnaren']['rows'])
-    check('...stored in catches/regnaren (comma decimals read right, "Gadda" -> gadda)', len(rr) == 2 and abs(rr[0][5] - 58.88651) < 1e-6 and rr[1][3] == 'gadda', rr)
-    pg.set_input_files('#adminCatchFile', files=[{'name': 'fangster.csv', 'mimeType': 'text/csv', 'buffer': CSV.encode('utf-8')}]); pg.wait_for_timeout(1200)
-    st = pg.inner_text('#adminCatchStatus')
-    check('the same file again: nothing new, nothing written twice', 'inga nya' in st and len(pg.evaluate('window.__catchSets')) == 2, (st, pg.evaluate('window.__catchSets')))
-    pg.click('#adminBackBtn'); pg.click('#settingsBackBtn'); pg.wait_for_timeout(300)
-    open_heat(pg)
-    check('...and the heat map shows them (2 in Regnaren)', heat(pg)['n'] == 2, heat(pg))
-    check('no page errors', not errs, errs)
-    b.close()
 print('\n%d/%d passed' % (sum(results), len(results)))
