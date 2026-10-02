@@ -104,9 +104,14 @@
           <div class="settingsRowTitle">Kompassen</div>
           <div class="settingsRowDesc">Kilen som visar vart telefonen pekar (slås på under Filter → Kompass).</div>
         </div>
-        <div class="satRow"><span class="cpLbl">Visa</span>
-          <label><input type="checkbox" id="cpShowWedge" checked> Kil</label>
-          <label style="margin-left:16px;"><input type="checkbox" id="cpShowDial" checked> Cirkel</label></div>
+        <label class="settingsRow" for="cpShowWedge" style="padding-left:0;padding-right:0;">
+          <div class="settingsRowText"><div class="settingsRowTitle">Kil</div></div>
+          <span class="toggle"><input type="checkbox" id="cpShowWedge" checked><span class="toggleTrack"><span class="toggleThumb"></span></span></span>
+        </label>
+        <label class="settingsRow" for="cpShowDial" style="padding-left:0;padding-right:0;">
+          <div class="settingsRowText"><div class="settingsRowTitle">Cirkel</div></div>
+          <span class="toggle"><input type="checkbox" id="cpShowDial" checked><span class="toggleTrack"><span class="toggleThumb"></span></span></span>
+        </label>
         <div class="cpColors" id="cpColors" role="radiogroup" aria-label="Kompassens färg">
           <button type="button" role="radio" data-c="#FFD23F" aria-label="Gul" style="background:#FFD23F"></button>
           <button type="button" role="radio" data-c="#FF7A00" aria-label="Orange" style="background:#FF7A00"></button>
