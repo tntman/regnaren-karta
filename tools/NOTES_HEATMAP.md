@@ -2,8 +2,8 @@
 
 Kod: `src/js/66-catches.js` (datan: format, källa), `src/js/68-heatmap.js` (ritning,
 bottenrutan, fångstrutan, tryck på kartan), `src/css/72-heatmap.css`, HTML i `src/html/30-map-ui.html`
-(`#hmPill`, `#hmPanel`, `#hmCard`), `10-map.html` (`#hmSat`, `#hmLayer`), admin-kortet i
-`20-menu-settings.html`. Test: `tests/test_heatmap.py`.
+(`#hmPill`, `#hmPanel`, `#hmCard`), `10-map.html` (`#hmSat`, `#hmLayer`), Fångstdata i
+`20-menu-settings.html`. Test: `tests/test_heatmap.py`, `tests/test_catchapi.py`.
 
 ## Så fungerar den
 - **Kartlägen** (håll kartlägesknappen): **Heatmap** sist i listan (`.hmOpt`, `data-heat`) – inget kartläge
@@ -34,20 +34,29 @@ bottenrutan, fångstrutan, tryck på kartan), `src/css/72-heatmap.css`, HTML i `
 - Allt blir samma lilla post: `{ id, t, comp, who, sp: 'abborre'|'gadda'|'gos', cm, lat, lon, px, py }`
   (`normCatch` tål olika kolumn-/fältnamn; komma-decimaler; "Gädda"/"Gadda"/"gadda").
   `id` = tid|namn|art|cm (dubbletter känns igen).
-- **Källa nu** (`CATCH_SOURCE`): Firestore `catches/<lake>` = `{ lake, n, rows: '<json [[t, comp, who, sp, cm,
-  lat, lon], ...]>', updatedBy, updatedAt }` – en läsning när heatmapen används (+ kopia i localStorage).
-  Ett dokument rymmer ~14 000 fångster (1 MiB).
-- **CSV-inläsningen är borttagen** (2026-10-02): fångsterna ska komma från en databas online. Firestore-källan ovan ligger kvar tills den nya är inkopplad.
-- **Senare (live-databasen)**: skriv en ny källa med samma `load(lakeId, cb)` som ger poster via
-  `normCatch` och peka `CATCH_SOURCE` på den – ritning och rutor behöver inte ändras.
-
-## Firestore-regel (läggs till i konsolen)
-```
-match /catches/{lake} {
-  allow read: if request.auth != null;
-  allow write: if request.auth != null && request.resource.data.rows is string && request.resource.data.n is number;
-}
-```
+- **Källa: Fiskfiskarnas API** (Jonathan, `https://fiskfiskarna.se/api/`, ingen inloggning för läsning; CORS tillåter
+  `https://tntman.github.io` och `capacitor://localhost` sedan 2026-10-03):
+  - **Historik** = `dashboard.php` → `heatmap` (alla fångster med GPS, ~900 st; svaret ~530 kB med all statistik)
+    + `competitions`. Bara fångster i **denna** sjö (`catchLakeOf`: inom kartan och sjönamnet säger inte en annan
+    sjö – Östra Vitten ligger inom Regnarens kartbild). Tävlingarna på sjön (`catchSameWater`, prefix åt båda
+    håll: "Sibbo"/"Sibbofjärden") sparas med `id, name, date, status`.
+  - **Kopian** i localStorage (`lakeKey('ffmap_catches_v1')`, `{v:2, at, total, comps, rows}`) – fungerar offline
+    och mellan tävlingarna. Gammal Firestore-kopia (utan `v:2`) räknas som ingen kopia.
+  - **När historiken hämtas** (vid start, när appen blir synlig, när heatmapen slås på – `catchHistDue()`):
+    1. ingen kopia; 2. en tävling pågår och kopian > 1 h; 3. en planerad tävling med datum ≤ idag och kopian > 1 h;
+    4. kopian > 1 dygn. Annars används kopian. Mellan tävlingarna = högst en hämtning per dygn per telefon.
+  - **Live** = `tavling.php?action=bootstrap&competitionId=…` → `catches`, bara när kopian säger att en tävling
+    pågår på sjön och sidan syns. Direkt vid start/synlig (om > 60 s sedan), sedan var 5:e min; var 30:e s när
+    heatmapen eller Kartanalys "Från fångsterna" är på. Annullerade: rad med `displayValue:"VOID"` + `voidRef`
+    (= den annullerade fångstens `timestamp`) – båda tas bort. Slås ihop med historiken på `id`.
+    ~100 fångster ≈ 6,6 kB gzip, ≈ 0,5 MB per tävlingsdag och telefon.
+- **Inställningar → Fångstdata** (`data-sec="catch"`, `catchRenderSettings`): senast hämtad, antal i sjön/totalt,
+  kopians storlek, nästa hämtning + varför, tävlingarna på sjön, live (takt, senast), dagens anrop och data
+  (`ffmap_catchnet_v1`), senaste fel, **Hämta nu** (`#ctFetch`).
+- Testerna låtsas vara API:t (`fakefb.FakeApi`, `ctx.api`; riktiga fiskfiskarna.se blockeras). Hämtningen:
+  `tests/test_catchapi.py`.
+- Firestore `catches/<lake>` används inte längre (CSV-inläsningen borttagen 2026-10-02, API:t 2026-10-03) –
+  regeln kan tas bort i konsolen.
 
 ## Genväg överst (2026-10-02)
 `#hmBtn` (färgad karta) ligger vänster om kartknappen: tryck = Heatmap på (panelen öppnas) / av. Tänd (gul ring) = på och visad i Filter. Kartan flyttas/zoomas aldrig när heatmapen slås på (förr: `hmFitIfNone`, borttagen). Filter-knappen visar bara ikon + pil.

@@ -49,3 +49,10 @@
   #hmCardNav[hidden]{display:none;}
   #hmCardNav button{width:34px;height:30px;border-radius:9px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.07);color:var(--offwhite);font-size:18px;line-height:1;cursor:pointer;}
   @media (orientation:landscape) and (max-height:520px){ #hmPanel, #hmCard{left:auto;width:420px;right:0;max-height:88vh;} }
+  /* Inställningar -> Fångstdata (66-catches.js) */
+  .ctInfo{margin:10px 0 12px;font-size:13px;}
+  .ctHead{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin:12px 0 4px;}
+  .ctHead:first-child{margin-top:0;}
+  .ctRow{display:flex;justify-content:space-between;gap:12px;padding:3px 0;color:var(--text-muted);}
+  .ctRow b{font-weight:500;color:var(--offwhite);text-align:right;font-variant-numeric:tabular-nums;}
+  .hmLive{color:#ffb84d;}

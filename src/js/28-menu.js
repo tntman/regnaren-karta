@@ -141,6 +141,7 @@
     var km = act('ltAlarmSeg');
     put('warn', km === 'Av' || !km ? ['Åskvarning av'] : ['Åskvarning ' + km, on('ltAlarmSound') && 'ljud', on('ltAlarmVib') && 'vibration']);
     put('an', ['Tona ner ' + el('anDimOut').textContent]);
+    put('catch', catchSum()); catchRenderSettings();   // (66-catches.js)
     var ob = el('offBtn').textContent, os = el('offStatus').textContent;
     put('off', [ob === 'Ta bort' ? 'Nedladdad' : ob === 'Pausa' ? 'Laddar ner …' : ob === 'Fortsätt' ? 'Pausad' : /kartversion/.test(os) ? 'Ny kartversion – ladda ner igen' : 'Inte nedladdad',
       ob === 'Ladda ner' && !/kartversion/.test(os) && os.split(' · ')[1]]);

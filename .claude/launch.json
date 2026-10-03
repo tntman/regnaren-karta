@@ -1,0 +1,29 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "ffmap-docs",
+      "runtimeExecutable": "py",
+      "runtimeArgs": [
+        "-3",
+        "tests/serve.py",
+        "8899",
+        "docs"
+      ],
+      "port": 8899
+    },
+    {
+      "name": "forslag",
+      "runtimeExecutable": "py",
+      "runtimeArgs": [
+        "-3",
+        "-m",
+        "http.server",
+        "8898",
+        "--directory",
+        "C:/Users/Filip/AppData/Local/Temp/claude/E--github-regnaren-karta/69946211-82e0-49f2-a1aa-65c59ef8e955/scratchpad"
+      ],
+      "port": 8898
+    }
+  ]
+}

@@ -72,7 +72,7 @@
       if (r.probe && typeof r.probe.x === 'number'){ setProbe(r.probe); probeEl.classList.remove('drop'); }
       if (r.an) showAnPanel(true);
       if (r.trk) trkShowPanel(true);
-      if (r.hm){ hmSetOn(true, r.hm.panel, true); if (r.hm.card) hmPendingCard = r.hm.card; }
+      if (r.hm){ if (r.hm.card) hmPendingCard = r.hm.card; hmSetOn(true, r.hm.panel, true); }   // (the card first: the copy may be there at once)
       if (r.sheet && r.sheet.id){
         pendingSheetRestore = { s: r.sheet, until: Date.now() + 10000 };
         tryRestoreSheet();

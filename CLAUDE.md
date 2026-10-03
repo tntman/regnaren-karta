@@ -58,7 +58,7 @@ All text i appen är på svenska. Svara Filip på svenska, kort och tydligt.
 | Kartanalys, lodet, rutten, Åk hit, platsens ruta | `tools/NOTES_ANALYS.md` |
 | Snabbmeddelanden | `tools/NOTES_MEDDELANDEN.md` |
 | Väder, vind och lä, blixtar, åskvarning | `tools/NOTES_VADER.md` |
-| Heatmap (fångster: data, CSV-inläsning, framtida live-källa) | `tools/NOTES_HEATMAP.md` |
+| Heatmap (fångster: Fiskfiskarnas API, när det hämtas, Fångstdata) | `tools/NOTES_HEATMAP.md` |
 | Spår (sparas för evigt i Firestore `tracks`), Spår-menyn, stopp som ringar, Fog of war | `tools/NOTES_SPAR.md` |
 | Båtikoner (valbar ikon för din båt – idé, förslagsblad, ej byggt) | `tools/boaticons.md` |
 
@@ -118,7 +118,7 @@ Uppdatera rätt anteckning när något ändras.
   panorerar kartan (`mapPointerDown(e, true)`: ingen långtryckning/lod); bara ett tryck utan att
   dra öppnar den (`mapDraggedJustNow()` i deras click).
 - **Inställningar i avsnitt** (`<details class="setSec">`): namnet överst, sedan Kartan, Båten,
-  Varningar, Kartanalys, Offline, Avancerat. Stängt = rubrik + en rad med vad som är valt (`setSums()`,
+  Varningar, Kartanalys, Fångstdata, Offline, Avancerat. Stängt = rubrik + en rad med vad som är valt (`setSums()`,
   `js/28-menu.js`, läser av kontrollerna). Vilka som är öppna: `ffmap_settings_open_v1`; fakefb
   öppnar alla i testerna. "Åskvarning av"-skylten öppnar Varningar (`openSettingsSec('warn')`).
 - **Skyltar under väderchipet**: `#hmPill` (Heatmap) och `#anPill` (Kartanalys, när något läge är
@@ -128,8 +128,8 @@ Uppdatera rätt anteckning när något ändras.
 - **Hjälp** (menyn → Hjälp; öppnas själv efter första namnvalet): "Nytt i appen" = `HELP_NEWS`
   (`js/30-help.js`), animeringar av `tools/help_anim.py` – allt i `tools/HJALP.md`.
 - **Heatmap** (Kartlägen → Heatmap sist): fångster från tävlingarna, fyra stilar, egen bottenruta, inte
-  samtidigt som Kartanalys, "Heatmap"-skylt under väder. Data i Firestore `catches/<lake>` (admin läser in
-  CSV); byggd så att källan kan bytas mot en live-databas. Allt i `tools/NOTES_HEATMAP.md`.
+  samtidigt som Kartanalys, "Heatmap"-skylt under väder. Data från Fiskfiskarnas API (historik +
+  live under tävling, kopia i telefonen, Inställningar → Fångstdata). Allt i `tools/NOTES_HEATMAP.md`.
 - **Pushnotiser**: inte gjort (kräver server/Firebase-betalplan).
 
 ## Firestore-regler (aktuella, i Firebase-konsolen)
@@ -137,7 +137,7 @@ waypoints: read auth; create kräver uid/name(≤60)/lat/lon; update/delete auth
 positions: read auth; write kräver lat, lon (number) och name (string).
 usage: read auth; write kräver day (string) och r/w/d (number).
 config/{lake}: read auth; write kräver posIntervalS i [10,20,30,60].
-catches/{lake}: read auth; write kräver rows (string) och n (number) – heatmapens fångster (NOTES_HEATMAP.md).
+catches/{lake}: används inte längre (fångsterna kommer från Fiskfiskarnas API) – regeln kan tas bort.
 tracks/{id}: read auth; write kräver lake/uid/day/pts (string), n (number), pts ≤ 900 000 tecken – spåren (NOTES_SPAR.md). **Regeln ska läggas till i konsolen** (Filip) innan spår sparas i databasen.
 trackusers/{lake}: read/write auth – register över vilka som har spår på sjön (`{users:{<safeUid>:{u,n}}}`), fyller Spår-menyns rullgardin. Filip har lagt regeln i konsolen.
 

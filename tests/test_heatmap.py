@@ -1,8 +1,8 @@
 # Heatmap (fångster): "Heatmap" last in the map-style list -> a bottom panel (like Kartanalys):
 # Värme / Per art / Rutor / Prickar, species + competition filters, the map toned down; a tap on
 # a catch opens it (who, when, depth, place; ‹ ›; Åk hit, Liknande); "Heatmap" pill under the
-# weather chip; not together with Kartanalys; kept through a rotation, off after a restart;
-# the admin reads catches from a CSV file into Firestore catches/<lake> (no duplicates).
+# weather chip; not together with Kartanalys; kept through a rotation, off after a restart.
+# (The catches come from Fiskfiskarnas API -- made up by fakefb; the fetching: test_catchapi.py.)
 from playwright.sync_api import sync_playwright
 import fakefb, json, math
 from fakefb import new_page
@@ -20,7 +20,7 @@ for i in range(5):    # gädda at B1
     ROWS.append([ms(26, 11, i), 'regnaren1', ['Erika', 'Magnus', 'Henrik', 'Sunbaum', 'Filip'][i], 'gadda', [74, 70, 75, 69, 52][i], B1[0] + i * 0.00003, B1[1]])
 ROWS.append([ms(25, 14, 0), 'regnaren1', 'Pia', 'gos', 60, B5[0], B5[1]])
 ROWS.append([ms(20, 10, 0), 'fiskfiskOpen', 'Olle', 'gadda', 90, B5[0] + 0.0003, B5[1] + 0.0004])
-CATCHES = {'regnaren': {'rows': json.dumps(ROWS), 'n': len(ROWS)}}
+CATCHES = {'heatmap': [fakefb.api_row(*r) for r in ROWS]}
 
 def heat(pg): return pg.evaluate('window.__ffHeat()')
 def open_heat(pg):
@@ -32,18 +32,18 @@ def coloured(pg):
       for (var i = 0; i < d.length; i += 4) if (d[i + 3] > 150 && (d[i] > 150 || d[i + 1] > 150)) n++; return n; }""")
 
 with sync_playwright() as p:
-    b, ctx, pg, errs = new_page(p, geo=B3, cfg={'catches': CATCHES}, name='Filip')
+    b, ctx, pg, errs = new_page(p, geo=B3, cfg={'api': CATCHES}, name='Filip')
     pg.wait_for_timeout(1500)
     # ---- the map-style list: Heatmap last ----
     bb = pg.locator('#mapTypeBtn').bounding_box()
     pg.mouse.move(bb['x'] + 20, bb['y'] + 20); pg.mouse.down(); pg.wait_for_timeout(700); pg.mouse.up(); pg.wait_for_timeout(300)
     opts = pg.eval_on_selector_all('#mapTypePop .styleOpt', 'e => e.map(x => x.textContent)')
     check('hold the map-style button: "Heatmap" last in the list, "opens a menu"', opts and 'Heatmap' in opts[-1] and 'meny' in opts[-1], opts[-2:])
-    check('...no catches fetched before it is used', pg.evaluate('window.__catchGets') == 0)
+    check('...the catches fetched once at the start (no copy on the phone yet)', ctx.api.n('dashboard') == 1, ctx.api.hits)
     pg.click('#mapTypePop .hmOpt'); pg.wait_for_timeout(1000)
     h = heat(pg)
     check('tap it: the heat map is on, its panel open, the map style unchanged', h['on'] and h['panel'] and not pg.is_visible('#mapTypePop'), h)
-    check('...the catches fetched once (1 read)', pg.evaluate('window.__catchGets') == 1 and h['n'] == len(ROWS), (pg.evaluate('window.__catchGets'), h['n']))
+    check('...all of them shown, not fetched again (the copy is fresh)', ctx.api.n('dashboard') == 1 and h['n'] == len(ROWS), (ctx.api.hits, h['n']))
     check('...the map toned down + greyed like Kartanalys', pg.is_visible('#hmLayer') and pg.evaluate("getComputedStyle(document.getElementById('hmSat')).mixBlendMode") == 'saturation')
     check('...Värme: coloured heat on the map', coloured(pg) > 200, coloured(pg))
     res = pg.inner_text('#hmResult')
@@ -185,7 +185,7 @@ with sync_playwright() as p:
     b.close()
 
     # ---- rotation keeps it, a restart turns it off ----
-    b, ctx, pg, errs = new_page(p, geo=B3, cfg={'catches': CATCHES}, name='Filip')
+    b, ctx, pg, errs = new_page(p, geo=B3, cfg={'api': CATCHES}, name='Filip')
     ctx.add_init_script("Object.defineProperty(navigator, 'standalone', { value: true, configurable: true });")
     pg.reload(); pg.wait_for_timeout(1500)
     open_heat(pg)

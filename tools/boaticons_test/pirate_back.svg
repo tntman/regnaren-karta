@@ -1,0 +1,189 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Piratskeppet snett bakifrån-uppifrån (kamera bakom aktern, ~60° ner), nosen uppåt. Referensbild till Gemini. -->
+  <defs>
+    <linearGradient id="side" x1="0" x2="1">
+      <stop offset="0" stop-color="#9a5f2c"/><stop offset=".5" stop-color="#7a4520"/><stop offset="1" stop-color="#4e2a10"/>
+    </linearGradient>
+    <linearGradient id="deck" x1="0" x2="1">
+      <stop offset="0" stop-color="#c48a4e"/><stop offset=".45" stop-color="#ddab70"/><stop offset="1" stop-color="#a26a36"/>
+    </linearGradient>
+    <linearGradient id="qdeck" x1="0" x2="1">
+      <stop offset="0" stop-color="#cf9659"/><stop offset=".45" stop-color="#e6b77c"/><stop offset="1" stop-color="#ab733d"/>
+    </linearGradient>
+    <linearGradient id="transom" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#a86a33"/><stop offset="1" stop-color="#6a3a16"/>
+    </linearGradient>
+    <linearGradient id="sail" x1="0" x2="1">
+      <stop offset="0" stop-color="#fbf2da"/><stop offset=".5" stop-color="#e3d2a6"/><stop offset="1" stop-color="#c8b383"/>
+    </linearGradient>
+    <linearGradient id="black" x1="0" x2="1">
+      <stop offset="0" stop-color="#4a4a4a"/><stop offset=".5" stop-color="#262626"/><stop offset="1" stop-color="#121212"/>
+    </linearGradient>
+    <linearGradient id="spar" x1="0" x2="1">
+      <stop offset="0" stop-color="#d0924f"/><stop offset=".5" stop-color="#9a5f2c"/><stop offset="1" stop-color="#5a3416"/>
+    </linearGradient>
+    <linearGradient id="sparH" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#d0924f"/><stop offset=".55" stop-color="#8a5326"/><stop offset="1" stop-color="#5a3416"/>
+    </linearGradient>
+    <linearGradient id="iron" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7a7e82"/><stop offset=".45" stop-color="#3a3d40"/><stop offset="1" stop-color="#1c1d1f"/>
+    </linearGradient>
+    <radialGradient id="glass" cx=".4" cy=".35"><stop offset="0" stop-color="#ffe9a8"/><stop offset="1" stop-color="#c8862e"/></radialGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="9"/></filter>
+    <filter id="grain" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency=".9 .03" numOctaves="2" seed="4"/>
+      <feColorMatrix values="0 0 0 0 .25  0 0 0 0 .13  0 0 0 0 .04  0 0 0 .55 0"/>
+    </filter>
+    <filter id="cloth" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency=".05 .4" numOctaves="2" seed="7"/>
+      <feColorMatrix values="0 0 0 0 .45  0 0 0 0 .38  0 0 0 0 .22  0 0 0 .3 0"/>
+    </filter>
+
+    <!-- relingens överkant (däcket sett snett ovanifrån) -->
+    <path id="D" d="M512 145 C446 200 378 380 376 580 C374 700 390 785 400 830 L624 830 C634 785 650 700 648 580 C646 380 578 200 512 145 Z"/>
+    <path id="Q" d="M381 690 Q512 676 643 690 C646 750 638 790 628 808 L396 808 C386 790 378 750 381 690 Z"/>
+    <clipPath id="dClip"><use href="#D"/></clipPath>
+    <clipPath id="qClip"><use href="#Q"/></clipPath>
+
+    <g id="cannonL">
+      <rect x="-52" y="-11" width="60" height="22" rx="7" fill="url(#iron)" stroke="#0e0e0f" stroke-width="4"/>
+      <rect x="-58" y="-14" width="12" height="28" rx="5" fill="url(#iron)" stroke="#0e0e0f" stroke-width="4"/>
+    </g>
+    <g id="skull">
+      <g stroke="#f1ece0" stroke-width="11" stroke-linecap="round"><path d="M-36 4L36 40M-36 40L36 4"/></g>
+      <g fill="#f1ece0">
+        <circle cx="-38" cy="1" r="8"/><circle cx="-38" cy="43" r="8"/><circle cx="38" cy="1" r="8"/><circle cx="38" cy="43" r="8"/>
+        <circle cx="0" cy="-12" r="27"/><rect x="-15" y="4" width="30" height="20" rx="5"/>
+      </g>
+      <g fill="#1d1d1d">
+        <ellipse cx="-10" cy="-12" rx="7.5" ry="8.5"/><ellipse cx="10" cy="-12" rx="7.5" ry="8.5"/>
+        <path d="M0 -1l-4 7h8z"/><path d="M-7 15v9M0 15v9M7 15v9" stroke="#1d1d1d" stroke-width="3"/>
+      </g>
+    </g>
+  </defs>
+
+  <!-- skugga -->
+  <use href="#D" fill="#000" opacity=".45" filter="url(#soft)" transform="translate(30 95)"/>
+
+  <!-- bogspröt -->
+  <path d="M512 190 L512 72" stroke="#3e220c" stroke-width="22" stroke-linecap="round"/>
+  <path d="M512 190 L512 72" stroke="url(#spar)" stroke-width="13" stroke-linecap="round"/>
+
+  <!-- skrovets sidor: relingen svept nedåt (syns lite på båda sidor + aktern) -->
+  <g fill="url(#side)" stroke="#3e220c" stroke-width="8">
+    <use href="#D" transform="translate(512 70) scale(.93 1) translate(-512 0)"/>
+  </g>
+  <g fill="url(#side)">
+    <use href="#D" transform="translate(512 60) scale(.945 1) translate(-512 0)"/>
+    <use href="#D" transform="translate(512 45) scale(.96 1) translate(-512 0)"/>
+    <use href="#D" transform="translate(512 30) scale(.975 1) translate(-512 0)"/>
+    <use href="#D" transform="translate(512 15) scale(.99 1) translate(-512 0)"/>
+  </g>
+  <!-- plankskarvar på sidan -->
+  <g fill="none" stroke="#3e220c" stroke-width="3" opacity=".55">
+    <use href="#D" transform="translate(512 25) scale(.985 1) translate(-512 0)"/>
+    <use href="#D" transform="translate(512 47) scale(.958 1) translate(-512 0)"/>
+  </g>
+
+  <!-- kanoner, 4 per sida -->
+  <use href="#cannonL" x="368" y="490"/><use href="#cannonL" x="364" y="560"/><use href="#cannonL" x="364" y="630"/><use href="#cannonL" x="368" y="700"/>
+  <g transform="translate(1024 0) scale(-1 1)">
+    <use href="#cannonL" x="368" y="490"/><use href="#cannonL" x="364" y="560"/><use href="#cannonL" x="364" y="630"/><use href="#cannonL" x="368" y="700"/>
+  </g>
+
+  <!-- akterspegeln (det man ser rakt bakifrån) -->
+  <path d="M396 808 L628 808 L616 900 Q512 912 408 900 Z" fill="url(#transom)" stroke="#3e220c" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M400 836H624M404 872H620" stroke="#3e220c" stroke-width="3" opacity=".6"/>
+  <g stroke="#3e220c" stroke-width="5">
+    <rect x="428" y="826" width="34" height="40" rx="6" fill="url(#glass)"/><rect x="474" y="826" width="34" height="40" rx="6" fill="url(#glass)"/>
+    <rect x="516" y="826" width="34" height="40" rx="6" fill="url(#glass)"/><rect x="562" y="826" width="34" height="40" rx="6" fill="url(#glass)"/>
+  </g>
+  <rect x="502" y="890" width="20" height="44" rx="6" fill="#5a3416" stroke="#3e220c" stroke-width="5"/>
+
+  <!-- däck -->
+  <use href="#D" fill="url(#deck)" stroke="#3e220c" stroke-width="8" stroke-linejoin="round"/>
+  <g clip-path="url(#dClip)">
+    <rect x="360" y="230" width="300" height="610" filter="url(#grain)" opacity=".45"/>
+    <path d="M434 200V840M460 200V840M486 200V840M512 200V840M538 200V840M564 200V840M590 200V840M408 200V840M616 200V840" stroke="#6e4620" stroke-width="3" opacity=".7"/>
+    <use href="#D" fill="none" stroke="#2a1606" stroke-width="34" opacity=".35" filter="url(#soft)"/>
+  </g>
+  <use href="#D" fill="none" stroke="#f0c08a" stroke-width="5" opacity=".55" transform="translate(512 0) scale(.975 .99) translate(-512 4)"/>
+  <!-- lucka -->
+  <rect x="482" y="600" width="60" height="44" rx="6" fill="#7a4a22" stroke="#3e220c" stroke-width="5"/>
+  <path d="M497 600V644M512 600V644M527 600V644" stroke="#4a2a10" stroke-width="3"/>
+
+  <!-- upphöjt akterdäck med reling -->
+  <path d="M381 690 Q512 676 643 690 L643 712 Q512 698 381 712 Z" fill="#6a3a16"/>
+  <use href="#Q" fill="url(#qdeck)" stroke="#3e220c" stroke-width="7"/>
+  <g clip-path="url(#qClip)">
+    <rect x="370" y="670" width="290" height="150" filter="url(#grain)" opacity=".4"/>
+    <path d="M434 670V820M460 670V820M486 670V820M512 670V820M538 670V820M564 670V820M590 670V820" stroke="#6e4620" stroke-width="3" opacity=".65"/>
+  </g>
+  <g stroke="#3e220c" stroke-width="5" fill="none" stroke-linecap="round">
+    <path d="M396 806V786M432 806V786M470 806V786M512 806V786M554 806V786M592 806V786M628 806V786"/>
+    <path d="M394 786 L630 786" stroke-width="10"/>
+  </g>
+  <path d="M394 786 L630 786" stroke="#c88b4a" stroke-width="5" stroke-linecap="round"/>
+  <!-- akterlykta -->
+  <path d="M512 786V760" stroke="#3e220c" stroke-width="6"/>
+  <rect x="500" y="738" width="24" height="26" rx="5" fill="url(#glass)" stroke="#3e220c" stroke-width="5"/>
+  <!-- ratten -->
+  <ellipse cx="512" cy="712" rx="24" ry="14" fill="none" stroke="#5a3416" stroke-width="7"/>
+  <path d="M488 712H536M512 698V726" stroke="#5a3416" stroke-width="5"/>
+
+  <!-- skuggor från seglen på däck -->
+  <g fill="#000" opacity=".3" filter="url(#soft)">
+    <rect x="350" y="352" width="320" height="60" rx="20" transform="translate(24 40)"/>
+    <rect x="335" y="500" width="360" height="70" rx="20" transform="translate(24 40)"/>
+  </g>
+
+  <!-- vant -->
+  <g stroke="#ecdcb0" stroke-width="3.5" fill="none" opacity=".8" stroke-linecap="round">
+    <path d="M512 250L388 470M512 250L636 470M512 250L512 80"/>
+    <path d="M512 425L380 650M512 425L644 650"/>
+    <path d="M512 605L390 690M512 605L634 690"/>
+  </g>
+
+  <g transform="translate(0 22)">
+  <!-- FÖRMAST -->
+  <path d="M512 395 L512 226" stroke="#3e220c" stroke-width="20" stroke-linecap="round"/>
+  <path d="M512 395 L512 226" stroke="url(#spar)" stroke-width="12" stroke-linecap="round"/>
+  <!-- svart undersegel med dödskalle -->
+  <path d="M362 310 L662 310 L672 372 Q512 400 352 372 Z" fill="url(#black)" stroke="#000" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M362 310 L662 310 L672 372 Q512 400 352 372 Z" filter="url(#cloth)" opacity=".4"/>
+  <use href="#skull" transform="translate(512 342) scale(.62)"/>
+  <rect x="350" y="299" width="324" height="20" rx="10" fill="url(#sparH)" stroke="#3e220c" stroke-width="5"/>
+  <!-- märssegel -->
+  <path d="M412 254 L612 254 L618 292 Q512 312 406 292 Z" fill="url(#sail)" stroke="#9e8a58" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M412 254 L612 254 L618 292 Q512 312 406 292 Z" filter="url(#cloth)" opacity=".7"/>
+  <rect x="400" y="244" width="224" height="18" rx="9" fill="url(#sparH)" stroke="#3e220c" stroke-width="5"/>
+  <circle cx="512" cy="228" r="10" fill="#c58845" stroke="#3e220c" stroke-width="5"/>
+
+  <!-- piratflagga i förtoppen, fladdrar framåt i medvinden -->
+  <path d="M512 228 L512 150" stroke="#3e220c" stroke-width="9" stroke-linecap="round"/>
+  <path d="M516 152 Q556 140 590 152 Q626 164 660 148 L656 206 Q624 222 590 210 Q556 198 516 210 Z" fill="url(#black)" stroke="#000" stroke-width="4" stroke-linejoin="round"/>
+  <use href="#skull" transform="translate(588 176) scale(.4)"/>
+  </g>
+  <!-- STORMAST -->
+  <path d="M512 580 L512 422" stroke="#3e220c" stroke-width="22" stroke-linecap="round"/>
+  <path d="M512 580 L512 422" stroke="url(#spar)" stroke-width="13" stroke-linecap="round"/>
+  <!-- undersegel (sett bakifrån, buktar framåt) -->
+  <path d="M338 490 L686 490 L696 548 Q512 578 328 548 Z" fill="url(#sail)" stroke="#9e8a58" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M338 490 L686 490 L696 548 Q512 578 328 548 Z" filter="url(#cloth)" opacity=".7"/>
+  <path d="M420 492V560M512 492V566M604 492V560" stroke="#b6a272" stroke-width="3" opacity=".8"/>
+  <rect x="326" y="478" width="372" height="22" rx="11" fill="url(#sparH)" stroke="#3e220c" stroke-width="5"/>
+  <!-- märssegel -->
+  <path d="M392 428 L632 428 L640 470 Q512 492 384 470 Z" fill="url(#sail)" stroke="#9e8a58" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M392 428 L632 428 L640 470 Q512 492 384 470 Z" filter="url(#cloth)" opacity=".7"/>
+  <path d="M470 430V480M554 430V480" stroke="#b6a272" stroke-width="3" opacity=".8"/>
+  <rect x="380" y="417" width="264" height="20" rx="10" fill="url(#sparH)" stroke="#3e220c" stroke-width="5"/>
+  
+
+  <!-- MESAN: latinsegel -->
+  <path d="M548 592 Q575 650 560 706 L498 714 Q540 670 548 592 Z" fill="url(#sail)" stroke="#9e8a58" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M512 728 L512 608" stroke="#3e220c" stroke-width="16" stroke-linecap="round"/>
+  <path d="M512 728 L512 608" stroke="url(#spar)" stroke-width="9" stroke-linecap="round"/>
+  <path d="M488 722 L552 588" stroke="#3e220c" stroke-width="12" stroke-linecap="round"/>
+  <path d="M488 722 L552 588" stroke="url(#spar)" stroke-width="6" stroke-linecap="round"/>
+
+</svg>

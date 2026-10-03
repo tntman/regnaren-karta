@@ -20,6 +20,8 @@ def block_real_firebase(ctx):
     # lightning (FMI): never the real service -- a test that needs strikes routes it
     # itself (a later route wins)
     ctx.route('**/opendata.fmi.fi/**', lambda r: r.abort())
+    # Fiskfiskarnas API (the heat map's catches): never the real one -- new_page serves a fake (FakeApi)
+    ctx.route('**/fiskfiskarna.se/**', lambda r: r.abort())
     return ctx
 # The real admin code is never written in the tests. Instead the test browser
 # treats TEST_PIN as correct: SHA-256 of it is answered with the hash that is in
@@ -50,7 +52,7 @@ if not getattr(_Browser, '_ffGuarded', False):
         if help_seen:   # Hjälp opens by itself the first time -- tests start as if it's been read (test_help: help_seen=False)
             ctx.add_init_script("try { if (!localStorage.getItem('ffmap_help_seen_v1')) localStorage.setItem('ffmap_help_seen_v1', '999'); } catch(e){}")
         # Inställningar in sections: the tests start with them all open (test_extras checks closing / opening)
-        ctx.add_init_script("try { if (!localStorage.getItem('ffmap_settings_open_v1')) localStorage.setItem('ffmap_settings_open_v1', '[\"map\", \"boat\", \"warn\", \"an\", \"off\", \"adv\"]'); } catch(e){}")
+        ctx.add_init_script("try { if (!localStorage.getItem('ffmap_settings_open_v1')) localStorage.setItem('ffmap_settings_open_v1', '[\"map\", \"boat\", \"warn\", \"an\", \"catch\", \"off\", \"adv\"]'); } catch(e){}")
         return ctx
     _Browser.new_context = _guarded_new_context
     _Browser._ffGuarded = True
@@ -160,12 +162,6 @@ FAKE_FIREBASE_JS = r"""
       if (window.__cfgDenied){ var e = new Error('denied'); e.code = 'permission-denied'; return Promise.reject(e); }
       window.__setCfg(Object.assign({}, window.__cfgDoc || {}, { posIntervalS: d.posIntervalS })); return Promise.resolve();
     } }; } };
-  // catches/<lake> (the heat map's catches): cfg.catches = { regnaren: { rows: '<json>', n: 88 }, ... }
-  window.__catchDocs = JSON.parse(JSON.stringify(cfg.catches || {})); window.__catchSets = []; window.__catchGets = 0;
-  var catchesCol = { doc: function(id){ return {
-    get: function(){ window.__catchGets++; var d = window.__catchDocs[id]; return Promise.resolve({ exists: !!d, data: function(){ return d; }, metadata: { fromCache: false } }); },
-    set: function(d){ window.__catchSets.push({ id: id, n: d.n }); window.__catchDocs[id] = JSON.parse(JSON.stringify(Object.assign({}, d, { updatedAt: null }))); return Promise.resolve(); }
-  }; } };
   // tracks (the Spår, one doc per person + lake + day): cfg.tracks = { '<docId>': {lake, uid, name, day, pts, st, n, lakeDay, ownKey}, ... }
   window.__trackDocs = JSON.parse(JSON.stringify(cfg.tracks || {})); window.__trackSets = []; window.__trackGets = [];
   function tracksQuery(conds){ return {
@@ -198,7 +194,7 @@ FAKE_FIREBASE_JS = r"""
   var fake = {
     initializeApp: function(){ return {}; },
     auth: function(){ return { signInAnonymously: function(){ return Promise.resolve(); }, onAuthStateChanged: function(cb){ cb({ uid:'anon' }); } }; },
-    firestore: function(){ return { collection: function(n){ return n === 'positions' ? posCol : (n === 'usage' ? usageCol : (n === 'config' ? configCol : (n === 'catches' ? catchesCol : (n === 'tracks' ? tracksCol : (n === 'trackusers' ? trackUsersCol : wpCol))))); }, enablePersistence: function(){ return Promise.resolve(); } }; }
+    firestore: function(){ return { collection: function(n){ return n === 'positions' ? posCol : (n === 'usage' ? usageCol : (n === 'config' ? configCol : (n === 'tracks' ? tracksCol : (n === 'trackusers' ? trackUsersCol : wpCol)))); }, enablePersistence: function(){ return Promise.resolve(); } }; }
   };
   fake.firestore.FieldValue = { serverTimestamp: function(){ return {}; } };
   fake.firestore.Timestamp = { fromMillis: function(ms){ return { __epoch: true, ms: ms }; } };
@@ -207,6 +203,30 @@ FAKE_FIREBASE_JS = r"""
   Object.defineProperty(window, 'firebase', { value: fake, writable: false, configurable: false });
 })();
 """
+
+# Fiskfiskarnas API, made up: ctx.api (tests change it while they run).
+#   heatmap = dashboard.php's heatmap rows, competitions = its competitions,
+#   live = { competitionId: bootstrap catches }, down = True -> every call fails; hits = the URLs asked for.
+class FakeApi:
+    def __init__(self, cfg):
+        self.heatmap = list(cfg.get('heatmap', [])); self.competitions = list(cfg.get('competitions', []))
+        self.live = dict(cfg.get('live', {})); self.down = False; self.hits = []
+    def n(self, what): return len([u for u in self.hits if what in u])
+    def handle(self, route):
+        import json
+        url = route.request.url; self.hits.append(url)
+        if self.down: return route.abort()
+        if 'dashboard.php' in url: body = {'heatmap': self.heatmap, 'competitions': self.competitions}
+        elif 'action=bootstrap' in url:
+            cid = __import__('urllib.parse').parse.unquote(url.split('competitionId=')[1].split('&')[0])
+            body = {'ok': cid in self.live, 'catches': self.live.get(cid, []), 'participants': []} if cid in self.live else {'ok': False, 'error': 'okänd tävling'}
+        else: return route.abort()
+        route.fulfill(status=200, content_type='application/json', headers={'Access-Control-Allow-Origin': '*'}, body=json.dumps(body))
+def api_row(t_ms, comp, who, sp, cm, lat, lon, lake='Regnaren'):
+    # one row like dashboard.php's heatmap (and bootstrap's catches)
+    import datetime
+    ts = datetime.datetime.utcfromtimestamp(t_ms / 1000.0).strftime('%Y-%m-%dT%H:%M:%S.') + '%03dZ' % (t_ms % 1000)
+    return {'timestamp': ts, 'competitionId': comp, 'name': who, 'species': {'gadda': 'Gadda', 'abborre': 'Abborre', 'gos': 'Gos'}.get(sp, sp), 'cm': cm, 'lat': lat, 'lng': lon, 'lake': lake}
 
 def new_page(p, geo=None, perms=True, cfg=None, name='Testare', wakelock_stub=False, sw=False, help_seen=True):
     import json
@@ -230,6 +250,8 @@ def new_page(p, geo=None, perms=True, cfg=None, name='Testare', wakelock_stub=Fa
           } }, configurable: true });
         """)
     ctx.add_init_script(FAKE_FIREBASE_JS)
+    ctx.api = FakeApi((cfg or {}).get('api', {}))
+    ctx.route('**/fiskfiskarna.se/**', ctx.api.handle)   # (a later route wins over the block above)
     pg = ctx.new_page()
     errs = []
     pg.on('pageerror', lambda e: errs.append(str(e)))

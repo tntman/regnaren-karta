@@ -29,7 +29,8 @@ with sync_playwright() as p:
     t0 = calendar.timegm((2026, 9, 26, 8, 0, 0)) * 1000
     rows = [[t0 + i * 60000, 'regnaren1', 'P%d' % i, 'gadda', 60 + i, la, lo] for i, (la, lo) in enumerate(sh)]
     rows += [[t0 + (50 + i) * 60000, 'regnaren1', 'Q%d' % i, 'abborre', 30, la, lo] for i, (la, lo) in enumerate(pts['deep'][:3])]
-    pg.evaluate("(d) => { window.__catchDocs.regnaren = d; }", {'rows': json.dumps(rows), 'n': len(rows)})
+    ctx.api.heatmap = [fakefb.api_row(*r) for r in rows]
+    pg.evaluate("document.getElementById('ctFetch').click()"); pg.wait_for_timeout(600)   # (Inställningar -> Fångstdata -> Hämta nu)
     check('made-up catches: 25 gädda at 2-3 m', len(sh) == 25, len(sh))
     pg.click('#anBtn'); pg.wait_for_timeout(1500)
     pg.click('#anCatSeg button[data-cat="data"]'); pg.wait_for_timeout(300)
