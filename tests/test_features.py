@@ -57,9 +57,12 @@ with sync_playwright() as p:
     check('Djup off -> depth hidden, knots still shown', not pg.is_visible('#depthVal') and pg.is_visible('#speedVal'))
     pg.click('#menuBtn'); pg.click('#menuItemSettings'); pg.wait_for_timeout(250); pg.click('label:has(#toggleDepth) .toggle'); pg.click('#settingsBackBtn'); pg.wait_for_timeout(300)
     # ---- track ----
-    lat, lon = la2, lo2
+    lat, lon = la2, lo2   # drive a way that stays on the water (Spår are only recorded there)
+    dirs = [(n, e) for n, e in ((1, 0), (-1, 0), (0, 1), (0, -1), (.7, .7), (.7, -.7), (-.7, .7), (-.7, -.7))
+            if all(pg.evaluate('a => __ffGeo.lake(a[0], a[1])', [lat + n * 10 * i / 111320.0, lon + e * 10 * i / 64000.0]) for i in range(1, 21))]
+    dN, dE = dirs[0]
     for i in range(14):
-        lat += 10 / 111320.0; ctx.set_geolocation({'latitude': lat, 'longitude': lon, 'accuracy': 5}); pg.wait_for_timeout(700)
+        lat += dN * 10 / 111320.0; lon += dE * 10 / 64000.0; ctx.set_geolocation({'latitude': lat, 'longitude': lon, 'accuracy': 5}); pg.wait_for_timeout(700)
     d = pg.get_attribute('#trackLayer .trkLine', 'd') or ''
     check('track drawn while driving', d.count('L') >= 8, d[:60])
     pg.screenshot(path='feat_track.png')
@@ -74,7 +77,7 @@ with sync_playwright() as p:
     pg.on('dialog', lambda dlg: dlg.accept())
     check("no 'Börja om' any more: the track cannot be wiped", pg.evaluate("!document.getElementById('trackClearBtn')"))
     for i in range(5):
-        lat += 10 / 111320.0; ctx.set_geolocation({'latitude': lat, 'longitude': lon, 'accuracy': 5}); pg.wait_for_timeout(700)
+        lat += dN * 10 / 111320.0; lon += dE * 10 / 64000.0; ctx.set_geolocation({'latitude': lat, 'longitude': lon, 'accuracy': 5}); pg.wait_for_timeout(700)
     d3 = pg.get_attribute('#trackLayer .trkLine', 'd') or ''
     check('...and keeps recording (the line just grows)', d3.startswith('M') and d3.count('L') > d2.count('L'), (d2.count('L'), d3.count('L')))
     # ---- offline start (service worker) ----

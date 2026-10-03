@@ -5,6 +5,10 @@ Koden: `src/js/46-gps-track.js` (data, historik, Firestore, ritning), `47-track-
 
 ## Spåret
 - **Dagens spår** `{day, segs:[[[lat,lon,ms],...]]}` i localStorage (`ffmap_track_v1`, per sjö via `lakeKey`).
+  **Bara på vattnet** (2026-10-03): en punkt sparas bara där djupdatan säger sjö (`isLakeAtImgPx`, inte land 255);
+  tills djupdatan laddats och i Demo Mode räcker "nära sjön" (`isNearLake`). Förr spelades land inom kartan in
+  (promenader) och Demo Modes punkter hamnade i det riktiga spåret före 826421c – Filips 2026-10-02 städas bort
+  i hans telefon (engångsrader i `46-gps-track.js`, kan tas bort senare).
   Ett spårdygn går 06:00–06:00 (`dayStr()`, dag som `YYYY-MM-DD`). Ny segment efter hopp > 250 m eller paus > 10 min,
   punkter närmare än 8 m sparas inte, högst 6 000 punkter/dag.
 - **Demo Mode:** egen tillfällig `demoTrack` (visas på skärmen så man kan testa Spår och Fog of war, ligger i

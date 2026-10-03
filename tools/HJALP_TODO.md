@@ -30,6 +30,7 @@ i avsnitt, Ångra, åskvarningen alltid + "dragit förbi", solnedgången, Täckn
 - [ ] 2026-10-02 – Kartdata-lägena har ingen egen färg längre: området är bara kartan under, resten grått (kombinerat = en gemensam mask). Hjälp: Kartanalys (texter som nämner färgade områden, t.ex. "lyser rosa/gult/grönt") + animering `analys`. Nyhet: "Kartanalys visar den vanliga kartan i det som stämmer – inga färger" (BÄTTRE)
 - [ ] 2026-10-02 – NYTT: Heatmap "När" – stapel per timme på dygnet, "Bäst kl 06–09", tryck/dra = tidsfönster som filtrerar kartan (↺ återställer). Hjälp: Heatmap (ny rad) + animering `heatmap`. Nyhet: "Heatmap: se när det nappar bäst – tryck på en timme" (NYTT)
 - [ ] 2026-10-02 – Snabbmeddelande: efter skickat visas notisen "Syns i 15 minuter, tryck på meddelandet för att ta bort" och kartan centreras på dig. Hjälp: Snabbmeddelanden + animering `meddelanden`. Nyhet: "Snabbmeddelanden: kartan centreras på dig och en notis säger hur länge det syns" (BÄTTRE)
+- [ ] 2026-10-03 – Spår sparas bara på vattnet (inte promenader/bilresor nära sjön). Hjälp: Spår (ny rad "bara på sjön sparas"). Nyhet: "Spåret sparas bara när du är på vattnet" (FIXAT)
 
 <!-- mall:
 - [ ] ÅÅÅÅ-MM-DD – Vad som ändrats. Hjälp: avsnitt X (text) + animering `namn`. Nyhet: "…" (NYTT/BÄTTRE/FIXAT)

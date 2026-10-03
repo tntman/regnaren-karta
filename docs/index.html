@@ -6876,7 +6876,8 @@
     // (maybeBroadcastPosition itself skips anything not at the lake)
     maybeBroadcastPosition(lat, lon);
     recordSpeed(lat, lon, accM, speedMs); // knot meter + average speed (on the phone only)
-    if (isNearLake(lat, lon)) recordTrack(lat, lon, accM); // "Spår" (Demo Mode: a temporary track, see recordTrack)
+    var tp = latLonToImgPx(lat, lon);   // "Spår": only on the water (Demo Mode -- a temporary track, see recordTrack -- and until the depth data is in: near the lake)
+    if (demoMode || !loadDepthGrid() ? isNearLake(lat, lon) : isLakeAtImgPx(tp.x, tp.y)) recordTrack(lat, lon, accM);
     updateHeading(lat, lon, gpsHeading);  // the arrow in your GPS dot
     lastOwnLatLon = { lat: lat, lon: lon };
     var p = latLonToImgPx(lat, lon);

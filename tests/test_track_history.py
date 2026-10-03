@@ -6,7 +6,7 @@ results = []
 def check(name, cond, info=''):
     results.append(bool(cond)); print(('PASS ' if cond else 'FAIL ') + name + ('  -- ' + str(info) if info != '' else ''))
 
-ME = (58.88951, 15.77759)
+ME = (58.887269, 15.772629)   # (on the water: Spår are only recorded there)
 def b36(n):
     if n == 0: return '0'
     sg = '-' if n < 0 else ''; n = abs(n); d = '0123456789abcdefghijklmnopqrstuvwxyz'; out = ''
@@ -188,6 +188,20 @@ with sync_playwright() as p:
     pg.click('#trkClose'); pg.wait_for_timeout(300)
     pg.click('#menuBtn'); pg.click('#menuItemSettings'); pg.wait_for_timeout(300); pg.click('#demoModeToggle'); pg.wait_for_timeout(600)
     check('Demo Mode off -> the demo track is gone', 'L' not in (pg.get_attribute('#trackLayer .trkLine', 'd') or '') and not pg.evaluate("sessionStorage.getItem('ffmap_demotrack_v1')"), pg.get_attribute('#trackLayer .trkLine', 'd'))
+    b.close()
+    # only on the water: a walk on land near the lake is not recorded, a trip on the lake is
+    b, ctx, pg, errs = new_page(p, geo=ME, cfg={}, name='Filip')
+    seed(ctx, pg, {'ffmap_track_v1': None}); pg.reload(); pg.wait_for_timeout(1500)
+    LAND = (58.88951, 15.77759)   # (land, just east of the lake)
+    on = [pg.evaluate('a => __ffGeo.lake(a[0], a[1])', [LAND[0] + i * 0.00012, LAND[1]]) for i in range(6)]
+    for i in range(6):
+        ctx.set_geolocation({'latitude': LAND[0] + i * 0.00012, 'longitude': LAND[1], 'accuracy': 5}); pg.wait_for_timeout(700)
+    n_land = pg.evaluate("(() => { var t = JSON.parse(localStorage.getItem('ffmap_track_v1') || 'null'); return t ? t.segs.reduce((a, s) => a + s.length, 0) : 0; })()")
+    for i in range(6):
+        ctx.set_geolocation({'latitude': ME[0] + i * 0.00012, 'longitude': ME[1], 'accuracy': 5}); pg.wait_for_timeout(700)
+    pg.wait_for_timeout(10500)   # (saved every 10 s)
+    n_all = pg.evaluate("(() => { var t = JSON.parse(localStorage.getItem('ffmap_track_v1') || 'null'); return t ? t.segs.reduce((a, s) => a + s.length, 0) : 0; })()")
+    check('Spår: only on the water -- the walk on land is not recorded, the lake trip is', not any(on) and pg.evaluate('a => __ffGeo.lake(a[0], a[1])', list(ME)) and n_land == 0 and n_all >= 5, (on, n_land, n_all))
     b.close()
     # one-off cleanup: Filip's 2026-10-02 (old Demo Mode points, first point 58.894648, 15.776267) leaves his history and is never archived/uploaded
     demo = [[[58.894648 + i * 0.0001, 15.776267, ms_ago(1) + i * 8000] for i in range(20)]]
