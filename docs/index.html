@@ -6587,12 +6587,17 @@
     trkHist[normDay(tr.day)] = dayRecord(tr.segs);
     saveHist(); trkPxDirty(); flushTrackUploads(true);
   }
+  // Filip's 2026-10-02 on Regnaren was Demo Mode before it got its own track (fixed 826421c): gone from his phones.
+  // Recognised by its first point (58.894648, 15.776267), so a real day is never touched.
+  // ponytail: one-off cleanup, delete these lines once his phones have opened the app
+  var demoDay = LAKE_ID === 'regnaren' && nameSlug(userName) === 'filip' ? '2026-10-02' : null;
+  if (demoDay && trkHist[demoDay] && String(trkHist[demoDay].p).indexOf('z2beg,9e51n,') === 0){ delete trkHist[demoDay]; saveHist(); }
   try {
     var savedTrack = JSON.parse(localStorage.getItem(TRACK_KEY) || 'null');
     if (savedTrack && Array.isArray(savedTrack.segs)){
       savedTrack.day = normDay(savedTrack.day);
       if (savedTrack.day === track.day) track = savedTrack;
-      else archiveTrack(savedTrack);   // yesterday (or older) -- now history, not thrown away
+      else if (!(savedTrack.day === demoDay && savedTrack.segs[0] && savedTrack.segs[0][0] && savedTrack.segs[0][0][0] === 58.894648 && savedTrack.segs[0][0][1] === 15.776267)) archiveTrack(savedTrack);   // yesterday (or older) -- now history, not thrown away
     }
   } catch(e){}
   var trackDirty = false, trackUploadDirty = false, lastTrackUpAt = 0;

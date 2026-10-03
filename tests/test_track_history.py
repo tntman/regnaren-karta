@@ -189,6 +189,20 @@ with sync_playwright() as p:
     pg.click('#menuBtn'); pg.click('#menuItemSettings'); pg.wait_for_timeout(300); pg.click('#demoModeToggle'); pg.wait_for_timeout(600)
     check('Demo Mode off -> the demo track is gone', 'L' not in (pg.get_attribute('#trackLayer .trkLine', 'd') or '') and not pg.evaluate("sessionStorage.getItem('ffmap_demotrack_v1')"), pg.get_attribute('#trackLayer .trkLine', 'd'))
     b.close()
+    # one-off cleanup: Filip's 2026-10-02 (old Demo Mode points, first point 58.894648, 15.776267) leaves his history and is never archived/uploaded
+    demo = [[[58.894648 + i * 0.0001, 15.776267, ms_ago(1) + i * 8000] for i in range(20)]]
+    for name, keep in (('history', {'2026-10-02': {'p': pack(demo), 's': [], 'n': 20, 'u': 1}}), ('unfinished', {})):
+        b, ctx, pg, errs = new_page(p, geo=ME, cfg={}, name='Filip')
+        seed(ctx, pg, {'ffmap_trackhist_v1': dict(keep, **{day_n(20): rec(20)}), 'ffmap_track_v1': {'day': '2026-10-02', 'segs': demo} if not keep else None})
+        pg.reload(); pg.wait_for_timeout(1500)
+        h = pg.evaluate("JSON.parse(localStorage.getItem('ffmap_trackhist_v1'))")
+        check("Filip's demo day 2026-10-02 (%s) is cleaned away, other days kept, nothing uploaded" % name, '2026-10-02' not in h and day_n(20) in h and not pg.evaluate('window.__trackSets'), [sorted(h), pg.evaluate('window.__trackSets')])
+        b.close()
+    b, ctx, pg, errs = new_page(p, geo=ME, cfg={}, name='Filip')
+    seed(ctx, pg, {'ffmap_trackhist_v1': {'2026-10-02': rec(1)}})
+    pg.reload(); pg.wait_for_timeout(1500)
+    check('...a real 2026-10-02 (another first point) is kept', '2026-10-02' in pg.evaluate("JSON.parse(localStorage.getItem('ffmap_trackhist_v1'))"))
+    b.close()
 
     # ================= Fog of war =================
     b, ctx, pg, errs = new_page(p, geo=ME, cfg={}, name='Filip')
