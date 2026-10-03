@@ -272,6 +272,7 @@ Mjukt rundade former utan skarpa hörn. Rundknappar över kartan är helt runda 
 - **Style:** helskärm över kartan (nattvattentoning + 6 px oskärpa), loggan (150 px, lutad −5°) överst, "Vem är du?" 28 px, "Tryck på dig själv".
   Medlemmarna som runda bilder 70 px i tre kolumner (liggande sex, 56 px), "Annat namn" sist som streckad cirkel med +.
 - **State:** vald = bärnstensring + ✓-bricka, övriga dämpade (42 %, gråare); knappen längst ner (54 px) blir bärnsten "Fortsätt som <namn>".
+- **Loggan i 3D** (`js/35-name-logo.js`, three.js r170 i `assets/three-r170*.js`): en tjock röd skylt med röd baksida och reflexer, vaggar lite av sig själv, snurrar när man drar (hårdare = snabbare) och stannar alltid rättvänd. Ingen telefonlutning (då måste iPhone fråga om lov). Äldre telefoner trappar ner själva: full → lätt (pixeltäthet 1, enkla lampor) → platt (bilden vriden med CSS, röd baksida med glansrand); nivån minns i `ffmap_logo3d_v1`.
 
 ## Do's and Don'ts
 

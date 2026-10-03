@@ -218,7 +218,19 @@
   }
   #nameModal.show{opacity:1;pointer-events:auto;}
   .nameHead{text-align:center;padding:calc(env(safe-area-inset-top,0px) + 22px) 16px 6px;}
-  .nameLogo{width:150px;transform:rotate(-5deg);filter:drop-shadow(0 6px 14px rgba(0,0,0,.5));}
+  .nameLogo{position:relative;display:inline-block;vertical-align:top;width:150px;transform:rotate(-5deg);filter:drop-shadow(0 6px 14px rgba(0,0,0,.5));
+    perspective:500px;touch-action:none;cursor:grab;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;}
+  /* the 3D sign (js/35-name-logo.js): the canvas a bit bigger than the picture, so a tilted sign fits */
+  .nameLogo3d{position:absolute;left:-12%;top:-12%;width:124%;height:124%;}
+  .nameLogo.gl .nlSpin{visibility:hidden;}
+  .nlSpin{position:relative;transform-style:preserve-3d;}
+  .nlSpin img{display:block;width:100%;-webkit-backface-visibility:hidden;backface-visibility:hidden;-webkit-user-drag:none;pointer-events:none;}
+  /* 'flat' (older phones): a red back with a sheen that slides as it turns */
+  .nlBack{position:absolute;inset:0;display:none;transform:rotateY(180deg);-webkit-backface-visibility:hidden;backface-visibility:hidden;
+    background:linear-gradient(105deg,#b81d1b 0%,#EE2A28 38%,#ff8a7a 47%,#EE2A28 56%,#a81a18 100%);background-size:300% 100%;
+    background-position:calc(var(--ry, 0) / 360 * 100%) 0;
+    -webkit-mask:url(ff_logo.svg) center/100% 100% no-repeat;mask:url(ff_logo.svg) center/100% 100% no-repeat;}
+  .nameLogo.flat .nlBack{display:block;}
   #nameModal.show .nameLogo{animation:nameDrop .45s cubic-bezier(.16,1,.3,1) both;}
   .nameTitle{font-size:28px;font-weight:700;margin:10px 0 2px;}
   .nameSub{font-size:14px;color:var(--text-muted);}
