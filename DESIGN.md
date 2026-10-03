@@ -272,7 +272,7 @@ Mjukt rundade former utan skarpa hörn. Rundknappar över kartan är helt runda 
 - **Style:** helskärm över kartan (nattvattentoning + 6 px oskärpa), loggan (150 px, lutad −5°) överst, "Vem är du?" 28 px, "Tryck på dig själv".
   Medlemmarna som runda bilder 70 px i tre kolumner (liggande sex, 56 px), "Annat namn" sist som streckad cirkel med +.
 - **State:** vald = bärnstensring + ✓-bricka, övriga dämpade (42 %, gråare); knappen längst ner (54 px) blir bärnsten "Fortsätt som <namn>".
-- **Loggan i 3D** (`js/35-name-logo.js`, three.js r170 i `assets/three-r170*.js`): en tjock röd skylt med röd baksida och reflexer, vaggar lite av sig själv, snurrar när man drar (hårdare = snabbare) och stannar alltid rättvänd. Ingen telefonlutning (då måste iPhone fråga om lov). Äldre telefoner trappar ner själva: full → lätt (pixeltäthet 1, enkla lampor) → platt (bilden vriden med CSS, röd baksida med glansrand); nivån minns i `ffmap_logo3d_v1`.
+- **Loggan i 3D** (`js/35-logo3d.js`, även i Hjälps och Inställningars sidhuvud, three.js r170 i `assets/three-r170*.js`): en tjock röd skylt med röd baksida och reflexer, vaggar lite av sig själv, snurrar när man drar (hårdare = snabbare) och stannar alltid rättvänd. Ingen telefonlutning (då måste iPhone fråga om lov). Äldre telefoner trappar ner själva: full → lätt (pixeltäthet 1, enkla lampor) → platt (bilden vriden med CSS, röd baksida med glansrand); nivån minns i `ffmap_logo3d_v1`.
 
 ## Do's and Don'ts
 
@@ -286,7 +286,7 @@ Mjukt rundade former utan skarpa hörn. Rundknappar över kartan är helt runda 
 - **Do** håll småtexten i rutorna läsbar i sol: minst 11 px (faktarutornas rubriker 11, rutornas små rubriker 11,5). Kartans egen skala och zoomtext är undantag.
 - **Do** låt kort över kartan (vädret) stängas med ett tryck på kartan – men inte när kartan dras.
 - **Do** håll rörelser korta och meningsfulla: tryck 100–150 ms, lägesbyten 150–300 ms, rutor 250–450 ms, mjuk inbromsning (`cubic-bezier(.16,1,.3,1)`), ingen studs, inget som loopar i panelerna. Det enda "stora" ögonblicket är när en **ny plats landar**: nålen faller ner och en tunn ring i typens färg sprider sig exakt vid spetsen (`landPin`). Skyltar glider fram ur väderchipet, avsnitt i Inställningar glider fram när de öppnas (stängs direkt), dolda typprickar krymper till en grå ring. Med "Reducera rörelse" rör sig inget – det tonas bara in.
-- **Do** låt loggans röda (#EE2A28) bara finnas i loggan på startskärmen (namnvalet) – ingen annanstans i appen.
+- **Do** låt loggans röda (#EE2A28) bara finnas i loggan (namnvalet, Hjälps och Inställningars sidhuvud) – ingen annanstans i appen.
 - **Do** visa tangentbordsfokus med en 2 px bärnstensring (`:focus-visible`). Inställningar är en spalt på högst 600 px på breda skärmar.
 
 ### Don't:

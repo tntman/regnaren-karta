@@ -121,12 +121,10 @@
     updNameBtn();
     nameBackdrop.classList.add('show');
     nameModal.classList.add('show');
-    nlStart();
   }
   function hideNameModal(){
     nameBackdrop.classList.remove('show');
     nameModal.classList.remove('show');
-    nlStop();
   }
 
   nameSaveBtn.addEventListener('click', function(){
