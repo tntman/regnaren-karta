@@ -67,7 +67,7 @@ with sync_playwright() as p:
     pg.wait_for_timeout(100)
     check('half the length = half the size', abs(st(pg)['w'] * 2 - wd) < 2, (wd, st(pg)['w']))
     wd = st(pg)['w']
-    pg.mouse.wheel(0, -400); pg.wait_for_timeout(500)
+    pg.mouse.move(195, 380); pg.mouse.wheel(0, -400); pg.wait_for_timeout(500)   # (over the map: the login left the mouse on the bottom buttons)
     check('wedge grows when zooming in (stays 500 m)', st(pg)['w'] > wd, (wd, st(pg)['w']))
     pg.screenshot(path='shot_compass.png')
     # rotation reload (sessionStorage): still on

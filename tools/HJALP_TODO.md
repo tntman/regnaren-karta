@@ -33,6 +33,7 @@ i avsnitt, Ångra, åskvarningen alltid + "dragit förbi", solnedgången, Täckn
 - [ ] 2026-10-03 – Spår sparas bara på vattnet (inte promenader/bilresor nära sjön). Hjälp: Spår (ny rad "bara på sjön sparas"). Nyhet: "Spåret sparas bara när du är på vattnet" (FIXAT)
 - [ ] 2026-10-03 – NYTT: Profiler – tryck på en båt (eller Vem i en fångst, namnet i ett meddelande, Profil i menyn) = fiskarens ruta: rank, ELO, segrar, största fisk, senaste tävlingar, Visa på kartan, Fångster (heatmapen med bara personens fångster). Hjälp: ny rad under Båtar + Menyn. Nyhet: "Tryck på en båt för fiskarens profil" (NYTT)
 - [ ] 2026-10-03 – NYTT: Under tävling ligger din senaste fisk först i snabbmeddelandena ("Gädda 78 cm · 14:32"), skickas för hand, kanten snurrar i artens färg; fotot syns i meddelandets ruta. Hjälp: Snabbmeddelanden + animering `meddelanden`. Nyhet: "Skicka din senaste fisk som snabbmeddelande – med foto" (NYTT)
+- [ ] 2026-10-03 – Vem är du? – ny startskärm med loggan och profilbilderna (tryck på dig själv, "Fortsätt som …"). Hjälp: ev. ny bild i första välkomsten / avsnittet om namnet. Nyhet: "Nytt utseende när du väljer namn – hitta dig själv på bilden" (BÄTTRE)
 
 <!-- mall:
 - [ ] ÅÅÅÅ-MM-DD – Vad som ändrats. Hjälp: avsnitt X (text) + animering `namn`. Nyhet: "…" (NYTT/BÄTTRE/FIXAT)

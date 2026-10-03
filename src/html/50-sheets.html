@@ -24,15 +24,14 @@
 
   <div id="nameBackdrop"></div>
   <div id="nameModal">
-    <div class="modalTitle">Vem är du?</div>
-    <div class="modalDesc">Välj ditt namn. Det kopplas till dig och dina fiskeplatser — loggar du in med samma namn på en annan enhet ser du dem som dina.</div>
+    <div class="nameHead"><img class="nameLogo" src="ff_logo.svg" alt="Fiskfiskarna"><div class="nameTitles"><div class="nameTitle">Vem är du?</div><div class="nameSub">Tryck på dig själv</div></div></div>
     <div id="nameList" class="nameList" aria-label="Välj ditt namn"></div>
-    <div id="otherNameWrap" hidden>
-      <input id="nameInput" type="text" maxlength="24" placeholder="Skriv ditt namn" autocomplete="off">
-    </div>
-    <div id="nameError" class="modalError" hidden>Välj ditt namn i listan för att fortsätta.</div>
-    <div class="sheetRow">
-      <button id="nameSave" class="btnPrimary">Fortsätt</button>
+    <div class="nameFoot">
+      <div id="otherNameWrap" hidden>
+        <input id="nameInput" type="text" maxlength="24" placeholder="Skriv ditt namn" autocomplete="off">
+      </div>
+      <div id="nameError" class="modalError" hidden>Välj ditt namn i listan för att fortsätta.</div>
+      <button id="nameSave" type="button">Välj dig själv</button>
     </div>
   </div>
 

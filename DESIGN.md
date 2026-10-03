@@ -268,6 +268,11 @@ Mjukt rundade former utan skarpa hörn. Rundknappar över kartan är helt runda 
 - **Style:** iOS-lik kapsel (18 % vitt av, bärnsten på) i inställningsrader och Filter. Typerna i Filter är en rad artfärgade prickar i stället (ifylld = visas, grå ring = dold).
 - **Inställningar:** avsnitt (Kartan, Båten, Varningar, Kartanalys, Offline, Avancerat) som hopfällbara kort; stängt visar rubriken och en rad med vad som är valt. Raderna inuti är platta med en tunn linje emellan.
 
+### Namnvalet "Vem är du?" (startskärm)
+- **Style:** helskärm över kartan (nattvattentoning + 6 px oskärpa), loggan (150 px, lutad −5°) överst, "Vem är du?" 28 px, "Tryck på dig själv".
+  Medlemmarna som runda bilder 70 px i tre kolumner (liggande sex, 56 px), "Annat namn" sist som streckad cirkel med +.
+- **State:** vald = bärnstensring + ✓-bricka, övriga dämpade (42 %, gråare); knappen längst ner (54 px) blir bärnsten "Fortsätt som <namn>".
+
 ## Do's and Don'ts
 
 ### Do:
@@ -280,6 +285,7 @@ Mjukt rundade former utan skarpa hörn. Rundknappar över kartan är helt runda 
 - **Do** håll småtexten i rutorna läsbar i sol: minst 11 px (faktarutornas rubriker 11, rutornas små rubriker 11,5). Kartans egen skala och zoomtext är undantag.
 - **Do** låt kort över kartan (vädret) stängas med ett tryck på kartan – men inte när kartan dras.
 - **Do** håll rörelser korta och meningsfulla: tryck 100–150 ms, lägesbyten 150–300 ms, rutor 250–450 ms, mjuk inbromsning (`cubic-bezier(.16,1,.3,1)`), ingen studs, inget som loopar i panelerna. Det enda "stora" ögonblicket är när en **ny plats landar**: nålen faller ner och en tunn ring i typens färg sprider sig exakt vid spetsen (`landPin`). Skyltar glider fram ur väderchipet, avsnitt i Inställningar glider fram när de öppnas (stängs direkt), dolda typprickar krymper till en grå ring. Med "Reducera rörelse" rör sig inget – det tonas bara in.
+- **Do** låt loggans röda (#EE2A28) bara finnas i loggan på startskärmen (namnvalet) – ingen annanstans i appen.
 - **Do** visa tangentbordsfokus med en 2 px bärnstensring (`:focus-visible`). Inställningar är en spalt på högst 600 px på breda skärmar.
 
 ### Don't:

@@ -61,22 +61,33 @@
 
   var selectedRosterName = null;
   var otherNameMode = false;
+  // the members as pictures (AVATARS; none -> their first letter), "Annat namn" last; they fade in one after another
   function renderNameList(){
     nameListEl.innerHTML = '';
-    NAME_ROSTER.forEach(function(n){
+    NAME_ROSTER.forEach(function(n, i){
       var b = document.createElement('button');
       b.type = 'button';
       b.className = 'nameChip';
       b.setAttribute('data-name', n);
-      b.textContent = n;
+      b.style.animationDelay = Math.min(i, 15) * 22 + 'ms';
+      b.innerHTML = '<span class="ava">' + (AVATARS[n] ? '<img alt="" src="' + AVATARS[n] + '">' : escHtml(Array.from(n)[0] || '?').toUpperCase()) + '</span><b>' + escHtml(n) + '</b>';
       nameListEl.appendChild(b);
     });
     var other = document.createElement('button');
     other.type = 'button';
     other.className = 'nameChip nameChip--other';
     other.setAttribute('data-other', '1');
-    other.textContent = 'Annat namn…';
+    other.style.animationDelay = Math.min(NAME_ROSTER.length, 15) * 22 + 'ms';
+    other.innerHTML = '<span class="ava">+</span><b>Annat namn</b>';
     nameListEl.appendChild(other);
+  }
+  // the button says who you continue as ("Fortsätt som Filip"), amber once someone is chosen
+  function updNameBtn(){
+    var v = otherNameMode ? nameInput.value.trim() : (selectedRosterName || '');
+    nameSaveBtn.classList.toggle('on', !!v);
+    nameSaveBtn.textContent = v ? 'Fortsätt som ' + v : (otherNameMode ? 'Skriv ditt namn' : 'Välj dig själv');
+    nameListEl.classList.toggle('has', !!selectedRosterName);
+    nameModal.classList.toggle('otherMode', otherNameMode);
   }
   renderNameList();
 
@@ -89,13 +100,14 @@
       otherNameMode = true;
       selectedRosterName = null;
       otherNameWrap.hidden = false;
-      setTimeout(function(){ nameInput.focus(); }, 50);
+      setTimeout(function(){ nameInput.focus(); nameListEl.scrollTop = nameListEl.scrollHeight; }, 50);
     } else {
       otherNameMode = false;
       selectedRosterName = chip.getAttribute('data-name');
       otherNameWrap.hidden = true;
       nameInput.blur();
     }
+    updNameBtn();
   });
 
   function showNameModal(){
@@ -106,6 +118,7 @@
     otherNameWrap.hidden = true;
     nameInput.value = '';
     nameErrorEl.hidden = true;
+    updNameBtn();
     nameBackdrop.classList.add('show');
     nameModal.classList.add('show');
   }
@@ -140,6 +153,7 @@
   });
   nameInput.addEventListener('input', function(){
     if (!nameErrorEl.hidden) nameErrorEl.hidden = true;
+    updNameBtn();
   });
 
   // Name is locked once set — the only way to change identity is to log out

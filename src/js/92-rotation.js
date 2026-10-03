@@ -51,6 +51,7 @@
                  : (r.nameModal.sel ? nameListEl.querySelector('.nameChip[data-name="' + String(r.nameModal.sel).replace(/"/g, '') + '"]') : null);
         if (chip) chip.click();
         if (r.nameModal.other) nameInput.value = r.nameModal.text || '';
+        updNameBtn();
         nameListEl.scrollTop = r.nameModal.scroll || 0;
         return; // nothing else is open before you've picked a name
       }
@@ -122,7 +123,7 @@
       navigator.serviceWorker.register('sw.js').catch(function(){});
       // keep this lake's start files on the phone (default map + chosen style + depth)
       navigator.serviceWorker.ready.then(function(reg){
-        var urls = [mapFile(DEFAULT_STYLE), mapFile(mapStyle), LAKE_DIR + LAKE.depth.file];
+        var urls = [mapFile(DEFAULT_STYLE), mapFile(mapStyle), LAKE_DIR + LAKE.depth.file, 'ff_logo.svg'];   // (the logo: the name picker after Logga ut, offline too)
         if (reg.active) reg.active.postMessage({ type: 'precache', urls: urls });
       }).catch(function(){});
     };

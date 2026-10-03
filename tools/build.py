@@ -46,7 +46,7 @@ out = os.path.join(ROOT, 'docs'); os.makedirs(out, exist_ok=True)
 open(os.path.join(out, 'index.html'), 'w', encoding='utf-8').write(html)
 shutil.copy(os.path.join(ROOT, 'src', 'sw.js'), out)
 for f in os.listdir(os.path.join(ROOT, 'assets')):
-    if f.endswith('.svg'): continue
+    if f.endswith('.svg') and f != 'ff_logo.svg': continue   # (the logo: on the name picker)
     shutil.copy(os.path.join(ROOT, 'assets', f), out)
 
 # ---- the lakes' pictures (maps, detail tiles, thumbnails, depth grid) are
