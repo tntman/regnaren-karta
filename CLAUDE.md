@@ -59,6 +59,7 @@ All text i appen är på svenska. Svara Filip på svenska, kort och tydligt.
 | Snabbmeddelanden | `tools/NOTES_MEDDELANDEN.md` |
 | Väder, vind och lä, blixtar, åskvarning | `tools/NOTES_VADER.md` |
 | Heatmap (fångster: data, CSV-inläsning, framtida live-källa) | `tools/NOTES_HEATMAP.md` |
+| Jonathans live-API (fiskfiskarna.se/api: dashboard/heatmap, tävlingar, fångster, inloggning) | `tools/NOTES_API.md` |
 
 Uppdatera rätt anteckning när något ändras.
 
