@@ -3,3 +3,4 @@ __pycache__/
 tests/*.png
 .DS_Store
 raw/
+.claude/settings.local.json
