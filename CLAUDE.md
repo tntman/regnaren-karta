@@ -13,6 +13,10 @@ All text i appen är på svenska. Svara Filip på svenska, kort och tydligt.
   svenska, bara filer som hör till ändringen). **Push bara efter Filips ok** (main = live för gruppen; `app` =
   iPhone-bygge i Codemagic). Main in i `app`: `git fetch` + `git merge origin/main`, konflikter löser Claude.
   Aldrig force-push, aldrig skriva om historik. GitHub Desktop finns kvar – Filip kan använda den när han vill.
+- **Flera chattar samtidigt (beslut 2026-10-03):** main-chatten bygger webben; sidochattar i samma repo (t.ex. profiler)
+  undersöker och lämnar en plan i `tools/PLAN_*.md`, sedan stängs de. Chattarna väntar inte på varandra: bara EN chatt
+  i taget bygger `docs/`, kör testerna (port 8899) och committar/pushar. Ska en sidochatt bygga samtidigt → egen
+  worktree/gren. Kolla `git status` före commit och committa bara egna filer.
 - **Källa: `src/`** – `css/`, `html/`, `js/` (en fil per del, klistras ihop i namnordning till EN
   sida). **Läs `src/README.md`** (vilken fil som innehåller vad; alla js-filer är ETT skript i en
   funktion – ordningen spelar roll).
