@@ -263,11 +263,11 @@ with sync_playwright() as p:
     pg.evaluate("localStorage.setItem('ffmap_settings_open_v1', '[]')"); pg.reload(); pg.wait_for_timeout(1500)
     pg.click('#menuBtn'); pg.click('#menuItemSettings'); pg.wait_for_timeout(300)
     secs = pg.eval_on_selector_all('.setSec', 'e => e.map(x => x.querySelector(".setSecTitle").textContent + (x.open ? "+" : ""))')
-    check('Inställningar: the name on top, then Kartan, Båten, Varningar, Kartanalys, Offline, Avancerat -- all closed', secs == ['Kartan', 'Båten', 'Varningar', 'Kartanalys', 'Offline', 'Avancerat']
+    check('Inställningar: the name on top, then Kartan, Båten, Varningar, Kartanalys, Fångstdata, Offline, Avancerat -- all closed', secs == ['Kartan', 'Båten', 'Varningar', 'Kartanalys', 'Fångstdata', 'Offline', 'Avancerat']
           and pg.is_visible('#settingsNameDisplay') and not pg.is_visible('#wpSizeSeg'), secs)
     sums = pg.eval_on_selector_all('.setSecSum', 'e => e.map(x => x.textContent)')
     check('...each with a line of what is chosen', 'storlek' in sums[0] and 'färg 80 %' in sums[0] and sums[1].startswith('Djupet') and 'kn marschfart' in sums[1] and sums[2] == 'Åskvarning 10 km · ljud · vibration'
-          and sums[3].startswith('Tona ner') and sums[4].startswith('Inte nedladdad') and sums[5].startswith('Demo Mode av'), sums)
+          and sums[3].startswith('Tona ner') and 'fångster' in sums[4] and sums[5].startswith('Inte nedladdad') and sums[6].startswith('Demo Mode av'), sums)
     pg.click('.setSec[data-sec="map"] summary'); pg.wait_for_timeout(200)
     check('tap Kartan: open, its settings shown', pg.is_visible('#wpSizeSeg') and pg.is_visible('#mapStyleList') and not pg.is_visible('#setSum-map'))
     pg.click('#wpSizeSeg button[data-size="1"]'); pg.click('.setSec[data-sec="map"] summary'); pg.wait_for_timeout(200)
@@ -278,7 +278,7 @@ with sync_playwright() as p:
     wd = pg.evaluate("[document.querySelector('.setSec').getBoundingClientRect().width, document.getElementById('settingsBody').clientWidth]")
     check('wide screen: Inställningar a centred column (at most 600 px)', wd[0] <= 600 and wd[1] > 900, wd)
     pg.set_viewport_size({'width': 390, 'height': 844}); pg.wait_for_timeout(300)
-    check('after a reload (rotation): Båten still open, the rest closed', pg.eval_on_selector_all('.setSec', 'e => e.map(x => x.open)') == [False, True, False, False, False, False])
+    check('after a reload (rotation): Båten still open, the rest closed', pg.eval_on_selector_all('.setSec', 'e => e.map(x => x.open)') == [False, True, False, False, False, False, False])
     check('no page errors', not errs, errs)
     b.close()
     # a new spot "lands": the pin drops and a ring spreads exactly at its tip (where the spot is)

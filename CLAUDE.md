@@ -17,9 +17,9 @@ All text i appen är på svenska. Svara Filip på svenska, kort och tydligt.
   sida). **Läs `src/README.md`** (vilken fil som innehåller vad; alla js-filer är ETT skript i en
   funktion – ordningen spelar roll).
 - **Bygg alltid `docs/` efter ändringar** (det är det som publiceras): `py -3 tools/build.py`
-  (Python 3.7 via py-launchern; `python`/`python3` pekar på Python 2.7 resp. Microsoft Store-stubben).
-- Tester: `powershell -ExecutionPolicy Bypass -File tests\run_all.ps1` (Python 3.7 + Playwright
-  1.35, kör i installerade Edge eftersom Playwrights Chromium inte startar där; `tests/fakefb.py`
+  (Python 3.12 via py-launchern sedan ominstallationen 2026-10-03).
+- Tester: `powershell -ExecutionPolicy Bypass -File tests\run_all.ps1` (Python 3.12 + Playwright
+  (pip --user), kör i installerade Edge eftersom Playwrights Chromium inte startar där; `tests/fakefb.py`
   låtsas vara Firebase). Kör alltid testerna efter ändringar och lägg till tester för ny funktion.
   Parallellt (6 åt gången, `TEST_JOBS`), ~3,5 min, mot `tests/serve.py` (egen webbserver med lång
   anslutningskö). Tester får inte ändra filer i `docs/` – blockera i webbläsaren (`pg.route`).
