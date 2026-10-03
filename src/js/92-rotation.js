@@ -26,6 +26,7 @@
       if (hmOn) st.hm = { panel: hmPanel.classList.contains('show'), card: hmCardList && hmCard.classList.contains('show') ? { ids: hmCardList.map(function(c){ return c.id; }), i: hmCardI } : null };
       if (helpView.classList.contains('show')) st.help = helpLastPlace || helpPlace();
       st.trk = trkPanel.classList.contains('show');
+      if (pfCard.classList.contains('show')) st.pf = pfName;
       st.wx = wxCard.classList.contains('show');
       st.probe = probe;
       if (editingId && wpSheet.classList.contains('show')){
@@ -72,6 +73,7 @@
       if (r.probe && typeof r.probe.x === 'number'){ setProbe(r.probe); probeEl.classList.remove('drop'); }
       if (r.an) showAnPanel(true);
       if (r.trk) trkShowPanel(true);
+      if (r.pf) openProfile(r.pf);
       if (r.hm){ if (r.hm.card) hmPendingCard = r.hm.card; hmSetOn(true, r.hm.panel, true); }   // (the card first: the copy may be there at once)
       if (r.sheet && r.sheet.id){
         pendingSheetRestore = { s: r.sheet, until: Date.now() + 10000 };

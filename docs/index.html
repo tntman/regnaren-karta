@@ -846,9 +846,9 @@
     font-size:16px;line-height:30px;cursor:pointer;-webkit-tap-highlight-color:transparent;color:rgba(255,255,255,.3);}
   .gripX:active{color:#fff;}
   /* holding the grip: the top edge lights up blue + a soft blue spotlight, the bar white and glowing */
-  #wpSheet.dragging, #anPanel.dragging, #msgCard.dragging, #hmPanel.dragging, #hmCard.dragging, #trkPanel.dragging{border-top-color:#58b4ff;box-shadow:0 -10px 30px rgba(0,0,0,.45),0 -2px 14px rgba(88,180,255,.9);}
-  #wpSheet.dragging .sheetGrab, #anPanel.dragging .grab, #msgCard.dragging .grab, #hmPanel.dragging .grab, #hmCard.dragging .grab, #trkPanel.dragging .grab{background:radial-gradient(ellipse 60% 140% at 50% 0%,rgba(80,170,255,.45),rgba(80,170,255,0) 70%),var(--navy);}
-  #wpSheet.dragging .sheetHandle, #anPanel.dragging .grab::before, #msgCard.dragging .grab::before, #hmPanel.dragging .grab::before, #hmCard.dragging .grab::before, #trkPanel.dragging .grab::before{background:#fff;box-shadow:0 0 12px 2px #4aa3ff;}
+  #wpSheet.dragging, #anPanel.dragging, #msgCard.dragging, #hmPanel.dragging, #hmCard.dragging, #pfCard.dragging, #trkPanel.dragging{border-top-color:#58b4ff;box-shadow:0 -10px 30px rgba(0,0,0,.45),0 -2px 14px rgba(88,180,255,.9);}
+  #wpSheet.dragging .sheetGrab, #anPanel.dragging .grab, #msgCard.dragging .grab, #hmPanel.dragging .grab, #hmCard.dragging .grab, #pfCard.dragging .grab, #trkPanel.dragging .grab{background:radial-gradient(ellipse 60% 140% at 50% 0%,rgba(80,170,255,.45),rgba(80,170,255,0) 70%),var(--navy);}
+  #wpSheet.dragging .sheetHandle, #anPanel.dragging .grab::before, #msgCard.dragging .grab::before, #hmPanel.dragging .grab::before, #hmCard.dragging .grab::before, #pfCard.dragging .grab::before, #trkPanel.dragging .grab::before{background:#fff;box-shadow:0 0 12px 2px #4aa3ff;}
   /* type picker in the spot sheet */
   .typeSeg{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 12px;}
   .typeSeg[hidden]{display:none;}
@@ -1622,13 +1622,58 @@
   .msgBub .mLine{white-space:nowrap;line-height:1.45;}
   .msgBub.multi{padding:5px 11px;}
   .msgBub:not(.mine) .mLine.mine{background:#FFE7B8;border-radius:7px;margin:0 -6px;padding:0 6px;}
+  /* ================= Profiler (js/67-profiles.js) + a catch as a quick message ================= */
+  #pfCard{position:absolute;left:0;right:0;bottom:0;z-index:27;background:var(--navy);border-top:1px solid rgba(255,255,255,.14);border-radius:18px 18px 0 0;
+    padding:8px 16px calc(env(safe-area-inset-bottom,0px) + 16px);box-shadow:0 -10px 30px rgba(0,0,0,.45);transform:translateY(105%);transition:transform .25s ease;overflow-y:auto;max-height:88vh;}
+  #pfCard.show{transform:none;}
+  #pfCard.dragging{transition:none;}
+  #pfCard .grab{margin:-8px -16px 4px;top:-8px;}
+  .pfHead{display:flex;align-items:center;gap:12px;margin:2px 0 6px;}
+  .pfAva{width:56px;height:56px;border-radius:50%;flex:0 0 auto;overflow:hidden;display:flex;align-items:center;justify-content:center;
+    background:var(--amber);color:var(--navy);font-size:24px;font-weight:700;border:2px solid rgba(255,255,255,.18);}
+  .pfAva img{width:100%;height:100%;object-fit:cover;}
+  .pfWho{min-width:0;}
+  #pfName{font-size:23px;font-weight:700;line-height:1.15;}
+  #pfSub{font-size:13.5px;color:var(--text-muted);margin-top:2px;}
+  #pfBio{font-size:14px;color:#dbe4e7;font-style:italic;margin:2px 0 0;}
+  #pfBio[hidden]{display:none;}
+  #pfCard .wpData{margin:10px 0 8px;}
+  .pfH{font-size:11px;letter-spacing:.06em;font-weight:700;text-transform:uppercase;color:var(--text-muted);margin:10px 0 3px;}
+  .pfRow{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:14px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.07);}
+  .pfRow span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .pfRow small{color:var(--text-muted);font-size:12px;margin-left:3px;}
+  .pfRow b{white-space:nowrap;}
+  .pfRow .hmSpDot{margin-right:7px;}
+  .pfRec{font-style:normal;font-weight:700;font-size:11.5px;color:var(--amber);margin-left:4px;}
+  #pfBoat{font-size:12.5px;color:var(--text-muted);margin:10px 0 2px;}
+  #pfBoat:empty{display:none;}
+  #pfCard .msgCardBtns{margin-top:12px;}
+  @media (orientation:landscape) and (max-height:520px){ #pfCard{left:auto;width:420px;} }
+  /* a name that opens a profile: Vem in a catch, who wrote a message, a name in "Samma båt" */
+  .pfLink{cursor:pointer;}
+  .wpTile.pfLink b, #msgCardWho.pfLink, .boatInfoNameRow.pfLink{text-decoration:underline;text-decoration-color:rgba(232,163,61,.7);text-underline-offset:3px;}
+  /* the heat map showing one person's catches: "Bara Filip ✕" */
+  .hmWho{background:var(--amber);color:var(--navy);border:none;border-radius:12px;padding:2px 9px;font:inherit;font-weight:700;font-size:12.5px;margin-right:4px;cursor:pointer;}
+  /* a catch's photo (in the message panel and the catch panel) */
+  .catchImg{display:block;width:100%;max-height:240px;object-fit:cover;border-radius:12px;margin:6px 0 10px;background:rgba(255,255,255,.05);}
+  .catchImg[hidden]{display:none;}
+  /* your latest catch, first in the quick messages: the edge spins in the species' colour */
+  #msgPop .msgFish{position:relative;border-color:transparent;display:inline-flex;align-items:center;gap:6px;}
+  #msgPop .msgFish small{font-weight:400;color:var(--text-muted);}
+  #msgPop .msgFish .hmSpDot{margin:0;}
+  #msgPop .msgFish::before{content:'';position:absolute;inset:-1px;border-radius:inherit;padding:2px;pointer-events:none;
+    background:conic-gradient(from var(--rba, 0deg),var(--sp),rgba(255,255,255,.9),var(--sp) 30%,rgba(0,0,0,.25) 50%,var(--sp) 70%,rgba(255,255,255,.9),var(--sp));
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);
+    animation:rbSpin 2.2s linear infinite;}
+  .msgRb.sp{background:conic-gradient(from var(--rba, 0deg),var(--sp),rgba(255,255,255,.95),var(--sp) 30%,rgba(0,0,0,.35) 50%,var(--sp) 70%,rgba(255,255,255,.95),var(--sp));}
+  @media (prefers-reduced-motion:reduce){ #msgPop .msgFish::before{animation:none;} }
   /* ================= bottom panels (Kartanalys, a message, a spot): see tools/UI.md ================= */
   /* ---- panels that can be dragged smaller: the grip always drags; once smaller, the rest scrolls ---- */
-  #anPanel, #wpSheet, #msgCard, #hmPanel, #hmCard, #trkPanel{touch-action:pan-y;}
+  #anPanel, #wpSheet, #msgCard, #hmPanel, #hmCard, #pfCard, #trkPanel{touch-action:pan-y;}
   /* the grip strip (a bar in the middle): drag it = resize / flick it = close -- tools/UI.md */
-  #anPanel .grab, #msgCard .grab, #hmPanel .grab, #hmCard .grab, #trkPanel .grab{position:sticky;z-index:3;height:30px;display:flex;align-items:center;justify-content:center;background:var(--navy);border-radius:18px 18px 0 0;cursor:grab;}
-  #anPanel .grab::before, #msgCard .grab::before, #hmPanel .grab::before, #hmCard .grab::before, #trkPanel .grab::before{content:'';width:40px;height:5px;border-radius:3px;background:rgba(255,255,255,.3);}
-  #anPanel .grab, #wpSheet .sheetGrab, #msgCard .grab, #hmPanel .grab, #hmCard .grab, #trkPanel .grab{touch-action:none;}
+  #anPanel .grab, #msgCard .grab, #hmPanel .grab, #hmCard .grab, #pfCard .grab, #trkPanel .grab{position:sticky;z-index:3;height:30px;display:flex;align-items:center;justify-content:center;background:var(--navy);border-radius:18px 18px 0 0;cursor:grab;}
+  #anPanel .grab::before, #msgCard .grab::before, #hmPanel .grab::before, #hmCard .grab::before, #pfCard .grab::before, #trkPanel .grab::before{content:'';width:40px;height:5px;border-radius:3px;background:rgba(255,255,255,.3);}
+  #anPanel .grab, #wpSheet .sheetGrab, #msgCard .grab, #hmPanel .grab, #hmCard .grab, #pfCard .grab, #trkPanel .grab{touch-action:none;}
   #wpSheet{overflow-y:auto;max-height:88vh;}
   /* ================= wet, cold fingers: touch targets in the bottom panels =================
      (PRODUCT.md: tävlingsdagen i båten. The controls on the map itself keep their size.) */
@@ -1724,6 +1769,10 @@
     <button class="menuItem" data-view="log" id="menuItemLog">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"></path></svg>
       Logg
+    </button>
+    <button class="menuItem" id="menuItemProfile" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"></path></svg>
+      Profil
     </button>
     <button class="menuItem" data-view="settings" id="menuItemSettings">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
@@ -2153,7 +2202,7 @@
   <div id="msgOwn"><input id="msgOwnIn" type="text" autocomplete="off" enterkeyhint="send" aria-label="Egen text (högst 15 tecken)"><span id="msgOwnN">0/15</span><button type="button" id="msgOwnGo" aria-label="Skicka">➤</button></div>
   <div id="msgToast" role="status"></div>
   <div id="msgCard" role="dialog" aria-label="Meddelande"><div class="grab"><button type="button" id="msgCardClose" class="gripX" aria-label="Stäng">✕</button></div>
-    <div id="msgCardWho"></div><div id="msgCardTxt"></div>
+    <div id="msgCardWho"></div><div id="msgCardTxt"></div><img id="msgCardImg" class="catchImg" alt="Foto av fångsten" hidden>
     <div class="msgCardMeta"><span id="msgCardWhen"></span><span id="msgCardLeft"></span></div>
     <div class="msgCardBar"><i id="msgCardBar"></i></div>
     <div class="msgCardBtns"><button type="button" id="msgCardGo" class="a">➤ Åk hit</button><button type="button" id="msgCardDrop">Dölj för mig</button></div>
@@ -2215,8 +2264,17 @@
     <div id="hmTime"></div>
     <div id="hmCtl"></div>
   </div>
+  <div id="pfCard" role="dialog" aria-label="Profil"><div class="grab"><button type="button" id="pfClose" class="gripX" aria-label="Stäng">✕</button></div>
+    <div class="pfHead"><span id="pfAva" class="pfAva"></span><div class="pfWho"><div id="pfName"></div><div id="pfSub"></div></div></div>
+    <div id="pfBio"></div>
+    <div class="wpData" id="pfData"></div>
+    <div class="pfH">Största fisk</div><div id="pfTop"></div>
+    <div class="pfH">Senaste tävlingar</div><div id="pfRes"></div>
+    <div id="pfBoat"></div>
+    <div class="msgCardBtns"><button type="button" id="pfMap" class="a">Visa på kartan</button><button type="button" id="pfCatches">Fångster</button></div>
+  </div>
   <div id="hmCard" role="dialog" aria-label="Fångst"><div class="grab"><button type="button" id="hmCardClose" class="gripX" aria-label="Stäng">✕</button></div>
-    <div id="hmCardKick"></div><div id="hmCardTitle"></div>
+    <div id="hmCardKick"></div><div id="hmCardTitle"></div><img id="hmCardImg" class="catchImg" alt="Foto av fångsten" hidden>
     <div class="wpData" id="hmCardData"></div>
     <div id="hmCardNote"></div>
     <div id="hmCardNav"><button type="button" id="hmCardPrev" aria-label="Föregående">‹</button><span id="hmCardPos"></span><button type="button" id="hmCardNext" aria-label="Nästa">›</button></div>
@@ -4101,6 +4159,7 @@
   var boatInfoCloseBtn = document.getElementById('boatInfoClose');
   function showBoatInfo(cluster){
     var names = cluster.names || [cluster.name || 'Okänd'];
+    if (names.length === 1 && openProfile(names[0])) return;   // one person with a profile: their profile (67-profiles.js)
     boatInfoNamesListEl.innerHTML = '';
     if (names.length === 1){
       boatInfoNameEl.textContent = names[0];
@@ -4109,8 +4168,9 @@
       boatInfoNameEl.textContent = 'Samma båt';
       names.forEach(function(n){
         var row = document.createElement('div');
-        row.className = 'boatInfoNameRow';
+        row.className = 'boatInfoNameRow' + (profileOf(n) ? ' pfLink' : '');   // (tap: their profile)
         row.textContent = n;
+        row.addEventListener('click', function(){ openProfile(n); });
         boatInfoNamesListEl.appendChild(row);
       });
       boatInfoNamesListEl.style.display = 'flex';
@@ -4138,11 +4198,11 @@
       var updatedMs = (d.updatedAt && d.updatedAt.toMillis) ? d.updatedAt.toMillis() : now;
       raw.push({ docId: doc.id, uid: d.uid || doc.id, name: d.name || '', lat: d.lat, lon: d.lon, updatedAt: updatedMs });
       if (d.uid === myUid){               // that's you -- your own big GPS dot already shows it
-        if (d.msg && d.msgAt && (!ownMsg || d.msgAt >= ownMsg.at)) ownMsg = { text: d.msg, at: d.msgAt };   // (your quick message, after a reload)
+        if (d.msg && d.msgAt && (!ownMsg || d.msgAt >= ownMsg.at)) ownMsg = { text: d.msg, at: d.msgAt, sp: d.msgSp, img: d.msgImg };   // (your quick message, after a reload)
         else if (!d.msg && ownMsg && d.msgAt === 0) ownMsg = null;
         return;
       }
-      fresh[doc.id] = { lat: d.lat, lon: d.lon, name: d.name || '', uid: d.uid, updatedAt: updatedMs, msg: d.msg || null, msgAt: d.msgAt || 0 };
+      fresh[doc.id] = { lat: d.lat, lon: d.lon, name: d.name || '', uid: d.uid, updatedAt: updatedMs, msg: d.msg || null, msgAt: d.msgAt || 0, msgSp: d.msgSp || null, msgImg: d.msgImg || null };
     });
     boatPositions = fresh;
     allPositions = raw;
@@ -8996,6 +9056,9 @@
   var MSG_OWN_MAX = 15;                // "Egen text": at most 15 characters (an emoji = 1)
   var MSG_NEW_MS = 5 * 60000;          // the first 5 min: a thin rainbow edge running round the bubble
   var MSG_MS = 15 * 60000;
+  // your latest catch as a message ("Gädda 78 cm"): first in the choices while a competition is on; the edge spins in the species' colour
+  var MSG_SP_COL = { gadda: '#35D24A', abborre: '#FF7A1A', gos: '#3A86FF' };
+  function msgImgOk(u){ return typeof u === 'string' && /^https:\/\/res\.cloudinary\.com\//.test(u) ? u : null; }   // (only the catch photos, never any address someone writes)
   var ownMsg = null, msgHidden = {}, msgLayerEl = document.getElementById('msgLayer');
   var msgBtn = document.getElementById('msgBtn'), msgPop = document.getElementById('msgPop');
   msgPop.innerHTML = MSG_TEXTS.map(function(t){ return '<button type="button" data-t="' + t + '">' + t + '</button>'; }).join('') +
@@ -9021,29 +9084,45 @@
   msgOwn.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
   msgOwn.addEventListener('click', function(e){ e.stopPropagation(); });
   document.addEventListener('pointerdown', function(e){ if (msgOwn.classList.contains('show') && !msgOwn.contains(e.target)) openMsgOwn(false); });
-  function toggleMsgPop(open){ msgPop.classList.toggle('show', open); msgBtn.classList.toggle('open', open); }
+  function msgMyCatch(){   // your latest counted catch in the competition going on (live), or null
+    var me = catchPlain(userName), L = (catchLive && catchLiveComp() ? catchLive.list : []).filter(function(c){ return !c.no && me && catchPlain(c.who) === me; });
+    return L.length ? L.reduce(function(a, b){ return b.t > a.t ? b : a; }) : null;
+  }
+  function msgFishText(c){ return Array.from(hmSpName(c.sp) + ' ' + String(c.cm).replace('.', ',') + ' cm').slice(0, MSG_OWN_MAX).join(''); }
+  function msgPopFill(){
+    var old = document.getElementById('msgFishBtn'); if (old) old.remove();
+    var c = msgMyCatch(); if (!c) return;
+    var b = document.createElement('button'); b.type = 'button'; b.id = 'msgFishBtn'; b.className = 'msgFish'; b._c = c;
+    b.style.setProperty('--sp', MSG_SP_COL[c.sp]);
+    b.innerHTML = '<span class="hmSpDot" style="background:' + MSG_SP_COL[c.sp] + '"></span>' + escHtml(msgFishText(c)) + ' <small>· ' + fmtClock(c.t) + '</small>';
+    msgPop.insertBefore(b, msgPop.firstChild);
+  }
+  function toggleMsgPop(open){ if (open) msgPopFill(); msgPop.classList.toggle('show', open); msgBtn.classList.toggle('open', open); }
   msgBtn.addEventListener('click', function(e){ e.stopPropagation(); toggleMsgPop(!msgPop.classList.contains('show')); if (msgPop.classList.contains('show')) showAnPanel(false); });
   msgPop.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
   msgPop.addEventListener('click', function(e){
     e.stopPropagation();
     if (e.target.closest && e.target.closest('#msgOwnBtn')){ toggleMsgPop(false); openMsgOwn(true); return; }
+    var f = e.target.closest ? e.target.closest('#msgFishBtn') : null;
+    if (f){ toggleMsgPop(false); sendMsg(msgFishText(f._c), { sp: f._c.sp, img: f._c.img }); return; }
     var b = e.target.closest ? e.target.closest('button[data-t]') : null; if (!b) return;
     toggleMsgPop(false); sendMsg(b.getAttribute('data-t'));
   });
   document.addEventListener('click', function(e){ if (msgPop.classList.contains('show') && !msgPop.contains(e.target) && e.target !== msgBtn) toggleMsgPop(false); });
-  function writeMsg(text, at){
+  function writeMsg(text, at, fish){
     var ll = lastOwnLatLon;
     if (!USE_FIREBASE || !posCol || !myUid || !ll) return;
     addUsage('w', 1);
     try {
       posCol.doc(posDocId(myUid)).set({ lat: ll.lat, lon: ll.lon, name: userName || '', uid: myUid, lake: LAKE_ID, msg: text, msgAt: at,
+        msgSp: (fish && fish.sp) || null, msgImg: (fish && fish.img) || null,   // (a catch: its species' colour, its photo)
         updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true }).catch(function(e){ console.warn('meddelande', e); });
     } catch(e){ console.warn('meddelande', e); }
   }
-  function sendMsg(text){
+  function sendMsg(text, fish){
     if (!(lastOwnLatLon && lastFix && lastFix.onMap)){ showMsgToast('Snabbmeddelanden fungerar när du är vid sjön.'); return; }
-    ownMsg = { text: text, at: Date.now() };
-    writeMsg(text, ownMsg.at);
+    ownMsg = { text: text, at: Date.now(), sp: fish && fish.sp, img: fish && fish.img };
+    writeMsg(text, ownMsg.at, fish);
     renderMessages();
     showMsgToast('Syns i 15 minuter, tryck på meddelandet för att ta bort.');
     centerOnFix();
@@ -9069,11 +9148,11 @@
   function renderMessages(){
     if (!msgLayerEl) return;
     var now = Date.now(), items = [];
-    if (ownMsg && now - ownMsg.at < MSG_MS && lastOwnLatLon) items.push({ key: 'me', mine: true, text: ownMsg.text, who: 'du', at: ownMsg.at, lat: lastOwnLatLon.lat, lon: lastOwnLatLon.lon });
+    if (ownMsg && now - ownMsg.at < MSG_MS && lastOwnLatLon) items.push({ key: 'me', mine: true, text: ownMsg.text, who: 'du', at: ownMsg.at, sp: MSG_SP_COL[ownMsg.sp] && ownMsg.sp, img: msgImgOk(ownMsg.img), lat: lastOwnLatLon.lat, lon: lastOwnLatLon.lon });
     Object.keys(boatPositions || {}).forEach(function(id){
       var b = boatPositions[id];
       if (!b.msg || !b.msgAt || now - b.msgAt >= MSG_MS || msgHidden[id + '@' + b.msgAt]) return;
-      items.push({ key: id + '@' + b.msgAt, mine: false, text: b.msg, who: b.name, at: b.msgAt, lat: b.lat, lon: b.lon });
+      items.push({ key: id + '@' + b.msgAt, mine: false, text: b.msg, who: b.name, at: b.msgAt, sp: MSG_SP_COL[b.msgSp] && b.msgSp, img: msgImgOk(b.msgImg), lat: b.lat, lon: b.lon });
     });
     // the same boat (as for the boat pins: closer than BOAT_CLUSTER_METERS) = one bubble; newest first
     items.sort(function(a, b){ return b.at - a.at; });
@@ -9090,13 +9169,13 @@
       var el = null; Array.prototype.forEach.call(msgLayerEl.children, function(c){ if (c.getAttribute('data-k') === gk) el = c; });
       if (!el){ el = document.createElement('div'); el.setAttribute('data-k', gk); msgLayerEl.appendChild(el); }
       el.className = 'msgBub' + (g.items.length === 1 && g.items[0].mine ? ' mine' : '') + (g.items.length > 1 ? ' multi' : '');
-      var isNew = g.items.some(function(it){ return now - it.at < MSG_NEW_MS; });
+      var isNew = g.items.some(function(it){ return now - it.at < MSG_NEW_MS; }), sp = isNew && g.items[0].sp;   // (a catch, newest: its species' colour instead of the rainbow)
       var html = g.items.map(function(it){
         return '<div class="mLine' + (it.mine ? ' mine' : '') + '" data-k="' + escHtml(it.key.replace(/"/g, '')) + '">' + escHtml(it.text) + '<small>' + escHtml(it.who || '') + '</small></div>';
       }).join('');
-      if (el.getAttribute('data-h') !== html + isNew){
-        el.setAttribute('data-h', html + isNew);
-        el.innerHTML = html + (isNew ? '<i class="msgRb"></i>' : '');
+      if (el.getAttribute('data-h') !== html + isNew + sp){
+        el.setAttribute('data-h', html + isNew + sp);
+        el.innerHTML = html + (isNew ? '<i class="msgRb' + (sp ? ' sp" style="--sp:' + MSG_SP_COL[sp] : '') + '"></i>' : '');
         if (isNew) msgRainbow(el);
       }
       var top = fade(g.items[0]);
@@ -9124,6 +9203,8 @@
     var now = Date.now(), age = Math.max(0, now - it.at), left = Math.max(0, MSG_MS - age);
     document.getElementById('msgCardWho').textContent = (it.mine ? 'DU' : String(it.who || '').toUpperCase()) + ' · MEDDELANDE';
     document.getElementById('msgCardTxt').textContent = it.text;
+    catchImg(document.getElementById('msgCardImg'), it.img);
+    document.getElementById('msgCardWho').classList.toggle('pfLink', !!profileOf(it.mine ? userName : it.who));   // (tap: their profile)
     document.getElementById('msgCardWhen').innerHTML = 'Skrivet <b>' + fmtClock(it.at) + '</b> · ' + (age < 60000 ? 'nyss' : Math.round(age / 60000) + ' min sedan');
     document.getElementById('msgCardLeft').innerHTML = 'Försvinner om <b>' + Math.max(1, Math.ceil(left / 60000)) + ' min</b>';
     document.getElementById('msgCardBar').style.width = (100 * left / MSG_MS).toFixed(1) + '%';
@@ -9136,6 +9217,7 @@
   msgCard.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
   sheetSwipe(msgCard, closeMsgCard);
   document.getElementById('msgCardClose').addEventListener('click', closeMsgCard);
+  document.getElementById('msgCardWho').addEventListener('click', function(){ var it = msgItems[msgCardK]; if (it && this.classList.contains('pfLink')) openProfile(it.mine ? userName : it.who); });
   document.getElementById('msgCardGo').addEventListener('click', function(){
     var it = msgItems[msgCardK]; if (!it) return;
     closeMsgCard(); var p = latLonToImgPx(it.lat, it.lon); startNav(it.who, p.x, p.y);   // the lead line on their boat
@@ -9183,7 +9265,11 @@
     t = typeof t === 'number' ? t : Date.parse(String(t || ''));
     if (!isFinite(t) || !sp || lat == null || lon == null || Math.abs(lat) > 90 || Math.abs(lon) > 180) return null;
     var who = String(g('who', 'name', 'namn') || '').trim(), cm = catchNum(g('cm', 'length', 'langd')) || 0, comp = String(g('comp', 'competitionId', 'competition', 'tavling') || '').trim();
-    return { id: t + '|' + who + '|' + sp + '|' + cm, t: t, comp: comp, who: who, sp: sp, cm: cm, lat: lat, lon: lon, lake: String(g('lake', 'sjo') || '').trim() };
+    var c = { id: t + '|' + who + '|' + sp + '|' + cm, t: t, comp: comp, who: who, sp: sp, cm: cm, lat: lat, lon: lon, lake: String(g('lake', 'sjo') || '').trim() };
+    if (o.approved === false) c.no = 1;   // (live: not counted, e.g. a perch under 25 cm)
+    var img = String(o.imageUrl || '');  // (live: the photo -- Cloudinary, asked for 600 px wide instead of 2000)
+    if (/^https:\/\//.test(img)) c.img = img.replace(/(res\.cloudinary\.com\/[^/]+\/image\/upload\/)w_\d+,/, '$1w_600,');
+    return c;
   }
   // the same water? ("Sibbo" = Sibbofjärden, id or name)
   function catchSameWater(name, L){ var p = catchPlain(name), n = catchPlain(L.name); return !!p && (p === L.id || n.indexOf(p) === 0 || p.indexOf(n) === 0); }
@@ -9248,7 +9334,7 @@
   function catchReadCopy(){
     if (catchHist) return;
     try { var c = JSON.parse(localStorage.getItem(CATCH_CACHE_KEY) || 'null');
-      if (c && c.v === 2) catchHist = { at: c.at, total: c.total, comps: c.comps || [], list: catchUnpack(c.rows) }; } catch(e){}
+      if (c && c.v === 3) catchHist = { at: c.at, total: c.total, comps: c.comps || [], prof: c.prof || {}, list: catchUnpack(c.rows) }; } catch(e){}   // (v2: no profiles -> fetched again)
     if (catchHist) catchMerge();
   }
   // the history + the live catches (the same catch once) -> catchData
@@ -9266,11 +9352,11 @@
       if (!err && !(d && Array.isArray(d.heatmap))) err = new Error('oväntat svar');
       if (err){ catchErr = catchErrOf(err); if (!catchData) catchData = { list: [] }; catchesChanged(); return; }
       catchErr = null;
-      catchHist = { at: Date.now(), total: d.heatmap.length,
+      catchHist = { at: Date.now(), total: d.heatmap.length, prof: profPack(d),   // (profPack: 67-profiles.js)
         list: d.heatmap.map(normCatch).filter(function(c){ return c && catchLakeOf(c) === LAKE_ID; }),
         comps: (d.competitions || []).filter(function(c){ return catchSameWater(c.water || c.location, LAKE); })
           .map(function(c){ return { id: String(c.competition_id), name: c.competition_name || '', date: c.date || '', status: c.status || '' }; }) };
-      try { localStorage.setItem(CATCH_CACHE_KEY, JSON.stringify({ v: 2, at: catchHist.at, total: catchHist.total, comps: catchHist.comps, rows: catchPack(catchHist.list) })); } catch(e){}
+      try { localStorage.setItem(CATCH_CACHE_KEY, JSON.stringify({ v: 3, at: catchHist.at, total: catchHist.total, comps: catchHist.comps, prof: catchHist.prof, rows: catchPack(catchHist.list) })); } catch(e){}
       catchMerge();
       catchLiveTick();
     });
@@ -9356,6 +9442,117 @@
   document.getElementById('ctFetch').addEventListener('click', function(){ if (catchLive) catchLive.at = 0; loadCatches(true); });
 
   window.__ffCatches = function(){ return catchData ? catchData.list.map(function(c){ return { id: c.id, sp: c.sp, cm: c.cm, who: c.who, comp: c.comp }; }) : null; };
+  /* ================= Profiler: a fisher's page =================
+     From Fiskfiskarnas API (dashboard.php, fetched with the history in 66-catches.js -- no extra calls):
+     anglers (name, nickname, since, home water, bio), anglerStats (wins, competitions, biggest fish),
+     dashboard (this season: rank, ELO), results (the latest competitions), records (the club's records).
+     Kept in the phone's copy as one small record per name (profPack). A bottom panel (#pfCard) opens from:
+     a boat on the map, Profil in the menu (yourself), Vem in a catch, who wrote a quick message.
+     The link to the app = the name (the member list in the app is the same list). */
+  var PF_SP = { pike: 'gadda', perch: 'abborre', zander: 'gos' };
+  // anglerStats' keys have å/ä/ö, spaces, capitals and signs ('TOPGädda', '100+Gäddor', 'WIN(A)'): found by their plain name
+  function profKey(o, want){ var p = catchPlain(want); for (var k in o) if (catchPlain(k) === p) return o[k]; return null; }
+  function profNum(v){ var n = catchNum(v); return n == null ? null : n; }
+  function profPack(d){
+    var byId = {}, out = {};
+    (d.anglers || []).forEach(function(a){
+      if (!a || !a.name) return;
+      byId[a.angler_id] = out[a.name] = { n: a.name, nick: a.nickname || '', y: a.joined_year || '', home: a.home_water || '', bio: a.bio_short || '', res: [], rec: [] };
+    });
+    (d.anglerStats || []).forEach(function(s){
+      var p = byId[s.angler_id]; if (!p) return;
+      p.win = profNum(profKey(s, 'WIN(A)')); p.winp = String(profKey(s, 'WIN%') || ''); p.comps = profNum(profKey(s, 'TÄVLING(Antal)'));
+      p.top = { gadda: profNum(profKey(s, 'TOPGädda')), abborre: profNum(profKey(s, 'TOPAbborre')), gos: profNum(profKey(s, 'TOPGös')) };
+    });
+    (d.dashboard || []).forEach(function(x){
+      var p = byId[x.angler_id]; if (p && x.competition_id === 'total'){ p.rank = x.rank; p.elo = x.elo_out; p.season = x.season; }
+    });
+    (d.results || []).forEach(function(r){ var p = byId[r.angler_id]; if (p) p.res.push({ c: r.competition_name || '', d: r.competition_date || '', r: r.rank, t: r.totl }); });
+    (d.records || []).forEach(function(r){
+      var p = byId[r.angler_id], sp = PF_SP[catchPlain(r.RECORD_ART)];
+      if (p && sp) p.rec.push({ sp: sp, cm: profNum(r.RECORD_CM), on: String(r.RECORD_ACTIVE).toUpperCase() === 'TRUE' });
+    });
+    Object.keys(out).forEach(function(k){ out[k].res = out[k].res.sort(function(a, b){ return a.d < b.d ? 1 : -1; }).slice(0, 5); });
+    return out;
+  }
+  // the profile of a name in the app (any capitalisation), or null (an unknown name, or nothing fetched yet)
+  function profileOf(name){
+    catchReadCopy();
+    var P = catchHist && catchHist.prof, p = catchPlain(name); if (!P || !p) return null;
+    for (var k in P) if (catchPlain(k) === p) return P[k];
+    return null;
+  }
+
+  // a catch's photo (Cloudinary) in a panel: loaded only when the panel opens; no photo / offline -> nothing shown
+  function catchImg(el, url){
+    el.onerror = function(){ el.hidden = true; el.removeAttribute('src'); };
+    if (url){ if (el.getAttribute('src') !== url) el.src = url; el.hidden = false; } else { el.hidden = true; el.removeAttribute('src'); }
+  }
+
+  // ---- the panel ----
+  var pfCard = document.getElementById('pfCard'), pfName = null;
+  function pfCm(v){ return String(v).replace('.', ',') + ' cm'; }
+  function pfOrd(n){ return n + ((n % 10 === 1 || n % 10 === 2) && n % 100 !== 11 && n % 100 !== 12 ? ':a' : ':e'); }
+  function pfDate(d){ var m = /^(\d{4})-(\d\d)-(\d\d)/.exec(d || ''); return m ? (+m[3]) + '/' + (+m[2]) + (m[1] !== String(new Date().getFullYear()) ? ' -' + m[1].slice(2) : '') : ''; }
+  // their boat on the map now (yourself: your own position)
+  function pfBoat(name){
+    if (catchPlain(name) === catchPlain(userName)) return lastOwnLatLon ? { me: true, lat: lastOwnLatLon.lat, lon: lastOwnLatLon.lon } : null;
+    var now = Date.now(), best = null;
+    Object.keys(boatPositions || {}).forEach(function(id){
+      var b = boatPositions[id];
+      if (catchPlain(b.name) === catchPlain(name) && now - b.updatedAt <= BOAT_REMOVE_MS && (!best || b.updatedAt > best.updatedAt)) best = b;
+    });
+    return best;
+  }
+  function pfCatches(name){ return hmAll().filter(function(c){ return catchPlain(c.who) === catchPlain(name); }); }
+  function openProfile(name){
+    var p = profileOf(name); if (!p) return false;
+    hmCloseCard(); closeMsgCard(); hideBoatInfo();
+    pfName = p.n;
+    if (!pfCard.classList.contains('show') && pfCard._resetSize) pfCard._resetSize();
+    var pic = AVATARS[p.n];
+    document.getElementById('pfAva').innerHTML = pic ? '<img src="' + pic + '" alt="">' : escHtml(Array.from(p.n)[0] || '?').toUpperCase();
+    document.getElementById('pfName').textContent = p.n;
+    document.getElementById('pfSub').textContent = [p.nick && '”' + p.nick + '”', p.y && 'sedan ' + p.y, p.home].filter(Boolean).join(' · ');
+    var bio = document.getElementById('pfBio'); bio.textContent = p.bio; bio.hidden = !p.bio;
+    document.getElementById('pfData').innerHTML = [
+      ['Rank ' + (p.season || ''), p.rank ? pfOrd(p.rank) : '–'], ['ELO', p.elo ? Math.round(p.elo) : '–'],
+      ['Segrar', p.win != null ? p.win + (p.winp ? ' · ' + p.winp.replace('%', ' %') : '') : '–'], ['Tävlingar', p.comps != null ? p.comps : '–']
+    ].map(function(t){ return '<div class="wpTile"><i>' + escHtml(t[0]) + '</i><b>' + escHtml(String(t[1])) + '</b></div>'; }).join('');
+    var top = HM_SP.filter(function(x){ return p.top && p.top[x[0]]; });
+    document.getElementById('pfTop').innerHTML = top.length ? top.map(function(x){
+      var rec = p.rec.some(function(r){ return r.sp === x[0] && r.on && r.cm === p.top[x[0]]; });
+      return '<div class="pfRow"><span><span class="hmSpDot" style="background:rgb(' + HM_COL[x[0]] + ')"></span>' + x[1] + '</span><b>' + pfCm(p.top[x[0]]) + (rec ? ' <em class="pfRec">★ Klubbrekord</em>' : '') + '</b></div>';
+    }).join('') : '<div class="pfRow"><span>Inga ännu</span></div>';
+    document.getElementById('pfRes').innerHTML = p.res.length ? p.res.map(function(r){
+      return '<div class="pfRow"><span>' + escHtml(r.c) + ' <small>' + pfDate(r.d) + '</small></span><b>' + (r.r ? pfOrd(r.r) : '–') + (r.t ? ' · ' + pfCm(r.t) : '') + '</b></div>';
+    }).join('') : '<div class="pfRow"><span>Inga ännu</span></div>';
+    var boat = pfBoat(p.n), n = pfCatches(p.n).length;
+    document.getElementById('pfBoat').textContent = boat && !boat.me ? 'Båten på kartan · uppdaterad ' + timeAgo(boat.updatedAt) : '';
+    document.getElementById('pfMap').hidden = !boat;
+    var cb = document.getElementById('pfCatches'); cb.hidden = !n; cb.textContent = 'Fångster i ' + LAKE.name + ' (' + n + ')';
+    pfCard.classList.add('show');
+    return true;
+  }
+  function closeProfile(){ pfCard.classList.remove('show'); pfName = null; }
+  pfCard.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
+  sheetSwipe(pfCard, closeProfile);
+  document.getElementById('pfClose').addEventListener('click', closeProfile);
+  document.getElementById('pfMap').addEventListener('click', function(){
+    var b = pfName && pfBoat(pfName); closeProfile(); if (!b) return;
+    if (b.me) centerOnFix(); else centerOnWaypoint(b);
+  });
+  document.getElementById('pfCatches').addEventListener('click', function(){   // the heat map, only their catches
+    var n = pfName; closeProfile(); if (!n) return;
+    hmSet.who = n; hmSet.style = 'dots'; hmSave(); hmHeatCache = null; hmSetOn(true, true);
+  });
+  // Profil in the menu: yourself (only when there is a profile for your name)
+  var menuItemProfile = document.getElementById('menuItemProfile');
+  function pfMenuItem(){ menuItemProfile.hidden = !profileOf(userName); }
+  menuItemProfile.addEventListener('click', function(){ showMapView(); openProfile(userName); });
+  menuBtn.addEventListener('click', pfMenuItem);
+  catchListeners.push(pfMenuItem);
+  window.__ffProfile = function(name){ var p = profileOf(name); return p ? JSON.parse(JSON.stringify(p)) : null; };
   /* ================= Heatmap (fångster) =================
      Last in the map-style list (hold the map-style button): a bottom panel like Kartanalys, the
      map toned down the same way, and four ways to show the catches (66-catches.js):
@@ -9368,7 +9565,7 @@
      Liknande. Not together with Kartanalys (both tone the map down). Off after a restart,
      kept through a rotation. The panel closed: a "Heatmap" pill under the weather chip. */
   var HM_KEY = lakeKey('ffmap_heatmap_v1', 'heatmap_v1');
-  var hmSet = { style: 'heat', sp: 'all', spOn: { abborre: 1, gadda: 1, gos: 1 }, comp: 'all', rad: 70, str: 50, hexM: 60, cnt: 1, big: 1, names: 0, h0: 0, h1: 23 };
+  var hmSet = { style: 'heat', sp: 'all', spOn: { abborre: 1, gadda: 1, gos: 1 }, comp: 'all', rad: 70, str: 50, hexM: 60, cnt: 1, big: 1, names: 0, h0: 0, h1: 23, who: '' };   // (who: only one person's catches -- from their profile, 67-profiles.js)
   var HM_DEFAULTS = JSON.stringify(hmSet);   // (for "Återställ")
   try { var hsv = JSON.parse(localStorage.getItem(HM_KEY) || 'null'); if (hsv) for (var hk in hsv) hmSet[hk] = hsv[hk]; } catch(e){}
   function hmSave(){ try { localStorage.setItem(HM_KEY, JSON.stringify(hmSet)); } catch(e){} }
@@ -9408,7 +9605,7 @@
     var by = {}; hmAll().forEach(function(c){ (by[c.comp] = by[c.comp] || []).push(c); });
     return Object.keys(by).map(function(k){ return { id: k, list: by[k] }; }).sort(function(a, b){ return b.list[0].t - a.list[0].t; });
   }
-  function hmInComp(c){ return hmSet.comp === 'all' || c.comp === hmSet.comp; }
+  function hmInComp(c){ return (hmSet.comp === 'all' || c.comp === hmSet.comp) && (!hmSet.who || catchPlain(c.who) === catchPlain(hmSet.who)); }
   function hmHour(c){ return new Date(c.t).getHours(); }
   function hmHourOn(){ return hmSet.h0 > 0 || hmSet.h1 < 23; }
   function hmVisible(anyHour){   // (anyHour: ignore the time window -- the "När" graph shows the whole day)
@@ -9490,7 +9687,7 @@
     else if (!all.length) res.innerHTML = catchErr ? 'Kunde inte hämta fångsterna (ingen anslutning?).' : 'Inga fångster i ' + escHtml(LAKE.name) + ' än.';
     else {
       var v = hmVisible(), c2 = { abborre: 0, gadda: 0, gos: 0 }; v.forEach(function(c){ c2[c.sp]++; });
-      res.innerHTML = '<b>' + v.length + ' fångster</b> i ' + escHtml(LAKE.name) + (catchLiveComp() ? ' · <b class="hmLive">Live</b>' : '') + (hmHourOn() ? ' · kl ' + hmHourTxt() : '') + ' · ' + HM_SP.map(function(x){ return c2[x[0]] + ' ' + x[1].toLowerCase(); }).join(', ') +
+      res.innerHTML = (hmSet.who ? '<button type="button" class="hmWho" data-who="">Bara ' + escHtml(hmSet.who) + ' ✕</button> ' : '') + '<b>' + v.length + ' fångster</b> i ' + escHtml(LAKE.name) + (catchLiveComp() ? ' · <b class="hmLive">Live</b>' : '') + (hmHourOn() ? ' · kl ' + hmHourTxt() : '') + ' · ' + HM_SP.map(function(x){ return c2[x[0]] + ' ' + x[1].toLowerCase(); }).join(', ') +
         '<span class="note">' + (st === 'dots' ? 'Tryck på en prick för allt om fångsten.' : st === 'hex' ? 'Tryck på en ruta för fångsterna i den.' : 'Tryck på kartan där det är färg för fångsterna där.') + '</span>' +
         (!hmShow ? '<span class="pnHid"> · Dold – slå på Heatmap i Filter</span>' : '');
     }
@@ -9551,6 +9748,7 @@
     else if ((a = t.getAttribute('data-spt'))) hmSet.spOn[a] = hmSet.spOn[a] ? 0 : 1;
     else if ((a = t.getAttribute('data-comp'))) hmSet.comp = a;
     else if ((a = t.getAttribute('data-hx'))) hmSet.hexM = +a;
+    else if (t.hasAttribute('data-who')) hmSet.who = '';
     else if ((a = t.getAttribute('data-t'))) hmSet[a] = hmSet[a] ? 0 : 1;
     else return;
     hmSave(); hmHeatCache = null; hmRenderPanel(); hmDraw();
@@ -9752,13 +9950,15 @@
     document.getElementById('hmCardKick').textContent = 'FÅNGST · ' + hmCompName(c.comp).toUpperCase();
     document.getElementById('hmCardTitle').innerHTML = '<span class="hmSpDot" style="width:13px;height:13px;background:rgb(' + HM_COL[c.sp] + ')"></span>' + hmSpName(c.sp) + (c.cm ? ' ' + String(c.cm).replace('.', ',') + ' cm' : '');
     document.getElementById('hmCardData').innerHTML = [['Vem', c.who || '–'], ['När', hmWhen(c.t)], ['Djup', dep != null ? fmtDepth(dep) + ' m' : '–'], ['Plats', rank + ' av ' + same.length]]
-      .map(function(t){ return '<div class="wpTile"><i>' + t[0] + '</i><b>' + escHtml(t[1]) + '</b></div>'; }).join('');
+      .map(function(t, k){ var pf = !k && profileOf(c.who); return '<div class="wpTile' + (pf ? ' pfLink" data-who="' + escHtml(pf.n) : '') + '"><i>' + t[0] + '</i><b>' + escHtml(t[1]) + '</b></div>'; }).join('');
+    catchImg(document.getElementById('hmCardImg'), c.img);
     document.getElementById('hmCardNote').textContent = (rank === 1 ? 'Största ' : hmOrdinal(rank) + ' största ') + hmSpName(c.sp, 2) + ' i tävlingen' +
       ' · ' + (near ? near + ' fångster till inom 50 m' : 'inga andra fångster inom 50 m');
     document.getElementById('hmCardNav').hidden = hmCardList.length < 2;
     document.getElementById('hmCardPos').textContent = (hmCardI + 1) + ' av ' + hmCardList.length + ' här';
   }
   hmCard.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
+  document.getElementById('hmCardData').addEventListener('click', function(e){ var t = e.target.closest && e.target.closest('.pfLink'); if (t) openProfile(t.getAttribute('data-who')); });
   sheetSwipe(hmCard, hmCloseCard);
   document.getElementById('hmCardClose').addEventListener('click', hmCloseCard);
   document.getElementById('hmCardPrev').addEventListener('click', function(){ if (!hmCardList) return; hmCardI = (hmCardI - 1 + hmCardList.length) % hmCardList.length; hmFillCard(); hmDraw(); });
@@ -9868,6 +10068,7 @@
       if (hmOn) st.hm = { panel: hmPanel.classList.contains('show'), card: hmCardList && hmCard.classList.contains('show') ? { ids: hmCardList.map(function(c){ return c.id; }), i: hmCardI } : null };
       if (helpView.classList.contains('show')) st.help = helpLastPlace || helpPlace();
       st.trk = trkPanel.classList.contains('show');
+      if (pfCard.classList.contains('show')) st.pf = pfName;
       st.wx = wxCard.classList.contains('show');
       st.probe = probe;
       if (editingId && wpSheet.classList.contains('show')){
@@ -9914,6 +10115,7 @@
       if (r.probe && typeof r.probe.x === 'number'){ setProbe(r.probe); probeEl.classList.remove('drop'); }
       if (r.an) showAnPanel(true);
       if (r.trk) trkShowPanel(true);
+      if (r.pf) openProfile(r.pf);
       if (r.hm){ if (r.hm.card) hmPendingCard = r.hm.card; hmSetOn(true, r.hm.panel, true); }   // (the card first: the copy may be there at once)
       if (r.sheet && r.sheet.id){
         pendingSheetRestore = { s: r.sheet, until: Date.now() + 10000 };

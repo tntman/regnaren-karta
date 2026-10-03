@@ -60,3 +60,9 @@ bottenrutan, fångstrutan, tryck på kartan), `src/css/72-heatmap.css`, HTML i `
 
 ## Genväg överst (2026-10-02)
 `#hmBtn` (färgad karta) ligger vänster om kartknappen: tryck = Heatmap på (panelen öppnas) / av. Tänd (gul ring) = på och visad i Filter. Kartan flyttas/zoomas aldrig när heatmapen slås på (förr: `hmFitIfNone`, borttagen). Filter-knappen visar bara ikon + pil.
+
+## Profiler och fångstmeddelanden (2026-10-03)
+Samma `dashboard.php`-svar ger profilerna (anglers, anglerStats, dashboard, results, records) → `profPack` (`js/67-profiles.js`)
+sparar en liten post per namn i kopian (`prof`, kopian är nu `v: 3` – äldre hämtas om). Heatmapen kan visa en persons
+fångster (`hmSet.who`, "Bara Filip ✕"). Live-fångster får `img` (Cloudinary, 600 px) och `no` (inte godkänd). Snabbmeddelandet
+med din senaste fisk + `msgSp`/`msgImg` på positionen: `tools/PLAN_PROFILER.md`.

@@ -30,6 +30,7 @@ specificitet.
 | `60-help.css` | Hjälp (+ sökrutan) |
 | `70-analysis.css` | Kartanalys och Liknande |
 | `72-heatmap.css` | Heatmap: lagren, skylten under väder, bottenrutan, fångstrutan |
+| `76-profiles.css` | Profilrutan, länkade namn (`.pfLink`), "Bara Filip ✕" i heatmapen, fångstfoton, fångstvalet i snabbmeddelanden (snurrande kant i artens färg) |
 | `73-names.css` | Namn: OSM-namnen på kartan (vit prick + text) |
 | `75-messages.css` | snabbmeddelanden (knappen, valen, egen text, bubblorna, rutan) |
 | `80-panels.css` | bottenpanelerna: greppremsan, dra mindre / skrolla (Kartanalys, meddelande, plats) |
@@ -77,6 +78,7 @@ specificitet.
 | `62-wakelock.js` | håll skärmen tänd |
 | `64-messages.js` | snabbmeddelanden |
 | `66-catches.js` | fångsterna: format, hämtning från Fiskfiskarnas API (historik + live), kopian, Inställningar → Fångstdata |
+| `67-profiles.js` | Profiler: fiskarens ruta (`#pfCard`) ur API:ets anglers/anglerStats/dashboard/results/records, Profil i menyn, foton (`catchImg`) |
 | `68-heatmap.js` | Heatmap: ritning (värme, per art, rutor, prickar), bottenrutan, fångstrutan, tryck på kartan |
 | `90-boot.js` | start (`boot()`) |
 | `92-rotation.js` | vridning: spara/återställ läget, service worker-registrering, slutet på skriptet |

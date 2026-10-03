@@ -14,3 +14,8 @@ Kod: `src/js/64-messages.js`, CSS i `src/css/75-messages.css`. Test: `tests/test
 - Tryck på en rad = rutan `#msgCard` (skrivet kl, försvinner om, Åk hit = lodet på båten, Dölj för
   mig / Ta bort (för alla) för egna).
 - `window.__ffMsgs()` för testerna: raderna `{k, t, bubble, o}`.
+
+## Din senaste fisk som meddelande (2026-10-03)
+Under en pågående tävling ligger din senaste godkända live-fångst först i valen (`#msgFishBtn`, "Gädda 78 cm · 14:32"),
+skickas för hand. Positionen får `msgSp` (art → kantens färg: gädda #35D24A, abborre #FF7A1A, gös #3A86FF) och `msgImg`
+(fotot, visas i `#msgCard` – bara `res.cloudinary.com`-adresser). Namnet i rutan öppnar profilen (`js/67-profiles.js`).

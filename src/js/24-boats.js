@@ -100,6 +100,7 @@
   var boatInfoCloseBtn = document.getElementById('boatInfoClose');
   function showBoatInfo(cluster){
     var names = cluster.names || [cluster.name || 'Okänd'];
+    if (names.length === 1 && openProfile(names[0])) return;   // one person with a profile: their profile (67-profiles.js)
     boatInfoNamesListEl.innerHTML = '';
     if (names.length === 1){
       boatInfoNameEl.textContent = names[0];
@@ -108,8 +109,9 @@
       boatInfoNameEl.textContent = 'Samma båt';
       names.forEach(function(n){
         var row = document.createElement('div');
-        row.className = 'boatInfoNameRow';
+        row.className = 'boatInfoNameRow' + (profileOf(n) ? ' pfLink' : '');   // (tap: their profile)
         row.textContent = n;
+        row.addEventListener('click', function(){ openProfile(n); });
         boatInfoNamesListEl.appendChild(row);
       });
       boatInfoNamesListEl.style.display = 'flex';
@@ -137,11 +139,11 @@
       var updatedMs = (d.updatedAt && d.updatedAt.toMillis) ? d.updatedAt.toMillis() : now;
       raw.push({ docId: doc.id, uid: d.uid || doc.id, name: d.name || '', lat: d.lat, lon: d.lon, updatedAt: updatedMs });
       if (d.uid === myUid){               // that's you -- your own big GPS dot already shows it
-        if (d.msg && d.msgAt && (!ownMsg || d.msgAt >= ownMsg.at)) ownMsg = { text: d.msg, at: d.msgAt };   // (your quick message, after a reload)
+        if (d.msg && d.msgAt && (!ownMsg || d.msgAt >= ownMsg.at)) ownMsg = { text: d.msg, at: d.msgAt, sp: d.msgSp, img: d.msgImg };   // (your quick message, after a reload)
         else if (!d.msg && ownMsg && d.msgAt === 0) ownMsg = null;
         return;
       }
-      fresh[doc.id] = { lat: d.lat, lon: d.lon, name: d.name || '', uid: d.uid, updatedAt: updatedMs, msg: d.msg || null, msgAt: d.msgAt || 0 };
+      fresh[doc.id] = { lat: d.lat, lon: d.lon, name: d.name || '', uid: d.uid, updatedAt: updatedMs, msg: d.msg || null, msgAt: d.msgAt || 0, msgSp: d.msgSp || null, msgImg: d.msgImg || null };
     });
     boatPositions = fresh;
     allPositions = raw;

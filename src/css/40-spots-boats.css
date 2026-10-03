@@ -111,9 +111,9 @@
     font-size:16px;line-height:30px;cursor:pointer;-webkit-tap-highlight-color:transparent;color:rgba(255,255,255,.3);}
   .gripX:active{color:#fff;}
   /* holding the grip: the top edge lights up blue + a soft blue spotlight, the bar white and glowing */
-  #wpSheet.dragging, #anPanel.dragging, #msgCard.dragging, #hmPanel.dragging, #hmCard.dragging, #trkPanel.dragging{border-top-color:#58b4ff;box-shadow:0 -10px 30px rgba(0,0,0,.45),0 -2px 14px rgba(88,180,255,.9);}
-  #wpSheet.dragging .sheetGrab, #anPanel.dragging .grab, #msgCard.dragging .grab, #hmPanel.dragging .grab, #hmCard.dragging .grab, #trkPanel.dragging .grab{background:radial-gradient(ellipse 60% 140% at 50% 0%,rgba(80,170,255,.45),rgba(80,170,255,0) 70%),var(--navy);}
-  #wpSheet.dragging .sheetHandle, #anPanel.dragging .grab::before, #msgCard.dragging .grab::before, #hmPanel.dragging .grab::before, #hmCard.dragging .grab::before, #trkPanel.dragging .grab::before{background:#fff;box-shadow:0 0 12px 2px #4aa3ff;}
+  #wpSheet.dragging, #anPanel.dragging, #msgCard.dragging, #hmPanel.dragging, #hmCard.dragging, #pfCard.dragging, #trkPanel.dragging{border-top-color:#58b4ff;box-shadow:0 -10px 30px rgba(0,0,0,.45),0 -2px 14px rgba(88,180,255,.9);}
+  #wpSheet.dragging .sheetGrab, #anPanel.dragging .grab, #msgCard.dragging .grab, #hmPanel.dragging .grab, #hmCard.dragging .grab, #pfCard.dragging .grab, #trkPanel.dragging .grab{background:radial-gradient(ellipse 60% 140% at 50% 0%,rgba(80,170,255,.45),rgba(80,170,255,0) 70%),var(--navy);}
+  #wpSheet.dragging .sheetHandle, #anPanel.dragging .grab::before, #msgCard.dragging .grab::before, #hmPanel.dragging .grab::before, #hmCard.dragging .grab::before, #pfCard.dragging .grab::before, #trkPanel.dragging .grab::before{background:#fff;box-shadow:0 0 12px 2px #4aa3ff;}
   /* type picker in the spot sheet */
   .typeSeg{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 12px;}
   .typeSeg[hidden]{display:none;}

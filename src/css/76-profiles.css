@@ -1,0 +1,45 @@
+  /* ================= Profiler (js/67-profiles.js) + a catch as a quick message ================= */
+  #pfCard{position:absolute;left:0;right:0;bottom:0;z-index:27;background:var(--navy);border-top:1px solid rgba(255,255,255,.14);border-radius:18px 18px 0 0;
+    padding:8px 16px calc(env(safe-area-inset-bottom,0px) + 16px);box-shadow:0 -10px 30px rgba(0,0,0,.45);transform:translateY(105%);transition:transform .25s ease;overflow-y:auto;max-height:88vh;}
+  #pfCard.show{transform:none;}
+  #pfCard.dragging{transition:none;}
+  #pfCard .grab{margin:-8px -16px 4px;top:-8px;}
+  .pfHead{display:flex;align-items:center;gap:12px;margin:2px 0 6px;}
+  .pfAva{width:56px;height:56px;border-radius:50%;flex:0 0 auto;overflow:hidden;display:flex;align-items:center;justify-content:center;
+    background:var(--amber);color:var(--navy);font-size:24px;font-weight:700;border:2px solid rgba(255,255,255,.18);}
+  .pfAva img{width:100%;height:100%;object-fit:cover;}
+  .pfWho{min-width:0;}
+  #pfName{font-size:23px;font-weight:700;line-height:1.15;}
+  #pfSub{font-size:13.5px;color:var(--text-muted);margin-top:2px;}
+  #pfBio{font-size:14px;color:#dbe4e7;font-style:italic;margin:2px 0 0;}
+  #pfBio[hidden]{display:none;}
+  #pfCard .wpData{margin:10px 0 8px;}
+  .pfH{font-size:11px;letter-spacing:.06em;font-weight:700;text-transform:uppercase;color:var(--text-muted);margin:10px 0 3px;}
+  .pfRow{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:14px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.07);}
+  .pfRow span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .pfRow small{color:var(--text-muted);font-size:12px;margin-left:3px;}
+  .pfRow b{white-space:nowrap;}
+  .pfRow .hmSpDot{margin-right:7px;}
+  .pfRec{font-style:normal;font-weight:700;font-size:11.5px;color:var(--amber);margin-left:4px;}
+  #pfBoat{font-size:12.5px;color:var(--text-muted);margin:10px 0 2px;}
+  #pfBoat:empty{display:none;}
+  #pfCard .msgCardBtns{margin-top:12px;}
+  @media (orientation:landscape) and (max-height:520px){ #pfCard{left:auto;width:420px;} }
+  /* a name that opens a profile: Vem in a catch, who wrote a message, a name in "Samma båt" */
+  .pfLink{cursor:pointer;}
+  .wpTile.pfLink b, #msgCardWho.pfLink, .boatInfoNameRow.pfLink{text-decoration:underline;text-decoration-color:rgba(232,163,61,.7);text-underline-offset:3px;}
+  /* the heat map showing one person's catches: "Bara Filip ✕" */
+  .hmWho{background:var(--amber);color:var(--navy);border:none;border-radius:12px;padding:2px 9px;font:inherit;font-weight:700;font-size:12.5px;margin-right:4px;cursor:pointer;}
+  /* a catch's photo (in the message panel and the catch panel) */
+  .catchImg{display:block;width:100%;max-height:240px;object-fit:cover;border-radius:12px;margin:6px 0 10px;background:rgba(255,255,255,.05);}
+  .catchImg[hidden]{display:none;}
+  /* your latest catch, first in the quick messages: the edge spins in the species' colour */
+  #msgPop .msgFish{position:relative;border-color:transparent;display:inline-flex;align-items:center;gap:6px;}
+  #msgPop .msgFish small{font-weight:400;color:var(--text-muted);}
+  #msgPop .msgFish .hmSpDot{margin:0;}
+  #msgPop .msgFish::before{content:'';position:absolute;inset:-1px;border-radius:inherit;padding:2px;pointer-events:none;
+    background:conic-gradient(from var(--rba, 0deg),var(--sp),rgba(255,255,255,.9),var(--sp) 30%,rgba(0,0,0,.25) 50%,var(--sp) 70%,rgba(255,255,255,.9),var(--sp));
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);
+    animation:rbSpin 2.2s linear infinite;}
+  .msgRb.sp{background:conic-gradient(from var(--rba, 0deg),var(--sp),rgba(255,255,255,.95),var(--sp) 30%,rgba(0,0,0,.35) 50%,var(--sp) 70%,rgba(255,255,255,.95),var(--sp));}
+  @media (prefers-reduced-motion:reduce){ #msgPop .msgFish::before{animation:none;} }

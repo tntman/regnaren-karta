@@ -53,3 +53,8 @@ Berörda befintliga: `test_catchapi.py`, `test_heatmap.py`, `test_extras.py` (me
 
 ## Öppna frågor
 - Inga just nu.
+
+## Status (2026-10-03): BYGGT
+`js/67-profiles.js`, `css/76-profiles.css`, ändringar i 24-boats, 64-messages, 66-catches (kopian v3, `img`/`no` på live-fångster),
+68-heatmap (`hmSet.who`), 92-rotation. Test: `tests/test_profiles.py`. Foton: bara `res.cloudinary.com` visas (andras `msgImg` kan vara vad som helst).
+Känd gräns: fångstvalet kräver GPS på live-fångsten (fångster utan position kommer inte med i `catchLive`).

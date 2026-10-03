@@ -69,7 +69,7 @@ FAKE_FIREBASE_JS = r"""
   var posDocs = {};
   (cfg.positions || []).forEach(function(p){
     posDocs[p.uid] = { lat:p.lat, lon:p.lon, name:p.name, uid:p.uid, lake:p.lake||'regnaren', device:p.device, updatedAt: ts(now - (p.ageMin||0)*60000) };
-    if (p.msg){ posDocs[p.uid].msg = p.msg; posDocs[p.uid].msgAt = now - (p.msgAgeMin||0)*60000; }   // (a quick message)
+    if (p.msg){ posDocs[p.uid].msg = p.msg; posDocs[p.uid].msgAt = now - (p.msgAgeMin||0)*60000; posDocs[p.uid].msgSp = p.msgSp; posDocs[p.uid].msgImg = p.msgImg; }   // (a quick message; a catch: species, photo)
   });
   var wpDocs = {};
   (cfg.waypoints || []).forEach(function(w, i){
@@ -88,7 +88,7 @@ FAKE_FIREBASE_JS = r"""
   window.__setFromCache = function(v){ window.__fromCache = v; fireWp(); };
   window.__addPos = function(p){
     posDocs[p.uid] = { lat:p.lat, lon:p.lon, name:p.name, uid:p.uid, lake:p.lake||'regnaren', device:p.device, updatedAt: ts(Date.now() - (p.ageMin||0)*60000) };
-    if (p.msg){ posDocs[p.uid].msg = p.msg; posDocs[p.uid].msgAt = Date.now() - (p.msgAgeMin||0)*60000; }
+    if (p.msg){ posDocs[p.uid].msg = p.msg; posDocs[p.uid].msgAt = Date.now() - (p.msgAgeMin||0)*60000; posDocs[p.uid].msgSp = p.msgSp; posDocs[p.uid].msgImg = p.msgImg; }
     firePos();
   };
   function listen(list, docs, a, b){
@@ -117,7 +117,7 @@ FAKE_FIREBASE_JS = r"""
     get: function(){ return Promise.resolve(snapOf(posDocs)); },
     doc: function(id){
       return { set: function(d){
-        window.__posWrites.push({ t: Date.now(), id: id, lat: d.lat, lon: d.lon, device: d.device, lake: d.lake, msg: d.msg, msgAt: d.msgAt,
+        window.__posWrites.push({ t: Date.now(), id: id, lat: d.lat, lon: d.lon, device: d.device, lake: d.lake, msg: d.msg, msgAt: d.msgAt, msgSp: d.msgSp, msgImg: d.msgImg,
           updatedAtMs: (d.updatedAt && d.updatedAt.__epoch) ? d.updatedAt.ms : null });
         var merged = Object.assign({}, posDocs[id] || {}, d);
         merged.updatedAt = (d.updatedAt && d.updatedAt.__epoch) ? ts(d.updatedAt.ms) : ts(Date.now());
@@ -207,16 +207,18 @@ FAKE_FIREBASE_JS = r"""
 # Fiskfiskarnas API, made up: ctx.api (tests change it while they run).
 #   heatmap = dashboard.php's heatmap rows, competitions = its competitions,
 #   live = { competitionId: bootstrap catches }, down = True -> every call fails; hits = the URLs asked for.
+#   anglers/anglerStats/dashboard/results/records = the profiles (dashboard.php), as the real API has them.
 class FakeApi:
     def __init__(self, cfg):
         self.heatmap = list(cfg.get('heatmap', [])); self.competitions = list(cfg.get('competitions', []))
         self.live = dict(cfg.get('live', {})); self.down = False; self.hits = []
+        self.prof = {k: cfg.get(k, []) for k in ('anglers', 'anglerStats', 'dashboard', 'results', 'records')}
     def n(self, what): return len([u for u in self.hits if what in u])
     def handle(self, route):
         import json
         url = route.request.url; self.hits.append(url)
         if self.down: return route.abort()
-        if 'dashboard.php' in url: body = {'heatmap': self.heatmap, 'competitions': self.competitions}
+        if 'dashboard.php' in url: body = dict(self.prof, heatmap=self.heatmap, competitions=self.competitions)
         elif 'action=bootstrap' in url:
             cid = __import__('urllib.parse').parse.unquote(url.split('competitionId=')[1].split('&')[0])
             body = {'ok': cid in self.live, 'catches': self.live.get(cid, []), 'participants': []} if cid in self.live else {'ok': False, 'error': 'okänd tävling'}

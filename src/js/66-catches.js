@@ -30,7 +30,11 @@
     t = typeof t === 'number' ? t : Date.parse(String(t || ''));
     if (!isFinite(t) || !sp || lat == null || lon == null || Math.abs(lat) > 90 || Math.abs(lon) > 180) return null;
     var who = String(g('who', 'name', 'namn') || '').trim(), cm = catchNum(g('cm', 'length', 'langd')) || 0, comp = String(g('comp', 'competitionId', 'competition', 'tavling') || '').trim();
-    return { id: t + '|' + who + '|' + sp + '|' + cm, t: t, comp: comp, who: who, sp: sp, cm: cm, lat: lat, lon: lon, lake: String(g('lake', 'sjo') || '').trim() };
+    var c = { id: t + '|' + who + '|' + sp + '|' + cm, t: t, comp: comp, who: who, sp: sp, cm: cm, lat: lat, lon: lon, lake: String(g('lake', 'sjo') || '').trim() };
+    if (o.approved === false) c.no = 1;   // (live: not counted, e.g. a perch under 25 cm)
+    var img = String(o.imageUrl || '');  // (live: the photo -- Cloudinary, asked for 600 px wide instead of 2000)
+    if (/^https:\/\//.test(img)) c.img = img.replace(/(res\.cloudinary\.com\/[^/]+\/image\/upload\/)w_\d+,/, '$1w_600,');
+    return c;
   }
   // the same water? ("Sibbo" = Sibbofjärden, id or name)
   function catchSameWater(name, L){ var p = catchPlain(name), n = catchPlain(L.name); return !!p && (p === L.id || n.indexOf(p) === 0 || p.indexOf(n) === 0); }
@@ -95,7 +99,7 @@
   function catchReadCopy(){
     if (catchHist) return;
     try { var c = JSON.parse(localStorage.getItem(CATCH_CACHE_KEY) || 'null');
-      if (c && c.v === 2) catchHist = { at: c.at, total: c.total, comps: c.comps || [], list: catchUnpack(c.rows) }; } catch(e){}
+      if (c && c.v === 3) catchHist = { at: c.at, total: c.total, comps: c.comps || [], prof: c.prof || {}, list: catchUnpack(c.rows) }; } catch(e){}   // (v2: no profiles -> fetched again)
     if (catchHist) catchMerge();
   }
   // the history + the live catches (the same catch once) -> catchData
@@ -113,11 +117,11 @@
       if (!err && !(d && Array.isArray(d.heatmap))) err = new Error('oväntat svar');
       if (err){ catchErr = catchErrOf(err); if (!catchData) catchData = { list: [] }; catchesChanged(); return; }
       catchErr = null;
-      catchHist = { at: Date.now(), total: d.heatmap.length,
+      catchHist = { at: Date.now(), total: d.heatmap.length, prof: profPack(d),   // (profPack: 67-profiles.js)
         list: d.heatmap.map(normCatch).filter(function(c){ return c && catchLakeOf(c) === LAKE_ID; }),
         comps: (d.competitions || []).filter(function(c){ return catchSameWater(c.water || c.location, LAKE); })
           .map(function(c){ return { id: String(c.competition_id), name: c.competition_name || '', date: c.date || '', status: c.status || '' }; }) };
-      try { localStorage.setItem(CATCH_CACHE_KEY, JSON.stringify({ v: 2, at: catchHist.at, total: catchHist.total, comps: catchHist.comps, rows: catchPack(catchHist.list) })); } catch(e){}
+      try { localStorage.setItem(CATCH_CACHE_KEY, JSON.stringify({ v: 3, at: catchHist.at, total: catchHist.total, comps: catchHist.comps, prof: catchHist.prof, rows: catchPack(catchHist.list) })); } catch(e){}
       catchMerge();
       catchLiveTick();
     });

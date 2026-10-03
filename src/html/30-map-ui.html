@@ -61,7 +61,7 @@
   <div id="msgOwn"><input id="msgOwnIn" type="text" autocomplete="off" enterkeyhint="send" aria-label="Egen text (högst 15 tecken)"><span id="msgOwnN">0/15</span><button type="button" id="msgOwnGo" aria-label="Skicka">➤</button></div>
   <div id="msgToast" role="status"></div>
   <div id="msgCard" role="dialog" aria-label="Meddelande"><div class="grab"><button type="button" id="msgCardClose" class="gripX" aria-label="Stäng">✕</button></div>
-    <div id="msgCardWho"></div><div id="msgCardTxt"></div>
+    <div id="msgCardWho"></div><div id="msgCardTxt"></div><img id="msgCardImg" class="catchImg" alt="Foto av fångsten" hidden>
     <div class="msgCardMeta"><span id="msgCardWhen"></span><span id="msgCardLeft"></span></div>
     <div class="msgCardBar"><i id="msgCardBar"></i></div>
     <div class="msgCardBtns"><button type="button" id="msgCardGo" class="a">➤ Åk hit</button><button type="button" id="msgCardDrop">Dölj för mig</button></div>
@@ -123,8 +123,17 @@
     <div id="hmTime"></div>
     <div id="hmCtl"></div>
   </div>
+  <div id="pfCard" role="dialog" aria-label="Profil"><div class="grab"><button type="button" id="pfClose" class="gripX" aria-label="Stäng">✕</button></div>
+    <div class="pfHead"><span id="pfAva" class="pfAva"></span><div class="pfWho"><div id="pfName"></div><div id="pfSub"></div></div></div>
+    <div id="pfBio"></div>
+    <div class="wpData" id="pfData"></div>
+    <div class="pfH">Största fisk</div><div id="pfTop"></div>
+    <div class="pfH">Senaste tävlingar</div><div id="pfRes"></div>
+    <div id="pfBoat"></div>
+    <div class="msgCardBtns"><button type="button" id="pfMap" class="a">Visa på kartan</button><button type="button" id="pfCatches">Fångster</button></div>
+  </div>
   <div id="hmCard" role="dialog" aria-label="Fångst"><div class="grab"><button type="button" id="hmCardClose" class="gripX" aria-label="Stäng">✕</button></div>
-    <div id="hmCardKick"></div><div id="hmCardTitle"></div>
+    <div id="hmCardKick"></div><div id="hmCardTitle"></div><img id="hmCardImg" class="catchImg" alt="Foto av fångsten" hidden>
     <div class="wpData" id="hmCardData"></div>
     <div id="hmCardNote"></div>
     <div id="hmCardNav"><button type="button" id="hmCardPrev" aria-label="Föregående">‹</button><span id="hmCardPos"></span><button type="button" id="hmCardNext" aria-label="Nästa">›</button></div>
