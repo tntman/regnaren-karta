@@ -54,7 +54,8 @@ Fältet `test` i `config/<sjö>` i testdatabasen ser ut så här:
 
 **Testbåtar, automatiska fångster och åskan körs bara i adminens telefon** och bara medan appen är öppen. Testbåtarna och de automatiska fångsterna fortsätter efter en vridning.
 
-## Skapa testprojektet (Filip, en gång)
+## Testprojektet: `ffmap-test` (skapat 2026-10-04)
+Så gjordes det (om det behöver göras om):
 1. Gå till [console.firebase.google.com](https://console.firebase.google.com) → **Lägg till projekt**.
    - Namn: `ffmap-test`, eller ett annat namn som innehåller "test".
    - Google Analytics behövs inte. Gratisplanen Spark räcker.

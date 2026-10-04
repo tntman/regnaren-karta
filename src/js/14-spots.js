@@ -91,14 +91,13 @@
   // set in the console, not by hiding this config.
   // The test mode (Demo Mode, 10-core.js) uses a Firebase project of its own: nothing it does can
   // reach the real database. (The app's background REST write builds its address from this too.)
-  // Until the test project is set up here, the test mode simply can't sign in (= no shared data).
   var FIREBASE_TEST_CONFIG = {
-    apiKey: "TESTPROJEKT-SAKNAS",
-    authDomain: "ffmap-test-saknas.firebaseapp.com",
-    projectId: "ffmap-test-saknas",
-    storageBucket: "",
-    messagingSenderId: "",
-    appId: ""
+    apiKey: "AIzaSyBTFFOHRrPrHifMx5CKAoi6YZZ5b1Hc6jQ",
+    authDomain: "ffmap-test.firebaseapp.com",
+    projectId: "ffmap-test",
+    storageBucket: "ffmap-test.firebasestorage.app",
+    messagingSenderId: "418785117763",
+    appId: "1:418785117763:web:8a5c6e70178c216814f6f6"
   };
   var FIREBASE_CONFIG = TEST_MODE ? FIREBASE_TEST_CONFIG : {
     apiKey: "AIzaSyDkpWsfQFxpkkNOmDJmJr7jGyBO3S7GZH4",
