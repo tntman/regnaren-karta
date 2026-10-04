@@ -83,6 +83,9 @@ with sync_playwright() as p:
     check('Hjälp is in the menu (last item; only "Logga ut" comes after, behind a separator)', pg.is_visible('#menuItemHelp') and pg.evaluate("document.querySelector('#menuPanel').lastElementChild.id") == 'menuItemLogout' and pg.evaluate("document.getElementById('menuItemHelp').nextElementSibling.id") == 'menuLogoutSep')
     pg.click('#menuItemHelp'); pg.wait_for_timeout(400)
     check('menu -> Hjälp opens it (no welcome this time), at the top', pg.is_visible('#helpView') and not pg.is_visible('#helpWelcome') and pg.evaluate("document.getElementById('helpBody').scrollTop") == 0)
+    check('Demo Mode card at the top of Hjälp', pg.is_visible('#helpDemo') and 'Demo Mode' in pg.inner_text('#helpDemo'))
+    pg.click('#helpDemoLink'); pg.wait_for_timeout(500)
+    check('...its link: Hjälp closed, Inställningar open with Avancerat open', not pg.is_visible('#helpView') and pg.is_visible('#settingsView') and pg.evaluate("document.querySelector('[data-sec=adv]').open"))
     check('no page errors', not errs, errs)
     b.close()
 

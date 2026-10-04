@@ -175,6 +175,10 @@
     try { localStorage.setItem(HELP_SEEN_KEY, String(HELP_NEWS.length)); } catch(e){}
     updateHelpDot();
   }
+  document.getElementById('helpDemoLink').addEventListener('click', function(){
+    hideHelpView(); showSettingsView(); openSettingsSec('adv');
+    setTimeout(function(){ document.getElementById('demoModeToggle').scrollIntoView({ block: 'center' }); }, 50);
+  });
   function hideHelpView(){ helpView.classList.remove('show', 'first'); }
   // where you are on the page, as "which section + how far into it" (the pixels change
   // when the phone is turned: other width, other line breaks)
