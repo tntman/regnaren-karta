@@ -1613,6 +1613,15 @@
   .osmN span{position:absolute;left:7px;top:-8px;font:700 12px/16px Calibri,"Segoe UI",system-ui,sans-serif;color:#fff;
     text-shadow:0 0 3px rgba(6,20,28,.95),0 0 3px rgba(6,20,28,.95),0 1px 2px rgba(6,20,28,.9);}
   .osmN.land span{font-weight:600;color:#f4eed8;}
+  /* ================= Ledare: the list under the weather chip (a .mapPill that only shows) ================= */
+  #leadPill{flex-direction:column;align-items:stretch;gap:2px;padding:6px 12px 7px 10px;min-width:150px;max-width:210px;cursor:default;pointer-events:none;}
+  #leadPill .ldHead{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--amber);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px;}
+  #leadPill .ldRow{display:flex;gap:7px;align-items:baseline;}
+  #leadPill .ldRow.me{color:var(--amber);}
+  #leadPill .ldN{width:10px;opacity:.65;}
+  #leadPill .ldW{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  #leadPill .ldT{font-variant-numeric:tabular-nums;}
+  #leadPill .ldGap{padding-left:17px;opacity:.5;line-height:8px;}
   /* ================= Snabbmeddelanden (quick messages) ================= */
   /* ---- quick messages: a small button at the bottom, bubbles at the boats (15 min) ---- */
   #msgBtn{position:absolute;left:50%;transform:translateX(-50%);z-index:22;      /* (its height: 90-buttons.css) */
@@ -2264,6 +2273,7 @@
     <button type="button" id="wakeBadge" hidden aria-label="Skärmen hålls tänd – tryck för att stänga av" title="Skärmen hålls tänd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg></button>
     <div id="ltPill" role="status" aria-live="polite"><svg viewBox="0 0 24 24"><path d="M13.5 2 5 13.5h5.5L9 22l9.5-12.5H13z" fill="#FFF08C" stroke="#3a1d00" stroke-width="1.4" stroke-linejoin="round"></path></svg><div><b id="ltPillMain"></b><small id="ltPillSub"></small></div></div>
     <button type="button" id="ltOffPill" hidden aria-label="Åskvarningen är avstängd – öppna Inställningar"><span class="ltOffIc">⚡✕</span>Åskvarning av</button>
+    <div id="leadPill" class="mapPill" hidden></div>
     <button type="button" id="hmPill" class="mapPill" hidden aria-label="Heatmap – öppna menyn"><span class="hmDot"></span>Heatmap</button>
     <button type="button" id="anPill" class="mapPill" hidden aria-label="Kartanalys – öppna menyn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><defs><mask id="anIcPill"><rect width="24" height="24" fill="#fff"></rect><circle cx="15.5" cy="15" r="6.5" fill="#000"></circle><path d="M15.5 15 23 23" stroke="#000" stroke-width="5"></path></mask></defs><g mask="url(#anIcPill)"><path d="M2.5 5.5 7.5 3l6 2.5 5-2.5v11L13.5 16.5l-6-2.5-5 2.5z"></path><path d="M7.5 3v11M13.5 5.5v11"></path></g><circle cx="15.5" cy="15" r="4.3"></circle><path d="M18.6 18.1 21.5 21.5"></path></svg>Kartanalys</button>
     <div id="farAway"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11z"></path><circle cx="12" cy="10" r="2.2"></circle></svg><span class="farText" id="farText"></span></div>
@@ -2512,6 +2522,14 @@
         <span class="visLabel">Fog of war</span>
         <span class="toggle">
           <input type="checkbox" id="toggleFog">
+          <span class="toggleTrack"><span class="toggleThumb"></span></span>
+        </span>
+      </label>
+      <label class="visRow">
+        <span class="visSwatch visSwatch--wx">👑</span>
+        <span class="visLabel">Ledare</span>
+        <span class="toggle">
+          <input type="checkbox" id="toggleLeader">
           <span class="toggleTrack"><span class="toggleThumb"></span></span>
         </span>
       </label>
@@ -4268,13 +4286,13 @@
         el.classList.toggle('boatPip--group', c.names.length > 1);
         el.classList.toggle('boatPip--stale', (now - c.updatedAt) > BOAT_GRAY_MS);
         var nameEl = el.querySelector('.boatName');
-        var namesKey = c.names.join('\n');
+        var namesKey = c.names.map(function(n){ return n + leadCrownFor(n); }).join('\n');
         if (nameEl.getAttribute('data-names') !== namesKey){ // only touch the DOM when the names actually changed
           nameEl.setAttribute('data-names', namesKey);
           nameEl.innerHTML = '';
           c.names.forEach(function(n){
             var row = document.createElement('span');
-            row.textContent = shortBoatName(n);
+            row.textContent = shortBoatName(n) + leadCrownFor(n);
             nameEl.appendChild(row);
           });
         }
@@ -10678,6 +10696,56 @@
       card: hmCard.classList.contains('show') && hmCardList ? { i: hmCardI, n: hmCardList.length, id: hmCardList[hmCardI].id } : null };
   };
   window.__ffHeatScreen = function(id){ var c = hmAll().filter(function(x){ return x.id === id; })[0]; return c ? [originX + c.px * scale, originY + c.py * scale] : null; };
+  /* ================= "Ledare" (Filter, Lager) -- off by default =================
+     While a competition is going on on this lake: a list under the weather chip (top 5 + you) and a crown
+     after the leader's name on the map. Counted like Fiskfiskarna do: the 5 longest of each species added up
+     (perch + pike + zander, cm), only catches that count (approved by the API, and at least the minimum size).
+     The data is the live catches (66-catches.js); nothing extra is fetched. Tap-through: nothing. */
+  var LEAD_KEY = 'ffmap_leader_v1';
+  var LEAD_MIN = { abborre: 25, gadda: 50, gos: 35 };   // (cm: what counts at Fiskfiskarna's competitions)
+  var leadOn = false;
+  try { leadOn = localStorage.getItem(LEAD_KEY) === '1'; } catch(e){}
+  var leadPill = document.getElementById('leadPill'), toggleLeadEl = document.getElementById('toggleLeader');
+  var leadList = [];   // [{ who, total, n }] best first
+  function leadCompute(){
+    var by = {};
+    (catchLive && catchLiveComp() ? catchLive.list : []).forEach(function(c){
+      if (c.no || c.cm < LEAD_MIN[c.sp]) return;
+      var k = catchPlain(c.who); if (!k) return;
+      var p = by[k] || (by[k] = { who: c.who, sp: { abborre: [], gadda: [], gos: [] } });
+      p.sp[c.sp].push(c.cm);
+    });
+    return Object.keys(by).map(function(k){
+      var p = by[k], t = 0;
+      Object.keys(p.sp).forEach(function(s){ p.sp[s].sort(function(a, b){ return b - a; }).slice(0, 5).forEach(function(cm){ t += cm; }); });
+      return { who: p.who, total: Math.round(t) };
+    }).sort(function(a, b){ return b.total - a.total || (a.who < b.who ? -1 : 1); });
+  }
+  // the leader's name on a boat label (24-boats.js asks)
+  function leadCrownFor(name){ return leadOn && leadList.length > 0 && catchPlain(name) === catchPlain(leadList[0].who) ? ' \u{1F451}' : ''; }
+  function leadRender(){
+    var was = leadList.length ? leadList[0].who : '';
+    leadList = leadCompute();
+    var show = leadOn && leadList.length > 0, me = catchPlain(userName);
+    leadPill.hidden = !show;
+    if (show){
+      var comp = catchLiveComp(), top = leadList.slice(0, 5), mine = leadList.map(function(r){ return catchPlain(r.who); }).indexOf(me);
+      var row = function(i, r){
+        return '<div class="ldRow' + (me && catchPlain(r.who) === me ? ' me' : '') + '"><span class="ldN">' + (i + 1) + '</span><span class="ldW">' + escHtml(r.who) + (i === 0 ? ' \u{1F451}' : '') + '</span><span class="ldT">' + r.total + ' cm</span></div>';
+      };
+      leadPill.innerHTML = '<div class="ldHead">Ledare' + (comp && comp.name ? ' · ' + escHtml(comp.name) : '') + '</div>' + top.map(function(r, i){ return row(i, r); }).join('') +
+        (mine >= 5 ? '<div class="ldGap">…</div>' + row(mine, leadList[mine]) : '');
+    }
+    if ((leadList.length ? leadList[0].who : '') !== was || !show) renderBoats();   // (the crown moves)
+  }
+  catchListeners.push(leadRender);
+  toggleLeadEl.checked = leadOn;
+  toggleLeadEl.addEventListener('change', function(){
+    leadOn = toggleLeadEl.checked;
+    try { localStorage.setItem(LEAD_KEY, leadOn ? '1' : '0'); } catch(e){}
+    leadRender(); renderBoats();
+  });
+  window.__ffLeader = function(){ return { on: leadOn, list: leadList.slice(), shown: !leadPill.hidden }; };   // (for the tests)
   /* ---------------- init ---------------- */
   var appStarted = false; // true once geolocation + Firebase have been started for this page load
   function continueBootAfterName(){

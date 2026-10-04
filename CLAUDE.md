@@ -138,6 +138,9 @@ Uppdatera rätt anteckning när något ändras.
   appen blir synlig. På = gul sol `#wakeBadge` under väderchipet; tryck = av + notis `#wakeNote`.
 - **Hjälp** (menyn → Hjälp; öppnas själv efter första namnvalet): "Nytt i appen" = `HELP_NEWS`
   (`js/30-help.js`), animeringar av `tools/help_anim.py` – allt i `tools/HJALP.md`.
+- **Ledare** (Filter → Lager `#toggleLeader`, av som standard, `js/69-leader.js`, `css/74-leader.css`): under en pågående tävling en lista under
+  väderchipet (`#leadPill`, topp 5 + du) och 👑 efter ledarens namn på båtens etikett. Poäng = de 5 längsta av varje art (abborre, gädda, gös) ihop,
+  bara fångster som räknas (API:ets `approved` + minimum abborre 25, gädda 50, gös 35 cm). Data = live-fångsterna, ingen egen hämtning.
 - **Heatmap** (Kartlägen → Heatmap sist): fångster från tävlingarna, fyra stilar, egen bottenruta, inte
   samtidigt som Kartanalys, "Heatmap"-skylt under väder. Data från Fiskfiskarnas API (historik +
   live under tävling, kopia i telefonen, Inställningar → Fångstdata). Allt i `tools/NOTES_HEATMAP.md`.

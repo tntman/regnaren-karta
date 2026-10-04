@@ -4,6 +4,7 @@
     <button type="button" id="wakeBadge" hidden aria-label="Skärmen hålls tänd – tryck för att stänga av" title="Skärmen hålls tänd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg></button>
     <div id="ltPill" role="status" aria-live="polite"><svg viewBox="0 0 24 24"><path d="M13.5 2 5 13.5h5.5L9 22l9.5-12.5H13z" fill="#FFF08C" stroke="#3a1d00" stroke-width="1.4" stroke-linejoin="round"></path></svg><div><b id="ltPillMain"></b><small id="ltPillSub"></small></div></div>
     <button type="button" id="ltOffPill" hidden aria-label="Åskvarningen är avstängd – öppna Inställningar"><span class="ltOffIc">⚡✕</span>Åskvarning av</button>
+    <div id="leadPill" class="mapPill" hidden></div>
     <button type="button" id="hmPill" class="mapPill" hidden aria-label="Heatmap – öppna menyn"><span class="hmDot"></span>Heatmap</button>
     <button type="button" id="anPill" class="mapPill" hidden aria-label="Kartanalys – öppna menyn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><defs><mask id="anIcPill"><rect width="24" height="24" fill="#fff"></rect><circle cx="15.5" cy="15" r="6.5" fill="#000"></circle><path d="M15.5 15 23 23" stroke="#000" stroke-width="5"></path></mask></defs><g mask="url(#anIcPill)"><path d="M2.5 5.5 7.5 3l6 2.5 5-2.5v11L13.5 16.5l-6-2.5-5 2.5z"></path><path d="M7.5 3v11M13.5 5.5v11"></path></g><circle cx="15.5" cy="15" r="4.3"></circle><path d="M18.6 18.1 21.5 21.5"></path></svg>Kartanalys</button>
     <div id="farAway"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11z"></path><circle cx="12" cy="10" r="2.2"></circle></svg><span class="farText" id="farText"></span></div>
@@ -252,6 +253,14 @@
         <span class="visLabel">Fog of war</span>
         <span class="toggle">
           <input type="checkbox" id="toggleFog">
+          <span class="toggleTrack"><span class="toggleThumb"></span></span>
+        </span>
+      </label>
+      <label class="visRow">
+        <span class="visSwatch visSwatch--wx">👑</span>
+        <span class="visLabel">Ledare</span>
+        <span class="toggle">
+          <input type="checkbox" id="toggleLeader">
           <span class="toggleTrack"><span class="toggleThumb"></span></span>
         </span>
       </label>

@@ -61,13 +61,13 @@
         el.classList.toggle('boatPip--group', c.names.length > 1);
         el.classList.toggle('boatPip--stale', (now - c.updatedAt) > BOAT_GRAY_MS);
         var nameEl = el.querySelector('.boatName');
-        var namesKey = c.names.join('\n');
+        var namesKey = c.names.map(function(n){ return n + leadCrownFor(n); }).join('\n');
         if (nameEl.getAttribute('data-names') !== namesKey){ // only touch the DOM when the names actually changed
           nameEl.setAttribute('data-names', namesKey);
           nameEl.innerHTML = '';
           c.names.forEach(function(n){
             var row = document.createElement('span');
-            row.textContent = shortBoatName(n);
+            row.textContent = shortBoatName(n) + leadCrownFor(n);
             nameEl.appendChild(row);
           });
         }

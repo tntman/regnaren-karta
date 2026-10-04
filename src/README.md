@@ -81,6 +81,7 @@ specificitet.
 | `64-messages.js` | snabbmeddelanden |
 | `66-catches.js` | fångsterna: format, hämtning från Fiskfiskarnas API (historik + live), kopian, Inställningar → Fångstdata |
 | `67-profiles.js` | Profiler: fiskarens ruta (`#pfCard`) ur API:ets anglers/anglerStats/dashboard/results/records, Profil i menyn, foton (`catchImg`) |
+| `69-leader.js` | Ledare (Filter → Lager, av som standard): live-ställningen under väderchipet + krona efter ledarens namn på båten (`leadCrownFor`, `24-boats.js`) |
 | `68-heatmap.js` | Heatmap: ritning (värme, per art, rutor, prickar), bottenrutan, fångstrutan, tryck på kartan |
 | `90-boot.js` | start (`boot()`) |
 | `92-rotation.js` | vridning: spara/återställ läget, service worker-registrering, slutet på skriptet |
