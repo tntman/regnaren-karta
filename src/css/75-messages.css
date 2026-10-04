@@ -37,7 +37,7 @@
   .msgCardBar{height:5px;border-radius:3px;background:rgba(255,255,255,.12);margin:7px 0 12px;overflow:hidden;}
   .msgCardBar i{display:block;height:100%;background:var(--amber);}
   .msgCardBtns{display:flex;gap:8px;}
-  .msgCardBtns button{flex:1;padding:10px;border-radius:11px;border:none;font:inherit;font-weight:700;font-size:14px;background:rgba(255,255,255,.08);color:var(--offwhite);cursor:pointer;}
+  .msgCardBtns button{flex:1;padding:10px;border-radius:10px;border:none;font:inherit;font-weight:700;font-size:14px;background:rgba(255,255,255,.08);color:var(--offwhite);cursor:pointer;}
   .msgCardBtns button.a{background:var(--amber);color:var(--navy);}
   .msgCardBtns button[hidden]{display:none;}
   @media (orientation:landscape) and (max-height:520px){ #msgCard{left:auto;width:420px;} }

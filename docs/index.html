@@ -900,7 +900,7 @@
   #undoToast svg{flex:0 0 auto;}
   #undoToast circle.run{animation:undoRun 6s linear forwards;}
   @keyframes undoRun{from{stroke-dashoffset:0;}to{stroke-dashoffset:63;}}
-  #undoBtn{flex:0 0 auto;min-height:44px;padding:0 18px;border:none;border-radius:10px;background:var(--amber);color:var(--navy);font:inherit;font-weight:800;font-size:15px;cursor:pointer;}
+  #undoBtn{flex:0 0 auto;min-height:46px;padding:0 18px;border:none;border-radius:10px;background:var(--amber);color:var(--navy);font:inherit;font-weight:700;font-size:14px;cursor:pointer;}
   .sheetActs .save{background:var(--amber);color:var(--navy);}
   .sheetActs button:active{transform:scale(.97);}
   /* the type of someone else's spot / "ADMIN": small pills at the end of the "Sparad av" line */
@@ -917,11 +917,13 @@
   #wpName::placeholder{color:var(--text-muted);}
   .sheetRow{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;}
   .btnGhost, .btnPrimary{
-    border:none;border-radius:10px;padding:11px 16px;font-size:14px;font-weight:600;
-    font-family:inherit;-webkit-tap-highlight-color:transparent;
+    border:none;border-radius:10px;min-height:46px;padding:0 16px;font-size:14px;font-weight:700;
+    font-family:inherit;-webkit-tap-highlight-color:transparent;cursor:pointer;
   }
-  .btnGhost{background:transparent;color:var(--text-muted);}
-  .btnGhost.danger{color:var(--danger);}
+  .btnGhost{background:rgba(255,255,255,.08);color:var(--offwhite);}   /* the other button: grey, one amber per box */
+  /* every action button gives the same feedback as the spot sheet's: a little smaller while pressed */
+  .btnGhost:active, .btnPrimary:active, .msgCardBtns button:active, #undoBtn:active, #pfLoad:active,
+  .helpInstallBtn:active, .offBtn:active, .btnLogout:active{transform:scale(.97);}
   .btnPrimary{background:var(--amber);color:var(--navy);}
 
   .btnReroll{
@@ -1071,7 +1073,6 @@
     padding:11px 16px;font-size:14px;font-weight:600;font-family:inherit;
     -webkit-tap-highlight-color:transparent;
   }
-  .btnLogout:active{transform:scale(.98);}
 
   /* offline / local-only indicator, under the REGNAREN title */
   #netBadge{
@@ -1402,7 +1403,7 @@
   .helpStep{display:flex;gap:10px;align-items:flex-start;margin-top:9px;font-size:13.5px;line-height:1.4;color:#dbe4e7;}
   .helpStep .num{width:22px;height:22px;border-radius:50%;background:rgba(232,163,61,.2);color:var(--amber);font-weight:700;display:flex;align-items:center;justify-content:center;flex:0 0 auto;font-size:12px;}
   .shareIc{width:15px;height:15px;vertical-align:-2px;}
-  .helpInstallBtn{display:block;width:100%;margin-top:10px;padding:11px;border-radius:10px;border:none;background:var(--amber);color:#0B2A3A;font:inherit;font-weight:700;font-size:14.5px;cursor:pointer;}
+  .helpInstallBtn{display:block;width:100%;min-height:46px;margin-top:10px;padding:0 11px;border-radius:10px;border:none;background:var(--amber);color:#0B2A3A;font:inherit;font-weight:700;font-size:14px;cursor:pointer;}
   .helpOk{margin-top:9px;background:rgba(127,212,127,.12);border:1px solid rgba(127,212,127,.35);border-radius:10px;padding:8px 10px;font-size:13px;color:#bff0bf;}
   .helpWarn{margin-top:9px;font-size:12.5px;background:rgba(214,69,69,.12);border:1px solid rgba(214,69,69,.35);border-radius:8px;padding:7px 10px;color:#ffc9c9;}
   .helpVer{font-size:11.5px !important;color:var(--text-muted) !important;}
@@ -1668,7 +1669,7 @@
   .msgCardBar{height:5px;border-radius:3px;background:rgba(255,255,255,.12);margin:7px 0 12px;overflow:hidden;}
   .msgCardBar i{display:block;height:100%;background:var(--amber);}
   .msgCardBtns{display:flex;gap:8px;}
-  .msgCardBtns button{flex:1;padding:10px;border-radius:11px;border:none;font:inherit;font-weight:700;font-size:14px;background:rgba(255,255,255,.08);color:var(--offwhite);cursor:pointer;}
+  .msgCardBtns button{flex:1;padding:10px;border-radius:10px;border:none;font:inherit;font-weight:700;font-size:14px;background:rgba(255,255,255,.08);color:var(--offwhite);cursor:pointer;}
   .msgCardBtns button.a{background:var(--amber);color:var(--navy);}
   .msgCardBtns button[hidden]{display:none;}
   @media (orientation:landscape) and (max-height:520px){ #msgCard{left:auto;width:420px;} }
@@ -1715,7 +1716,7 @@
   #pfBio[hidden]{display:none;}
   #pfNone{font-size:13.5px;color:var(--text-muted);margin:10px 0 2px;display:flex;flex-direction:column;align-items:flex-start;gap:8px;}
   #pfNone[hidden], #pfStats[hidden], #pfLoad[hidden]{display:none;}
-  #pfLoad{padding:9px 14px;border-radius:11px;border:none;font:inherit;font-weight:700;font-size:14px;background:rgba(255,255,255,.1);color:var(--offwhite);cursor:pointer;}
+  #pfLoad{min-height:46px;padding:0 16px;border-radius:10px;border:none;font:inherit;font-weight:700;font-size:14px;background:rgba(255,255,255,.08);color:var(--offwhite);cursor:pointer;}
   #pfCard .wpData{margin:10px 0 8px;}
   .pfH{font-size:11px;letter-spacing:.06em;font-weight:700;text-transform:uppercase;color:var(--text-muted);margin:10px 0 3px;}
   .pfRow{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:14px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.07);}
@@ -2949,7 +2950,7 @@
     <div class="modalDesc" id="boatInfoMeta">—</div>
     <div class="sheetRow">
       <button id="boatInfoGo" class="btnPrimary" type="button">➤ Åk hit</button>
-      <button id="boatInfoClose" class="btnPrimary" type="button">Stäng</button>
+      <button id="boatInfoClose" class="btnGhost" type="button">Stäng</button>
     </div>
   </div>
 

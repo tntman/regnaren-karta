@@ -161,7 +161,7 @@
   #undoToast svg{flex:0 0 auto;}
   #undoToast circle.run{animation:undoRun 6s linear forwards;}
   @keyframes undoRun{from{stroke-dashoffset:0;}to{stroke-dashoffset:63;}}
-  #undoBtn{flex:0 0 auto;min-height:44px;padding:0 18px;border:none;border-radius:10px;background:var(--amber);color:var(--navy);font:inherit;font-weight:800;font-size:15px;cursor:pointer;}
+  #undoBtn{flex:0 0 auto;min-height:46px;padding:0 18px;border:none;border-radius:10px;background:var(--amber);color:var(--navy);font:inherit;font-weight:700;font-size:14px;cursor:pointer;}
   .sheetActs .save{background:var(--amber);color:var(--navy);}
   .sheetActs button:active{transform:scale(.97);}
   /* the type of someone else's spot / "ADMIN": small pills at the end of the "Sparad av" line */
@@ -178,11 +178,13 @@
   #wpName::placeholder{color:var(--text-muted);}
   .sheetRow{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;}
   .btnGhost, .btnPrimary{
-    border:none;border-radius:10px;padding:11px 16px;font-size:14px;font-weight:600;
-    font-family:inherit;-webkit-tap-highlight-color:transparent;
+    border:none;border-radius:10px;min-height:46px;padding:0 16px;font-size:14px;font-weight:700;
+    font-family:inherit;-webkit-tap-highlight-color:transparent;cursor:pointer;
   }
-  .btnGhost{background:transparent;color:var(--text-muted);}
-  .btnGhost.danger{color:var(--danger);}
+  .btnGhost{background:rgba(255,255,255,.08);color:var(--offwhite);}   /* the other button: grey, one amber per box */
+  /* every action button gives the same feedback as the spot sheet's: a little smaller while pressed */
+  .btnGhost:active, .btnPrimary:active, .msgCardBtns button:active, #undoBtn:active, #pfLoad:active,
+  .helpInstallBtn:active, .offBtn:active, .btnLogout:active{transform:scale(.97);}
   .btnPrimary{background:var(--amber);color:var(--navy);}
 
   .btnReroll{
@@ -332,7 +334,6 @@
     padding:11px 16px;font-size:14px;font-weight:600;font-family:inherit;
     -webkit-tap-highlight-color:transparent;
   }
-  .btnLogout:active{transform:scale(.98);}
 
   /* offline / local-only indicator, under the REGNAREN title */
   #netBadge{

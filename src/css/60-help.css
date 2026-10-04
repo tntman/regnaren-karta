@@ -55,7 +55,7 @@
   .helpStep{display:flex;gap:10px;align-items:flex-start;margin-top:9px;font-size:13.5px;line-height:1.4;color:#dbe4e7;}
   .helpStep .num{width:22px;height:22px;border-radius:50%;background:rgba(232,163,61,.2);color:var(--amber);font-weight:700;display:flex;align-items:center;justify-content:center;flex:0 0 auto;font-size:12px;}
   .shareIc{width:15px;height:15px;vertical-align:-2px;}
-  .helpInstallBtn{display:block;width:100%;margin-top:10px;padding:11px;border-radius:10px;border:none;background:var(--amber);color:#0B2A3A;font:inherit;font-weight:700;font-size:14.5px;cursor:pointer;}
+  .helpInstallBtn{display:block;width:100%;min-height:46px;margin-top:10px;padding:0 11px;border-radius:10px;border:none;background:var(--amber);color:#0B2A3A;font:inherit;font-weight:700;font-size:14px;cursor:pointer;}
   .helpOk{margin-top:9px;background:rgba(127,212,127,.12);border:1px solid rgba(127,212,127,.35);border-radius:10px;padding:8px 10px;font-size:13px;color:#bff0bf;}
   .helpWarn{margin-top:9px;font-size:12.5px;background:rgba(214,69,69,.12);border:1px solid rgba(214,69,69,.35);border-radius:8px;padding:7px 10px;color:#ffc9c9;}
   .helpVer{font-size:11.5px !important;color:var(--text-muted) !important;}
