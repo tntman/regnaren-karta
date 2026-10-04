@@ -254,7 +254,7 @@
   // the banner: a real competition going on (this phone's real copy of the catches) -> you can't be seen by the others
   if (TEST_MODE) setTimeout(function(){
     var c = null; try { c = JSON.parse(localStorage.getItem(CATCH_REAL_KEY) || 'null'); } catch(e){}
-    document.getElementById('demoBannerWarn').hidden = !(c && c.v === 3 && Date.now() - c.at < 12 * 3600e3 && (c.comps || []).some(function(x){ return x.status === 'active'; }));
+    document.getElementById('demoBannerWarn').hidden = !(c && c.v >= 3 && Date.now() - c.at < 12 * 3600e3 && (c.comps || []).some(function(x){ return x.status === 'active'; }));
   }, 0);
   window.__ffTest = function(){ return { on: TEST_MODE, project: FIREBASE_CONFIG.projectId, state: testState, auto: !!testAutoTimer, storm: !!testStorm,
     bots: testBots.map(function(b){ return { id: b.id, lat: b.lat, lon: b.lon }; }), wps: waypoints.map(function(w){ return w.name; }), boats: Object.keys(boatPositions) }; };

@@ -52,10 +52,10 @@
     }
     return null;
   }
-  function catchPack(list){ return JSON.stringify(list.map(function(c){ return [c.t, c.comp, c.who, c.sp, c.cm, +c.lat.toFixed(6), +c.lon.toFixed(6)]; })); }
-  function catchUnpack(rows){
+  function catchPack(list){ return JSON.stringify(list.map(function(c){ return [c.t, c.comp, c.who, c.sp, c.cm, c.lat == null ? null : +c.lat.toFixed(6), c.lon == null ? null : +c.lon.toFixed(6)]; })); }
+  function catchUnpack(rows, anyPlace){
     var a = []; try { a = JSON.parse(rows || '[]'); } catch(e){}
-    return a.map(function(r){ return normCatch({ t: r[0], comp: r[1], who: r[2], sp: r[3], cm: r[4], lat: r[5], lon: r[6] }); }).filter(Boolean);
+    return a.map(function(r){ return normCatch({ t: r[0], comp: r[1], who: r[2], sp: r[3], cm: r[4], lat: r[5], lon: r[6] }, anyPlace === true); }).filter(Boolean);
   }
   function catchOnMap(list){
     list.forEach(function(c){ var p = latLonToImgPx(c.lat, c.lon); c.px = p.x; c.py = p.y; });
@@ -102,14 +102,16 @@
   function catchReadCopy(){
     if (catchHist) return;
     try { var c = JSON.parse(localStorage.getItem(CATCH_CACHE_KEY) || 'null');
-      if (c && c.v === 3) catchHist = { at: c.at, total: c.total, comps: c.comps || [], prof: c.prof || {}, list: catchUnpack(c.rows) }; } catch(e){}   // (v2: no profiles -> fetched again)
+      if (c && c.v === 4) catchHist = { at: c.at, total: c.total, comps: c.comps || [], prof: c.prof || {}, list: catchUnpack(c.rows), away: catchUnpack(c.away, true) }; } catch(e){}   // (v3: no "away" -> fetched again)
     if (catchHist) catchMerge();
   }
-  // the history + the live catches (the same catch once) -> catchData
+  // the history + the live catches (the same catch once) -> catchData:
+  //   list = caught in this lake (heat map, Kartanalys); comp = that + the lake's competitions in other waters (the profile)
   function catchMerge(){
-    var seen = {}, list = [];
-    (catchHist ? catchHist.list : []).concat(catchLive ? catchLive.list : []).forEach(function(c){ if (!seen[c.id]){ seen[c.id] = 1; list.push(c); } });
-    catchData = { list: catchOnMap(list) };
+    var once = function(lists){ var seen = {}, out = []; lists.forEach(function(l){ l.forEach(function(c){ if (!seen[c.id]){ seen[c.id] = 1; out.push(c); } }); }); return out; };
+    var H = catchHist || { list: [], away: [] }, L = catchLive || { list: [], all: [] };
+    var list = catchOnMap(once([H.list, L.list]));
+    catchData = { list: list, comp: once([list, H.away, L.all]).sort(function(a, b){ return a.t - b.t; }) };
     catchesChanged();
   }
   function loadHistory(){
@@ -118,13 +120,17 @@
     catchGet('dashboard.php', 'h', function(err, d){
       catchLoading = false;
       if (!err && !(d && Array.isArray(d.heatmap))) err = new Error('oväntat svar');
-      if (err){ catchErr = catchErrOf(err); if (!catchData) catchData = { list: [] }; catchesChanged(); return; }
+      if (err){ catchErr = catchErrOf(err); if (!catchData) catchData = { list: [], comp: [] }; catchesChanged(); return; }
       catchErr = null;
-      catchHist = { at: Date.now(), total: d.heatmap.length, prof: profPack(d),   // (profPack: 67-profiles.js)
-        list: d.heatmap.map(normCatch).filter(function(c){ return c && catchLakeOf(c) === LAKE_ID; }),
-        comps: (d.competitions || []).filter(function(c){ return catchSameWater(c.water || c.location, LAKE); })
-          .map(function(c){ return { id: String(c.competition_id), name: c.competition_name || '', date: c.date || '', status: c.status || '' }; }) };
-      try { localStorage.setItem(CATCH_CACHE_KEY, JSON.stringify({ v: 3, at: catchHist.at, total: catchHist.total, comps: catchHist.comps, prof: catchHist.prof, rows: catchPack(catchHist.list) })); } catch(e){}
+      var comps = (d.competitions || []).filter(function(c){ return catchSameWater(c.water || c.location, LAKE); })
+          .map(function(c){ return { id: String(c.competition_id), name: c.competition_name || '', date: c.date || '', status: c.status || '' }; });
+      var ids = {}; comps.forEach(function(c){ ids[c.id] = 1; });
+      var all = d.heatmap.map(function(x){ return normCatch(x, true); }).filter(Boolean);
+      var here = function(c){ return c.lat != null && catchLakeOf(c) === LAKE_ID; };
+      catchHist = { at: Date.now(), total: d.heatmap.length, prof: profPack(d), comps: comps,   // (profPack: 67-profiles.js)
+        list: all.filter(here),
+        away: all.filter(function(c){ return ids[c.comp] && !here(c); }) };   // (the lake's competitions, caught in another water: the profile)
+      try { localStorage.setItem(CATCH_CACHE_KEY, JSON.stringify({ v: 4, at: catchHist.at, total: catchHist.total, comps: catchHist.comps, prof: catchHist.prof, rows: catchPack(catchHist.list), away: catchPack(catchHist.away) })); } catch(e){}
       catchMerge();
       catchLiveTick();
     });

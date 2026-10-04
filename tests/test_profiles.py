@@ -24,6 +24,10 @@ PROF = {
     'records': [{'angler_id': 'ANG001', 'RECORD_ART': 'Pike', 'RECORD_CM': 112.0, 'RECORD_ACTIVE': 'TRUE'}, {'angler_id': 'ANG001', 'RECORD_ART': 'Perch', 'RECORD_CM': 38.0, 'RECORD_ACTIVE': 'FALSE'}],
 }
 HIST = [fakefb.api_row(ms_ago(60 * 24 * 7 + i), 'regnaren1', 'Filip' if i < 3 else 'Calle', 'gadda', 60 + i, B4[0] + i * 0.0001, B4[1]) for i in range(5)]
+# Östra Vitten (inside Regnaren's map): in a Regnaren competition -> his profile, not the heat map; in another competition -> neither
+OV = (58.991037, 15.714671)
+HIST += [fakefb.api_row(ms_ago(60 * 24 * 6), 'reg2', 'Filip', 'gadda', 53, OV[0], OV[1], lake='Östra Vitten'),
+         fakefb.api_row(ms_ago(60 * 24 * 6 + 1), 'fiskfiskOpen', 'Filip', 'gadda', 99, OV[0], OV[1], lake='Östra Vitten')]
 def api(**kw): return dict(PROF, heatmap=HIST, competitions=[{'competition_id': 'reg2', 'competition_name': 'Regnaren 2', 'date': TODAY, 'status': 'done', 'water': 'Regnaren'}], **kw)
 POS = [{'uid': 'kalle', 'name': 'Calle', 'lat': B1[0], 'lon': B1[1], 'ageMin': 0},
        {'uid': 'pia', 'name': 'Pia', 'lat': B1[0] + 0.004, 'lon': B1[1], 'ageMin': 0}]
@@ -49,6 +53,8 @@ with sync_playwright() as p:
     check('...opens your profile: picture, name, nickname, since, home, bio', pf(pg) and pg.is_visible('#pfAva img') and 'Filip' in t and '”Hajen”' in t and 'sedan 2020' in t and 'Valdemarsvik' in t and 'Född i en vass.' in t, t[:200])
     check('...rank, ELO, wins, competitions; biggest fish, the pike a club record (★)', '2:a' in t and '2606' in t and '15 · 43 %' in t and '35' in t and '112 cm' in t and '★ Klubbrekord' in t and '42 cm' in t and t.count('Klubbrekord') == 1, t)
     check('..."Visa på kartan" (you are on the map) and "Fångster i Regnaren (3)"', pg.is_visible('#pfMap') and pg.inner_text('#pfCatches') == 'Fångster i Regnaren (3)')
+    t = pg.inner_text('#pfList')
+    check('...the list: his 3 here + the 53 cm pike in Östra Vitten during Regnaren 2 (not the 99 cm from another competition)', pg.evaluate("document.querySelectorAll('#pfList .pfRow').length") == 4 and '53 cm' in t and '99 cm' not in t, t)
     pg.screenshot(path='shot_profile.png')
     # "Fångster": the heat map with only Filip's catches; ✕ = everyone's again
     pg.click('#pfCatches'); pg.wait_for_timeout(700)

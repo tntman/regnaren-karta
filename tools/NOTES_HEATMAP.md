@@ -52,7 +52,10 @@ bottenrutan, fångstrutan, tryck på kartan), `src/css/72-heatmap.css`, HTML i `
     (= den annullerade fångstens `timestamp`) – båda tas bort. Slås ihop med historiken på `id`.
     **Tävling vs sjö (Filips regel 2026-10-05):** `catchLive.all` = hela tävlingen (`competitionId`, alla vatten, även
     utan GPS) → Ledare och Senaste fisk. `catchLive.list` = bara fångster tagna i sjön (`lake` + position) → heatmap,
-    Kartanalys, profilens fångster. En tävling kan fiskas i flera sjöar (Regnaren 1: 12 fångster i Östra Vitten).
+    Kartanalys. En tävling kan fiskas i flera sjöar (Regnaren 1: 12 fångster i Östra Vitten).
+    Historiken likadant: `catchHist.list` = i sjön, `catchHist.away` = sjöns tävlingar i andra vatten (kopian `v:4`,
+    fältet `away`). `catchData.list` = sjön (heatmap, Kartanalys, knappen "Fångster i <sjö> (n)"), `catchData.comp` =
+    sjön + sjöns tävlingar överallt → profilens/båtrutans fångstlista (Filip i Regnaren: 20, varav 3 i Östra Vitten).
     ~100 fångster ≈ 6,6 kB gzip, ≈ 0,5 MB per tävlingsdag och telefon.
 - **Inställningar → Fångstdata** (`data-sec="catch"`, `catchRenderSettings`): senast hämtad, antal i sjön/totalt,
   kopians storlek, nästa hämtning + varför, tävlingarna på sjön, live (takt, senast), dagens anrop och data

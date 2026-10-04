@@ -37,7 +37,7 @@
     if (!TEST_MODE){ catchReadCopy(); return catchHist && catchHist.prof; }
     var P = null;
     try { P = JSON.parse(localStorage.getItem(PF_DEMO_KEY) || 'null'); var c = JSON.parse(localStorage.getItem(CATCH_REAL_KEY) || 'null');
-      if (!P && c && c.v === 3) P = c.prof; } catch(e){}
+      if (!P && c && c.v >= 3) P = c.prof; } catch(e){}
     return P;
   }
   // the profile of a name in the app (any capitalisation), or null (an unknown name, or nothing fetched yet)
@@ -68,8 +68,9 @@
     });
     return best;
   }
-  function pfCatches(name){ return hmAll().filter(function(c){ return catchPlain(c.who) === catchPlain(name); }); }
-  // someone's catches in this lake, newest first (the boat box and the profile): "● Gädda 78 cm   26/9 13:00"
+  // (catchData.comp: caught in this lake + the lake's competitions in other waters -- a competition can move lake)
+  function pfCatches(name){ return (catchData ? catchData.comp : []).filter(function(c){ return catchPlain(c.who) === catchPlain(name); }); }
+  // someone's catches in this lake and its competitions, newest first (the boat box and the profile): "● Gädda 78 cm   26/9 13:00"
   function pfCatchRows(name, max){ max = max || 8;
     var l = pfCatches(name).sort(function(a, b){ return b.t - a.t; });
     return l.slice(0, max).map(function(c){
@@ -110,7 +111,8 @@
     document.getElementById('pfBoat').textContent = boat && !boat.me ? 'Båten på kartan · uppdaterad ' + timeAgo(boat.updatedAt) : '';
     document.getElementById('pfMap').hidden = !boat;
     document.getElementById('pfGo').hidden = !boat || !!boat.me;
-    var cb = document.getElementById('pfCatches'); cb.hidden = !n; cb.textContent = 'Fångster i ' + LAKE.name + ' (' + n + ')';
+    var nh = hmAll().filter(function(c){ return catchPlain(c.who) === catchPlain(p.n); }).length;   // (the button: the heat map = only this lake)
+    var cb = document.getElementById('pfCatches'); cb.hidden = !nh; cb.textContent = 'Fångster i ' + LAKE.name + ' (' + nh + ')';
     pfCard.classList.add('show');
     return true;
   }
