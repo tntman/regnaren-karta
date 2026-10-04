@@ -94,6 +94,7 @@
     pl.innerHTML = n ? '<div class="pfH">Fångster</div>' + pfCatchRows(p.n) : '';
     document.getElementById('pfBoat').textContent = boat && !boat.me ? 'Båten på kartan · uppdaterad ' + timeAgo(boat.updatedAt) : '';
     document.getElementById('pfMap').hidden = !boat;
+    document.getElementById('pfGo').hidden = !boat || !!boat.me;
     var cb = document.getElementById('pfCatches'); cb.hidden = !n; cb.textContent = 'Fångster i ' + LAKE.name + ' (' + n + ')';
     pfCard.classList.add('show');
     return true;
@@ -102,6 +103,10 @@
   pfCard.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
   sheetSwipe(pfCard, closeProfile);
   document.getElementById('pfClose').addEventListener('click', closeProfile);
+  document.getElementById('pfGo').addEventListener('click', function(){   // Åk hit: the lead line on their boat
+    var b = pfName && pfBoat(pfName), n = pfName; closeProfile(); if (!b || b.me) return;
+    var p = latLonToImgPx(b.lat, b.lon); startNav(n, p.x, p.y);
+  });
   document.getElementById('pfMap').addEventListener('click', function(){
     var b = pfName && pfBoat(pfName); closeProfile(); if (!b) return;
     if (b.me) centerOnFix(); else centerOnWaypoint(b);

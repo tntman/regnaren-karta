@@ -99,7 +99,13 @@
   var boatInfoCatchesEl = document.getElementById('boatInfoCatches');
   var boatInfoMetaEl = document.getElementById('boatInfoMeta');
   var boatInfoCloseBtn = document.getElementById('boatInfoClose');
+  var boatInfoCur = null;
+  document.getElementById('boatInfoGo').addEventListener('click', function(){   // the lead line on that boat (58-akhit-spotdata.js)
+    var c = boatInfoCur; hideBoatInfo(); if (!c) return;
+    var p = latLonToImgPx(c.lat, c.lon); startNav((c.names || [c.name]).join(' + '), p.x, p.y);
+  });
   function showBoatInfo(cluster){
+    boatInfoCur = cluster;
     var names = cluster.names || [cluster.name || 'Okänd'];
     if (names.length === 1 && openProfile(names[0])) return;   // one person with a profile: their profile (67-profiles.js)
     var group = names.length > 1;                       // several in the boat: no title, each name is the heading over their own catches

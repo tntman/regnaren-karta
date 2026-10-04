@@ -803,7 +803,6 @@
     transform:translate(-50%,-50%) rotate(45deg);
   }
   .boatPip:active .boatDot{transform:translate(-50%,-50%) rotate(45deg) scale(.88);}
-  .boatPip--group .boatDot{width:15px;height:15px;}
   .boatPip--stale .boatDot{background:#9aa6ab;}
   .boatName{
     position:absolute;left:14px;top:0;
@@ -2410,7 +2409,7 @@
     <div class="pfH">Senaste tävlingar</div><div id="pfRes"></div>
     <div id="pfList"></div>
     <div id="pfBoat"></div>
-    <div class="msgCardBtns"><button type="button" id="pfMap" class="a">Visa på kartan</button><button type="button" id="pfCatches">Fångster</button></div>
+    <div class="msgCardBtns"><button type="button" id="pfGo" class="a">➤ Åk hit</button><button type="button" id="pfMap">Visa på kartan</button><button type="button" id="pfCatches">Fångster</button></div>
   </div>
   <div id="hmCard" role="dialog" aria-label="Fångst"><div class="grab"><button type="button" id="hmCardClose" class="gripX" aria-label="Stäng">✕</button></div>
     <div id="hmCardKick"></div><div id="hmCardTitle"></div><img id="hmCardImg" class="catchImg" alt="Foto av fångsten" hidden>
@@ -2917,6 +2916,7 @@
     <div id="boatInfoCatches"></div>
     <div class="modalDesc" id="boatInfoMeta">—</div>
     <div class="sheetRow">
+      <button id="boatInfoGo" class="btnPrimary" type="button">➤ Åk hit</button>
       <button id="boatInfoClose" class="btnPrimary" type="button">Stäng</button>
     </div>
   </div>
@@ -4335,7 +4335,13 @@
   var boatInfoCatchesEl = document.getElementById('boatInfoCatches');
   var boatInfoMetaEl = document.getElementById('boatInfoMeta');
   var boatInfoCloseBtn = document.getElementById('boatInfoClose');
+  var boatInfoCur = null;
+  document.getElementById('boatInfoGo').addEventListener('click', function(){   // the lead line on that boat (58-akhit-spotdata.js)
+    var c = boatInfoCur; hideBoatInfo(); if (!c) return;
+    var p = latLonToImgPx(c.lat, c.lon); startNav((c.names || [c.name]).join(' + '), p.x, p.y);
+  });
   function showBoatInfo(cluster){
+    boatInfoCur = cluster;
     var names = cluster.names || [cluster.name || 'Okänd'];
     if (names.length === 1 && openProfile(names[0])) return;   // one person with a profile: their profile (67-profiles.js)
     var group = names.length > 1;                       // several in the boat: no title, each name is the heading over their own catches
@@ -10239,6 +10245,7 @@
     pl.innerHTML = n ? '<div class="pfH">Fångster</div>' + pfCatchRows(p.n) : '';
     document.getElementById('pfBoat').textContent = boat && !boat.me ? 'Båten på kartan · uppdaterad ' + timeAgo(boat.updatedAt) : '';
     document.getElementById('pfMap').hidden = !boat;
+    document.getElementById('pfGo').hidden = !boat || !!boat.me;
     var cb = document.getElementById('pfCatches'); cb.hidden = !n; cb.textContent = 'Fångster i ' + LAKE.name + ' (' + n + ')';
     pfCard.classList.add('show');
     return true;
@@ -10247,6 +10254,10 @@
   pfCard.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
   sheetSwipe(pfCard, closeProfile);
   document.getElementById('pfClose').addEventListener('click', closeProfile);
+  document.getElementById('pfGo').addEventListener('click', function(){   // Åk hit: the lead line on their boat
+    var b = pfName && pfBoat(pfName), n = pfName; closeProfile(); if (!b || b.me) return;
+    var p = latLonToImgPx(b.lat, b.lon); startNav(n, p.x, p.y);
+  });
   document.getElementById('pfMap').addEventListener('click', function(){
     var b = pfName && pfBoat(pfName); closeProfile(); if (!b) return;
     if (b.me) centerOnFix(); else centerOnWaypoint(b);

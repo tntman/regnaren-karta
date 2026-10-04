@@ -64,7 +64,6 @@
     transform:translate(-50%,-50%) rotate(45deg);
   }
   .boatPip:active .boatDot{transform:translate(-50%,-50%) rotate(45deg) scale(.88);}
-  .boatPip--group .boatDot{width:15px;height:15px;}
   .boatPip--stale .boatDot{background:#9aa6ab;}
   .boatName{
     position:absolute;left:14px;top:0;
