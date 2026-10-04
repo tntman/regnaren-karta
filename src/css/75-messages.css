@@ -45,7 +45,7 @@
   .rbText{background:linear-gradient(90deg,#ff5f6d,#ffc371,#fff36b,#6bff95,#5ee7ff,#8f7bff,#ff6bd6,#ff5f6d);background-size:300% 100%;
     -webkit-background-clip:text;background-clip:text;color:transparent;animation:rbSlide 6s linear infinite;}
   @keyframes rbSlide{from{background-position:0% 50%;}to{background-position:300% 50%;}}
-  #msgPop .msgOwnBtn{display:inline-flex;align-items:center;gap:6px;border-color:rgba(255,195,113,.6);}
+  #msgPop .msgOwnBtn{display:inline-flex;align-items:center;gap:6px;}
   #msgPop .msgOwnBtn svg{width:15px;height:15px;color:#ffc371;flex:0 0 auto;}
   @media (prefers-reduced-motion:reduce){.rbText{animation:none;}}
   /* the small box for your own text (15 characters) */

@@ -23,6 +23,18 @@ with sync_playwright() as p:
     ov = pg.evaluate("""() => { var r = Array.prototype.filter.call(document.querySelectorAll('.osmN'), e => e.style.display !== 'none').map(e => e.querySelector('span').getBoundingClientRect()), n = 0;
         for (var i = 0; i < r.length; i++) for (var j = i + 1; j < r.length; j++) if (r[i].left < r[j].right - 6 && r[i].right > r[j].left + 6 && r[i].top < r[j].bottom - 2 && r[i].bottom > r[j].top + 2) n++; return n; }""")
     check('no labels on top of each other', ov == 0, ov)
+    # the look (Inställningar → Kartan → Platsnamn): defaults = as before; changed -> applied, remembered, reset
+    look = "() => { var e = document.querySelector('.osmN'), sp = e.querySelector('span'); return [getComputedStyle(e).opacity, getComputedStyle(sp).fontSize, getComputedStyle(e, '::before').width]; }"
+    check('defaults are as before: 50 %, 12 px text, 1.75 px dot', pg.evaluate(look) == ['0.5', '12px', '1.75px'], pg.evaluate(look))
+    pg.evaluate("(() => { var s = document.getElementById('nmSize'); s.value = 16; s.dispatchEvent(new Event('input')); s = document.getElementById('nmOp'); s.value = 90; s.dispatchEvent(new Event('input')); s = document.getElementById('nmDot'); s.value = 4; s.dispatchEvent(new Event('input')); })()")
+    check('size, visibility and dot follow the sliders', pg.evaluate(look) == ['0.9', '16px', '4px'], pg.evaluate(look))
+    n_all = st(pg)['shown']
+    pg.evaluate("document.querySelector('#nmKindSeg [data-k=w]').click()"); pg.wait_for_timeout(100)
+    check('"Bara vatten": the land names are hidden', pg.evaluate("Array.prototype.filter.call(document.querySelectorAll('.osmN.land'), e => e.style.display !== 'none').length") == 0 and st(pg)['shown'] <= n_all, st(pg))
+    pg.reload(); pg.wait_for_timeout(1500)
+    check('...remembered after a reload', pg.evaluate(look) == ['0.9', '16px', '4px'] and st(pg)['cfg']['kind'] == 'w', st(pg))
+    pg.evaluate("document.getElementById('nmReset').click()"); pg.wait_for_timeout(100)
+    check('Återställ: back to the defaults', pg.evaluate(look) == ['0.5', '12px', '1.75px'] and st(pg)['cfg']['kind'] == 'all', st(pg))
     pg.evaluate("document.getElementById('toggleNames').click()"); pg.wait_for_timeout(100)
     check('switched off: hidden', not st(pg)['on'] and pg.evaluate("getComputedStyle(document.getElementById('osmNames')).display") == 'none')
     # the choice is remembered over a reload (rotation)

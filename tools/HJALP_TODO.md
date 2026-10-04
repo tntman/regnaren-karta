@@ -75,3 +75,5 @@ i avsnitt, Ångra, åskvarningen alltid + "dragit förbi", solnedgången, Täckn
 - Snabbmeddelanden: 7 min (inte 15), mindre bubblor med tunn ram, namnet "Calle…" turas om med texten, fisk i artens färg, Egen text regnbåge. (Hjälp-texten rad ~237 säger 15 min + regnbågskant – skriv om.)
 
 - Snabbmeddelanden (uppdatering): färger i 3 min sedan tonas de och blir svarta; fiskmeddelandet "Gädda 78 🐟"; namnet efter texten (ingen rotation).
+
+- Inställningar → Kartan → Platsnamn på kartan: storlek, synlighet, prick, alla namn/bara vatten, Återställ (standard = som förut).

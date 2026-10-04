@@ -133,6 +133,26 @@
       </div>
       <div class="settingsRow" style="flex-direction:column;align-items:stretch;">
         <div class="settingsRowText">
+          <div class="settingsRowTitle">Platsnamn på kartan</div>
+          <div class="settingsRowDesc">Hur namnen från OpenStreetMap ser ut (slås på under Filter → Namn).</div>
+        </div>
+        <div class="satRow"><span class="cpLbl">Storlek</span>
+          <input type="range" class="satSlider cpSlider" id="nmSize" min="9" max="20" step="1" value="12" aria-label="Namnens textstorlek">
+          <span class="satVal" id="nmSizeVal">12 px</span></div>
+        <div class="satRow"><span class="cpLbl">Synlighet</span>
+          <input type="range" class="satSlider cpSlider" id="nmOp" min="20" max="100" step="5" value="50" aria-label="Namnens synlighet">
+          <span class="satVal" id="nmOpVal">50 %</span></div>
+        <div class="satRow"><span class="cpLbl">Prick</span>
+          <input type="range" class="satSlider cpSlider" id="nmDot" min="0" max="6" step="0.25" value="1.75" aria-label="Prickens storlek">
+          <span class="satVal" id="nmDotVal">1,75 px</span></div>
+        <div class="segmented" id="nmKindSeg" role="radiogroup" aria-label="Vilka namn som visas">
+          <button type="button" data-k="all" role="radio">Alla namn</button>
+          <button type="button" data-k="w" role="radio">Bara vatten</button>
+        </div>
+        <div class="btnRowWrap"><button type="button" class="btnAdmin" id="nmReset">Återställ</button></div>
+      </div>
+      <div class="settingsRow" style="flex-direction:column;align-items:stretch;">
+        <div class="settingsRowText">
           <div class="settingsRowTitle">Andras fiskeplatser</div>
           <div class="settingsRowDesc">Hur tydligt gruppens platser syns på kartan.</div>
         </div>

@@ -108,7 +108,7 @@ with sync_playwright() as p:
     opts = pg.eval_on_selector_all('#msgPop button', 'e => e.map(x => x.textContent)')
     hm = pg.evaluate("(() => { var d = new Date(Date.now() - 30 * 60000); return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2); })()")
     check('competition on: your latest counted catch first ("Gädda 78 🐟 · hh:mm"), not the 22 cm perch, not Calle\'s', opts[0] == 'Gädda 78 🐟 · ' + hm and opts[1] == 'Fisk!!! 🎣' and not any('Gös' in o or 'Abborre' in o for o in opts), opts)
-    check('...the edge spins in the pike\'s green', pg.evaluate("(() => { var b = document.getElementById('msgFishBtn'); return b.style.getPropertyValue('--sp') + ' ' + getComputedStyle(b, '::before').animationName; })()") == '#35D24A rbSpin')
+    check("...a plain edge like the others, no dot; the pike's green sweeping through the text", pg.evaluate("(() => { var b = document.getElementById('msgFishBtn'), o = document.querySelector('#msgPop button:not(.msgFish)'), t = b.querySelector('.mT.sp'); return !b.querySelector('.hmSpDot') && !!t && b.style.getPropertyValue('--sp') === '#35D24A' && getComputedStyle(b).borderTopColor === getComputedStyle(o).borderTopColor && getComputedStyle(b, '::before').content === 'none'; })()"))
     pg.click('#msgFishBtn'); pg.wait_for_timeout(500)
     w = [x for x in pg.evaluate('window.__posWrites') if x.get('msg')]
     check('sent by hand: "Gädda 78 🐟", the species and the photo (600 px wide) with it', w and w[-1]['msg'] == 'Gädda 78 🐟' and w[-1]['msgSp'] == 'gadda' and w[-1]['msgImg'] == PHOTO.replace('w_2000', 'w_600'), w[-1:] if w else w)

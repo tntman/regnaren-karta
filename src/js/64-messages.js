@@ -44,7 +44,7 @@
     var c = msgMyCatch(); if (!c) return;
     var b = document.createElement('button'); b.type = 'button'; b.id = 'msgFishBtn'; b.className = 'msgFish'; b._c = c;
     b.style.setProperty('--sp', MSG_SP_COL[c.sp]);
-    b.innerHTML = '<span class="hmSpDot" style="background:' + MSG_SP_COL[c.sp] + '"></span>' + escHtml(msgFishText(c)) + ' <small>· ' + fmtClock(c.t) + '</small>';
+    b.innerHTML = '<span class="mT sp">' + escHtml(msgFishText(c)) + '</span> <small>· ' + fmtClock(c.t) + '</small>';
     msgPop.insertBefore(b, msgPop.firstChild);
   }
   function toggleMsgPop(open){ if (open) msgPopFill(); msgPop.classList.toggle('show', open); msgBtn.classList.toggle('open', open); }
