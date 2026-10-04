@@ -31,10 +31,18 @@
     Object.keys(out).forEach(function(k){ out[k].res = out[k].res.sort(function(a, b){ return a.d < b.d ? 1 : -1; }).slice(0, 5); });
     return out;
   }
+  // the fetched profiles, or null (nothing fetched yet). Demo Mode: the real copy's (only read) or its own, from "Ladda in data"
+  var PF_DEMO_KEY = 'ffmap_prof_demo_v1';
+  function profStore(){
+    if (!TEST_MODE){ catchReadCopy(); return catchHist && catchHist.prof; }
+    var P = null;
+    try { P = JSON.parse(localStorage.getItem(PF_DEMO_KEY) || 'null'); var c = JSON.parse(localStorage.getItem(CATCH_REAL_KEY) || 'null');
+      if (!P && c && c.v === 3) P = c.prof; } catch(e){}
+    return P;
+  }
   // the profile of a name in the app (any capitalisation), or null (an unknown name, or nothing fetched yet)
   function profileOf(name){
-    catchReadCopy();
-    var P = catchHist && catchHist.prof, p = catchPlain(name); if (!P || !p) return null;
+    var P = profStore(), p = catchPlain(name); if (!P || !p) return null;
     for (var k in P) if (catchPlain(k) === p) return P[k];
     return null;
   }
@@ -68,8 +76,11 @@
       return '<div class="pfRow"><span><span class="hmSpDot" style="background:rgb(' + HM_COL[c.sp] + ')"></span>' + hmSpName(c.sp) + ' <small>' + hmWhen(c.t) + '</small></span><b>' + pfCm(c.cm) + '</b></div>';
     }).join('') + (l.length > max ? '<div class="pfRow"><span><small>+ ' + (l.length - max) + ' till</small></span></div>' : '');
   }
+  // always opens (any name): without a profile only the name, their catches and boat (+ "Ladda in data" when none are fetched)
+  var pfLoadErr = '';
   function openProfile(name){
-    var p = profileOf(name); if (!p) return false;
+    if (!name) return false;
+    var p = profileOf(name), none = !p; p = p || { n: name, res: [], rec: [] };
     hmCloseCard(); closeMsgCard(); hideBoatInfo();
     pfName = p.n;
     if (!pfCard.classList.contains('show') && pfCard._resetSize) pfCard._resetSize();
@@ -77,7 +88,11 @@
     document.getElementById('pfAva').innerHTML = pic ? '<img src="' + pic + '" alt="">' : escHtml(Array.from(p.n)[0] || '?').toUpperCase();
     document.getElementById('pfName').textContent = p.n;
     document.getElementById('pfSub').textContent = [p.nick && '”' + p.nick + '”', p.y && 'sedan ' + p.y, p.home].filter(Boolean).join(' · ');
-    var bio = document.getElementById('pfBio'); bio.textContent = p.bio; bio.hidden = !p.bio;
+    var bio = document.getElementById('pfBio'); bio.textContent = p.bio || ''; bio.hidden = !p.bio;
+    var have = !!profStore(), busy = TEST_MODE ? pfDemoBusy : catchLoading;
+    document.getElementById('pfStats').hidden = none; document.getElementById('pfNone').hidden = !none;
+    document.getElementById('pfNoneTxt').textContent = busy ? 'Laddar profilerna…' : pfLoadErr || (have ? 'Ingen profil hos Fiskfiskarna.' : 'Profilerna är inte inladdade på den här telefonen.');
+    document.getElementById('pfLoad').hidden = have || busy;
     document.getElementById('pfData').innerHTML = [
       ['Rank ' + (p.season || ''), p.rank ? pfOrd(p.rank) : '–'], ['ELO', p.elo ? Math.round(p.elo) : '–'],
       ['Segrar', p.win != null ? p.win + (p.winp ? ' · ' + p.winp.replace('%', ' %') : '') : '–'], ['Tävlingar', p.comps != null ? p.comps : '–']
@@ -99,7 +114,22 @@
     pfCard.classList.add('show');
     return true;
   }
-  function closeProfile(){ pfCard.classList.remove('show'); pfName = null; }
+  function closeProfile(){ pfCard.classList.remove('show'); pfName = null; pfLoadErr = ''; }
+  // "Ladda in data": the history (with the profiles); Demo Mode: only the profiles, from the real API (only read, never the real copy)
+  var pfDemoBusy = false;
+  function pfReopen(){ if (pfName && pfCard.classList.contains('show')) openProfile(pfName); }
+  document.getElementById('pfLoad').addEventListener('click', function(){
+    pfLoadErr = '';
+    if (!TEST_MODE){ loadCatches(true); pfReopen(); return; }
+    pfDemoBusy = true; pfReopen();
+    catchGet('dashboard.php', 'h', function(err, d){
+      pfDemoBusy = false;
+      if (!err && d && Array.isArray(d.anglers)){ try { localStorage.setItem(PF_DEMO_KEY, JSON.stringify(profPack(d))); } catch(e){} }
+      else pfLoadErr = 'Kunde inte ladda (' + (err ? catchErrOf(err).msg : 'oväntat svar') + ').';
+      pfReopen();
+    }, true);
+  });
+  catchListeners.push(function(){ if (!document.getElementById('pfNone').hidden){ if (catchErr) pfLoadErr = 'Kunde inte ladda (' + catchErr.msg + ').'; pfReopen(); } });
   pfCard.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
   sheetSwipe(pfCard, closeProfile);
   document.getElementById('pfClose').addEventListener('click', closeProfile);
@@ -117,7 +147,7 @@
   });
   // Profil in the menu: yourself (only when there is a profile for your name)
   var menuItemProfile = document.getElementById('menuItemProfile');
-  function pfMenuItem(){ menuItemProfile.hidden = !profileOf(userName); }
+  function pfMenuItem(){ menuItemProfile.hidden = !userName; }
   menuItemProfile.addEventListener('click', function(){ showMapView(); openProfile(userName); });
   menuBtn.addEventListener('click', pfMenuItem);
   catchListeners.push(pfMenuItem);

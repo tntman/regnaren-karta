@@ -13,6 +13,9 @@
   #pfSub{font-size:13.5px;color:var(--text-muted);margin-top:2px;}
   #pfBio{font-size:14px;color:#dbe4e7;font-style:italic;margin:2px 0 0;}
   #pfBio[hidden]{display:none;}
+  #pfNone{font-size:13.5px;color:var(--text-muted);margin:10px 0 2px;display:flex;flex-direction:column;align-items:flex-start;gap:8px;}
+  #pfNone[hidden], #pfStats[hidden], #pfLoad[hidden]{display:none;}
+  #pfLoad{padding:9px 14px;border-radius:11px;border:none;font:inherit;font-weight:700;font-size:14px;background:rgba(255,255,255,.1);color:var(--offwhite);cursor:pointer;}
   #pfCard .wpData{margin:10px 0 8px;}
   .pfH{font-size:11px;letter-spacing:.06em;font-weight:700;text-transform:uppercase;color:var(--text-muted);margin:10px 0 3px;}
   .pfRow{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:14px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.07);}

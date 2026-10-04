@@ -69,8 +69,8 @@
     return s && s.day === day ? s : { day: day, h: 0, hb: 0, l: 0, lb: 0 };
   }
   function catchErrOf(e){ return { at: Date.now(), msg: e instanceof TypeError ? 'ingen anslutning' : String((e && e.message) || 'fel') }; }
-  function catchGet(path, kind, cb){
-    if (TEST_MODE){ setTimeout(function(){ cb(null, testApi(path)); }, 0); return; }   // (the test mode: the made-up competition, 37-testmode.js -- never the real API)
+  function catchGet(path, kind, cb, real){   // (real: the real API also in Demo Mode -- only the profiles, 67-profiles.js)
+    if (TEST_MODE && !real){ setTimeout(function(){ cb(null, testApi(path)); }, 0); return; }   // (the test mode: the made-up competition, 37-testmode.js -- never the real API)
     var res;
     (window.fetch ? fetch(CATCH_API + path, { cache: 'no-store' }) : Promise.reject(new Error('fetch saknas'))).then(function(r){
       return r.text().then(function(t){

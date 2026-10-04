@@ -79,3 +79,5 @@ i avsnitt, Ångra, åskvarningen alltid + "dragit förbi", solnedgången, Täckn
 - Inställningar → Kartan → Platsnamn på kartan: storlek, synlighet, prick, alla namn/bara vatten, Återställ (standard = som förut).
 
 - Tävlingslåset: platser kan bara läggas/ändras/tas bort från en vecka före till en vecka efter en tävling; annars en ruta med "Öppna Demo Mode". Admin och Demo Mode alltid öppet. Nyhetsrad: "Kartan är låst mellan tävlingarna – prova i Demo Mode".
+
+- Profilen öppnas alltid (alla namn, även utan profil hos Fiskfiskarna: namn, fångster, båt); inga profiler i telefonen → "Ladda in data". Demo Mode visar de riktiga profilerna.

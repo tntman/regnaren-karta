@@ -1711,6 +1711,9 @@
   #pfSub{font-size:13.5px;color:var(--text-muted);margin-top:2px;}
   #pfBio{font-size:14px;color:#dbe4e7;font-style:italic;margin:2px 0 0;}
   #pfBio[hidden]{display:none;}
+  #pfNone{font-size:13.5px;color:var(--text-muted);margin:10px 0 2px;display:flex;flex-direction:column;align-items:flex-start;gap:8px;}
+  #pfNone[hidden], #pfStats[hidden], #pfLoad[hidden]{display:none;}
+  #pfLoad{padding:9px 14px;border-radius:11px;border:none;font:inherit;font-weight:700;font-size:14px;background:rgba(255,255,255,.1);color:var(--offwhite);cursor:pointer;}
   #pfCard .wpData{margin:10px 0 8px;}
   .pfH{font-size:11px;letter-spacing:.06em;font-weight:700;text-transform:uppercase;color:var(--text-muted);margin:10px 0 3px;}
   .pfRow{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:14px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.07);}
@@ -2428,9 +2431,10 @@
   <div id="pfCard" role="dialog" aria-label="Profil"><div class="grab"><button type="button" id="pfClose" class="gripX" aria-label="Stäng">✕</button></div>
     <div class="pfHead"><span id="pfAva" class="pfAva"></span><div class="pfWho"><div id="pfName"></div><div id="pfSub"></div></div></div>
     <div id="pfBio"></div>
-    <div class="wpData" id="pfData"></div>
+    <div id="pfNone" hidden><span id="pfNoneTxt"></span><button type="button" id="pfLoad">Ladda in data</button></div>
+    <div id="pfStats"><div class="wpData" id="pfData"></div>
     <div class="pfH">Största fisk</div><div id="pfTop"></div>
-    <div class="pfH">Senaste tävlingar</div><div id="pfRes"></div>
+    <div class="pfH">Senaste tävlingar</div><div id="pfRes"></div></div>
     <div id="pfList"></div>
     <div id="pfBoat"></div>
     <div class="msgCardBtns"><button type="button" id="pfGo" class="a">➤ Åk hit</button><button type="button" id="pfMap">Visa på kartan</button><button type="button" id="pfCatches">Fångster</button></div>
@@ -4379,13 +4383,13 @@
   function showBoatInfo(cluster){
     boatInfoCur = cluster;
     var names = cluster.names || [cluster.name || 'Okänd'];
-    if (names.length === 1 && openProfile(names[0])) return;   // one person with a profile: their profile (67-profiles.js)
+    if (names.length === 1 && openProfile(names[0])) return;   // one person: their profile (67-profiles.js)
     var group = names.length > 1;                       // several in the boat: no title, each name is the heading over their own catches
     boatInfoNameEl.hidden = group; boatInfoNamesListEl.style.display = 'none';
     boatInfoNameEl.textContent = names[0];
     boatInfoCatchesEl.innerHTML = names.map(function(n){
       var r = pfCatchRows(n, group ? 4 : 8);   // (67-profiles.js)
-      return group ? '<div class="pfH biWho' + (profileOf(n) ? ' pfLink' : '') + '" data-who="' + escHtml(n) + '">' + escHtml(n) + '</div>' + (r || '<div class="pfRow"><span><small>Inga fångster</small></span></div>')
+      return group ? '<div class="pfH biWho pfLink" data-who=""' + escHtml(n) + '">' + escHtml(n) + '</div>' + (r || '<div class="pfRow"><span><small>Inga fångster</small></span></div>')
                    : r ? '<div class="pfH">Fångster</div>' + r : '';
     }).join('');
     boatInfoMetaEl.textContent = 'Uppdaterad ' + timeAgo(cluster.updatedAt);
@@ -9994,7 +9998,7 @@
     document.getElementById('msgCardWho').textContent = (it.mine ? 'DU' : String(it.who || '').toUpperCase()) + ' · MEDDELANDE';
     document.getElementById('msgCardTxt').textContent = it.text;
     catchImg(document.getElementById('msgCardImg'), it.img);
-    document.getElementById('msgCardWho').classList.toggle('pfLink', !!profileOf(it.mine ? userName : it.who));   // (tap: their profile)
+    document.getElementById('msgCardWho').classList.toggle('pfLink', !!(it.mine ? userName : it.who));   // (tap: their profile)
     document.getElementById('msgCardWhen').innerHTML = 'Skrivet <b>' + fmtClock(it.at) + '</b> · ' + (age < 60000 ? 'nyss' : Math.round(age / 60000) + ' min sedan');
     document.getElementById('msgCardLeft').innerHTML = 'Försvinner om <b>' + Math.max(1, Math.ceil(left / 60000)) + ' min</b>';
     document.getElementById('msgCardBar').style.width = (100 * left / MSG_MS).toFixed(1) + '%';
@@ -10094,8 +10098,8 @@
     return s && s.day === day ? s : { day: day, h: 0, hb: 0, l: 0, lb: 0 };
   }
   function catchErrOf(e){ return { at: Date.now(), msg: e instanceof TypeError ? 'ingen anslutning' : String((e && e.message) || 'fel') }; }
-  function catchGet(path, kind, cb){
-    if (TEST_MODE){ setTimeout(function(){ cb(null, testApi(path)); }, 0); return; }   // (the test mode: the made-up competition, 37-testmode.js -- never the real API)
+  function catchGet(path, kind, cb, real){   // (real: the real API also in Demo Mode -- only the profiles, 67-profiles.js)
+    if (TEST_MODE && !real){ setTimeout(function(){ cb(null, testApi(path)); }, 0); return; }   // (the test mode: the made-up competition, 37-testmode.js -- never the real API)
     var res;
     (window.fetch ? fetch(CATCH_API + path, { cache: 'no-store' }) : Promise.reject(new Error('fetch saknas'))).then(function(r){
       return r.text().then(function(t){
@@ -10303,10 +10307,18 @@
     Object.keys(out).forEach(function(k){ out[k].res = out[k].res.sort(function(a, b){ return a.d < b.d ? 1 : -1; }).slice(0, 5); });
     return out;
   }
+  // the fetched profiles, or null (nothing fetched yet). Demo Mode: the real copy's (only read) or its own, from "Ladda in data"
+  var PF_DEMO_KEY = 'ffmap_prof_demo_v1';
+  function profStore(){
+    if (!TEST_MODE){ catchReadCopy(); return catchHist && catchHist.prof; }
+    var P = null;
+    try { P = JSON.parse(localStorage.getItem(PF_DEMO_KEY) || 'null'); var c = JSON.parse(localStorage.getItem(CATCH_REAL_KEY) || 'null');
+      if (!P && c && c.v === 3) P = c.prof; } catch(e){}
+    return P;
+  }
   // the profile of a name in the app (any capitalisation), or null (an unknown name, or nothing fetched yet)
   function profileOf(name){
-    catchReadCopy();
-    var P = catchHist && catchHist.prof, p = catchPlain(name); if (!P || !p) return null;
+    var P = profStore(), p = catchPlain(name); if (!P || !p) return null;
     for (var k in P) if (catchPlain(k) === p) return P[k];
     return null;
   }
@@ -10340,8 +10352,11 @@
       return '<div class="pfRow"><span><span class="hmSpDot" style="background:rgb(' + HM_COL[c.sp] + ')"></span>' + hmSpName(c.sp) + ' <small>' + hmWhen(c.t) + '</small></span><b>' + pfCm(c.cm) + '</b></div>';
     }).join('') + (l.length > max ? '<div class="pfRow"><span><small>+ ' + (l.length - max) + ' till</small></span></div>' : '');
   }
+  // always opens (any name): without a profile only the name, their catches and boat (+ "Ladda in data" when none are fetched)
+  var pfLoadErr = '';
   function openProfile(name){
-    var p = profileOf(name); if (!p) return false;
+    if (!name) return false;
+    var p = profileOf(name), none = !p; p = p || { n: name, res: [], rec: [] };
     hmCloseCard(); closeMsgCard(); hideBoatInfo();
     pfName = p.n;
     if (!pfCard.classList.contains('show') && pfCard._resetSize) pfCard._resetSize();
@@ -10349,7 +10364,11 @@
     document.getElementById('pfAva').innerHTML = pic ? '<img src="' + pic + '" alt="">' : escHtml(Array.from(p.n)[0] || '?').toUpperCase();
     document.getElementById('pfName').textContent = p.n;
     document.getElementById('pfSub').textContent = [p.nick && '”' + p.nick + '”', p.y && 'sedan ' + p.y, p.home].filter(Boolean).join(' · ');
-    var bio = document.getElementById('pfBio'); bio.textContent = p.bio; bio.hidden = !p.bio;
+    var bio = document.getElementById('pfBio'); bio.textContent = p.bio || ''; bio.hidden = !p.bio;
+    var have = !!profStore(), busy = TEST_MODE ? pfDemoBusy : catchLoading;
+    document.getElementById('pfStats').hidden = none; document.getElementById('pfNone').hidden = !none;
+    document.getElementById('pfNoneTxt').textContent = busy ? 'Laddar profilerna…' : pfLoadErr || (have ? 'Ingen profil hos Fiskfiskarna.' : 'Profilerna är inte inladdade på den här telefonen.');
+    document.getElementById('pfLoad').hidden = have || busy;
     document.getElementById('pfData').innerHTML = [
       ['Rank ' + (p.season || ''), p.rank ? pfOrd(p.rank) : '–'], ['ELO', p.elo ? Math.round(p.elo) : '–'],
       ['Segrar', p.win != null ? p.win + (p.winp ? ' · ' + p.winp.replace('%', ' %') : '') : '–'], ['Tävlingar', p.comps != null ? p.comps : '–']
@@ -10371,7 +10390,22 @@
     pfCard.classList.add('show');
     return true;
   }
-  function closeProfile(){ pfCard.classList.remove('show'); pfName = null; }
+  function closeProfile(){ pfCard.classList.remove('show'); pfName = null; pfLoadErr = ''; }
+  // "Ladda in data": the history (with the profiles); Demo Mode: only the profiles, from the real API (only read, never the real copy)
+  var pfDemoBusy = false;
+  function pfReopen(){ if (pfName && pfCard.classList.contains('show')) openProfile(pfName); }
+  document.getElementById('pfLoad').addEventListener('click', function(){
+    pfLoadErr = '';
+    if (!TEST_MODE){ loadCatches(true); pfReopen(); return; }
+    pfDemoBusy = true; pfReopen();
+    catchGet('dashboard.php', 'h', function(err, d){
+      pfDemoBusy = false;
+      if (!err && d && Array.isArray(d.anglers)){ try { localStorage.setItem(PF_DEMO_KEY, JSON.stringify(profPack(d))); } catch(e){} }
+      else pfLoadErr = 'Kunde inte ladda (' + (err ? catchErrOf(err).msg : 'oväntat svar') + ').';
+      pfReopen();
+    }, true);
+  });
+  catchListeners.push(function(){ if (!document.getElementById('pfNone').hidden){ if (catchErr) pfLoadErr = 'Kunde inte ladda (' + catchErr.msg + ').'; pfReopen(); } });
   pfCard.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
   sheetSwipe(pfCard, closeProfile);
   document.getElementById('pfClose').addEventListener('click', closeProfile);
@@ -10389,7 +10423,7 @@
   });
   // Profil in the menu: yourself (only when there is a profile for your name)
   var menuItemProfile = document.getElementById('menuItemProfile');
-  function pfMenuItem(){ menuItemProfile.hidden = !profileOf(userName); }
+  function pfMenuItem(){ menuItemProfile.hidden = !userName; }
   menuItemProfile.addEventListener('click', function(){ showMapView(); openProfile(userName); });
   menuBtn.addEventListener('click', pfMenuItem);
   catchListeners.push(pfMenuItem);
@@ -10791,7 +10825,7 @@
     document.getElementById('hmCardKick').textContent = 'FÅNGST · ' + hmCompName(c.comp).toUpperCase();
     document.getElementById('hmCardTitle').innerHTML = '<span class="hmSpDot" style="width:13px;height:13px;background:rgb(' + HM_COL[c.sp] + ')"></span>' + hmSpName(c.sp) + (c.cm ? ' ' + String(c.cm).replace('.', ',') + ' cm' : '');
     document.getElementById('hmCardData').innerHTML = [['Vem', c.who || '–'], ['När', hmWhen(c.t)], ['Djup', dep != null ? fmtDepth(dep) + ' m' : '–'], ['Plats', rank + ' av ' + same.length]]
-      .map(function(t, k){ var pf = !k && profileOf(c.who); return '<div class="wpTile' + (pf ? ' pfLink" data-who="' + escHtml(pf.n) : '') + '"><i>' + t[0] + '</i><b>' + escHtml(t[1]) + '</b></div>'; }).join('');
+      .map(function(t, k){ var pf = !k && c.who; return '<div class="wpTile' + (pf ? ' pfLink" data-who="' + escHtml(pf) : '') + '"><i>' + t[0] + '</i><b>' + escHtml(t[1]) + '</b></div>'; }).join('');
     catchImg(document.getElementById('hmCardImg'), c.img);
     document.getElementById('hmCardNote').textContent = (rank === 1 ? 'Största ' : hmOrdinal(rank) + ' största ') + hmSpName(c.sp, 2) + ' i tävlingen' +
       ' · ' + (near ? near + ' fångster till inom 50 m' : 'inga andra fångster inom 50 m');

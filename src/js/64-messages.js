@@ -140,7 +140,7 @@
     document.getElementById('msgCardWho').textContent = (it.mine ? 'DU' : String(it.who || '').toUpperCase()) + ' · MEDDELANDE';
     document.getElementById('msgCardTxt').textContent = it.text;
     catchImg(document.getElementById('msgCardImg'), it.img);
-    document.getElementById('msgCardWho').classList.toggle('pfLink', !!profileOf(it.mine ? userName : it.who));   // (tap: their profile)
+    document.getElementById('msgCardWho').classList.toggle('pfLink', !!(it.mine ? userName : it.who));   // (tap: their profile)
     document.getElementById('msgCardWhen').innerHTML = 'Skrivet <b>' + fmtClock(it.at) + '</b> · ' + (age < 60000 ? 'nyss' : Math.round(age / 60000) + ' min sedan');
     document.getElementById('msgCardLeft').innerHTML = 'Försvinner om <b>' + Math.max(1, Math.ceil(left / 60000)) + ' min</b>';
     document.getElementById('msgCardBar').style.width = (100 * left / MSG_MS).toFixed(1) + '%';

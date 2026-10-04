@@ -74,7 +74,7 @@ Uppdatera rätt anteckning när något ändras.
 ## Viktiga saker i koden
 - **Testläge = Demo Mode** (`TEST_MODE`, `js/10-core.js`; NOTES_TESTLAGE.md): på/av = omladdning in i ett **eget
   Firebase-projekt** (`FIREBASE_TEST_CONFIG`, `js/14-spots.js`), telefonens kopior med egna nycklar (`testKey()`),
-  ingen spårsynk, ingen Fiskfiskarna/FMI (låtsastävlingen i `config/<sjö>.test`, `js/37-testmode.js`). Ny data som
+  ingen spårsynk, ingen Fiskfiskarna/FMI (undantag: profilerna läses ur den riktiga kopian, och profilens "Ladda in data" hämtar dem från API:t – `PF_DEMO_KEY`, `js/67-profiles.js`) (låtsastävlingen i `config/<sjö>.test`, `js/37-testmode.js`). Ny data som
   sparas i telefonen och speglar databasen → `testKey()`. Ny skrivning till Firestore behöver inget (projektet byts).
 - **iOS hemskärmsapp laddar om sidan vid rotation** (WebKit visar annars en gammal bild och trycken
   hamnar fel). Sidan minns om den laddades liggande/stående (`loadedLandscape`, `js/12-map.js`) och

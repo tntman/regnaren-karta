@@ -395,7 +395,7 @@
     document.getElementById('hmCardKick').textContent = 'FÅNGST · ' + hmCompName(c.comp).toUpperCase();
     document.getElementById('hmCardTitle').innerHTML = '<span class="hmSpDot" style="width:13px;height:13px;background:rgb(' + HM_COL[c.sp] + ')"></span>' + hmSpName(c.sp) + (c.cm ? ' ' + String(c.cm).replace('.', ',') + ' cm' : '');
     document.getElementById('hmCardData').innerHTML = [['Vem', c.who || '–'], ['När', hmWhen(c.t)], ['Djup', dep != null ? fmtDepth(dep) + ' m' : '–'], ['Plats', rank + ' av ' + same.length]]
-      .map(function(t, k){ var pf = !k && profileOf(c.who); return '<div class="wpTile' + (pf ? ' pfLink" data-who="' + escHtml(pf.n) : '') + '"><i>' + t[0] + '</i><b>' + escHtml(t[1]) + '</b></div>'; }).join('');
+      .map(function(t, k){ var pf = !k && c.who; return '<div class="wpTile' + (pf ? ' pfLink" data-who="' + escHtml(pf) : '') + '"><i>' + t[0] + '</i><b>' + escHtml(t[1]) + '</b></div>'; }).join('');
     catchImg(document.getElementById('hmCardImg'), c.img);
     document.getElementById('hmCardNote').textContent = (rank === 1 ? 'Största ' : hmOrdinal(rank) + ' största ') + hmSpName(c.sp, 2) + ' i tävlingen' +
       ' · ' + (near ? near + ' fångster till inom 50 m' : 'inga andra fångster inom 50 m');
