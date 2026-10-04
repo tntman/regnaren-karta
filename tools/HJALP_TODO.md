@@ -81,3 +81,5 @@ i avsnitt, Ångra, åskvarningen alltid + "dragit förbi", solnedgången, Täckn
 - Tävlingslåset: platser kan bara läggas/ändras/tas bort från en vecka före till en vecka efter en tävling; annars en ruta med "Öppna Demo Mode". Admin och Demo Mode alltid öppet. Nyhetsrad: "Kartan är låst mellan tävlingarna – prova i Demo Mode".
 
 - Profilen öppnas alltid (alla namn, även utan profil hos Fiskfiskarna: namn, fångster, båt); inga profiler i telefonen → "Ladda in data". Demo Mode visar de riktiga profilerna.
+
+- Båten: rutan visar bara fångsterna i tävlingen som pågår (hela tävlingen, även andra sjöar); namnet öppnar profilen. Profilen och Ledare räknar alla fiskar i tävlingen, även de som tas i en annan sjö (heatmapen bara sjön). Nyhetsrad: "Profilen och Ledare räknar alla fiskar i tävlingen, även de som tas i en annan sjö".
