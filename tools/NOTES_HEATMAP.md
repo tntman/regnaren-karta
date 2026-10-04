@@ -35,7 +35,8 @@ bottenrutan, fångstrutan, tryck på kartan), `src/css/72-heatmap.css`, HTML i `
   (`normCatch` tål olika kolumn-/fältnamn; komma-decimaler; "Gädda"/"Gadda"/"gadda").
   `id` = tid|namn|art|cm (dubbletter känns igen).
 - **Källa: Fiskfiskarnas API** (Jonathan, `https://fiskfiskarna.se/api/`, ingen inloggning för läsning; CORS tillåter
-  `https://tntman.github.io` och `capacitor://localhost` sedan 2026-10-03):
+  `https://tntman.github.io` och `capacitor://localhost` sedan 2026-10-03; `https://karta.fiskfiskarna.se` – nya
+  adressen 2026-10-04 – väntar på Jonathan, tills dess blockeras hämtningen där och Fångstdata visar "ingen anslutning"):
   - **Historik** = `dashboard.php` → `heatmap` (alla fångster med GPS, ~900 st; svaret ~530 kB med all statistik)
     + `competitions`. Bara fångster i **denna** sjö (`catchLakeOf`: inom kartan och sjönamnet säger inte en annan
     sjö – Östra Vitten ligger inom Regnarens kartbild). Tävlingarna på sjön (`catchSameWater`, prefix åt båda

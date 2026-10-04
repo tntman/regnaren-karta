@@ -43,7 +43,9 @@ All text i appen är på svenska. Svara Filip på svenska, kort och tydligt.
 - Admin (Filip, upplåst med koden på enheten) kan alltid ändra och ta bort allas fiskeplatser
   (`adminCanEditAll()` = `isAdminUnlocked()`). Admin-koden står aldrig i testerna: `fakefb.TEST_PIN`
   godtas bara i testwebbläsaren. Ny admin-kod = nytt `ADMIN_PIN_HASH` = sha256("ffmap-admin:" + kod).
-- Publicering: GitHub Pages från `main` / `docs`. Commit + push = live.
+- Publicering: GitHub Pages från `main` / `docs`. Commit + push = live. Adress **https://karta.fiskfiskarna.se**
+  (`docs/CNAME`, sedan 2026-10-04, Enforce HTTPS på; `tntman.github.io/regnaren-karta` skickar dit). Ny adress =
+  telefonens minne (localStorage, offline-cache) börjar om – namn, admin-kod, offline-kartor, hemskärmen på nytt.
 - Filip vill ofta se **bilder/förslag innan** något implementeras ("visa först").
   När han skriver "svara först" – svara, implementera inte.
 - **Hjälp uppdateras INTE vid varje ändring** (Filips beslut): skriv upp vad som ändrats i
