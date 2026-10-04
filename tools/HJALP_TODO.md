@@ -77,3 +77,5 @@ i avsnitt, Ångra, åskvarningen alltid + "dragit förbi", solnedgången, Täckn
 - Snabbmeddelanden (uppdatering): färger i 3 min sedan tonas de och blir svarta; fiskmeddelandet "Gädda 78 🐟"; namnet efter texten (ingen rotation).
 
 - Inställningar → Kartan → Platsnamn på kartan: storlek, synlighet, prick, alla namn/bara vatten, Återställ (standard = som förut).
+
+- Tävlingslåset: platser kan bara läggas/ändras/tas bort från en vecka före till en vecka efter en tävling; annars en ruta med "Öppna Demo Mode". Admin och Demo Mode alltid öppet. Nyhetsrad: "Kartan är låst mellan tävlingarna – prova i Demo Mode".

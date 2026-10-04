@@ -208,3 +208,36 @@
   document.getElementById('ctFetch').addEventListener('click', function(){ if (catchLive) catchLive.at = 0; loadCatches(true); });
 
   window.__ffCatches = function(){ return catchData ? catchData.list.map(function(c){ return { id: c.id, sp: c.sp, cm: c.cm, who: c.who, comp: c.comp }; }) : null; };
+
+  /* --- Tävlingslåset (tools/PLAN_TAVLINGSLAS.md): spots can only be added, changed or removed from a week
+     before a competition on this lake until a week after it. Always open: Demo Mode, admin, and when the app
+     doesn't know (no copy, the API not answering) -- better than locking people out on the lake mid-competition.
+     Only in the app: the Firestore rules still let anyone signed in write (a friendly lock, not security). */
+  var LOCK_DAYS = 7;
+  function lockDays(c){ return /^\d{4}-\d\d-\d\d$/.test(c.date) ? Math.round((Date.parse(c.date) - Date.parse(catchTodayIso())) / CATCH_DAY) : null; }
+  function mapEditAllowed(){
+    if (TEST_MODE || isAdminUnlocked() || window.__ffNoLock) return true;   // (__ffNoLock: only the test browser, fakefb.py)
+    catchReadCopy();
+    if (!catchHist || catchErr) return true;
+    return catchHist.comps.some(function(c){ var d = lockDays(c); return c.status === 'active' || (d !== null && Math.abs(d) <= LOCK_DAYS); });
+  }
+  var lockBackdrop = document.getElementById('lockBackdrop'), lockCard = document.getElementById('lockCard');
+  function showLockCard(){
+    // ponytail: a copy over an hour old is asked again now; the answer counts from the next try
+    if (catchHist && !catchLoading && Date.now() - catchHist.at > CATCH_HOUR) loadHistory();
+    var next = (catchHist ? catchHist.comps : []).filter(function(c){ return lockDays(c) > LOCK_DAYS; })
+      .sort(function(a, b){ return a.date < b.date ? -1 : 1; })[0];
+    var at = next && new Date(Date.parse(next.date) - LOCK_DAYS * CATCH_DAY);
+    document.getElementById('lockWhen').textContent = next ? 'Öppnar ' + at.getUTCDate() + '/' + (at.getUTCMonth() + 1) + ' inför ' + (next.name || 'nästa tävling') + '.'
+      : 'Ingen tävling i ' + LAKE.name + ' är planerad just nu.';
+    lockBackdrop.classList.add('show'); lockCard.classList.add('show');
+  }
+  function hideLockCard(){ lockBackdrop.classList.remove('show'); lockCard.classList.remove('show'); }
+  lockBackdrop.addEventListener('click', hideLockCard);
+  document.getElementById('lockClose').addEventListener('click', hideLockCard);
+  document.getElementById('lockDemo').addEventListener('click', function(){   // (like Hjälp's Demo Mode link, 30-help.js)
+    hideLockCard(); if (wpSheet.classList.contains('show')) closeSheet();
+    showSettingsView(); openSettingsSec('adv');
+    setTimeout(function(){ document.getElementById('demoModeToggle').scrollIntoView({ block: 'center' }); }, 50);
+  });
+  window.__ffLock = function(){ return { allowed: mapEditAllowed(), shown: lockCard.classList.contains('show'), when: document.getElementById('lockWhen').textContent }; };

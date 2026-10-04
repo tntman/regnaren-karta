@@ -41,7 +41,7 @@ specificitet.
 | `20-menu-settings.html` | menyknapp, meny, Logg, Inställningar, Admin, PIN |
 | `30-map-ui.html` | rubrik, väderkort, mätpanel, knappar, meddelanden, Kartanalys-panel, Heatmap-rutorna, Filter, radar |
 | `40-help.html` | Hjälp-sidan (bildstorlekarna skrivs av `tools/help_anim.py`) |
-| `50-sheets.html` | platsens ruta, namnrutan, båtinfo |
+| `50-sheets.html` | platsens ruta, namnrutan, båtinfo, tävlingslåsets ruta (`#lockCard`) |
 | **js/** | |
 | `10-core.js` | start på skriptet, sjöar (`LAKES`), geo-referens, `MAX_ZOOM` |
 | `12-map.js` | panorera/zooma, lodet, zoomnivåer (detaljbitar), fingrar/mus (`mapPointerDown`) |
@@ -79,7 +79,7 @@ specificitet.
 | `60-lightning-alarm.js` | åskvarning |
 | `62-wakelock.js` | håll skärmen tänd |
 | `64-messages.js` | snabbmeddelanden |
-| `66-catches.js` | fångsterna: format, hämtning från Fiskfiskarnas API (historik + live), kopian, Inställningar → Fångstdata |
+| `66-catches.js` | fångsterna: format, hämtning från Fiskfiskarnas API (historik + live), kopian, Inställningar → Fångstdata; sist tävlingslåset (`mapEditAllowed()`, `showLockCard()`) |
 | `67-profiles.js` | Profiler: fiskarens ruta (`#pfCard`) ur API:ets anglers/anglerStats/dashboard/results/records, Profil i menyn, foton (`catchImg`) |
 | `69-leader.js` | Ledare (Filter → Lager, av som standard): live-ställningen under väderchipet + krona efter ledarens namn på båten (`leadCrownFor`, `24-boats.js`) |
 | `68-heatmap.js` | Heatmap: ritning (värme, per art, rutor, prickar), bottenrutan, fångstrutan, tryck på kartan |

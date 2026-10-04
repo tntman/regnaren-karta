@@ -26,6 +26,8 @@ Admin, Filip, styr en låtsastävling under **Admin → Testläge**. Rutan syns 
   - Riktig åskvarning är alltså avstängd i Demo Mode, som Filip valt. Det står i Inställningar och i adminrutan.
 - **Bannern** ("DEMO · TESTLÄGE") varnar om telefonens riktiga kopia av fångsterna visar en pågående tävling på sjön: "Riktig tävling pågår – du syns inte för de andra".
 
+- **Tävlingslåset** (`mapEditAllowed()`, `js/66-catches.js`) gäller aldrig i Demo Mode – det är dit låst-rutan skickar folk.
+
 ## Låtsastävlingen (`js/37-testmode.js`)
 Fältet `test` i `config/<sjö>` i testdatabasen ser ut så här:
 

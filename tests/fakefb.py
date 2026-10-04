@@ -47,8 +47,11 @@ if not getattr(_Browser, '_ffGuarded', False):
     def _guarded_new_context(self, *a, **kw):
         kw.setdefault('service_workers', 'block')
         help_seen = kw.pop('help_seen', True)
+        lock = kw.pop('lock', False)
         ctx = block_real_firebase(_orig_new_context(self, *a, **kw))
         ctx.add_init_script(TEST_PIN_JS)
+        if not lock:    # the competition lock (66-catches.js) is off in the tests -- test_lock: new_page(cfg={'lock': True})
+            ctx.add_init_script("window.__ffNoLock = true;")
         if help_seen:   # Hjälp opens by itself the first time -- tests start as if it's been read (test_help: help_seen=False)
             ctx.add_init_script("try { if (!localStorage.getItem('ffmap_help_seen_v1')) localStorage.setItem('ffmap_help_seen_v1', '999'); } catch(e){}")
         # Inställningar in sections: the tests start with them all open (test_extras checks closing / opening)
@@ -258,6 +261,7 @@ def new_page(p, geo=None, perms=True, cfg=None, name='Testare', wakelock_stub=Fa
     if perms:
         kw['permissions'] = ['geolocation']
     kw['help_seen'] = help_seen
+    kw['lock'] = bool((cfg or {}).get('lock'))
     ctx = b.new_context(**kw)
     ctx.add_init_script('window.__fakeCfg = ' + json.dumps(cfg or {}) + ';')
     if wakelock_stub:

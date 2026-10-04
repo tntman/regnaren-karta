@@ -282,6 +282,7 @@
   }
 
   function placeWaypointAtScreen(sx, sy){
+    if (!mapEditAllowed()){ showLockCard(); return; }   // (the competition lock, 66-catches.js)
     var imgX = (sx - originX) / scale, imgY = (sy - originY) / scale;
     var ll = imgPxToLatLon(imgX, imgY);
     var name = nextWaypointName('mark'); // new spots start as a Markering
@@ -349,6 +350,7 @@
   wpTypeSeg.addEventListener('click', function(e){
     var b = e.target.closest ? e.target.closest('button[data-type]') : null;
     if (!b || b.disabled || !editingId) return;
+    if (!editingIsNew && !mapEditAllowed()){ showLockCard(); return; }
     editingType = b.getAttribute('data-type');
     showEditingType();
     refreshSheetMeta(); // ("Syns för alla i 1 h" for a Träffpunkt)
@@ -424,6 +426,7 @@
     if (hiddenTypes[editingType]) setTypeHidden(editingType, false); // don't let the spot you just saved vanish
     var cur = waypoints.filter(function(w){ return w.id === editingId; })[0];
     if (cur && wpType(cur) === editingType && (!v || v === cur.name)){ closeSheet(); return; } // nothing changed
+    if (!editingIsNew && !mapEditAllowed()){ showLockCard(); return; }   // (a new spot: already made while it was open)
     if (v) upd.name = v;           // an emptied name keeps the old one
     // Träffpunkt: an hour from now (a new one, or a spot turned into one); only
     // one per person -- your previous one goes. Turned into something else: stays.
@@ -455,6 +458,7 @@
   function flushDelete(){ if (!undoPending) return; var id = undoPending.id; undoPending = null; clearTimeout(undoT); undoToast.classList.remove('show'); deleteWaypointById(id); }
   wpDeleteBtn.addEventListener('click', function(){
     if (!editingId) return;
+    if (!editingIsNew && !mapEditAllowed()){ showLockCard(); return; }
     flushDelete();                                           // (an earlier one still waiting: delete it now)
     var wp = waypoints.filter(function(w){ return w.id === editingId; })[0];
     undoPending = { id: editingId };

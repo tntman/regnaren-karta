@@ -1030,12 +1030,12 @@
   .modalTitle{font-weight:700;font-size:18px;color:var(--offwhite);margin-bottom:6px;}
   .modalDesc{font-size:12.5px;color:var(--text-muted);line-height:1.4;margin-bottom:14px;}
   .modalError{color:var(--danger);font-size:12px;margin:-8px 0 4px;}
-  #boatInfoBackdrop{
+  #boatInfoBackdrop, #lockBackdrop{
     position:fixed;inset:0;background:rgba(4,12,17,.6);z-index:40;
     opacity:0;pointer-events:none;transition:opacity .22s ease;
   }
-  #boatInfoBackdrop.show{opacity:1;pointer-events:auto;}
-  #boatInfoModal{
+  #boatInfoBackdrop.show, #lockBackdrop.show{opacity:1;pointer-events:auto;}
+  #boatInfoModal, #lockCard{
     position:fixed;left:50%;top:50%;z-index:41;
     transform:translate(-50%,-50%) scale(.94);
     opacity:0;pointer-events:none;transition:opacity .22s ease, transform .22s ease;
@@ -1044,8 +1044,9 @@
     border-radius:16px;padding:20px 20px calc(env(safe-area-inset-bottom,0px) + 18px);
     box-shadow:0 12px 32px rgba(0,0,0,.5);
   }
-  #boatInfoModal.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1);}
+  #boatInfoModal.show, #lockCard.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1);}
   #boatInfoModal .modalDesc{margin-bottom:0;}
+  #lockCard .modalDesc b{color:var(--offwhite);}
   .boatInfoNamesList{display:flex;flex-direction:column;gap:6px;margin:2px 0 14px;}
   #boatInfoCatches{max-height:34vh;overflow-y:auto;margin-bottom:12px;}
   #boatInfoCatches .biWho{color:var(--offwhite);font-size:12px;margin-top:8px;}
@@ -2934,6 +2935,18 @@
       <button id="boatInfoClose" class="btnPrimary" type="button">Stäng</button>
     </div>
   </div>
+
+  <div id="lockBackdrop"></div>
+  <div id="lockCard" role="dialog" aria-labelledby="lockTitle">
+    <div class="modalTitle" id="lockTitle">Kartan är låst just nu</div>
+    <div class="modalDesc">Platser kan bara läggas till, ändras och tas bort från en vecka före till en vecka efter en tävling – så hålls gruppens karta ren mellan tävlingarna.</div>
+    <div class="modalDesc" id="lockWhen"></div>
+    <div class="modalDesc"><b>Vill du prova?</b> Slå på Demo Mode: du får en låtsasposition vid sjön och en egen testdatabas, ser bara andra i Demo Mode och inget sparas på den riktiga kartan. Stängs av efter 15 min.</div>
+    <div class="sheetRow">
+      <button id="lockClose" class="btnGhost" type="button">Stäng</button>
+      <button id="lockDemo" class="btnPrimary" type="button">Öppna Demo Mode</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -4532,6 +4545,7 @@
   }
 
   function placeWaypointAtScreen(sx, sy){
+    if (!mapEditAllowed()){ showLockCard(); return; }   // (the competition lock, 66-catches.js)
     var imgX = (sx - originX) / scale, imgY = (sy - originY) / scale;
     var ll = imgPxToLatLon(imgX, imgY);
     var name = nextWaypointName('mark'); // new spots start as a Markering
@@ -4599,6 +4613,7 @@
   wpTypeSeg.addEventListener('click', function(e){
     var b = e.target.closest ? e.target.closest('button[data-type]') : null;
     if (!b || b.disabled || !editingId) return;
+    if (!editingIsNew && !mapEditAllowed()){ showLockCard(); return; }
     editingType = b.getAttribute('data-type');
     showEditingType();
     refreshSheetMeta(); // ("Syns för alla i 1 h" for a Träffpunkt)
@@ -4674,6 +4689,7 @@
     if (hiddenTypes[editingType]) setTypeHidden(editingType, false); // don't let the spot you just saved vanish
     var cur = waypoints.filter(function(w){ return w.id === editingId; })[0];
     if (cur && wpType(cur) === editingType && (!v || v === cur.name)){ closeSheet(); return; } // nothing changed
+    if (!editingIsNew && !mapEditAllowed()){ showLockCard(); return; }   // (a new spot: already made while it was open)
     if (v) upd.name = v;           // an emptied name keeps the old one
     // Träffpunkt: an hour from now (a new one, or a spot turned into one); only
     // one per person -- your previous one goes. Turned into something else: stays.
@@ -4705,6 +4721,7 @@
   function flushDelete(){ if (!undoPending) return; var id = undoPending.id; undoPending = null; clearTimeout(undoT); undoToast.classList.remove('show'); deleteWaypointById(id); }
   wpDeleteBtn.addEventListener('click', function(){
     if (!editingId) return;
+    if (!editingIsNew && !mapEditAllowed()){ showLockCard(); return; }
     flushDelete();                                           // (an earlier one still waiting: delete it now)
     var wp = waypoints.filter(function(w){ return w.id === editingId; })[0];
     undoPending = { id: editingId };
@@ -10183,6 +10200,39 @@
   document.getElementById('ctFetch').addEventListener('click', function(){ if (catchLive) catchLive.at = 0; loadCatches(true); });
 
   window.__ffCatches = function(){ return catchData ? catchData.list.map(function(c){ return { id: c.id, sp: c.sp, cm: c.cm, who: c.who, comp: c.comp }; }) : null; };
+
+  /* --- Tävlingslåset (tools/PLAN_TAVLINGSLAS.md): spots can only be added, changed or removed from a week
+     before a competition on this lake until a week after it. Always open: Demo Mode, admin, and when the app
+     doesn't know (no copy, the API not answering) -- better than locking people out on the lake mid-competition.
+     Only in the app: the Firestore rules still let anyone signed in write (a friendly lock, not security). */
+  var LOCK_DAYS = 7;
+  function lockDays(c){ return /^\d{4}-\d\d-\d\d$/.test(c.date) ? Math.round((Date.parse(c.date) - Date.parse(catchTodayIso())) / CATCH_DAY) : null; }
+  function mapEditAllowed(){
+    if (TEST_MODE || isAdminUnlocked() || window.__ffNoLock) return true;   // (__ffNoLock: only the test browser, fakefb.py)
+    catchReadCopy();
+    if (!catchHist || catchErr) return true;
+    return catchHist.comps.some(function(c){ var d = lockDays(c); return c.status === 'active' || (d !== null && Math.abs(d) <= LOCK_DAYS); });
+  }
+  var lockBackdrop = document.getElementById('lockBackdrop'), lockCard = document.getElementById('lockCard');
+  function showLockCard(){
+    // ponytail: a copy over an hour old is asked again now; the answer counts from the next try
+    if (catchHist && !catchLoading && Date.now() - catchHist.at > CATCH_HOUR) loadHistory();
+    var next = (catchHist ? catchHist.comps : []).filter(function(c){ return lockDays(c) > LOCK_DAYS; })
+      .sort(function(a, b){ return a.date < b.date ? -1 : 1; })[0];
+    var at = next && new Date(Date.parse(next.date) - LOCK_DAYS * CATCH_DAY);
+    document.getElementById('lockWhen').textContent = next ? 'Öppnar ' + at.getUTCDate() + '/' + (at.getUTCMonth() + 1) + ' inför ' + (next.name || 'nästa tävling') + '.'
+      : 'Ingen tävling i ' + LAKE.name + ' är planerad just nu.';
+    lockBackdrop.classList.add('show'); lockCard.classList.add('show');
+  }
+  function hideLockCard(){ lockBackdrop.classList.remove('show'); lockCard.classList.remove('show'); }
+  lockBackdrop.addEventListener('click', hideLockCard);
+  document.getElementById('lockClose').addEventListener('click', hideLockCard);
+  document.getElementById('lockDemo').addEventListener('click', function(){   // (like Hjälp's Demo Mode link, 30-help.js)
+    hideLockCard(); if (wpSheet.classList.contains('show')) closeSheet();
+    showSettingsView(); openSettingsSec('adv');
+    setTimeout(function(){ document.getElementById('demoModeToggle').scrollIntoView({ block: 'center' }); }, 50);
+  });
+  window.__ffLock = function(){ return { allowed: mapEditAllowed(), shown: lockCard.classList.contains('show'), when: document.getElementById('lockWhen').textContent }; };
   /* ================= Profiler: a fisher's page =================
      From Fiskfiskarnas API (dashboard.php, fetched with the history in 66-catches.js -- no extra calls):
      anglers (name, nickname, since, home water, bio), anglerStats (wins, competitions, biggest fish),

@@ -148,6 +148,12 @@ Uppdatera rätt anteckning när något ändras.
   inte positions/usage) till en JSON-fil och tillbaka. Gratisplanen har ingen egen backup, och reglerna kräver bara
   inloggning (vem som helst kan logga in anonymt). Återställ = `set` på allt i filen, bara till samma projekt. Ny
   samling som ska sparas för evigt → lägg till i `BACKUP_COLS`.
+- **Tävlingslåset** (`mapEditAllowed()`/`showLockCard()` sist i `js/66-catches.js`, `tools/PLAN_TAVLINGSLAS.md`): platser kan bara
+  läggas, ändras (namn/typ) och tas bort från 7 dagar före till 7 dagar efter en tävling på sjön (datum i API-kopian, eller status
+  `active`) – även Fara/Träffpunkt. Annars rutan `#lockCard` (när det öppnar + Öppna Demo Mode). Alltid öppet: Demo Mode, upplåst
+  admin, och när appen inte vet (ingen kopia/API-fel). Båtpositioner, meddelanden, spår låses inte. Bara i appen – reglerna släpper in
+  alla inloggade. Grindarna ligger i knapparnas handlers (24-boats.js), inte i `deleteWaypointById` (utgångna Träffpunkter, Avbryt
+  på ny plats). Testerna: låset av i testwebbläsaren (`window.__ffNoLock`, fakefb) utom med `cfg={'lock': True}` (test_lock.py).
 - **Pushnotiser**: inte gjort (kräver server/Firebase-betalplan).
 
 ## Firestore-regler (aktuella, i Firebase-konsolen)
