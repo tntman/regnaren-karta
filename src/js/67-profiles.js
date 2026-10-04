@@ -69,10 +69,10 @@
     return best;
   }
   // (catchData.comp: caught in this lake + the lake's competitions in other waters -- a competition can move lake)
-  function pfCatches(name){ return (catchData ? catchData.comp : []).filter(function(c){ return catchPlain(c.who) === catchPlain(name); }); }
+  function pfCatches(name, list){ return (list || (catchData ? catchData.comp : [])).filter(function(c){ return catchPlain(c.who) === catchPlain(name); }); }
   // someone's catches in this lake and its competitions, newest first (the boat box and the profile): "● Gädda 78 cm   26/9 13:00"
-  function pfCatchRows(name, max){ max = max || 8;
-    var l = pfCatches(name).sort(function(a, b){ return b.t - a.t; });
+  function pfCatchRows(name, max, list){ max = max || 8;   // (list: these catches instead -- the boat box: the live competition's)
+    var l = pfCatches(name, list).sort(function(a, b){ return b.t - a.t; });
     return l.slice(0, max).map(function(c){
       return '<div class="pfRow"><span><span class="hmSpDot" style="background:rgb(' + HM_COL[c.sp] + ')"></span>' + hmSpName(c.sp) + ' <small>' + hmWhen(c.t) + '</small></span><b>' + pfCm(c.cm) + '</b></div>';
     }).join('') + (l.length > max ? '<div class="pfRow"><span><small>+ ' + (l.length - max) + ' till</small></span></div>' : '');

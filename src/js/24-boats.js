@@ -107,12 +107,12 @@
   function showBoatInfo(cluster){
     boatInfoCur = cluster;
     var names = cluster.names || [cluster.name || 'Okänd'];
-    if (names.length === 1 && openProfile(names[0])) return;   // one person: their profile (67-profiles.js)
+    var live = catchLive && catchLiveComp() && catchLive.comp === catchLiveComp().id ? catchLive.all || [] : [];   // (only the competition going on, all of it -- as Ledare)
     var group = names.length > 1;                       // several in the boat: no title, each name is the heading over their own catches
-    boatInfoNameEl.hidden = group; boatInfoNamesListEl.style.display = 'none';
+    boatInfoNameEl.hidden = group; boatInfoNamesListEl.style.display = 'none'; boatInfoNameEl.classList.add('pfLink');
     boatInfoNameEl.textContent = names[0];
     boatInfoCatchesEl.innerHTML = names.map(function(n){
-      var r = pfCatchRows(n, group ? 4 : 8);   // (67-profiles.js)
+      var r = pfCatchRows(n, group ? 4 : 8, live);   // (67-profiles.js)
       return group ? '<div class="pfH biWho pfLink" data-who=""' + escHtml(n) + '">' + escHtml(n) + '</div>' + (r || '<div class="pfRow"><span><small>Inga fångster</small></span></div>')
                    : r ? '<div class="pfH">Fångster</div>' + r : '';
     }).join('');
@@ -125,6 +125,7 @@
     boatInfoModal.classList.remove('show');
   }
   boatInfoCatchesEl.addEventListener('click', function(e){ var h = e.target.closest ? e.target.closest('.biWho') : null; if (h) openProfile(h.getAttribute('data-who')); });   // (a name: their profile)
+  boatInfoNameEl.addEventListener('click', function(){ if (boatInfoCur) openProfile(boatInfoNameEl.textContent); });   // (the name: their profile)
   boatInfoCloseBtn.addEventListener('click', hideBoatInfo);
   boatInfoBackdrop.addEventListener('click', hideBoatInfo);
 

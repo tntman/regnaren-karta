@@ -72,16 +72,21 @@ with sync_playwright() as p:
         pg.click('#hmCardData .pfLink'); pg.wait_for_timeout(500)
         check('...opens it (the catch panel closes)', pf(pg) and not shown(pg, 'hmCard') and pg.inner_text('#pfName') == 'Filip', [shown(pg, 'hmCard'), pg.inner_text('#pfName')])
     pg.click('#pfClose'); pg.wait_for_timeout(300)
-    # a boat: one person with a profile -> the profile; without -> the old box
+    # a boat: always the box (only the competition going on: none here -> no catches); the name opens the profile
     boat(pg, 'Calle')
+    check("tap Calle's boat: the box (not the profile), his name, no catches (no competition going on)",
+          not pf(pg) and pg.is_visible('#boatInfoModal') and pg.inner_text('#boatInfoName') == 'Calle' and pg.inner_text('#boatInfoCatches').strip() == '', pg.inner_text('#boatInfoModal'))
+    pg.click('#boatInfoName'); pg.wait_for_timeout(500)
     t = pg.inner_text('#pfCard')
-    check("tap Calle's boat: his profile (no stats: – / Inga ännu), Båten på kartan · uppdaterad …, Visa på kartan", pf(pg) and pg.inner_text('#pfName') == 'Calle' and 'Båten på kartan' in t and pg.is_visible('#pfMap') and 'Inga ännu' in t and '–' in pg.inner_text('#pfData'), t[:200])
+    check("...his name: his profile (no stats: – / Inga ännu), Båten på kartan · uppdaterad …, Visa på kartan", pf(pg) and not shown(pg, 'boatInfoModal') and pg.inner_text('#pfName') == 'Calle' and 'Båten på kartan' in t and pg.is_visible('#pfMap') and 'Inga ännu' in t and '–' in pg.inner_text('#pfData'), t[:200])
     check('...his 2 catches here: "Fångster i Regnaren (2)"', pg.inner_text('#pfCatches') == 'Fångster i Regnaren (2)', pg.inner_text('#pfCatches'))
     check("Calle's profile has \"Åk hit\" (his boat is on the map)", pg.is_visible('#pfGo'))
     check('...and his 2 catches listed (newest first)', pg.evaluate("document.querySelectorAll('#pfList .pfRow').length") == 2, pg.inner_text('#pfList'))
     pg.click('#pfClose'); pg.wait_for_timeout(300)
     boat(pg, 'Pia')
-    check("tap Pia's boat (no profile at Fiskfiskarna): her profile anyway, name + 'Ingen profil', no stats, no load button",
+    check("tap Pia's boat: the box", not pf(pg) and pg.is_visible('#boatInfoModal') and pg.inner_text('#boatInfoName') == 'Pia')
+    pg.click('#boatInfoName'); pg.wait_for_timeout(500)
+    check("...her name (no profile at Fiskfiskarna): her profile anyway, 'Ingen profil', no stats, no load button",
           pf(pg) and pg.inner_text('#pfName') == 'Pia' and pg.inner_text('#pfNoneTxt') == 'Ingen profil hos Fiskfiskarna.' and not pg.is_visible('#pfStats') and not pg.is_visible('#pfLoad'), pg.inner_text('#pfCard'))
     check('...with "Åk hit"; it closes and the lead line goes to the boat', pg.is_visible('#pfGo'))
     pg.click('#pfGo'); pg.wait_for_timeout(700)
