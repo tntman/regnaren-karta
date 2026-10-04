@@ -1049,6 +1049,9 @@
   #boatInfoModal .modalDesc{margin-bottom:0;}
   .boatInfoNamesList{display:flex;flex-direction:column;gap:6px;margin:2px 0 14px;}
   #boatInfoCatches{max-height:34vh;overflow-y:auto;margin-bottom:12px;}
+  #boatInfoCatches .biWho{color:var(--offwhite);font-size:12px;margin-top:8px;}
+  #boatInfoCatches .biWho:first-child{margin-top:0;}
+  #boatInfoCatches .pfRow{padding:3px 0;font-size:13px;}
   .boatInfoNameRow{
     background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);
     border-radius:9px;padding:9px 12px;font-size:13.5px;font-weight:600;color:var(--offwhite);
@@ -4332,22 +4335,14 @@
   function showBoatInfo(cluster){
     var names = cluster.names || [cluster.name || 'Okänd'];
     if (names.length === 1 && openProfile(names[0])) return;   // one person with a profile: their profile (67-profiles.js)
-    boatInfoNamesListEl.innerHTML = '';
-    if (names.length === 1){
-      boatInfoNameEl.textContent = names[0];
-      boatInfoNamesListEl.style.display = 'none';
-    } else {
-      boatInfoNameEl.textContent = 'Samma båt';
-      names.forEach(function(n){
-        var row = document.createElement('div');
-        row.className = 'boatInfoNameRow' + (profileOf(n) ? ' pfLink' : '');   // (tap: their profile)
-        row.textContent = n;
-        row.addEventListener('click', function(){ openProfile(n); });
-        boatInfoNamesListEl.appendChild(row);
-      });
-      boatInfoNamesListEl.style.display = 'flex';
-    }
-    boatInfoCatchesEl.innerHTML = names.map(function(n){ var r = pfCatchRows(n); return r ? '<div class="pfH">' + (names.length > 1 ? escHtml(n) + ' · ' : '') + 'Fångster</div>' + r : ''; }).join('');   // (67-profiles.js)
+    var group = names.length > 1;                       // several in the boat: no title, each name is the heading over their own catches
+    boatInfoNameEl.hidden = group; boatInfoNamesListEl.style.display = 'none';
+    boatInfoNameEl.textContent = names[0];
+    boatInfoCatchesEl.innerHTML = names.map(function(n){
+      var r = pfCatchRows(n, group ? 4 : 8);   // (67-profiles.js)
+      return group ? '<div class="pfH biWho' + (profileOf(n) ? ' pfLink' : '') + '" data-who="' + escHtml(n) + '">' + escHtml(n) + '</div>' + (r || '<div class="pfRow"><span><small>Inga fångster</small></span></div>')
+                   : r ? '<div class="pfH">Fångster</div>' + r : '';
+    }).join('');
     boatInfoMetaEl.textContent = 'Uppdaterad ' + timeAgo(cluster.updatedAt);
     boatInfoBackdrop.classList.add('show');
     boatInfoModal.classList.add('show');
@@ -4356,6 +4351,7 @@
     boatInfoBackdrop.classList.remove('show');
     boatInfoModal.classList.remove('show');
   }
+  boatInfoCatchesEl.addEventListener('click', function(e){ var h = e.target.closest ? e.target.closest('.biWho') : null; if (h) openProfile(h.getAttribute('data-who')); });   // (a name: their profile)
   boatInfoCloseBtn.addEventListener('click', hideBoatInfo);
   boatInfoBackdrop.addEventListener('click', hideBoatInfo);
 
@@ -10222,11 +10218,11 @@
   }
   function pfCatches(name){ return hmAll().filter(function(c){ return catchPlain(c.who) === catchPlain(name); }); }
   // someone's catches in this lake, newest first (the boat box and the profile): "● Gädda 78 cm   26/9 13:00"
-  function pfCatchRows(name){
+  function pfCatchRows(name, max){ max = max || 8;
     var l = pfCatches(name).sort(function(a, b){ return b.t - a.t; });
-    return l.slice(0, 8).map(function(c){
+    return l.slice(0, max).map(function(c){
       return '<div class="pfRow"><span><span class="hmSpDot" style="background:rgb(' + HM_COL[c.sp] + ')"></span>' + hmSpName(c.sp) + ' <small>' + hmWhen(c.t) + '</small></span><b>' + pfCm(c.cm) + '</b></div>';
-    }).join('') + (l.length > 8 ? '<div class="pfRow"><span><small>+ ' + (l.length - 8) + ' till</small></span></div>' : '');
+    }).join('') + (l.length > max ? '<div class="pfRow"><span><small>+ ' + (l.length - max) + ' till</small></span></div>' : '');
   }
   function openProfile(name){
     var p = profileOf(name); if (!p) return false;

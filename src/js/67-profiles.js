@@ -62,11 +62,11 @@
   }
   function pfCatches(name){ return hmAll().filter(function(c){ return catchPlain(c.who) === catchPlain(name); }); }
   // someone's catches in this lake, newest first (the boat box and the profile): "● Gädda 78 cm   26/9 13:00"
-  function pfCatchRows(name){
+  function pfCatchRows(name, max){ max = max || 8;
     var l = pfCatches(name).sort(function(a, b){ return b.t - a.t; });
-    return l.slice(0, 8).map(function(c){
+    return l.slice(0, max).map(function(c){
       return '<div class="pfRow"><span><span class="hmSpDot" style="background:rgb(' + HM_COL[c.sp] + ')"></span>' + hmSpName(c.sp) + ' <small>' + hmWhen(c.t) + '</small></span><b>' + pfCm(c.cm) + '</b></div>';
-    }).join('') + (l.length > 8 ? '<div class="pfRow"><span><small>+ ' + (l.length - 8) + ' till</small></span></div>' : '');
+    }).join('') + (l.length > max ? '<div class="pfRow"><span><small>+ ' + (l.length - max) + ' till</small></span></div>' : '');
   }
   function openProfile(name){
     var p = profileOf(name); if (!p) return false;
