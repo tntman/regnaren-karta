@@ -96,23 +96,25 @@ with sync_playwright() as p:
             dict(fakefb.api_row(ms_ago(5), 'regnaren2', 'Calle', 'gos', 55, B1[0], B1[1]), approved=True)]                          # someone else's
     comps = [{'competition_id': 'reg2', 'competition_name': 'Regnaren 2', 'date': TODAY, 'status': 'active', 'water': 'Regnaren'}]
     b, ctx, pg, errs = new_page(p, geo=B3, cfg={'api': dict(api(), competitions=comps, live={'reg2': live}),
-        'positions': [{'uid': 'kalle', 'name': 'Calle', 'lat': B1[0], 'lon': B1[1], 'ageMin': 0, 'msg': 'Gös 55 cm', 'msgAgeMin': 1, 'msgSp': 'gos', 'msgImg': PHOTO},
+        'positions': [{'uid': 'kalle', 'name': 'Calle', 'lat': B1[0], 'lon': B1[1], 'ageMin': 0, 'msg': 'Gös 55 🐟', 'msgAgeMin': 1, 'msgSp': 'gos', 'msgImg': PHOTO},
+                      {'uid': 'olle', 'name': 'Olle', 'lat': B1[0] - 0.004, 'lon': B1[1], 'ageMin': 0, 'msg': 'Gädda 40 🐟', 'msgAgeMin': 4, 'msgSp': 'gadda'},   # (over 3 min: faded, plain black)
                       {'uid': 'pia', 'name': 'Pia', 'lat': B1[0] + 0.004, 'lon': B1[1], 'ageMin': 0, 'msg': 'Kolla', 'msgAgeMin': 1, 'msgSp': 'gadda', 'msgImg': 'https://example.com/spy.gif'}]}, name='Filip')
     photos(ctx)
     pg.wait_for_timeout(2500)
     pg.click('#msgBtn'); pg.wait_for_timeout(300)
     opts = pg.eval_on_selector_all('#msgPop button', 'e => e.map(x => x.textContent)')
     hm = pg.evaluate("(() => { var d = new Date(Date.now() - 30 * 60000); return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2); })()")
-    check('competition on: your latest counted catch first ("Gädda 78 cm · hh:mm"), not the 22 cm perch, not Calle\'s', opts[0] == 'Gädda 78 cm · ' + hm and opts[1] == 'Fisk!!! 🎣' and not any('Gös' in o or 'Abborre' in o for o in opts), opts)
+    check('competition on: your latest counted catch first ("Gädda 78 🐟 · hh:mm"), not the 22 cm perch, not Calle\'s', opts[0] == 'Gädda 78 🐟 · ' + hm and opts[1] == 'Fisk!!! 🎣' and not any('Gös' in o or 'Abborre' in o for o in opts), opts)
     check('...the edge spins in the pike\'s green', pg.evaluate("(() => { var b = document.getElementById('msgFishBtn'); return b.style.getPropertyValue('--sp') + ' ' + getComputedStyle(b, '::before').animationName; })()") == '#35D24A rbSpin')
     pg.click('#msgFishBtn'); pg.wait_for_timeout(500)
     w = [x for x in pg.evaluate('window.__posWrites') if x.get('msg')]
-    check('sent by hand: "Gädda 78 cm", the species and the photo (600 px wide) with it', w and w[-1]['msg'] == 'Gädda 78 cm' and w[-1]['msgSp'] == 'gadda' and w[-1]['msgImg'] == PHOTO.replace('w_2000', 'w_600'), w[-1:] if w else w)
+    check('sent by hand: "Gädda 78 🐟", the species and the photo (600 px wide) with it', w and w[-1]['msg'] == 'Gädda 78 🐟' and w[-1]['msgSp'] == 'gadda' and w[-1]['msgImg'] == PHOTO.replace('w_2000', 'w_600'), w[-1:] if w else w)
     check('...your bubble: the species colour sweeping through the text, as for everyone', pg.evaluate("(() => { var t = document.querySelector('.msgBub.mine .mT.sp'); return !!t && t.style.getPropertyValue('--sp') === '#35D24A'; })()"))
     pg.click('#msgBtn'); pg.wait_for_timeout(300)
     check('the same fish can be sent again (no lock)', pg.is_visible('#msgFishBtn'))
     pg.click('#msgBtn'); pg.wait_for_timeout(200)
     # Calle's catch message: green? no -- the zander's blue; his photo in the panel; his name -> his profile
+    check("Olle's catch (4 min old): faded, the colour is gone -- plain black", pg.evaluate("(() => { var l = Array.from(document.querySelectorAll('.mLine')).filter(x => x.textContent.indexOf('Gädda 40') >= 0)[0]; return !!l && !l.querySelector('.mT.sp') && !l.querySelector('.rbText'); })()"))
     check("Calle's catch bubble: the zander's blue in the text", pg.evaluate("(() => { var l = Array.from(document.querySelectorAll('.mLine')).filter(x => x.textContent.indexOf('Gös 55') >= 0)[0]; var t = l && l.querySelector('.mT.sp'); return !!t && t.style.getPropertyValue('--sp') === '#3A86FF'; })()"))
     pg.evaluate("Array.from(document.querySelectorAll('.mLine')).filter(x => x.textContent.indexOf('Gös 55') >= 0)[0].click()"); pg.wait_for_timeout(400)
     check('...his panel shows the photo (only loaded now)', pg.is_visible('#msgCard') and pg.get_attribute('#msgCardImg', 'src') == PHOTO and not pg.eval_on_selector('#msgCardImg', 'e => e.hidden'))

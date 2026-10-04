@@ -10,7 +10,7 @@ def check(name, cond, info=''):
     results.append(bool(cond)); print(('PASS ' if cond else 'FAIL ') + name + ('  -- ' + str(info) if info != '' else ''))
 B3 = (58.887269, 15.772629); B1 = (58.887421, 15.775569); B4 = (58.88651, 15.777774)
 cfg = {'waypoints': [{'lat': B4[0], 'lon': B4[1], 'name': 'Djupa hålet', 'uid': 'filip', 'by': 'Filip', 'type': 'abborre'}],
-       'positions': [{'uid': 'kalle', 'name': 'Calle', 'lat': B1[0], 'lon': B1[1], 'ageMin': 0, 'msg': 'Hugg! 🎣', 'msgAgeMin': 2},
+       'positions': [{'uid': 'kalle', 'name': 'Calle', 'lat': B1[0], 'lon': B1[1], 'ageMin': 0, 'msg': 'Hugg! 🎣', 'msgAgeMin': 4},
                      {'uid': 'pia', 'name': 'Pia', 'lat': B1[0] + 0.001, 'lon': B1[1], 'ageMin': 0, 'msg': 'Kommer 🚤', 'msgAgeMin': 20}]}
 
 # (from test_lightning: made-up FMI answers)
@@ -107,13 +107,13 @@ with sync_playwright() as p:
     check('your bubble at your boat', any(m['k'] == 'me' and 'Åker in' in m['t'] for m in pg.evaluate('window.__ffMsgs()')))
     check('sent: the note "Syns i 7 minuter"', pg.is_visible('#msgToast') and 'Syns i 7 minuter' in pg.inner_text('#msgToast'))
     pg.screenshot(path='shot_msgs.png')
-    check('a bubble: a thin plain border, no rainbow edge, a small one (font 12 px)', pg.evaluate("(() => { var bb = document.querySelector('.mLine.mine').closest('.msgBub'), cs = getComputedStyle(bb); return !bb.querySelector('.msgRb') && cs.borderTopWidth === '1px' && cs.fontSize === '12px'; })()"))
+    check('a bubble: a thin black 1 px border, no rainbow edge, a small one (font 12 px)', pg.evaluate("(() => { var bb = document.querySelector('.mLine.mine').closest('.msgBub'), cs = getComputedStyle(bb); return !bb.querySelector('.msgRb') && cs.borderTopWidth === '1px' && cs.borderTopColor === 'rgb(0, 0, 0)' && cs.fontSize === '12px'; })()"))
     op = [[m['k'], m['o']] for m in pg.evaluate('window.__ffMsgs()')]
-    check("they fade with age: Calle's (2 min) less than yours (new)", dict(op).get('me', 0) > [v for k, v in op if k != 'me'][0], op)
-    check('the text and the name ("Calle…") take turns in each line', pg.evaluate("(() => { var w = document.querySelector('.mLine:not(.mine) .mWin'); return !!w && w.querySelector('.mT') && /…$/.test(w.querySelector('.mN').textContent) && w.querySelector('.mN').textContent === 'Calle…'; })()"))
+    check("they fade with age: Calle's (4 min) less than yours (new)", dict(op).get('me', 0) > [v for k, v in op if k != 'me'][0], op)
+    check('the name after the text, in a smaller print, no turning', pg.evaluate("(() => { var l = document.querySelector('.mLine:not(.mine)'), n = l.querySelector('small'); return !l.querySelector('.mWin') && n.textContent === 'Calle' && parseFloat(getComputedStyle(n).fontSize) < parseFloat(getComputedStyle(l).fontSize); })()"))
     pg.evaluate("document.querySelector('.mLine:not(.mine)').click()"); pg.wait_for_timeout(500)
     card = pg.inner_text('#msgCard')
-    check("tap Calle's: a panel with when it was written and when it goes", pg.eval_on_selector('#msgCard', 'e => e.classList.contains("show")') and 'CALLE' in card and 'Hugg!' in card and 'Skrivet' in card and '2 min sedan' in card and 'Försvinner om 5 min' in card, card)
+    check("tap Calle's: a panel with when it was written and when it goes", pg.eval_on_selector('#msgCard', 'e => e.classList.contains("show")') and 'CALLE' in card and 'Hugg!' in card and 'Skrivet' in card and '4 min sedan' in card and 'Försvinner om 3 min' in card, card)
     pg.click('#msgCardGo'); pg.wait_for_timeout(700)
     check('"Åk hit": the lead line on Calle\'s boat', pg.eval_on_selector('#probe', 'e => e.classList.contains("show")') and not pg.eval_on_selector('#msgCard', 'e => e.classList.contains("show")'))
     pg.evaluate("document.querySelector('.mLine:not(.mine)').click()"); pg.wait_for_timeout(700)

@@ -6,10 +6,10 @@ Kod: `src/js/64-messages.js`, CSS i `src/css/75-messages.css`. Test: `tests/test
   (regnbåge som glider genom texten `.rbText`, pennan efter; liten ruta `#msgOwn`, max 15 tecken
   räknat med Array.from – en emoji = 1, räknaren "n/15", Enter/➤ skickar, tryck utanför = stäng).
 - Skickas med din position (`positions/<du>.msg/msgAt`), bara vid sjön. Bubbla vid båten 7 min
-  (`MSG_MS`), tonas till ~45 %. Liten bubbla (12 px) med tunn enfärgad ram (ingen regnbågskant sedan 2026-10-04).
-- **Text och namn turas om** (`.mWin`, 10 s per varv): texten står ~6 s, glider åt höger ut, "Calle…" (`.mN`) glider in från vänster
-  ~2,4 s, och tillbaka. Fisk = artens färg sveper genom texten (`.mT.sp`, `--sp`), Egen text = regnbåge (`.mT.rbText`),
-  färdiga val svarta. Egen bubbla ljusgul men samma regler.
+  (`MSG_MS`). Liten bubbla (12 px) med svart 1 px ram, namnet efter texten i mindre stil (`<small>`).
+  De första 3 min (`MSG_FADE_MS`): full styrka och färger – fisk = artens färg sveper i texten (`.mT.sp`, `--sp`),
+  Egen text = regnbåge (`.mT.rbText`), färdiga val svarta. Sedan tonas den till ~45 % och texten blir helt svart.
+  Fiskmeddelandet = "Gädda 78 🐟" (inget "cm", `msgFishText`).
 - **Flera i samma båt** (< `BOAT_CLUSTER_METERS`): EN bubbla (`.msgBub.multi`), en rad per person
   (`.mLine`, egen `data-k`), nyast överst, äldre rader blekare; egen rad ljusgul.
 - Tryck på en rad = rutan `#msgCard` (skrivet kl, försvinner om, Åk hit = lodet på båten, Dölj för
