@@ -159,4 +159,8 @@ trackusers/{lake}: read/write auth – register över vilka som har spår på sj
 - Riktig iPhone-app via Capacitor + TestFlight (bakgrundsposition). Kräver Mac + Apple-konto.
 - iOS Genvägar-automation som skickar position när appen är stängd.
 - Fångstlogg/tävlingsläge, anteckningar på fiskeplatser, pushnotiser (Träffpunkt/Fara/blixt).
+- Gruppkod (2026-10-04, väntar): skydda datan mot utomstående med ETT gemensamt Firebase-konto (Email/Password,
+  `ffmap-grupp@example.com`, lösenord = koden, skrivs en gång per telefon). Sign-up och delete av under User actions;
+  reglerna `request.auth.token.email == '…'` i stället för `request.auth != null` – först när alla skrivit koden
+  (Admin visar vem), sedan Anonymous av. Testprojektet behåller anonym inloggning. iPhone-appen måste få det först.
 - Tunga beräkningar (Kartanalys, rutten, lä-fältet) i en Web Worker – bara om det börjar hacka.
