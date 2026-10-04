@@ -16,10 +16,11 @@ kartan öppnar och en knapp till Demo Mode, där man får prova fritt.
 | Båtpositioner, snabbmeddelanden, spår | Låses inte |
 | Admin (upplåst) | Alltid öppen |
 | Demo Mode | Alltid öppen |
+| Nödbrytare | Admin → Tävlingslåset "På / Av för alla" (per sjö, `config/<sjö>.lockOff`, `js/26-sync.js`) |
 | Rutan | Vad som gäller, när den öppnar ("Öppnar 17/10 inför Regnaren 5"), förklaring av Demo Mode, knapparna Öppna Demo Mode + Stäng |
 
 ## Hur det är byggt
-- `mapEditAllowed()` sist i `js/66-catches.js`: `TEST_MODE || isAdminUnlocked() || !catchHist || catchErr` → sant; annars sant
+- `mapEditAllowed()` sist i `js/66-catches.js`: `TEST_MODE || isAdminUnlocked() || compLockOff || !catchHist || catchErr` → sant; annars sant
   om någon av sjöns tävlingar i API-kopian är `active` eller har ett datum inom ±7 dagar från i dag.
 - `showLockCard()` visar `#lockCard` (`html/50-sheets.html`, samma stil som båtrutan). Är kopian äldre än 1 h hämtas den igen
   i bakgrunden – svaret gäller från nästa försök (misslyckas hämtningen blir läget "vet inte" = öppet).

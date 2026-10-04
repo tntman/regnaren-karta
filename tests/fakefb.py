@@ -166,6 +166,7 @@ FAKE_FIREBASE_JS = r"""
       window.__cfgSets.push(JSON.parse(JSON.stringify(Object.assign({}, d, { updatedAt: null }))));
       if (window.__cfgDenied){ var e = new Error('denied'); e.code = 'permission-denied'; return Promise.reject(e); }
       var nd = Object.assign({}, window.__cfgDoc || {}, { posIntervalS: d.posIntervalS });
+      if (d.lockOff !== undefined) nd.lockOff = d.lockOff;   // (the competition lock off for everyone, admin)
       if (d.test !== undefined) nd.test = JSON.parse(JSON.stringify(d.test));   // (the test mode's competition, 37-testmode.js)
       window.__setCfg(nd); return Promise.resolve();
     } }; } };

@@ -26,6 +26,10 @@ with sync_playwright() as p:
         'waypoints': [{'lat': B1[0], 'lon': B1[1], 'name': 'Min plats', 'uid': 'calle', 'by': 'Calle', 'type': 'gadda'}]})
     pg.wait_for_timeout(2500)
     check('no competition within a week: locked', not lock(pg)['allowed'], lock(pg))
+    pg.evaluate("window.__setCfg({ posIntervalS: 20, lockOff: true })"); pg.wait_for_timeout(200)
+    check('admin turned the lock off for everyone (config): open', lock(pg)['allowed'])
+    pg.evaluate("window.__setCfg({ posIntervalS: 20 })"); pg.wait_for_timeout(200)
+    check('...on again: locked', not lock(pg)['allowed'])
     n0 = docs(pg)
     long_press(pg)
     at = datetime.date.today() + datetime.timedelta(days=13)
@@ -71,6 +75,13 @@ with sync_playwright() as p:
     check('Filip, not unlocked: locked like everyone', not lock(pg)['allowed'])
     pg.evaluate("localStorage.setItem('ffmap_admin_unlock_v1', '%s')" % fakefb._PIN_HASH); pg.reload(); pg.wait_for_timeout(2500)
     check('admin (unlocked): always open', lock(pg)['allowed'])
+    pg.evaluate("document.querySelector('#adminCompLockSeg button[data-off=\"1\"]').click()"); pg.wait_for_timeout(300)
+    c = pg.evaluate("[window.__cfgSets[window.__cfgSets.length - 1], window.__cfgDoc]")
+    check('Admin -> Tävlingslåset "Av för alla": saved in config (with the interval, as the rule wants), the button shows it',
+          c[0]['lockOff'] is True and c[0]['posIntervalS'] == 20 and c[1]['lockOff'] is True and
+          pg.evaluate("document.querySelector('#adminCompLockSeg button[data-off=\"1\"]').classList.contains('active')") and 'Sparat' in pg.inner_text('#adminCompLockStatus'), c)
+    pg.evaluate("document.querySelector('#adminCompLockSeg button[data-off=\"0\"]').click()"); pg.wait_for_timeout(300)
+    check('..."På" again', pg.evaluate("window.__cfgDoc.lockOff") is False)
     b.close()
 
     b, ctx, pg, errs = new_page(p, geo=B3, cfg={'api': {'heatmap': [], 'competitions': far}})

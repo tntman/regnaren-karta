@@ -151,7 +151,7 @@ Uppdatera rätt anteckning när något ändras.
 - **Tävlingslåset** (`mapEditAllowed()`/`showLockCard()` sist i `js/66-catches.js`, `tools/PLAN_TAVLINGSLAS.md`): platser kan bara
   läggas, ändras (namn/typ) och tas bort från 7 dagar före till 7 dagar efter en tävling på sjön (datum i API-kopian, eller status
   `active`) – även Fara/Träffpunkt. Annars rutan `#lockCard` (när det öppnar + Öppna Demo Mode). Alltid öppet: Demo Mode, upplåst
-  admin, och när appen inte vet (ingen kopia/API-fel). Båtpositioner, meddelanden, spår låses inte. Bara i appen – reglerna släpper in
+  admin, när appen inte vet (ingen kopia/API-fel), och när admin slagit av låset för alla (Admin → Tävlingslåset, `config/<sjö>.lockOff`). Båtpositioner, meddelanden, spår låses inte. Bara i appen – reglerna släpper in
   alla inloggade. Grindarna ligger i knapparnas handlers (24-boats.js), inte i `deleteWaypointById` (utgångna Träffpunkter, Avbryt
   på ny plats). Testerna: låset av i testwebbläsaren (`window.__ffNoLock`, fakefb) utom med `cfg={'lock': True}` (test_lock.py).
 - **Pushnotiser**: inte gjort (kräver server/Firebase-betalplan).
@@ -160,7 +160,7 @@ Uppdatera rätt anteckning när något ändras.
 waypoints: read auth; create kräver uid/name(≤60)/lat/lon; update/delete auth.
 positions: read auth; write kräver lat, lon (number) och name (string).
 usage: read auth; write kräver day (string) och r/w/d (number).
-config/{lake}: read auth; write kräver posIntervalS i [10,20,30,60].
+config/{lake}: read auth; write kräver posIntervalS i [10,20,30,60] (därför skickas det med även när `lockOff`/`test` sparas).
 catches/{lake}: används inte längre (fångsterna kommer från Fiskfiskarnas API) – regeln kan tas bort.
 tracks/{id}: read auth; write kräver lake/uid/day/pts (string), n (number), pts ≤ 900 000 tecken – spåren (NOTES_SPAR.md). **Regeln ska läggas till i konsolen** (Filip) innan spår sparas i databasen.
 Testprojektet (Demo Mode, NOTES_TESTLAGE.md) har samma regler.

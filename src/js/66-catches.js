@@ -216,7 +216,7 @@
   var LOCK_DAYS = 7;
   function lockDays(c){ return /^\d{4}-\d\d-\d\d$/.test(c.date) ? Math.round((Date.parse(c.date) - Date.parse(catchTodayIso())) / CATCH_DAY) : null; }
   function mapEditAllowed(){
-    if (TEST_MODE || isAdminUnlocked() || window.__ffNoLock) return true;   // (__ffNoLock: only the test browser, fakefb.py)
+    if (TEST_MODE || isAdminUnlocked() || compLockOff || window.__ffNoLock) return true;   // (compLockOff: admin, 26-sync.js)   // (__ffNoLock: only the test browser, fakefb.py)
     catchReadCopy();
     if (!catchHist || catchErr) return true;
     return catchHist.comps.some(function(c){ var d = lockDays(c); return c.status === 'active' || (d !== null && Math.abs(d) <= LOCK_DAYS); });

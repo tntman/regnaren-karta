@@ -238,6 +238,7 @@
       try { localStorage.setItem(POS_INTERVAL_KEY, String(v)); } catch(e){} // (for offline starts)
     }
     renderPosIntervalAdmin();
+    if (d || !fromCache){ compLockOff = !!(d && d.lockOff); renderCompLockAdmin(); }
     if (TEST_MODE) testApply(d ? d.test : null);   // (the test mode's made-up competition, 37-testmode.js)
   }
   function setSharedPosInterval(v){
@@ -283,4 +284,27 @@
     if (b) setSharedPosInterval(parseInt(b.getAttribute('data-s'), 10));
   });
   renderPosIntervalAdmin();
+
+  /* ---- the competition lock off for everyone on this lake (admin; config/<lake>.lockOff, mapEditAllowed() in 66-catches.js) ---- */
+  var compLockOff = false, compLockMsg = '';
+  function setCompLockOff(off){
+    if (!USE_FIREBASE || !cfgDoc){ compLockMsg = 'Ingen anslutning till databasen – försök igen.'; renderCompLockAdmin(); return; }
+    compLockMsg = 'Sparar…'; renderCompLockAdmin();
+    addUsage('w', 1);   // (posIntervalS along: the config rule wants it in every write; the snapshot shows the change)
+    cfgDoc.set({ posIntervalS: posIntervalS, lockOff: off, updatedBy: userName || '', updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true })
+      .then(function(){ compLockMsg = 'Sparat – gäller alla telefoner.'; renderCompLockAdmin(); },
+            function(err){ compLockMsg = 'Kunde inte spara (' + ((err && err.code) || 'fel') + ').'; renderCompLockAdmin(); });
+  }
+  function renderCompLockAdmin(){
+    Array.from(document.getElementById('adminCompLockSeg').children).forEach(function(b){
+      var on = (b.getAttribute('data-off') === '1') === compLockOff;
+      b.classList.toggle('active', on); b.setAttribute('aria-checked', on ? 'true' : 'false');
+    });
+    var st = document.getElementById('adminCompLockStatus'); st.textContent = compLockMsg; st.hidden = !compLockMsg;
+  }
+  document.getElementById('adminCompLockSeg').addEventListener('click', function(e){
+    var b = e.target.closest ? e.target.closest('button[data-off]') : null;
+    if (b) setCompLockOff(b.getAttribute('data-off') === '1');
+  });
+  renderCompLockAdmin();
 

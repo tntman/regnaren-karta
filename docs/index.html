@@ -2271,6 +2271,15 @@
         <div class="adminNote">Hur ofta en båt som rör sig skickar sin position. Gäller alla telefoner. Kortare tid = båtarna rör sig jämnare på kartan men kostar fler reads. Står man still skickas den en gång i minuten oavsett.</div>
       </div>
       <div class="adminCard">
+        <div class="settingsRowTitle">Tävlingslåset</div>
+        <div class="segmented" id="adminCompLockSeg" role="radiogroup" aria-label="Tävlingslåset" style="margin-top:8px;">
+          <button type="button" role="radio" data-off="0">På</button>
+          <button type="button" role="radio" data-off="1">Av för alla</button>
+        </div>
+        <div class="adminNote" id="adminCompLockStatus" style="color:var(--amber);" hidden></div>
+        <div class="adminNote">På: platser kan bara läggas, ändras och tas bort från en vecka före till en vecka efter en tävling. Av för alla: kartan är öppen för alla tills du slår på låset igen – t.ex. om Fiskfiskarnas sida strular. Gäller den här sjön. Du själv kan alltid ändra.</div>
+      </div>
+      <div class="adminCard">
         <div class="btnRowWrap" style="margin-top:0;">
           <button id="adminLock" class="btnAdmin" type="button">Lås admin på den här enheten</button>
         </div>
@@ -4979,6 +4988,7 @@
       try { localStorage.setItem(POS_INTERVAL_KEY, String(v)); } catch(e){} // (for offline starts)
     }
     renderPosIntervalAdmin();
+    if (d || !fromCache){ compLockOff = !!(d && d.lockOff); renderCompLockAdmin(); }
     if (TEST_MODE) testApply(d ? d.test : null);   // (the test mode's made-up competition, 37-testmode.js)
   }
   function setSharedPosInterval(v){
@@ -5024,6 +5034,29 @@
     if (b) setSharedPosInterval(parseInt(b.getAttribute('data-s'), 10));
   });
   renderPosIntervalAdmin();
+
+  /* ---- the competition lock off for everyone on this lake (admin; config/<lake>.lockOff, mapEditAllowed() in 66-catches.js) ---- */
+  var compLockOff = false, compLockMsg = '';
+  function setCompLockOff(off){
+    if (!USE_FIREBASE || !cfgDoc){ compLockMsg = 'Ingen anslutning till databasen – försök igen.'; renderCompLockAdmin(); return; }
+    compLockMsg = 'Sparar…'; renderCompLockAdmin();
+    addUsage('w', 1);   // (posIntervalS along: the config rule wants it in every write; the snapshot shows the change)
+    cfgDoc.set({ posIntervalS: posIntervalS, lockOff: off, updatedBy: userName || '', updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true })
+      .then(function(){ compLockMsg = 'Sparat – gäller alla telefoner.'; renderCompLockAdmin(); },
+            function(err){ compLockMsg = 'Kunde inte spara (' + ((err && err.code) || 'fel') + ').'; renderCompLockAdmin(); });
+  }
+  function renderCompLockAdmin(){
+    Array.from(document.getElementById('adminCompLockSeg').children).forEach(function(b){
+      var on = (b.getAttribute('data-off') === '1') === compLockOff;
+      b.classList.toggle('active', on); b.setAttribute('aria-checked', on ? 'true' : 'false');
+    });
+    var st = document.getElementById('adminCompLockStatus'); st.textContent = compLockMsg; st.hidden = !compLockMsg;
+  }
+  document.getElementById('adminCompLockSeg').addEventListener('click', function(e){
+    var b = e.target.closest ? e.target.closest('button[data-off]') : null;
+    if (b) setCompLockOff(b.getAttribute('data-off') === '1');
+  });
+  renderCompLockAdmin();
 
   /* ---------------- sjöar (lakes) ---------------- */
   // The list comes from lakes/*/lake.json (LAKES, top of the script).
@@ -10208,7 +10241,7 @@
   var LOCK_DAYS = 7;
   function lockDays(c){ return /^\d{4}-\d\d-\d\d$/.test(c.date) ? Math.round((Date.parse(c.date) - Date.parse(catchTodayIso())) / CATCH_DAY) : null; }
   function mapEditAllowed(){
-    if (TEST_MODE || isAdminUnlocked() || window.__ffNoLock) return true;   // (__ffNoLock: only the test browser, fakefb.py)
+    if (TEST_MODE || isAdminUnlocked() || compLockOff || window.__ffNoLock) return true;   // (compLockOff: admin, 26-sync.js)   // (__ffNoLock: only the test browser, fakefb.py)
     catchReadCopy();
     if (!catchHist || catchErr) return true;
     return catchHist.comps.some(function(c){ var d = lockDays(c); return c.status === 'active' || (d !== null && Math.abs(d) <= LOCK_DAYS); });
