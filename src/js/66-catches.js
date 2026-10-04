@@ -11,7 +11,7 @@
      Which lake a catch belongs to: its position (inside that lake's map) -- a lake name, when there
      is one, must not say it's another lake (a lake next door inside the same map). */
   var CATCH_API = 'https://fiskfiskarna.se/api/';
-  var CATCH_CACHE_KEY = lakeKey('ffmap_catches_v1', 'catches_v1'), CATCH_NET_KEY = 'ffmap_catchnet_v1';
+  var CATCH_REAL_KEY = lakeKey('ffmap_catches_v1', 'catches_v1'), CATCH_CACHE_KEY = testKey(CATCH_REAL_KEY), CATCH_NET_KEY = 'ffmap_catchnet_v1';
   var CATCH_HOUR = 3600e3, CATCH_DAY = 864e5, CATCH_LIVE_SLOW = 300e3, CATCH_LIVE_FAST = 30e3;
   var catchData = null, catchLoading = false, catchErr = null, catchVer = 0, catchListeners = [];
   var catchHist = null, catchLive = null, catchLiveTimer = null;   // (catchHist: { at, list, comps, total })
@@ -33,7 +33,7 @@
     var c = { id: t + '|' + who + '|' + sp + '|' + cm, t: t, comp: comp, who: who, sp: sp, cm: cm, lat: lat, lon: lon, lake: String(g('lake', 'sjo') || '').trim() };
     if (o.approved === false) c.no = 1;   // (live: not counted, e.g. a perch under 25 cm)
     var img = String(o.imageUrl || '');  // (live: the photo -- Cloudinary, asked for 600 px wide instead of 2000)
-    if (/^https:\/\//.test(img)) c.img = img.replace(/(res\.cloudinary\.com\/[^/]+\/image\/upload\/)w_\d+,/, '$1w_600,');
+    if (/^https:\/\//.test(img) || (TEST_MODE && img === TEST_IMG)) c.img = img.replace(/(res\.cloudinary\.com\/[^/]+\/image\/upload\/)w_\d+,/, '$1w_600,');
     return c;
   }
   // the same water? ("Sibbo" = Sibbofjärden, id or name)
@@ -68,6 +68,7 @@
   }
   function catchErrOf(e){ return { at: Date.now(), msg: e instanceof TypeError ? 'ingen anslutning' : String((e && e.message) || 'fel') }; }
   function catchGet(path, kind, cb){
+    if (TEST_MODE){ setTimeout(function(){ cb(null, testApi(path)); }, 0); return; }   // (the test mode: the made-up competition, 37-testmode.js -- never the real API)
     var res;
     (window.fetch ? fetch(CATCH_API + path, { cache: 'no-store' }) : Promise.reject(new Error('fetch saknas'))).then(function(r){
       return r.text().then(function(t){

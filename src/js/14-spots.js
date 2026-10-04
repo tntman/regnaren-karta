@@ -6,7 +6,7 @@
        this on.
      - Local fallback (localStorage): if Firebase isn't configured, pins
        are saved only on this device, exactly as before. --------------- */
-  var WP_KEY = 'lake_' + LAKE_ID + '_waypoints_v1';
+  var WP_KEY = testKey('lake_' + LAKE_ID + '_waypoints_v1');   // (the test mode: its own copy)
   var WP_KEY_LEGACY = 'regnaren_waypoints_v1'; // pre-multi-lake key, migrated once below
   var waypointsLayer = document.getElementById('waypoints');
   var longPressRing = document.getElementById('longPressRing');
@@ -89,7 +89,18 @@
   // General -> "Your apps" -> SDK setup and configuration). Safe to leave
   // public in this file: Firebase apps are secured by the Firestore rules
   // set in the console, not by hiding this config.
-  var FIREBASE_CONFIG = {
+  // The test mode (Demo Mode, 10-core.js) uses a Firebase project of its own: nothing it does can
+  // reach the real database. (The app's background REST write builds its address from this too.)
+  // Until the test project is set up here, the test mode simply can't sign in (= no shared data).
+  var FIREBASE_TEST_CONFIG = {
+    apiKey: "TESTPROJEKT-SAKNAS",
+    authDomain: "ffmap-test-saknas.firebaseapp.com",
+    projectId: "ffmap-test-saknas",
+    storageBucket: "",
+    messagingSenderId: "",
+    appId: ""
+  };
+  var FIREBASE_CONFIG = TEST_MODE ? FIREBASE_TEST_CONFIG : {
     apiKey: "AIzaSyDkpWsfQFxpkkNOmDJmJr7jGyBO3S7GZH4",
     authDomain: "regnaren-b8b6a.firebaseapp.com",
     projectId: "regnaren-b8b6a",
@@ -132,7 +143,7 @@
   function loadLocalWaypoints(){
     try {
       var raw = localStorage.getItem(WP_KEY);
-      if (raw === null && LAKE_ID === 'regnaren'){
+      if (raw === null && LAKE_ID === 'regnaren' && !TEST_MODE){
         // one-time migration from the old, pre-multi-lake key name
         var legacy = localStorage.getItem(WP_KEY_LEGACY);
         if (legacy !== null){

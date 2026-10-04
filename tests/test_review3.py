@@ -77,11 +77,14 @@ with sync_playwright() as p:
     b, ctx, pg, errs = new_page(p, geo=FAR, cfg=cfg, name='Filip')
     pg.wait_for_timeout(800)
     pg.click('#menuBtn'); pg.click('#menuItemSettings'); pg.wait_for_timeout(200)
-    pg.click('#demoModeToggle'); pg.wait_for_timeout(1500)
+    with pg.expect_navigation(timeout=8000): pg.click('#demoModeToggle')   # (a reload into the test mode)
+    pg.wait_for_timeout(1500)
     check('demo position is shared', any(x['id'] == 'filip' for x in pg.evaluate('window.__posWrites')))
-    pg.click('#demoModeToggle'); pg.wait_for_timeout(400)
-    ups = pg.evaluate('window.__posUpdates') or []
-    check('demo off (far away) -> demo boat expired for everyone', any(x['id'] == 'filip' and x['updatedAtMs'] == 0 for x in ups), ups)
+    test_project = pg.evaluate('window.__fbProject')
+    with pg.expect_navigation(timeout=8000): pg.click('#demoModeToggle')
+    pg.wait_for_timeout(400)
+    ups = pg.evaluate("JSON.parse(sessionStorage.getItem('__fbUpdates') || '[]')")
+    check('demo off (far away) -> demo boat expired for everyone (in the test project)', any(x['id'] == 'filip' and x['updatedAtMs'] == 0 and x['found'] and x['project'] == test_project != 'regnaren-b8b6a' for x in ups), ups)
     check('no page errors (6)', not errs, errs); b.close()
 
     # 7) spots saved only on the phone get uploaded once the database is up

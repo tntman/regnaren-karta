@@ -8,7 +8,7 @@
   var MSG_MS = 15 * 60000;
   // your latest catch as a message ("Gädda 78 cm"): first in the choices while a competition is on; the edge spins in the species' colour
   var MSG_SP_COL = { gadda: '#35D24A', abborre: '#FF7A1A', gos: '#3A86FF' };
-  function msgImgOk(u){ return typeof u === 'string' && /^https:\/\/res\.cloudinary\.com\//.test(u) ? u : null; }   // (only the catch photos, never any address someone writes)
+  function msgImgOk(u){ return typeof u === 'string' && (/^https:\/\/res\.cloudinary\.com\//.test(u) || (TEST_MODE && u === TEST_IMG)) ? u : null; }   // (only the catch photos, never any address someone writes; the test mode: its picture)
   var ownMsg = null, msgHidden = {}, msgLayerEl = document.getElementById('msgLayer');
   var msgBtn = document.getElementById('msgBtn'), msgPop = document.getElementById('msgPop');
   msgPop.innerHTML = MSG_TEXTS.map(function(t){ return '<button type="button" data-t="' + t + '">' + t + '</button>'; }).join('') +

@@ -68,7 +68,7 @@
   // "Åskan har dragit förbi": after a warning, when no strike has come within the distance for a whole
   // FMI window (30 min, fresh data), a calm green note -- once. The newest strike near you is remembered
   // over a reload (turning the phone); after 3 h it's just forgotten (no "all clear" the next day).
-  var LT_CLEAR_KEY = 'ffmap_lt_clear_v1';
+  var LT_CLEAR_KEY = testKey('ffmap_lt_clear_v1');
   function ltClearGet(){ try { return +localStorage.getItem(LT_CLEAR_KEY) || 0; } catch(e){ return 0; } }
   function ltClearSet(t){ try { if (t) localStorage.setItem(LT_CLEAR_KEY, String(t)); else localStorage.removeItem(LT_CLEAR_KEY); } catch(e){} }
   function ltCheckClear(){

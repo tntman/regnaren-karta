@@ -27,9 +27,11 @@ with sync_playwright() as p:
     pg.click('#menuBtn'); pg.click('#menuItemSettings'); pg.wait_for_timeout(200)
     check('#6 demo coordinate inputs are 16px (no iOS zoom)',
           pg.eval_on_selector('#demoLatInput', 'e => getComputedStyle(e).fontSize') == '16px')
-    pg.click('#demoModeToggle'); pg.wait_for_timeout(300)
+    with pg.expect_navigation(timeout=8000): pg.click('#demoModeToggle')   # (on / off = a reload: the test mode and back)
+    pg.wait_for_timeout(1200)
     n_on = len(pg.evaluate('window.__posWrites'))
-    pg.click('#demoModeToggle'); pg.wait_for_timeout(200)
+    with pg.expect_navigation(timeout=8000): pg.click('#demoModeToggle')
+    pg.wait_for_timeout(300)
     pg.evaluate('window.__posWrites.length = 0')
     pg.wait_for_timeout(9000)
     check('#3 demo position was shared while demo was on', n_on >= 1, n_on)
@@ -90,13 +92,15 @@ with sync_playwright() as p:
 
     # demo banner no longer covers the legend
     pg.click('#menuBtn'); pg.click('#menuItemSettings'); pg.wait_for_timeout(200)
-    pg.click('#demoModeToggle'); pg.wait_for_timeout(200); pg.click('#settingsBackBtn'); pg.wait_for_timeout(300)
+    with pg.expect_navigation(timeout=8000): pg.click('#demoModeToggle')
+    pg.wait_for_selector('#settingsView.show', timeout=5000); pg.click('#settingsBackBtn'); pg.wait_for_timeout(300)
     ov = pg.evaluate("""() => { var a=document.getElementById('demoBanner').getBoundingClientRect(), b=document.getElementById('legend').getBoundingClientRect(), c=document.getElementById('anBtn').getBoundingClientRect();
         function hit(x,y){ return !(x.right<y.left||x.left>y.right||x.bottom<y.top||x.top>y.bottom); } return hit(a,b)||hit(a,c); }""")
     check('demo banner does not cover legend/refresh', not ov)
     pg.screenshot(path='./shot_review_banner.png')
     pg.click('#menuBtn'); pg.click('#menuItemSettings'); pg.wait_for_timeout(200)
-    pg.click('#demoModeToggle'); pg.wait_for_timeout(200)
+    with pg.expect_navigation(timeout=8000): pg.click('#demoModeToggle')
+    pg.wait_for_selector('#settingsView.show', timeout=5000); pg.wait_for_timeout(800)
 
     # #7 logout expires your shared position
     pg.evaluate('window.__posWrites.length = 0')

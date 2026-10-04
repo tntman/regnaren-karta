@@ -64,7 +64,7 @@
   window.addEventListener('offline', updateNetBadge);
 
   // Has this phone already got a full copy of the spots from the server?
-  var WP_SYNCED_KEY = 'lake_' + LAKE_ID + '_wp_synced_v1';
+  var WP_SYNCED_KEY = testKey('lake_' + LAKE_ID + '_wp_synced_v1');
   function waypointsSyncedBefore(){
     try { return localStorage.getItem(WP_SYNCED_KEY) === '1'; } catch(e){ return false; }
   }
@@ -77,7 +77,7 @@
      quota day follows US Pacific time (resets 09:00 Swedish time), so the
      counters do too. Listener: the first answer from the server counts the
      whole result, later answers only the documents that changed. */
-  var USAGE_KEY = 'ffmap_usage_v1';
+  var USAGE_KEY = testKey('ffmap_usage_v1');
   function quotaDay(){
     try { return new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Los_Angeles' }); }
     catch(e){ return new Date().toDateString(); }
@@ -158,8 +158,10 @@
       fsCol = fsdb.collection('waypoints');
       posCol = fsdb.collection('positions');
       usageCol = fsdb.collection('usage');
-      tracksCol = fsdb.collection('tracks');   // (the Spår: 46-gps-track.js)
-      trackUsersCol = fsdb.collection('trackusers');   // (who has tracks on which lake -- the drop-down in the Spår panel)
+      // (the Spår: 46-gps-track.js; trackusers = who has tracks on which lake -- the drop-down in the Spår panel).
+      // Never in the test mode: your real track would be uploaded to the test project, marked as done and lost.
+      tracksCol = TEST_MODE ? null : fsdb.collection('tracks');
+      trackUsersCol = TEST_MODE ? null : fsdb.collection('trackusers');
       var started = false;
       auth.onAuthStateChanged(function(user){
         if (!user || started) return;
@@ -236,6 +238,7 @@
       try { localStorage.setItem(POS_INTERVAL_KEY, String(v)); } catch(e){} // (for offline starts)
     }
     renderPosIntervalAdmin();
+    if (TEST_MODE) testApply(d ? d.test : null);   // (the test mode's made-up competition, 37-testmode.js)
   }
   function setSharedPosInterval(v){
     if (POS_INTERVAL_CHOICES.indexOf(v) === -1) return;

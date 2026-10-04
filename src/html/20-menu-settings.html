@@ -276,7 +276,7 @@
       <label class="settingsRow" for="demoModeToggle">
         <div class="settingsRowText">
           <div class="settingsRowTitle">Demo Mode</div>
-          <div class="settingsRowDesc">Visar GPS-positionen som om du vore vid sjön, för att kunna testa appen utan att vara på plats.</div>
+          <div class="settingsRowDesc">Visar GPS-positionen som om du vore vid sjön, för att kunna testa appen utan att vara på plats. Testläge: du ser bara andra i Demo Mode, inget sparas i den riktiga databasen och riktig åskvarning är avstängd. Stängs av efter 15 min.</div>
         </div>
         <span class="toggle">
           <input type="checkbox" id="demoModeToggle">
@@ -321,6 +321,59 @@
       </div>
     </div>
     <div id="adminBody">
+      <div class="adminCard" id="adminTestCard" hidden>
+        <div class="settingsRowTitle">Testläge</div>
+        <div class="adminNote" style="margin-top:4px;">För alla i Demo Mode. Egen testdatabas – inget här hamnar i den riktiga.</div>
+        <div class="adminNote" id="testInfo" style="color:var(--offwhite);"></div>
+        <div class="usageHead">Tävling</div>
+        <div class="segmented" id="testCompSeg" role="radiogroup" aria-label="Testtävlingen">
+          <button type="button" role="radio" data-v="planned">Planerad</button>
+          <button type="button" role="radio" data-v="active">Pågår</button>
+          <button type="button" role="radio" data-v="finished">Avslutad</button>
+        </div>
+        <div class="usageHead">Testbåtar</div>
+        <div class="segmented" id="testBotSeg" role="radiogroup" aria-label="Testbåtar som åker runt">
+          <button type="button" role="radio" data-v="0">Inga</button>
+          <button type="button" role="radio" data-v="3">3 båtar</button>
+          <button type="button" role="radio" data-v="5">5 båtar</button>
+        </div>
+        <div class="usageHead">Fångst</div>
+        <div class="testRow">
+          <select id="testWho" aria-label="Vem"></select>
+          <select id="testSp" aria-label="Art"><option value="abborre">Abborre</option><option value="gadda">Gädda</option><option value="gos">Gös</option></select>
+          <input id="testCm" type="text" inputmode="decimal" placeholder="cm" aria-label="Längd i cm">
+        </div>
+        <div class="testRow">
+          <select id="testWhere" aria-label="Var"><option value="boat">Vid båten</option><option value="rand">Slumpad plats</option></select>
+          <label><input type="checkbox" id="testOk" checked> Godkänd</label>
+          <label><input type="checkbox" id="testImg"> Med bild</label>
+        </div>
+        <div class="btnRowWrap">
+          <button id="testAddCatch" class="btnAdmin" type="button">Lägg in fångst</button>
+          <button id="testVoidCatch" class="btnAdmin" type="button">Annullera senaste</button>
+        </div>
+        <div style="font-size:13.5px;color:var(--offwhite);margin-top:14px;">Automatiska fångster</div>
+        <div class="segmented" id="testAutoSeg" role="radiogroup" aria-label="Automatiska fångster" style="margin-top:8px;">
+          <button type="button" role="radio" data-v="0">Av</button>
+          <button type="button" role="radio" data-v="1">Var 30:e s</button>
+        </div>
+        <div class="adminNote">Tom cm = slumpad längd. Automatiska fångster tas helst av testbåtarna, som då skickar "Senaste fisk". Testbåtar och automatiska fångster körs från din telefon medan appen är öppen.</div>
+        <div class="usageHead">Åska</div>
+        <div class="btnRowWrap" id="testStrikes">
+          <button class="btnAdmin" type="button" data-km="20">Blixt 20 km</button>
+          <button class="btnAdmin" type="button" data-km="8">Blixt 8 km</button>
+          <button class="btnAdmin" type="button" data-km="2">Blixt 2 km</button>
+        </div>
+        <div class="btnRowWrap">
+          <button id="testStorm" class="btnAdmin" type="button">Åskan närmar sig</button>
+          <button id="testLtClear" class="btnAdmin" type="button">Ta bort blixtar</button>
+        </div>
+        <div class="adminNote">Avstånd från din båt. I Demo Mode visas bara testblixtar – riktig åskvarning är avstängd.</div>
+        <div class="btnRowWrap">
+          <button id="testReset" class="btnAdmin danger" type="button">Rensa testläget</button>
+        </div>
+        <div class="adminNote" id="testStatus" style="color:var(--amber);"></div>
+      </div>
       <div class="adminCard">
         <div class="settingsRowTitle">Översikt</div>
         <div class="statGrid" id="adminStats"></div>

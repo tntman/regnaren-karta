@@ -8,6 +8,8 @@
       demoCoordsRow.style.display = 'flex';
       document.getElementById('demoMoveRow').style.display = 'flex';
       onFix(demoLat, demoLon, 8);
+      var fresh = false; try { fresh = sessionStorage.getItem(DEMO_FRESH_KEY) === '1'; sessionStorage.removeItem(DEMO_FRESH_KEY); } catch(e){}
+      if (fresh) centerOnFix();   // (just switched on: show where the demo boat is)
       if (demoMovePref()){
         startDemoMotion();
         document.getElementById('demoMoveToggle').checked = !!demoSim;
@@ -33,7 +35,7 @@
     if (!Array.isArray(list) || !list.length) return;
     var now = Date.now(), keep = [], n = 0;
     list.forEach(function(w){
-      var pending = w && w.uid === 'local' && (!w.lake || w.lake === LAKE_ID) &&
+      var pending = w && w.uid === 'local' && (!w.lake || w.lake === LAKE_ID) &&   // (WP_KEY: the test mode's own copy -> its own database)
         now - (w.createdAt || 0) < 7 * 24 * 3600 * 1000 && isFinite(w.lat) && isFinite(w.lon) && w.id;
       if (!pending){ keep.push(w); return; }
       n++;

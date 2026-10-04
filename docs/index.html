@@ -629,6 +629,8 @@
   .demoBannerSub{font-weight:600;font-size:10.5px;letter-spacing:.02em;margin-top:2px;opacity:.85;line-height:1.25;}
   .demoBannerTimer{font-weight:600;font-size:10px;margin-top:3px;opacity:.75;white-space:nowrap;}
   .demoBannerTimer:empty{display:none;}
+  .demoBannerWarn{font-weight:700;font-size:10px;margin-top:4px;line-height:1.25;padding-top:4px;border-top:1px solid rgba(6,20,28,.3);}
+  .demoBannerWarn[hidden]{display:none;}
   @keyframes demoBannerBlink{
     0%, 100% { background:var(--amber); }
     50% { background:var(--danger); }
@@ -1248,6 +1250,14 @@
   .statusDot.live{background:#4cc38a;}
   .statusDot.stale{background:var(--text-muted);}
   .adminNote{font-size:11.5px;color:var(--text-muted);margin-top:8px;line-height:1.4;}
+  #adminTestCard .adminNote:empty{display:none;}
+  /* Testläge (admin): a row of small fields */
+  .testRow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px;font-size:13px;color:var(--offwhite);}
+  .testRow select, .testRow input[type=text]{flex:1 1 90px;min-width:0;height:36px;padding:0 8px;border-radius:8px;border:1px solid rgba(255,255,255,.18);
+    background:rgba(255,255,255,.06);color:var(--offwhite);font:inherit;font-size:14px;}
+  .testRow input[type=text]{flex:0 0 64px;}
+  .testRow select option{color:#000;}
+  .testRow label{display:flex;align-items:center;gap:5px;}
   .adminNote a{color:var(--amber);}
   .usageHead{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);margin-top:12px;}
   .usagePerson{display:flex;gap:8px;font-size:12.5px;color:var(--offwhite);padding:5px 0;border-top:1px solid rgba(255,255,255,.06);font-variant-numeric:tabular-nums;}
@@ -2074,7 +2084,7 @@
       <label class="settingsRow" for="demoModeToggle">
         <div class="settingsRowText">
           <div class="settingsRowTitle">Demo Mode</div>
-          <div class="settingsRowDesc">Visar GPS-positionen som om du vore vid sjön, för att kunna testa appen utan att vara på plats.</div>
+          <div class="settingsRowDesc">Visar GPS-positionen som om du vore vid sjön, för att kunna testa appen utan att vara på plats. Testläge: du ser bara andra i Demo Mode, inget sparas i den riktiga databasen och riktig åskvarning är avstängd. Stängs av efter 15 min.</div>
         </div>
         <span class="toggle">
           <input type="checkbox" id="demoModeToggle">
@@ -2119,6 +2129,59 @@
       </div>
     </div>
     <div id="adminBody">
+      <div class="adminCard" id="adminTestCard" hidden>
+        <div class="settingsRowTitle">Testläge</div>
+        <div class="adminNote" style="margin-top:4px;">För alla i Demo Mode. Egen testdatabas – inget här hamnar i den riktiga.</div>
+        <div class="adminNote" id="testInfo" style="color:var(--offwhite);"></div>
+        <div class="usageHead">Tävling</div>
+        <div class="segmented" id="testCompSeg" role="radiogroup" aria-label="Testtävlingen">
+          <button type="button" role="radio" data-v="planned">Planerad</button>
+          <button type="button" role="radio" data-v="active">Pågår</button>
+          <button type="button" role="radio" data-v="finished">Avslutad</button>
+        </div>
+        <div class="usageHead">Testbåtar</div>
+        <div class="segmented" id="testBotSeg" role="radiogroup" aria-label="Testbåtar som åker runt">
+          <button type="button" role="radio" data-v="0">Inga</button>
+          <button type="button" role="radio" data-v="3">3 båtar</button>
+          <button type="button" role="radio" data-v="5">5 båtar</button>
+        </div>
+        <div class="usageHead">Fångst</div>
+        <div class="testRow">
+          <select id="testWho" aria-label="Vem"></select>
+          <select id="testSp" aria-label="Art"><option value="abborre">Abborre</option><option value="gadda">Gädda</option><option value="gos">Gös</option></select>
+          <input id="testCm" type="text" inputmode="decimal" placeholder="cm" aria-label="Längd i cm">
+        </div>
+        <div class="testRow">
+          <select id="testWhere" aria-label="Var"><option value="boat">Vid båten</option><option value="rand">Slumpad plats</option></select>
+          <label><input type="checkbox" id="testOk" checked> Godkänd</label>
+          <label><input type="checkbox" id="testImg"> Med bild</label>
+        </div>
+        <div class="btnRowWrap">
+          <button id="testAddCatch" class="btnAdmin" type="button">Lägg in fångst</button>
+          <button id="testVoidCatch" class="btnAdmin" type="button">Annullera senaste</button>
+        </div>
+        <div style="font-size:13.5px;color:var(--offwhite);margin-top:14px;">Automatiska fångster</div>
+        <div class="segmented" id="testAutoSeg" role="radiogroup" aria-label="Automatiska fångster" style="margin-top:8px;">
+          <button type="button" role="radio" data-v="0">Av</button>
+          <button type="button" role="radio" data-v="1">Var 30:e s</button>
+        </div>
+        <div class="adminNote">Tom cm = slumpad längd. Automatiska fångster tas helst av testbåtarna, som då skickar "Senaste fisk". Testbåtar och automatiska fångster körs från din telefon medan appen är öppen.</div>
+        <div class="usageHead">Åska</div>
+        <div class="btnRowWrap" id="testStrikes">
+          <button class="btnAdmin" type="button" data-km="20">Blixt 20 km</button>
+          <button class="btnAdmin" type="button" data-km="8">Blixt 8 km</button>
+          <button class="btnAdmin" type="button" data-km="2">Blixt 2 km</button>
+        </div>
+        <div class="btnRowWrap">
+          <button id="testStorm" class="btnAdmin" type="button">Åskan närmar sig</button>
+          <button id="testLtClear" class="btnAdmin" type="button">Ta bort blixtar</button>
+        </div>
+        <div class="adminNote">Avstånd från din båt. I Demo Mode visas bara testblixtar – riktig åskvarning är avstängd.</div>
+        <div class="btnRowWrap">
+          <button id="testReset" class="btnAdmin danger" type="button">Rensa testläget</button>
+        </div>
+        <div class="adminNote" id="testStatus" style="color:var(--amber);"></div>
+      </div>
       <div class="adminCard">
         <div class="settingsRowTitle">Översikt</div>
         <div class="statGrid" id="adminStats"></div>
@@ -2463,9 +2526,10 @@
   </div>
   <div id="demoBanner">
     <button id="demoBannerClose" type="button" aria-label="Stäng av Demo Mode" title="Stäng av Demo Mode"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
-    <div class="demoBannerTitle">DEMO MODE</div>
+    <div class="demoBannerTitle">DEMO · TESTLÄGE</div>
     <div class="demoBannerSub">Använd ej<br>på vattnet!</div>
     <div class="demoBannerTimer" id="demoBannerTimer"></div>
+    <div class="demoBannerWarn" id="demoBannerWarn" hidden>Riktig tävling pågår –<br>du syns inte för de andra</div>
   </div>
   <div id="ltRadar" aria-hidden="true"><canvas id="ltRadarCv" width="200" height="200"></canvas><span>30 km runt · FMI</span></div>
   </div>
@@ -2845,6 +2909,19 @@
   // Per-lake storage key. Regnaren (the first lake) keeps its old key, so
   // nothing already saved on anyone's phone is lost.
   function lakeKey(legacy, name){ return LAKE_ID === 'regnaren' ? legacy : 'lake_' + LAKE_ID + '_' + name; }
+
+  /* ---------- Testläge = Demo Mode (tools/NOTES_TESTLAGE.md) ----------
+     Decided once, when the page loads (switching Demo Mode reloads the page). In the test mode
+     everything shared goes to a separate Firebase project (FIREBASE_CONFIG, 14-spots.js) and the
+     phone's copies of shared data have their own keys (testKey), so test and real never mix.
+     Demo Mode switches itself off after 15 min (32-demo.js) -- an old start time = off. */
+  var DEMO_KEY = 'regnaren_demo_mode_v1', DEMO_SINCE_KEY = 'regnaren_demo_since_v1', DEMO_MAX_MS = 15 * 60 * 1000;
+  var TEST_MODE = false;
+  try {
+    TEST_MODE = localStorage.getItem(DEMO_KEY) === '1' && Date.now() - (+localStorage.getItem(DEMO_SINCE_KEY) || 0) < DEMO_MAX_MS;
+    if (!TEST_MODE && localStorage.getItem(DEMO_KEY) === '1'){ localStorage.setItem(DEMO_KEY, '0'); localStorage.removeItem(DEMO_SINCE_KEY); }
+  } catch(e){}
+  function testKey(k){ return TEST_MODE ? k + '_test' : k; }
 
   /* ---------- geo referencing --------------------------------------
      A lake's map image is a crop of a standard Web-Mercator slippy-tile
@@ -3423,7 +3500,7 @@
        this on.
      - Local fallback (localStorage): if Firebase isn't configured, pins
        are saved only on this device, exactly as before. --------------- */
-  var WP_KEY = 'lake_' + LAKE_ID + '_waypoints_v1';
+  var WP_KEY = testKey('lake_' + LAKE_ID + '_waypoints_v1');   // (the test mode: its own copy)
   var WP_KEY_LEGACY = 'regnaren_waypoints_v1'; // pre-multi-lake key, migrated once below
   var waypointsLayer = document.getElementById('waypoints');
   var longPressRing = document.getElementById('longPressRing');
@@ -3506,7 +3583,18 @@
   // General -> "Your apps" -> SDK setup and configuration). Safe to leave
   // public in this file: Firebase apps are secured by the Firestore rules
   // set in the console, not by hiding this config.
-  var FIREBASE_CONFIG = {
+  // The test mode (Demo Mode, 10-core.js) uses a Firebase project of its own: nothing it does can
+  // reach the real database. (The app's background REST write builds its address from this too.)
+  // Until the test project is set up here, the test mode simply can't sign in (= no shared data).
+  var FIREBASE_TEST_CONFIG = {
+    apiKey: "TESTPROJEKT-SAKNAS",
+    authDomain: "ffmap-test-saknas.firebaseapp.com",
+    projectId: "ffmap-test-saknas",
+    storageBucket: "",
+    messagingSenderId: "",
+    appId: ""
+  };
+  var FIREBASE_CONFIG = TEST_MODE ? FIREBASE_TEST_CONFIG : {
     apiKey: "AIzaSyDkpWsfQFxpkkNOmDJmJr7jGyBO3S7GZH4",
     authDomain: "regnaren-b8b6a.firebaseapp.com",
     projectId: "regnaren-b8b6a",
@@ -3549,7 +3637,7 @@
   function loadLocalWaypoints(){
     try {
       var raw = localStorage.getItem(WP_KEY);
-      if (raw === null && LAKE_ID === 'regnaren'){
+      if (raw === null && LAKE_ID === 'regnaren' && !TEST_MODE){
         // one-time migration from the old, pre-multi-lake key name
         var legacy = localStorage.getItem(WP_KEY_LEGACY);
         if (legacy !== null){
@@ -4277,7 +4365,7 @@
   // last known value is remembered on the phone for offline starts.
   var POS_INTERVAL_CHOICES = [10, 20, 30, 60];
   var POS_INTERVAL_DEFAULT_S = 20;
-  var POS_INTERVAL_KEY = lakeKey('ffmap_pos_interval_s_v1', 'pos_interval_s_v1'); // (per lake, like config/<lake>)
+  var POS_INTERVAL_KEY = testKey(lakeKey('ffmap_pos_interval_s_v1', 'pos_interval_s_v1')); // (per lake, like config/<lake>)
   var posIntervalS = POS_INTERVAL_DEFAULT_S;
   try {
     var savedPi = parseInt(localStorage.getItem(POS_INTERVAL_KEY), 10);
@@ -4322,17 +4410,17 @@
   // Mark your shared position as long gone (e.g. on logout), so it disappears
   // for everyone right away instead of lingering as a ghost pip for an hour.
   // (Setting an ancient timestamp rather than deleting the doc, so the
-  // existing Firestore rules don't need changing.)
+  // existing Firestore rules don't need changing.) -> a promise: done (Demo Mode waits for it, 32-demo.js)
   function expireOwnPosition(){
-    if (!USE_FIREBASE || !posCol || !myUid) return;
-    if (!firebase.firestore.Timestamp) return;
+    if (!USE_FIREBASE || !posCol || !myUid) return Promise.resolve();
+    if (!firebase.firestore.Timestamp) return Promise.resolve();
     addUsage('w', 1);
     try {
       // update() rather than set(merge): never creates an empty stub doc for
       // a name that never shared a position
-      posCol.doc(posDocId(myUid)).update({ updatedAt: firebase.firestore.Timestamp.fromMillis(0) })
+      return posCol.doc(posDocId(myUid)).update({ updatedAt: firebase.firestore.Timestamp.fromMillis(0) })
         .catch(function(){ /* no doc for this name -- nothing to expire */ });
-    } catch(e){}
+    } catch(e){ return Promise.resolve(); }
   }
 
   // A GPS fix only arrives from watchPosition when the device's location
@@ -4642,7 +4730,7 @@
   window.addEventListener('offline', updateNetBadge);
 
   // Has this phone already got a full copy of the spots from the server?
-  var WP_SYNCED_KEY = 'lake_' + LAKE_ID + '_wp_synced_v1';
+  var WP_SYNCED_KEY = testKey('lake_' + LAKE_ID + '_wp_synced_v1');
   function waypointsSyncedBefore(){
     try { return localStorage.getItem(WP_SYNCED_KEY) === '1'; } catch(e){ return false; }
   }
@@ -4655,7 +4743,7 @@
      quota day follows US Pacific time (resets 09:00 Swedish time), so the
      counters do too. Listener: the first answer from the server counts the
      whole result, later answers only the documents that changed. */
-  var USAGE_KEY = 'ffmap_usage_v1';
+  var USAGE_KEY = testKey('ffmap_usage_v1');
   function quotaDay(){
     try { return new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Los_Angeles' }); }
     catch(e){ return new Date().toDateString(); }
@@ -4736,8 +4824,10 @@
       fsCol = fsdb.collection('waypoints');
       posCol = fsdb.collection('positions');
       usageCol = fsdb.collection('usage');
-      tracksCol = fsdb.collection('tracks');   // (the Spår: 46-gps-track.js)
-      trackUsersCol = fsdb.collection('trackusers');   // (who has tracks on which lake -- the drop-down in the Spår panel)
+      // (the Spår: 46-gps-track.js; trackusers = who has tracks on which lake -- the drop-down in the Spår panel).
+      // Never in the test mode: your real track would be uploaded to the test project, marked as done and lost.
+      tracksCol = TEST_MODE ? null : fsdb.collection('tracks');
+      trackUsersCol = TEST_MODE ? null : fsdb.collection('trackusers');
       var started = false;
       auth.onAuthStateChanged(function(user){
         if (!user || started) return;
@@ -4814,6 +4904,7 @@
       try { localStorage.setItem(POS_INTERVAL_KEY, String(v)); } catch(e){} // (for offline starts)
     }
     renderPosIntervalAdmin();
+    if (TEST_MODE) testApply(d ? d.test : null);   // (the test mode's made-up competition, 37-testmode.js)
   }
   function setSharedPosInterval(v){
     if (POS_INTERVAL_CHOICES.indexOf(v) === -1) return;
@@ -5239,11 +5330,11 @@
   document.getElementById('helpBackBtn').addEventListener('click', hideHelpView);
   updateHelpDot();
 
-  /* ---------------- Demo Mode ---------------- */
-  var DEMO_KEY = 'regnaren_demo_mode_v1';
+  /* ---------------- Demo Mode = the test mode (TEST_MODE, 10-core.js) ----------------
+     Switching it on or off reloads the page: everything shared then talks to the other database. */
   var DEMO_LAT_KEY = 'lake_' + LAKE_ID + '_demo_lat_v1'; // per-lake: a demo spot only makes sense on its own map
   var DEMO_LON_KEY = 'lake_' + LAKE_ID + '_demo_lon_v1';
-  var demoMode = false;
+  var demoMode = TEST_MODE;   // (never changes while the page runs)
   var demoLat = null, demoLon = null;
   var lastRealFix = null; // {lat, lon, acc} from the actual device GPS
   var demoBannerEl = document.getElementById('demoBanner');
@@ -5254,19 +5345,12 @@
   // Safety: Demo Mode switches itself off after 15 minutes, so nobody heads
   // out on the water still seeing (and sharing) a fake position. The start
   // time is stored, so a reload doesn't restart the clock -- and if the app
-  // was closed for longer than that, it simply starts with Demo Mode off.
-  var DEMO_SINCE_KEY = 'regnaren_demo_since_v1';
-  var DEMO_MAX_MS = 15 * 60 * 1000;
+  // was closed for longer than that, it simply starts with Demo Mode off (10-core.js).
+  var DEMO_FRESH_KEY = 'ffmap_demo_fresh_v1';   // (sessionStorage: just switched on -> show the boat, after the reload)
   var demoSince = 0;
   var demoBannerTimerEl = document.getElementById('demoBannerTimer');
   try {
-    demoMode = localStorage.getItem(DEMO_KEY) === '1';
-    demoSince = Number(localStorage.getItem(DEMO_SINCE_KEY) || 0);
-    if (demoMode && (!demoSince || Date.now() - demoSince >= DEMO_MAX_MS)){
-      demoMode = false;
-      localStorage.setItem(DEMO_KEY, '0');
-      localStorage.removeItem(DEMO_SINCE_KEY);
-    }
+    demoSince = demoMode ? Number(localStorage.getItem(DEMO_SINCE_KEY) || 0) : 0;
     var savedLat = parseFloat(localStorage.getItem(DEMO_LAT_KEY));
     var savedLon = parseFloat(localStorage.getItem(DEMO_LON_KEY));
     if (isFinite(savedLat) && isFinite(savedLon)){ demoLat = savedLat; demoLon = savedLon; }
@@ -5275,11 +5359,11 @@
   demoBannerEl.classList.toggle('show', demoMode);
 
   function updateDemoTimer(){
-    if (!demoMode) return;
+    if (!demoMode || demoSwitching) return;
     var left = DEMO_MAX_MS - (Date.now() - demoSince);
     if (left <= 0){
-      setDemoMode(false);
       demoModeToggle.checked = false;
+      setDemoMode(false);
       return;
     }
     demoBannerTimerEl.textContent = 'Stängs av om ' + Math.ceil(left / 60000) + ' min';
@@ -5351,48 +5435,32 @@
   demoLatInput.addEventListener('input', function(){ demoLatInput.classList.remove('invalid'); demoInputDirty = true; });
   demoLonInput.addEventListener('input', function(){ demoLonInput.classList.remove('invalid'); demoInputDirty = true; });
 
+  // on / off = a reload into the other database. Your boat in the one you leave goes away for the others
+  // first (real -> test: your real boat; test -> real: the test boat), waiting at most 2 s for it.
+  var demoSwitching = false;
   function setDemoMode(on){
-    demoMode = on;
-    resetSpeedTracking();           // don't mix speeds from the real and the demo position
+    if (demoSwitching || on === TEST_MODE) return;
+    demoSwitching = true;
+    demoModeToggle.disabled = true;
     stopDemoMotion();
-    var moveRow = document.getElementById('demoMoveRow');
-    if (moveRow) moveRow.style.display = on ? 'flex' : 'none';
-    var moveToggle = document.getElementById('demoMoveToggle');
-    if (moveToggle) moveToggle.checked = false;
-    if (on){ demoAvg = { b: [] }; saveDemoAvg(); } // a fresh demo average every time
-    demoSince = on ? Date.now() : 0;
+    resetSpeedTracking();           // don't mix speeds from the real and the demo position
     trkClearDemo();                 // the demo's track is only for trying the Spår out -- gone when Demo Mode starts/stops
     try {
       localStorage.setItem(DEMO_KEY, on ? '1' : '0');
-      if (on) localStorage.setItem(DEMO_SINCE_KEY, String(demoSince));
-      else localStorage.removeItem(DEMO_SINCE_KEY);
+      if (on){
+        localStorage.setItem(DEMO_SINCE_KEY, String(Date.now()));
+        setDemoCoords(randomDemoPoint());   // a fresh random spot every time Demo Mode is switched on
+        setDemoMovePref(true);              // simulated motion starts right away (switch it off under Settings)
+        demoAvg = { b: [] }; saveDemoAvg(); // a fresh demo average every time
+        sessionStorage.setItem(DEMO_FRESH_KEY, '1');
+      } else localStorage.removeItem(DEMO_SINCE_KEY);
     } catch(e){}
-    demoBannerEl.classList.toggle('show', on);
-    updateDemoTimer();
-    demoCoordsRow.style.display = on ? 'flex' : 'none';
-    if (on){
-      setDemoCoords(randomDemoPoint()); // fresh random spot every time Demo Mode is switched on
-      onFix(demoLat, demoLon, 8);
-      centerOnFix(); // visa var man är (onFix centrerar bara första gången)
-      // simulated motion starts right away (switch it off under Settings if you want to stand still)
-      setDemoMovePref(true);
-      startDemoMotion();
-      if (moveToggle) moveToggle.checked = !!demoSim;
-    } else {
-      // The others may still see you at the demo spot: replace it with your
-      // real position right away if you're at the lake, otherwise remove it.
-      var sharedDemo = !!lastWrittenLatLon;
-      lastPosWriteAt = 0; lastWrittenLatLon = null;
-      if (sharedDemo && !(lastRealFix && isNearLake(lastRealFix.lat, lastRealFix.lon))) expireOwnPosition();
-      if (lastRealFix){
-        onFix(lastRealFix.lat, lastRealFix.lon, lastRealFix.acc);
-      } else {
-        // No real GPS fix yet -- don't leave you parked on the demo spot.
-        // Clear it until real GPS answers.
-        clearOwnFix();
-        showGpsProblem();
-      }
-    }
+    // the open page (Inställningar ...) comes back, as after turning the phone (92-rotation.js) -- but nothing
+    // of the old world's boat: its speeds, when it last shared its position, the demo course
+    saveRotationState();
+    try { var st = JSON.parse(sessionStorage.getItem(ROT_STATE_KEY)); delete st.speed; delete st.pos; delete st.usage; delete st.demoSim; sessionStorage.setItem(ROT_STATE_KEY, JSON.stringify(st)); } catch(e){}
+    var go = function(){ location.reload(); };
+    Promise.race([expireOwnPosition(), new Promise(function(r){ setTimeout(r, 2000); })]).then(go, go);
   }
   demoModeToggle.addEventListener('change', function(){
     setDemoMode(demoModeToggle.checked);
@@ -5916,6 +5984,7 @@
   }
 
   function renderAdmin(){
+    testRender();   // (Testläge, 37-testmode.js: only in Demo Mode)
     var now = Date.now();
     var midnight = new Date(); midnight.setHours(0, 0, 0, 0);
     var users = collectUsers();
@@ -6136,6 +6205,264 @@
     exportFile('ffmap-' + LAKE_ID + '-fiskeplatser-' + exportStamp() + '.csv', 'text/csv', buildCsv());
   });
 
+  /* ================= Testläge (Demo Mode) – the made-up competition =================
+     Everyone in Demo Mode shares a database of their own (TEST_MODE, 10-core.js; tools/NOTES_TESTLAGE.md).
+     Its config/<lake> doc has a field "test" -- the admin's made-up competition, read by every test phone:
+       { comp: { id, name, date, status: 'planned' | 'active' | 'finished' } | null,
+         catches: [rows like Fiskfiskarnas API's: timestamp, competitionId, name, species, cm, lat, lng, lake, approved, imageUrl?],
+         voids: [the timestamp of an annulled catch], lt: [{ lat, lon, t }] (lightning strikes) }
+     The catches go through the ordinary code (catchGet answers from here: testApi), so the heat map, the
+     live catches, "Senaste fisk" etc. work as in a real competition; the strikes likewise (ltFetch ->
+     testStrikes). Admin -> Testläge changes it. The test boats, the automatic catches and the approaching
+     storm run on the admin's phone only, while the app is open. */
+  var TEST_IMG = new URL('icon-512.png', location.href).href;   // ("Med bild": a picture that's in the app)
+  var TEST_EMPTY = '{"comp":null,"catches":[],"voids":[],"lt":[]}';
+  var TEST_MAX_CATCHES = 500;
+  var testState = JSON.parse(TEST_EMPTY);
+
+  // config/<lake>.test changed (cfgDoc's snapshot, 26-sync.js) -> the catches and strikes again, now
+  function testApply(t){
+    if (!TEST_MODE) return;
+    testState = Object.assign(JSON.parse(TEST_EMPTY), t || {});
+    if (catchLive) catchLive.at = 0;   // (the live catches: fetched again at once, not in 30 s)
+    loadHistory();
+    ltFetch();
+    testRender();
+  }
+  // Fiskfiskarnas API, made up from testState (catchGet, 66-catches.js)
+  function testApi(path){
+    var c = testState.comp, rows = c ? testState.catches.filter(function(x){ return x.competitionId === c.id; }) : [];
+    if (path.indexOf('dashboard.php') === 0){
+      var voided = {}; testState.voids.forEach(function(ts){ voided[ts] = 1; });
+      return { heatmap: c && c.status === 'finished' ? rows.filter(function(x){ return x.approved && !voided[x.timestamp]; }) : [],
+               competitions: c ? [{ competition_id: c.id, competition_name: c.name, date: c.date, status: c.status, water: LAKE.name }] : [],
+               anglers: [], anglerStats: [], dashboard: [], results: [], records: [] };
+    }
+    if (path.indexOf('action=bootstrap') >= 0)   // (an annulled catch: a VOID row pointing at it, as in the real API)
+      return { ok: true, catches: rows.concat(testState.voids.map(function(ts){ return { timestamp: ts + '|void', displayValue: 'VOID', voidRef: ts }; })) };
+    return {};
+  }
+  // the strikes of the last 30 min (ltFetch, 52-lightning.js)
+  function testStrikes(){
+    var now = Date.now();
+    return testState.lt.filter(function(s){ return now - s.t < LT_WIN_MIN * 60000; })
+      .map(function(s){ return { lat: s.lat, lon: s.lon, t: s.t, k: s.lat + ',' + s.lon + ',' + s.t }; });
+  }
+
+  // ---- the admin's changes: the whole "test" field, written at once ----
+  var testStatusEl = document.getElementById('testStatus');
+  function testMsg(t){ testStatusEl.textContent = t; }
+  function testSave(){
+    if (!USE_FIREBASE || !cfgDoc){ testMsg('Ingen anslutning till testdatabasen – ändringen sparades inte.'); return; }
+    var now = Date.now();
+    testState.lt = testState.lt.filter(function(s){ return now - s.t < LT_WIN_MIN * 60000; });
+    if (testState.catches.length > TEST_MAX_CATCHES) testState.catches = testState.catches.slice(-TEST_MAX_CATCHES);
+    addUsage('w', 1);
+    // (posIntervalS: the rule for config wants it in every write)
+    cfgDoc.set({ posIntervalS: posIntervalS, test: testState, updatedBy: userName || '', updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true })
+      .catch(function(e){ testMsg('Kunde inte spara (' + ((e && e.code) || 'fel') + ').'); });
+  }
+  function testSetComp(status){
+    if (!testState.comp) testState.comp = { id: 'test-' + Date.now().toString(36), name: 'Testtävling', date: '', status: '' };
+    testState.comp.status = status; testState.comp.date = catchTodayIso();
+    testSave();
+  }
+
+  // ---- who can catch: you, the other phones in Demo Mode, the test boats ----
+  function testBoats(){
+    var out = [], now = Date.now();
+    if (lastOwnLatLon) out.push({ key: 'me', name: userName || 'Du', lat: lastOwnLatLon.lat, lon: lastOwnLatLon.lon });
+    Object.keys(boatPositions).forEach(function(id){
+      var b = boatPositions[id], bot = testBots.filter(function(x){ return x.id === id; })[0];
+      if (bot) out.push({ key: id, name: bot.name, lat: bot.lat, lon: bot.lon, bot: bot });
+      else if (now - b.updatedAt < BOAT_GRAY_MS) out.push({ key: id, name: b.name || id, lat: b.lat, lon: b.lon });
+    });
+    testBots.forEach(function(x){ if (!boatPositions[x.id]) out.push({ key: x.id, name: x.name, lat: x.lat, lon: x.lon, bot: x }); });
+    return out;
+  }
+  function testRandCm(sp){ return Math.round(sp === 'abborre' ? 18 + Math.random() * 28 : sp === 'gadda' ? 45 + Math.random() * 65 : 35 + Math.random() * 40); }
+  // a catch at the boat (a few metres off) or anywhere on the water; a test boat then sends "Senaste fisk"
+  function testAddCatch(b, sp, cm, ok, img, random){
+    var ll = random || !b ? randomDemoPoint() : b, cosLat = Math.cos(ll.lat * Math.PI / 180);
+    if (!random && b){ ll = { lat: ll.lat + (Math.random() - 0.5) * 30 / 111320, lon: ll.lon + (Math.random() - 0.5) * 30 / (111320 * cosLat) }; }
+    if (!testState.comp) testSetComp('active');   // (a catch needs a competition: one starts)
+    var row = { timestamp: new Date().toISOString(), competitionId: testState.comp.id, name: b ? b.name : (userName || 'Du'), species: sp, cm: cm,
+                lat: +ll.lat.toFixed(6), lng: +ll.lon.toFixed(6), lake: LAKE.name, approved: !!ok };
+    if (img) row.imageUrl = TEST_IMG;
+    testState.catches.push(row);
+    testSave();
+    if (b && b.bot && ok) testBotWrite(b.bot, { msg: msgFishText({ sp: sp, cm: cm }), msgAt: Date.now(), msgSp: sp, msgImg: img ? TEST_IMG : null });
+    testMsg(row.name + ': ' + hmSpName(sp) + ' ' + cm + ' cm' + (ok ? '' : ' (inte godkänd)') + ' inlagd.');
+  }
+
+  // ---- test boats: positions/bot_1..5, driven from this phone ----
+  var TEST_BOTS_KEY = 'lake_' + LAKE_ID + '_test_bots_v1', TEST_AUTO_KEY = 'ffmap_test_auto_v1';
+  var testBots = [], testBotTimer = null, testAutoTimer = null, testStorm = null;
+  function testBotsSet(n){
+    var keep = testBots.slice(0, n);
+    testBots.slice(n).forEach(function(b){ testBotWrite(b, { updatedAt: firebase.firestore.Timestamp.fromMillis(0), msg: null, msgAt: 0 }); });
+    var saved = []; try { saved = JSON.parse(localStorage.getItem(TEST_BOTS_KEY) || '[]') || []; } catch(e){}
+    for (var i = keep.length; i < n; i++){
+      var p = saved[i] && isFinite(saved[i].lat) ? saved[i] : randomDemoPoint();
+      keep.push({ id: 'bot_' + (i + 1), name: 'Testbåt ' + (i + 1), lat: p.lat, lon: p.lon, cLat: p.lat, cLon: p.lon, hd: Math.random() * 360, turn: 0,
+                  kn: 2 + Math.random() * 3, wAt: 0, msgAt: Date.now() + (2 + Math.random() * 5) * 60000 });
+    }
+    testBots = keep;
+    testBotsRemember();
+    clearInterval(testBotTimer); testBotTimer = n ? setInterval(testBotsTick, 1000) : null;
+    testRender();
+  }
+  function testBotsRemember(){
+    try { if (testBots.length) localStorage.setItem(TEST_BOTS_KEY, JSON.stringify(testBots.map(function(b){ return { lat: b.lat, lon: b.lon }; }))); else localStorage.removeItem(TEST_BOTS_KEY); } catch(e){}
+  }
+  function testBotWrite(b, extra){
+    if (!USE_FIREBASE || !posCol) return;
+    b.wAt = Date.now();
+    addUsage('w', 1);
+    posCol.doc(b.id).set(Object.assign({ lat: b.lat, lon: b.lon, name: b.name, uid: b.id, lake: LAKE_ID,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, extra || {}), { merge: true }).catch(function(){});
+  }
+  // like the demo boat (44-demo-motion.js): a few knots, turning gently, back towards its spot, never onto land
+  function testBotsTick(){
+    var now = Date.now();
+    testBots.forEach(function(b){
+      var cosLat = Math.cos(b.lat * Math.PI / 180);
+      b.turn = (b.turn + (Math.random() - 0.5) * 4) * 0.85;
+      var dN = (b.cLat - b.lat) * 111320, dE = (b.cLon - b.lon) * 111320 * cosLat;
+      if (Math.sqrt(dN * dN + dE * dE) > 500){
+        var diff = ((Math.atan2(dE, dN) * 180 / Math.PI - b.hd + 540) % 360) - 180;
+        b.turn += Math.max(-10, Math.min(10, diff)) * 0.5;
+      }
+      b.hd = (b.hd + b.turn + 360) % 360;
+      if (!demoWaterAhead(b.lat, b.lon, b.hd, 30)){
+        for (var a = 20; a <= 180; a += 20){
+          if (demoWaterAhead(b.lat, b.lon, b.hd + a, 30)){ b.hd = (b.hd + a) % 360; break; }
+          if (demoWaterAhead(b.lat, b.lon, b.hd - a, 30)){ b.hd = (b.hd - a + 360) % 360; break; }
+        }
+        b.turn = 0;
+      }
+      var ms = b.kn / KN_PER_MS, h = b.hd * Math.PI / 180;
+      b.lat += ms * Math.cos(h) / 111320; b.lon += ms * Math.sin(h) / (111320 * cosLat);
+      if (now >= b.msgAt){   // now and then a quick message
+        b.msgAt = now + (3 + Math.random() * 6) * 60000;
+        testBotWrite(b, { msg: MSG_TEXTS[Math.floor(Math.random() * MSG_TEXTS.length)], msgAt: now, msgSp: null, msgImg: null });
+      } else if (now - b.wAt >= posIntervalS * 1000) testBotWrite(b);
+    });
+    testBotsRemember();
+  }
+  // automatic catches: every 30 s someone catches something (a test boat first, otherwise anyone)
+  function testAutoSet(on){
+    try { localStorage.setItem(TEST_AUTO_KEY, on ? '1' : '0'); } catch(e){}
+    clearInterval(testAutoTimer); testAutoTimer = on ? setInterval(testAutoTick, 30000) : null;
+    testRender();
+  }
+  function testAutoTick(){
+    var all = testBoats(), bots = all.filter(function(b){ return b.bot; }), pick = bots.length ? bots : all;
+    if (!pick.length) return;
+    var b = pick[Math.floor(Math.random() * pick.length)];
+    var sp = Math.random() < 0.6 ? 'abborre' : Math.random() < 0.75 ? 'gadda' : 'gos', cm = testRandCm(sp);
+    testAddCatch(b, sp, cm, sp !== 'abborre' || cm >= 25, false, false);   // (a perch under 25 cm isn't counted)
+  }
+
+  // ---- lightning: a strike this far from you, in some direction; "Åskan närmar sig" = one a minute, closer each time ----
+  function testStrike(km, br){
+    var ref = ltRef(), h = br * Math.PI / 180;
+    testState.lt.push({ lat: +(ref.lat + km * Math.cos(h) / 111.32).toFixed(5), lon: +(ref.lon + km * Math.sin(h) / (111.32 * Math.cos(ref.lat * Math.PI / 180))).toFixed(5), t: Date.now() });
+    testSave();
+    testMsg('Blixt ' + km + ' km bort (' + wxCompass(br) + ').');
+  }
+  function testStormSet(on){
+    if (testStorm){ clearInterval(testStorm.timer); testStorm = null; }
+    if (on){ testStorm = { br: Math.random() * 360, km: 25 }; testStormTick(); if (testStorm) testStorm.timer = setInterval(testStormTick, 60000); }
+    testRender();
+  }
+  function testStormTick(){
+    testStrike(testStorm.km, testStorm.br + (Math.random() - 0.5) * 30);
+    testStorm.km -= 3;
+    if (testStorm.km < 1) testStormSet(false);
+  }
+
+  // ---- Rensa: no spots, no boats, no competition, no strikes -- for everyone in Demo Mode ----
+  function testReset(){
+    if (!confirm('Rensa testläget? Testplatser, båtar, meddelanden, tävlingen, fångsterna och blixtarna tas bort för alla i Demo Mode.')) return;
+    testBotsSet(0); testAutoSet(false); testStormSet(false);
+    if (USE_FIREBASE && fsCol) waypoints.forEach(function(w){ if (w.id) fsCol.doc(String(w.id)).delete().catch(function(){}); });
+    if (USE_FIREBASE && posCol) allPositions.forEach(function(p){
+      addUsage('w', 1);
+      posCol.doc(p.docId).set({ updatedAt: firebase.firestore.Timestamp.fromMillis(p.uid === myUid ? Date.now() : 0), msg: null, msgAt: 0 }, { merge: true }).catch(function(){});
+    });
+    ownMsg = null; renderMessages();
+    testState = JSON.parse(TEST_EMPTY);
+    testSave();
+    testMsg('Testläget är rensat.');
+  }
+
+  // ---- the card (Admin -> Testläge; only in Demo Mode) ----
+  var testCard = document.getElementById('adminTestCard'), testWhoEl = document.getElementById('testWho');
+  function testSeg(id, val){
+    Array.prototype.forEach.call(document.querySelectorAll('#' + id + ' button'), function(b){ var on = b.getAttribute('data-v') === val; b.classList.toggle('active', on); b.setAttribute('aria-checked', on ? 'true' : 'false'); });
+  }
+  function testRender(){
+    testCard.hidden = !TEST_MODE;
+    if (!TEST_MODE) return;
+    var c = testState.comp, voided = {}, n = 0, nv = 0, now = Date.now();
+    testState.voids.forEach(function(ts){ voided[ts] = 1; });
+    testState.catches.forEach(function(x){ if (c && x.competitionId === c.id){ if (voided[x.timestamp]) nv++; else n++; } });
+    testSeg('testCompSeg', c ? c.status : '');
+    testSeg('testBotSeg', String(testBots.length));
+    testSeg('testAutoSeg', testAutoTimer ? '1' : '0');
+    document.getElementById('testStorm').textContent = testStorm ? 'Stoppa åskan (' + Math.max(1, testStorm.km) + ' km)' : 'Åskan närmar sig';
+    document.getElementById('testInfo').textContent = !USE_FIREBASE ? 'Testdatabasen är inte kopplad (FIREBASE_TEST_CONFIG i 14-spots.js) – inget delas än.' :
+      (c ? c.name + ' · ' + ({ planned: 'planerad', active: 'pågår', finished: 'avslutad' }[c.status] || '') + ' · ' + n + (n === 1 ? ' fångst' : ' fångster') + (nv ? ' (' + nv + ' annullerade)' : '') : 'Ingen tävling') +
+      ' · ' + testState.lt.filter(function(s){ return now - s.t < LT_WIN_MIN * 60000; }).length + ' blixtar senaste 30 min';
+    // who: rebuilt only when the boats change (not while someone is choosing)
+    var boats = testBoats(), sig = boats.map(function(b){ return b.key + '=' + b.name; }).join('|');
+    if (testWhoEl.getAttribute('data-sig') !== sig){
+      var cur = testWhoEl.value;
+      testWhoEl.textContent = '';
+      boats.forEach(function(b){ var o = document.createElement('option'); o.value = b.key; o.textContent = b.key === 'me' ? b.name + ' (du)' : b.name; testWhoEl.appendChild(o); });
+      if (cur && boats.some(function(b){ return b.key === cur; })) testWhoEl.value = cur;
+      testWhoEl.setAttribute('data-sig', sig);
+    }
+  }
+  function testSegClick(id, fn){
+    document.getElementById(id).addEventListener('click', function(e){ var b = e.target.closest ? e.target.closest('button[data-v]') : null; if (b) fn(b.getAttribute('data-v')); });
+  }
+  testSegClick('testCompSeg', testSetComp);
+  testSegClick('testBotSeg', function(v){ testBotsSet(+v); });
+  testSegClick('testAutoSeg', function(v){ testAutoSet(v === '1'); });
+  document.getElementById('testAddCatch').addEventListener('click', function(){
+    var key = testWhoEl.value, b = testBoats().filter(function(x){ return x.key === key; })[0];
+    var sp = document.getElementById('testSp').value, cm = parseFloat(String(document.getElementById('testCm').value).replace(',', '.'));
+    if (!(cm > 0 && cm < 250)) cm = testRandCm(sp);
+    testAddCatch(b, sp, cm, document.getElementById('testOk').checked, document.getElementById('testImg').checked, document.getElementById('testWhere').value === 'rand');
+  });
+  document.getElementById('testVoidCatch').addEventListener('click', function(){
+    var voided = {}; testState.voids.forEach(function(ts){ voided[ts] = 1; });
+    var last = testState.catches.filter(function(x){ return !voided[x.timestamp]; }).pop();
+    if (!last){ testMsg('Ingen fångst att annullera.'); return; }
+    testState.voids.push(last.timestamp); testSave();
+    testMsg(last.name + 's ' + hmSpName(catchSpecies(last.species)) + ' ' + last.cm + ' cm annullerad.');
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('#testStrikes button[data-km]'), function(b){
+    b.addEventListener('click', function(){ testStrike(+b.getAttribute('data-km'), Math.random() * 360); });
+  });
+  document.getElementById('testStorm').addEventListener('click', function(){ testStormSet(!testStorm); });
+  document.getElementById('testLtClear').addEventListener('click', function(){ testState.lt = []; testSave(); testMsg('Blixtarna borttagna.'); });
+  document.getElementById('testReset').addEventListener('click', testReset);
+  // the admin's own test boats and automatic catches carry on after a reload (the phone turned)
+  if (TEST_MODE && isAdminUnlocked()){
+    var tb = 0; try { tb = JSON.parse(localStorage.getItem(TEST_BOTS_KEY) || '[]').length; } catch(e){}
+    if (tb) setTimeout(function(){ testBotsSet(tb); }, 0);   // (after every file has run: the depth data, the messages)
+    try { if (localStorage.getItem(TEST_AUTO_KEY) === '1') setTimeout(function(){ testAutoSet(true); }, 0); } catch(e){}
+  }
+  // the banner: a real competition going on (this phone's real copy of the catches) -> you can't be seen by the others
+  if (TEST_MODE) setTimeout(function(){
+    var c = null; try { c = JSON.parse(localStorage.getItem(CATCH_REAL_KEY) || 'null'); } catch(e){}
+    document.getElementById('demoBannerWarn').hidden = !(c && c.v === 3 && Date.now() - c.at < 12 * 3600e3 && (c.comps || []).some(function(x){ return x.status === 'active'; }));
+  }, 0);
+  window.__ffTest = function(){ return { on: TEST_MODE, project: FIREBASE_CONFIG.projectId, state: testState, auto: !!testAutoTimer, storm: !!testStorm,
+    bots: testBots.map(function(b){ return { id: b.id, lat: b.lat, lon: b.lon }; }), wps: waypoints.map(function(w){ return w.name; }), boats: Object.keys(boatPositions) }; };
   /* ================= Fart: knopmätare + snittfart =================
      Everything here stays on the phone -- nothing is written to the
      database. */
@@ -7860,19 +8187,25 @@
   // "Blixtar" switch in Filter -- that only shows / hides them on the map)
   function ltWatch(){ return ltOn || !!ltAlarm.km; }
   function ltFetch(){
-    if (!ltWatch() || ltFetching || typeof fetch !== 'function') return;
+    if (!ltWatch() || ltFetching) return;
+    if (TEST_MODE){ ltApply(testStrikes()); return; }   // (the test mode: only the admin's made-up strikes, never FMI -- 37-testmode.js)
+    if (typeof fetch !== 'function') return;
     ltFetching = true;
     fetch(ltUrl()).then(function(r){ return r.ok ? r.text() : null; }).then(function(x){
       ltFetching = false;
-      if (x == null || !ltWatch()) return;
-      var had = {}, first = !ltFetchedAt, fresh = {}, n = 0;
-      ltStrikes.forEach(function(s){ had[s.k] = 1; });
-      ltStrikes = ltParse(x); ltFetchedAt = Date.now();
-      ltCheckAlarm();
-      ltStrikes.forEach(function(s){ if (!had[s.k] && Date.now() - s.t < 5 * 60000){ fresh[s.k] = 1; n++; } });
-      if (!first && n){ ltFlash = { from: Date.now(), keys: fresh }; if (!ltAnim) ltAnim = requestAnimationFrame(ltPulse); }
-      ltRender();
+      if (x != null) ltApply(ltParse(x));
     }).catch(function(){ ltFetching = false; });
+  }
+  // new strikes in: the alarm, the flash of the new ones, the map
+  function ltApply(list){
+    if (!ltWatch()) return;
+    var had = {}, first = !ltFetchedAt, fresh = {}, n = 0;
+    ltStrikes.forEach(function(s){ had[s.k] = 1; });
+    ltStrikes = list; ltFetchedAt = Date.now();
+    ltCheckAlarm();
+    ltStrikes.forEach(function(s){ if (!had[s.k] && Date.now() - s.t < 5 * 60000){ fresh[s.k] = 1; n++; } });
+    if (!first && n){ ltFlash = { from: Date.now(), keys: fresh }; if (!ltAnim) ltAnim = requestAnimationFrame(ltPulse); }
+    ltRender();
   }
   function ltRef(){
     if (lastOwnLatLon && isNearLake(lastOwnLatLon.lat, lastOwnLatLon.lon)) return lastOwnLatLon;
@@ -9233,7 +9566,7 @@
   // "Åskan har dragit förbi": after a warning, when no strike has come within the distance for a whole
   // FMI window (30 min, fresh data), a calm green note -- once. The newest strike near you is remembered
   // over a reload (turning the phone); after 3 h it's just forgotten (no "all clear" the next day).
-  var LT_CLEAR_KEY = 'ffmap_lt_clear_v1';
+  var LT_CLEAR_KEY = testKey('ffmap_lt_clear_v1');
   function ltClearGet(){ try { return +localStorage.getItem(LT_CLEAR_KEY) || 0; } catch(e){ return 0; } }
   function ltClearSet(t){ try { if (t) localStorage.setItem(LT_CLEAR_KEY, String(t)); else localStorage.removeItem(LT_CLEAR_KEY); } catch(e){} }
   function ltCheckClear(){
@@ -9297,7 +9630,7 @@
   var MSG_MS = 15 * 60000;
   // your latest catch as a message ("Gädda 78 cm"): first in the choices while a competition is on; the edge spins in the species' colour
   var MSG_SP_COL = { gadda: '#35D24A', abborre: '#FF7A1A', gos: '#3A86FF' };
-  function msgImgOk(u){ return typeof u === 'string' && /^https:\/\/res\.cloudinary\.com\//.test(u) ? u : null; }   // (only the catch photos, never any address someone writes)
+  function msgImgOk(u){ return typeof u === 'string' && (/^https:\/\/res\.cloudinary\.com\//.test(u) || (TEST_MODE && u === TEST_IMG)) ? u : null; }   // (only the catch photos, never any address someone writes; the test mode: its picture)
   var ownMsg = null, msgHidden = {}, msgLayerEl = document.getElementById('msgLayer');
   var msgBtn = document.getElementById('msgBtn'), msgPop = document.getElementById('msgPop');
   msgPop.innerHTML = MSG_TEXTS.map(function(t){ return '<button type="button" data-t="' + t + '">' + t + '</button>'; }).join('') +
@@ -9485,7 +9818,7 @@
      Which lake a catch belongs to: its position (inside that lake's map) -- a lake name, when there
      is one, must not say it's another lake (a lake next door inside the same map). */
   var CATCH_API = 'https://fiskfiskarna.se/api/';
-  var CATCH_CACHE_KEY = lakeKey('ffmap_catches_v1', 'catches_v1'), CATCH_NET_KEY = 'ffmap_catchnet_v1';
+  var CATCH_REAL_KEY = lakeKey('ffmap_catches_v1', 'catches_v1'), CATCH_CACHE_KEY = testKey(CATCH_REAL_KEY), CATCH_NET_KEY = 'ffmap_catchnet_v1';
   var CATCH_HOUR = 3600e3, CATCH_DAY = 864e5, CATCH_LIVE_SLOW = 300e3, CATCH_LIVE_FAST = 30e3;
   var catchData = null, catchLoading = false, catchErr = null, catchVer = 0, catchListeners = [];
   var catchHist = null, catchLive = null, catchLiveTimer = null;   // (catchHist: { at, list, comps, total })
@@ -9507,7 +9840,7 @@
     var c = { id: t + '|' + who + '|' + sp + '|' + cm, t: t, comp: comp, who: who, sp: sp, cm: cm, lat: lat, lon: lon, lake: String(g('lake', 'sjo') || '').trim() };
     if (o.approved === false) c.no = 1;   // (live: not counted, e.g. a perch under 25 cm)
     var img = String(o.imageUrl || '');  // (live: the photo -- Cloudinary, asked for 600 px wide instead of 2000)
-    if (/^https:\/\//.test(img)) c.img = img.replace(/(res\.cloudinary\.com\/[^/]+\/image\/upload\/)w_\d+,/, '$1w_600,');
+    if (/^https:\/\//.test(img) || (TEST_MODE && img === TEST_IMG)) c.img = img.replace(/(res\.cloudinary\.com\/[^/]+\/image\/upload\/)w_\d+,/, '$1w_600,');
     return c;
   }
   // the same water? ("Sibbo" = Sibbofjärden, id or name)
@@ -9542,6 +9875,7 @@
   }
   function catchErrOf(e){ return { at: Date.now(), msg: e instanceof TypeError ? 'ingen anslutning' : String((e && e.message) || 'fel') }; }
   function catchGet(path, kind, cb){
+    if (TEST_MODE){ setTimeout(function(){ cb(null, testApi(path)); }, 0); return; }   // (the test mode: the made-up competition, 37-testmode.js -- never the real API)
     var res;
     (window.fetch ? fetch(CATCH_API + path, { cache: 'no-store' }) : Promise.reject(new Error('fetch saknas'))).then(function(r){
       return r.text().then(function(t){
@@ -10238,6 +10572,8 @@
       demoCoordsRow.style.display = 'flex';
       document.getElementById('demoMoveRow').style.display = 'flex';
       onFix(demoLat, demoLon, 8);
+      var fresh = false; try { fresh = sessionStorage.getItem(DEMO_FRESH_KEY) === '1'; sessionStorage.removeItem(DEMO_FRESH_KEY); } catch(e){}
+      if (fresh) centerOnFix();   // (just switched on: show where the demo boat is)
       if (demoMovePref()){
         startDemoMotion();
         document.getElementById('demoMoveToggle').checked = !!demoSim;
@@ -10263,7 +10599,7 @@
     if (!Array.isArray(list) || !list.length) return;
     var now = Date.now(), keep = [], n = 0;
     list.forEach(function(w){
-      var pending = w && w.uid === 'local' && (!w.lake || w.lake === LAKE_ID) &&
+      var pending = w && w.uid === 'local' && (!w.lake || w.lake === LAKE_ID) &&   // (WP_KEY: the test mode's own copy -> its own database)
         now - (w.createdAt || 0) < 7 * 24 * 3600 * 1000 && isFinite(w.lat) && isFinite(w.lon) && w.id;
       if (!pending){ keep.push(w); return; }
       n++;

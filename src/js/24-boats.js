@@ -172,7 +172,7 @@
   // last known value is remembered on the phone for offline starts.
   var POS_INTERVAL_CHOICES = [10, 20, 30, 60];
   var POS_INTERVAL_DEFAULT_S = 20;
-  var POS_INTERVAL_KEY = lakeKey('ffmap_pos_interval_s_v1', 'pos_interval_s_v1'); // (per lake, like config/<lake>)
+  var POS_INTERVAL_KEY = testKey(lakeKey('ffmap_pos_interval_s_v1', 'pos_interval_s_v1')); // (per lake, like config/<lake>)
   var posIntervalS = POS_INTERVAL_DEFAULT_S;
   try {
     var savedPi = parseInt(localStorage.getItem(POS_INTERVAL_KEY), 10);
@@ -217,17 +217,17 @@
   // Mark your shared position as long gone (e.g. on logout), so it disappears
   // for everyone right away instead of lingering as a ghost pip for an hour.
   // (Setting an ancient timestamp rather than deleting the doc, so the
-  // existing Firestore rules don't need changing.)
+  // existing Firestore rules don't need changing.) -> a promise: done (Demo Mode waits for it, 32-demo.js)
   function expireOwnPosition(){
-    if (!USE_FIREBASE || !posCol || !myUid) return;
-    if (!firebase.firestore.Timestamp) return;
+    if (!USE_FIREBASE || !posCol || !myUid) return Promise.resolve();
+    if (!firebase.firestore.Timestamp) return Promise.resolve();
     addUsage('w', 1);
     try {
       // update() rather than set(merge): never creates an empty stub doc for
       // a name that never shared a position
-      posCol.doc(posDocId(myUid)).update({ updatedAt: firebase.firestore.Timestamp.fromMillis(0) })
+      return posCol.doc(posDocId(myUid)).update({ updatedAt: firebase.firestore.Timestamp.fromMillis(0) })
         .catch(function(){ /* no doc for this name -- nothing to expire */ });
-    } catch(e){}
+    } catch(e){ return Promise.resolve(); }
   }
 
   // A GPS fix only arrives from watchPosition when the device's location

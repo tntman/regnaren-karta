@@ -36,19 +36,25 @@
   // "Blixtar" switch in Filter -- that only shows / hides them on the map)
   function ltWatch(){ return ltOn || !!ltAlarm.km; }
   function ltFetch(){
-    if (!ltWatch() || ltFetching || typeof fetch !== 'function') return;
+    if (!ltWatch() || ltFetching) return;
+    if (TEST_MODE){ ltApply(testStrikes()); return; }   // (the test mode: only the admin's made-up strikes, never FMI -- 37-testmode.js)
+    if (typeof fetch !== 'function') return;
     ltFetching = true;
     fetch(ltUrl()).then(function(r){ return r.ok ? r.text() : null; }).then(function(x){
       ltFetching = false;
-      if (x == null || !ltWatch()) return;
-      var had = {}, first = !ltFetchedAt, fresh = {}, n = 0;
-      ltStrikes.forEach(function(s){ had[s.k] = 1; });
-      ltStrikes = ltParse(x); ltFetchedAt = Date.now();
-      ltCheckAlarm();
-      ltStrikes.forEach(function(s){ if (!had[s.k] && Date.now() - s.t < 5 * 60000){ fresh[s.k] = 1; n++; } });
-      if (!first && n){ ltFlash = { from: Date.now(), keys: fresh }; if (!ltAnim) ltAnim = requestAnimationFrame(ltPulse); }
-      ltRender();
+      if (x != null) ltApply(ltParse(x));
     }).catch(function(){ ltFetching = false; });
+  }
+  // new strikes in: the alarm, the flash of the new ones, the map
+  function ltApply(list){
+    if (!ltWatch()) return;
+    var had = {}, first = !ltFetchedAt, fresh = {}, n = 0;
+    ltStrikes.forEach(function(s){ had[s.k] = 1; });
+    ltStrikes = list; ltFetchedAt = Date.now();
+    ltCheckAlarm();
+    ltStrikes.forEach(function(s){ if (!had[s.k] && Date.now() - s.t < 5 * 60000){ fresh[s.k] = 1; n++; } });
+    if (!first && n){ ltFlash = { from: Date.now(), keys: fresh }; if (!ltAnim) ltAnim = requestAnimationFrame(ltPulse); }
+    ltRender();
   }
   function ltRef(){
     if (lastOwnLatLon && isNearLake(lastOwnLatLon.lat, lastOwnLatLon.lon)) return lastOwnLatLon;

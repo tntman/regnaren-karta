@@ -1,8 +1,8 @@
-  /* ---------------- Demo Mode ---------------- */
-  var DEMO_KEY = 'regnaren_demo_mode_v1';
+  /* ---------------- Demo Mode = the test mode (TEST_MODE, 10-core.js) ----------------
+     Switching it on or off reloads the page: everything shared then talks to the other database. */
   var DEMO_LAT_KEY = 'lake_' + LAKE_ID + '_demo_lat_v1'; // per-lake: a demo spot only makes sense on its own map
   var DEMO_LON_KEY = 'lake_' + LAKE_ID + '_demo_lon_v1';
-  var demoMode = false;
+  var demoMode = TEST_MODE;   // (never changes while the page runs)
   var demoLat = null, demoLon = null;
   var lastRealFix = null; // {lat, lon, acc} from the actual device GPS
   var demoBannerEl = document.getElementById('demoBanner');
@@ -13,19 +13,12 @@
   // Safety: Demo Mode switches itself off after 15 minutes, so nobody heads
   // out on the water still seeing (and sharing) a fake position. The start
   // time is stored, so a reload doesn't restart the clock -- and if the app
-  // was closed for longer than that, it simply starts with Demo Mode off.
-  var DEMO_SINCE_KEY = 'regnaren_demo_since_v1';
-  var DEMO_MAX_MS = 15 * 60 * 1000;
+  // was closed for longer than that, it simply starts with Demo Mode off (10-core.js).
+  var DEMO_FRESH_KEY = 'ffmap_demo_fresh_v1';   // (sessionStorage: just switched on -> show the boat, after the reload)
   var demoSince = 0;
   var demoBannerTimerEl = document.getElementById('demoBannerTimer');
   try {
-    demoMode = localStorage.getItem(DEMO_KEY) === '1';
-    demoSince = Number(localStorage.getItem(DEMO_SINCE_KEY) || 0);
-    if (demoMode && (!demoSince || Date.now() - demoSince >= DEMO_MAX_MS)){
-      demoMode = false;
-      localStorage.setItem(DEMO_KEY, '0');
-      localStorage.removeItem(DEMO_SINCE_KEY);
-    }
+    demoSince = demoMode ? Number(localStorage.getItem(DEMO_SINCE_KEY) || 0) : 0;
     var savedLat = parseFloat(localStorage.getItem(DEMO_LAT_KEY));
     var savedLon = parseFloat(localStorage.getItem(DEMO_LON_KEY));
     if (isFinite(savedLat) && isFinite(savedLon)){ demoLat = savedLat; demoLon = savedLon; }
@@ -34,11 +27,11 @@
   demoBannerEl.classList.toggle('show', demoMode);
 
   function updateDemoTimer(){
-    if (!demoMode) return;
+    if (!demoMode || demoSwitching) return;
     var left = DEMO_MAX_MS - (Date.now() - demoSince);
     if (left <= 0){
-      setDemoMode(false);
       demoModeToggle.checked = false;
+      setDemoMode(false);
       return;
     }
     demoBannerTimerEl.textContent = 'Stängs av om ' + Math.ceil(left / 60000) + ' min';
@@ -110,48 +103,32 @@
   demoLatInput.addEventListener('input', function(){ demoLatInput.classList.remove('invalid'); demoInputDirty = true; });
   demoLonInput.addEventListener('input', function(){ demoLonInput.classList.remove('invalid'); demoInputDirty = true; });
 
+  // on / off = a reload into the other database. Your boat in the one you leave goes away for the others
+  // first (real -> test: your real boat; test -> real: the test boat), waiting at most 2 s for it.
+  var demoSwitching = false;
   function setDemoMode(on){
-    demoMode = on;
-    resetSpeedTracking();           // don't mix speeds from the real and the demo position
+    if (demoSwitching || on === TEST_MODE) return;
+    demoSwitching = true;
+    demoModeToggle.disabled = true;
     stopDemoMotion();
-    var moveRow = document.getElementById('demoMoveRow');
-    if (moveRow) moveRow.style.display = on ? 'flex' : 'none';
-    var moveToggle = document.getElementById('demoMoveToggle');
-    if (moveToggle) moveToggle.checked = false;
-    if (on){ demoAvg = { b: [] }; saveDemoAvg(); } // a fresh demo average every time
-    demoSince = on ? Date.now() : 0;
+    resetSpeedTracking();           // don't mix speeds from the real and the demo position
     trkClearDemo();                 // the demo's track is only for trying the Spår out -- gone when Demo Mode starts/stops
     try {
       localStorage.setItem(DEMO_KEY, on ? '1' : '0');
-      if (on) localStorage.setItem(DEMO_SINCE_KEY, String(demoSince));
-      else localStorage.removeItem(DEMO_SINCE_KEY);
+      if (on){
+        localStorage.setItem(DEMO_SINCE_KEY, String(Date.now()));
+        setDemoCoords(randomDemoPoint());   // a fresh random spot every time Demo Mode is switched on
+        setDemoMovePref(true);              // simulated motion starts right away (switch it off under Settings)
+        demoAvg = { b: [] }; saveDemoAvg(); // a fresh demo average every time
+        sessionStorage.setItem(DEMO_FRESH_KEY, '1');
+      } else localStorage.removeItem(DEMO_SINCE_KEY);
     } catch(e){}
-    demoBannerEl.classList.toggle('show', on);
-    updateDemoTimer();
-    demoCoordsRow.style.display = on ? 'flex' : 'none';
-    if (on){
-      setDemoCoords(randomDemoPoint()); // fresh random spot every time Demo Mode is switched on
-      onFix(demoLat, demoLon, 8);
-      centerOnFix(); // visa var man är (onFix centrerar bara första gången)
-      // simulated motion starts right away (switch it off under Settings if you want to stand still)
-      setDemoMovePref(true);
-      startDemoMotion();
-      if (moveToggle) moveToggle.checked = !!demoSim;
-    } else {
-      // The others may still see you at the demo spot: replace it with your
-      // real position right away if you're at the lake, otherwise remove it.
-      var sharedDemo = !!lastWrittenLatLon;
-      lastPosWriteAt = 0; lastWrittenLatLon = null;
-      if (sharedDemo && !(lastRealFix && isNearLake(lastRealFix.lat, lastRealFix.lon))) expireOwnPosition();
-      if (lastRealFix){
-        onFix(lastRealFix.lat, lastRealFix.lon, lastRealFix.acc);
-      } else {
-        // No real GPS fix yet -- don't leave you parked on the demo spot.
-        // Clear it until real GPS answers.
-        clearOwnFix();
-        showGpsProblem();
-      }
-    }
+    // the open page (Inställningar ...) comes back, as after turning the phone (92-rotation.js) -- but nothing
+    // of the old world's boat: its speeds, when it last shared its position, the demo course
+    saveRotationState();
+    try { var st = JSON.parse(sessionStorage.getItem(ROT_STATE_KEY)); delete st.speed; delete st.pos; delete st.usage; delete st.demoSim; sessionStorage.setItem(ROT_STATE_KEY, JSON.stringify(st)); } catch(e){}
+    var go = function(){ location.reload(); };
+    Promise.race([expireOwnPosition(), new Promise(function(r){ setTimeout(r, 2000); })]).then(go, go);
   }
   demoModeToggle.addEventListener('change', function(){
     setDemoMode(demoModeToggle.checked);

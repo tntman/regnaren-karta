@@ -37,17 +37,20 @@ with sync_playwright() as p:
     # demo mode: always on the water
     pg.click('#menuBtn'); pg.click('#menuItemSettings'); pg.wait_for_timeout(200)
     depths = []
-    for i in range(8):
-        pg.click('#demoModeToggle'); pg.wait_for_timeout(250)
+    for i in range(4):   # (on / off = a reload into the test mode and back, Inställningar open again)
+        with pg.expect_navigation(timeout=8000): pg.click('#demoModeToggle')
+        pg.wait_for_selector('#settingsView.show', timeout=5000)
         if pg.is_checked('#demoModeToggle'):
             try: pg.wait_for_function("document.getElementById('depthVal').textContent !== '–'", timeout=3000)
             except Exception: pass
             depths.append(pg.inner_text('#depthVal'))
-            pg.click('#demoModeToggle'); pg.wait_for_timeout(150)
+            with pg.expect_navigation(timeout=8000): pg.click('#demoModeToggle')
+            pg.wait_for_selector('#settingsView.show', timeout=5000)
     ok = all(d not in ('–',) and (d == '10+' or float(d.replace(',', '.')) >= 1.4) for d in depths)
     check('Demo Mode always starts on the water (≥1,5 m)', ok and len(depths) >= 4, depths)
     # motion keeps to the water for a while
-    pg.click('#demoModeToggle'); pg.wait_for_timeout(300)
+    with pg.expect_navigation(timeout=8000): pg.click('#demoModeToggle')
+    pg.wait_for_selector('#settingsView.show', timeout=5000)
     pg.click('#settingsBackBtn'); pg.wait_for_timeout(200)
     seen = []
     for i in range(45):

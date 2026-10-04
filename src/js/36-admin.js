@@ -149,6 +149,7 @@
   }
 
   function renderAdmin(){
+    testRender();   // (Testläge, 37-testmode.js: only in Demo Mode)
     var now = Date.now();
     var midnight = new Date(); midnight.setHours(0, 0, 0, 0);
     var users = collectUsers();

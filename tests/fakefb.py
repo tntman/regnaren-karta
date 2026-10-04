@@ -124,6 +124,8 @@ FAKE_FIREBASE_JS = r"""
         posDocs[id] = merged; firePos(); return Promise.resolve();
       }, update: function(d){
         window.__posUpdates = (window.__posUpdates || []); window.__posUpdates.push({ id: id, updatedAtMs: (d.updatedAt && d.updatedAt.__epoch) ? d.updatedAt.ms : null });
+        // (also kept over a reload -- Demo Mode on/off reloads right after expiring your boat; with the project it went to)
+        try { var L = JSON.parse(sessionStorage.getItem('__fbUpdates') || '[]'); L.push({ id: id, project: window.__fbProject, found: !!posDocs[id], updatedAtMs: (d.updatedAt && d.updatedAt.__epoch) ? d.updatedAt.ms : null }); sessionStorage.setItem('__fbUpdates', JSON.stringify(L)); } catch(e){}
         if (!posDocs[id]){ var e = new Error('not-found'); e.code = 'not-found'; return Promise.reject(e); }
         var m = Object.assign({}, posDocs[id], d);
         m.updatedAt = (d.updatedAt && d.updatedAt.__epoch) ? ts(d.updatedAt.ms) : ts(Date.now());
@@ -160,7 +162,9 @@ FAKE_FIREBASE_JS = r"""
     set: function(d){
       window.__cfgSets.push(JSON.parse(JSON.stringify(Object.assign({}, d, { updatedAt: null }))));
       if (window.__cfgDenied){ var e = new Error('denied'); e.code = 'permission-denied'; return Promise.reject(e); }
-      window.__setCfg(Object.assign({}, window.__cfgDoc || {}, { posIntervalS: d.posIntervalS })); return Promise.resolve();
+      var nd = Object.assign({}, window.__cfgDoc || {}, { posIntervalS: d.posIntervalS });
+      if (d.test !== undefined) nd.test = JSON.parse(JSON.stringify(d.test));   // (the test mode's competition, 37-testmode.js)
+      window.__setCfg(nd); return Promise.resolve();
     } }; } };
   // tracks (the Spår, one doc per person + lake + day): cfg.tracks = { '<docId>': {lake, uid, name, day, pts, st, n, lakeDay, ownKey}, ... }
   window.__trackDocs = JSON.parse(JSON.stringify(cfg.tracks || {})); window.__trackSets = []; window.__trackGets = [];
@@ -192,7 +196,20 @@ FAKE_FIREBASE_JS = r"""
       var cur = window.__trackUsersDocs[id] || { users: {} }; cur.users = Object.assign({}, cur.users, d.users || {}); window.__trackUsersDocs[id] = cur; return Promise.resolve();
     } }; } };
   var fake = {
-    initializeApp: function(){ return {}; },
+    // the project it was started with (the test mode = Demo Mode has its own, 14-spots.js): another project
+    // = another database -> it starts empty (cfg.testDb = what's in it, like the rest of cfg)
+    initializeApp: function(c){
+      window.__fbProject = c && c.projectId;
+      if (window.__fbProject !== 'regnaren-b8b6a'){
+        var t = cfg.testDb || {};
+        Object.keys(posDocs).forEach(function(k){ delete posDocs[k]; });
+        Object.keys(wpDocs).forEach(function(k){ delete wpDocs[k]; });
+        (t.positions || []).forEach(function(p){ posDocs[p.uid] = { lat:p.lat, lon:p.lon, name:p.name, uid:p.uid, lake:p.lake||'regnaren', updatedAt: ts(Date.now() - (p.ageMin||0)*60000) }; });
+        (t.waypoints || []).forEach(function(w, i){ wpDocs['t'+i] = { lat:w.lat, lon:w.lon, name:w.name, uid:w.uid, by:w.by||w.uid, lake:w.lake||'regnaren', type:w.type, createdAt: ts(Date.now() - 3600000) }; });
+        window.__cfgDoc = t.config ? JSON.parse(JSON.stringify(t.config)) : null;
+      }
+      return {};
+    },
     auth: function(){ return { signInAnonymously: function(){ return Promise.resolve(); }, onAuthStateChanged: function(cb){ cb({ uid:'anon' }); } }; },
     firestore: function(){ return { collection: function(n){ return n === 'positions' ? posCol : (n === 'usage' ? usageCol : (n === 'config' ? configCol : (n === 'tracks' ? tracksCol : (n === 'trackusers' ? trackUsersCol : wpCol)))); }, enablePersistence: function(){ return Promise.resolve(); } }; }
   };

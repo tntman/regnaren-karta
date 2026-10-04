@@ -65,10 +65,15 @@ All text i appen är på svenska. Svara Filip på svenska, kort och tydligt.
 | Heatmap (fångster: Fiskfiskarnas API, när det hämtas, Fångstdata) | `tools/NOTES_HEATMAP.md` |
 | Spår (sparas för evigt i Firestore `tracks`), Spår-menyn, stopp som ringar, Fog of war | `tools/NOTES_SPAR.md` |
 | Båtikoner (valbar ikon för din båt – idé, förslagsblad, ej byggt) | `tools/boaticons.md` |
+| Testläget (= Demo Mode: egen testdatabas, admin styr en låtsastävling) | `tools/NOTES_TESTLAGE.md` |
 
 Uppdatera rätt anteckning när något ändras.
 
 ## Viktiga saker i koden
+- **Testläge = Demo Mode** (`TEST_MODE`, `js/10-core.js`; NOTES_TESTLAGE.md): på/av = omladdning in i ett **eget
+  Firebase-projekt** (`FIREBASE_TEST_CONFIG`, `js/14-spots.js`), telefonens kopior med egna nycklar (`testKey()`),
+  ingen spårsynk, ingen Fiskfiskarna/FMI (låtsastävlingen i `config/<sjö>.test`, `js/37-testmode.js`). Ny data som
+  sparas i telefonen och speglar databasen → `testKey()`. Ny skrivning till Firestore behöver inget (projektet byts).
 - **iOS hemskärmsapp laddar om sidan vid rotation** (WebKit visar annars en gammal bild och trycken
   hamnar fel). Sidan minns om den laddades liggande/stående (`loadedLandscape`, `js/12-map.js`) och
   laddar om när skärmen lagt sig åt andra hållet – även efter en resize utan vridningshändelse (en
@@ -143,6 +148,7 @@ usage: read auth; write kräver day (string) och r/w/d (number).
 config/{lake}: read auth; write kräver posIntervalS i [10,20,30,60].
 catches/{lake}: används inte längre (fångsterna kommer från Fiskfiskarnas API) – regeln kan tas bort.
 tracks/{id}: read auth; write kräver lake/uid/day/pts (string), n (number), pts ≤ 900 000 tecken – spåren (NOTES_SPAR.md). **Regeln ska läggas till i konsolen** (Filip) innan spår sparas i databasen.
+Testprojektet (Demo Mode, NOTES_TESTLAGE.md) har samma regler.
 trackusers/{lake}: read/write auth – register över vilka som har spår på sjön (`{users:{<safeUid>:{u,n}}}`), fyller Spår-menyns rullgardin. Filip har lagt regeln i konsolen.
 
 ## Idéer som diskuterats men inte gjorts
