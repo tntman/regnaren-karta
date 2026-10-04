@@ -1,6 +1,5 @@
   /* ================= Ledare: the list under the weather chip (a .mapPill that only shows) ================= */
   #leadPill{flex-direction:column;align-items:stretch;gap:2px;padding:6px 12px 7px 10px;min-width:150px;max-width:210px;cursor:default;pointer-events:none;}
-  #leadPill .ldHead{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--amber);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px;}
   #leadPill .ldRow{display:flex;gap:7px;align-items:baseline;pointer-events:auto;cursor:pointer;}
   #leadPill .ldRow.me{color:var(--amber);}
   #leadPill .ldN{width:10px;opacity:.65;}

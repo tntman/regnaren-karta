@@ -32,7 +32,7 @@ with sync_playwright() as p:
     check('on: Calle leads with 115 (60 pike + 55 zander; the 40 cm pike is under the minimum), then Filip 78 (the perch was not approved)',
           s['shown'] and [(r['who'], r['total']) for r in s['list']] == [('Calle', 115), ('Filip', 78), ('Olle', 30)], s)
     t = pg.evaluate("document.getElementById('leadPill').textContent")
-    check('the list under the weather chip: title, the leader with a crown, you in amber', 'Regnaren 2' in t and 'Calle 👑' in t and pg.evaluate("document.querySelector('#leadPill .ldRow.me .ldW').textContent") == 'Filip', t)
+    check('the list under the weather chip: no title, the leader with a crown, you in amber', 'Regnaren 2' not in t and 'Ledare' not in t and 'Calle 👑' in t and pg.evaluate("document.querySelector('#leadPill .ldRow.me .ldW').textContent") == 'Filip', t)
     check('the crown after Calle on the map, not after Pia', pg.evaluate("Array.from(document.querySelectorAll('.boatName')).map(e => e.textContent)") == ['Calle 👑Olle', 'Pia'], pg.evaluate("Array.from(document.querySelectorAll('.boatName')).map(e => e.textContent)"))
     pg.evaluate("Array.from(document.querySelectorAll('#leadPill .ldRow')).filter(r => r.textContent.indexOf('Calle') > -1)[0].click()"); pg.wait_for_timeout(1000)
     bx = pg.evaluate("(() => { const r = document.querySelector('.boatPip').getBoundingClientRect(); return [r.x + r.width / 2, r.y + r.height / 2, innerWidth / 2, innerHeight / 2]; })()")

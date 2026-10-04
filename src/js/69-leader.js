@@ -31,11 +31,11 @@
     var show = leadOn && leadList.length > 0, me = catchPlain(userName);
     leadPill.hidden = !show;
     if (show){
-      var comp = catchLiveComp(), top = leadList.slice(0, 5), mine = leadList.map(function(r){ return catchPlain(r.who); }).indexOf(me);
+      var top = leadList.slice(0, 5), mine = leadList.map(function(r){ return catchPlain(r.who); }).indexOf(me);
       var row = function(i, r){
         return '<div class="ldRow' + (me && catchPlain(r.who) === me ? ' me' : '') + '"><span class="ldN">' + (i + 1) + '</span><span class="ldW" data-who="' + escHtml(r.who) + '">' + escHtml(r.who) + (i === 0 ? ' \u{1F451}' : '') + '</span><span class="ldT">' + r.total + ' cm</span></div>';
       };
-      leadPill.innerHTML = '<div class="ldHead">Ledare' + (comp && comp.name ? ' · ' + escHtml(comp.name) : '') + '</div>' + top.map(function(r, i){ return row(i, r); }).join('') +
+      leadPill.innerHTML = top.map(function(r, i){ return row(i, r); }).join('') +
         (mine >= 5 ? '<div class="ldGap">…</div>' + row(mine, leadList[mine]) : '');
     }
     if ((leadList.length ? leadList[0].who : '') !== was || !show) renderBoats();   // (the crown moves)
