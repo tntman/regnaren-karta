@@ -61,6 +61,13 @@
     return best;
   }
   function pfCatches(name){ return hmAll().filter(function(c){ return catchPlain(c.who) === catchPlain(name); }); }
+  // someone's catches in this lake, newest first (the boat box and the profile): "● Gädda 78 cm   26/9 13:00"
+  function pfCatchRows(name){
+    var l = pfCatches(name).sort(function(a, b){ return b.t - a.t; });
+    return l.slice(0, 8).map(function(c){
+      return '<div class="pfRow"><span><span class="hmSpDot" style="background:rgb(' + HM_COL[c.sp] + ')"></span>' + hmSpName(c.sp) + ' <small>' + hmWhen(c.t) + '</small></span><b>' + pfCm(c.cm) + '</b></div>';
+    }).join('') + (l.length > 8 ? '<div class="pfRow"><span><small>+ ' + (l.length - 8) + ' till</small></span></div>' : '');
+  }
   function openProfile(name){
     var p = profileOf(name); if (!p) return false;
     hmCloseCard(); closeMsgCard(); hideBoatInfo();
@@ -83,7 +90,8 @@
     document.getElementById('pfRes').innerHTML = p.res.length ? p.res.map(function(r){
       return '<div class="pfRow"><span>' + escHtml(r.c) + ' <small>' + pfDate(r.d) + '</small></span><b>' + (r.r ? pfOrd(r.r) : '–') + (r.t ? ' · ' + pfCm(r.t) : '') + '</b></div>';
     }).join('') : '<div class="pfRow"><span>Inga ännu</span></div>';
-    var boat = pfBoat(p.n), n = pfCatches(p.n).length;
+    var boat = pfBoat(p.n), n = pfCatches(p.n).length, pl = document.getElementById('pfList');
+    pl.innerHTML = n ? '<div class="pfH">Fångster</div>' + pfCatchRows(p.n) : '';
     document.getElementById('pfBoat').textContent = boat && !boat.me ? 'Båten på kartan · uppdaterad ' + timeAgo(boat.updatedAt) : '';
     document.getElementById('pfMap').hidden = !boat;
     var cb = document.getElementById('pfCatches'); cb.hidden = !n; cb.textContent = 'Fångster i ' + LAKE.name + ' (' + n + ')';

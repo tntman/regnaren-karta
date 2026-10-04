@@ -1046,6 +1046,7 @@
   #boatInfoModal.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1);}
   #boatInfoModal .modalDesc{margin-bottom:0;}
   .boatInfoNamesList{display:flex;flex-direction:column;gap:6px;margin:2px 0 14px;}
+  #boatInfoCatches{max-height:34vh;overflow-y:auto;margin-bottom:12px;}
   .boatInfoNameRow{
     background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);
     border-radius:9px;padding:9px 12px;font-size:13.5px;font-weight:600;color:var(--offwhite);
@@ -2399,6 +2400,7 @@
     <div class="wpData" id="pfData"></div>
     <div class="pfH">Största fisk</div><div id="pfTop"></div>
     <div class="pfH">Senaste tävlingar</div><div id="pfRes"></div>
+    <div id="pfList"></div>
     <div id="pfBoat"></div>
     <div class="msgCardBtns"><button type="button" id="pfMap" class="a">Visa på kartan</button><button type="button" id="pfCatches">Fångster</button></div>
   </div>
@@ -2904,6 +2906,7 @@
   <div id="boatInfoModal">
     <div class="modalTitle" id="boatInfoName">—</div>
     <div class="boatInfoNamesList" id="boatInfoNamesList"></div>
+    <div id="boatInfoCatches"></div>
     <div class="modalDesc" id="boatInfoMeta">—</div>
     <div class="sheetRow">
       <button id="boatInfoClose" class="btnPrimary" type="button">Stäng</button>
@@ -4321,12 +4324,11 @@
   var boatInfoModal = document.getElementById('boatInfoModal');
   var boatInfoNameEl = document.getElementById('boatInfoName');
   var boatInfoNamesListEl = document.getElementById('boatInfoNamesList');
+  var boatInfoCatchesEl = document.getElementById('boatInfoCatches');
   var boatInfoMetaEl = document.getElementById('boatInfoMeta');
   var boatInfoCloseBtn = document.getElementById('boatInfoClose');
   function showBoatInfo(cluster){
     var names = cluster.names || [cluster.name || 'Okänd'];
-    var withCatch = names.filter(function(n){ return pfCatches(n).length; });
-    if (withCatch.length){ hideBoatInfo(); hmSet.who = withCatch.join('|'); hmSet.style = 'dots'; hmSave(); hmHeatCache = null; hmSetOn(true, true); return; }   // their catches on the heat map (67-profiles.js, 68-heatmap.js)
     if (names.length === 1 && openProfile(names[0])) return;   // one person with a profile: their profile (67-profiles.js)
     boatInfoNamesListEl.innerHTML = '';
     if (names.length === 1){
@@ -4343,6 +4345,7 @@
       });
       boatInfoNamesListEl.style.display = 'flex';
     }
+    boatInfoCatchesEl.innerHTML = names.map(function(n){ var r = pfCatchRows(n); return r ? '<div class="pfH">' + (names.length > 1 ? escHtml(n) + ' · ' : '') + 'Fångster</div>' + r : ''; }).join('');   // (67-profiles.js)
     boatInfoMetaEl.textContent = 'Uppdaterad ' + timeAgo(cluster.updatedAt);
     boatInfoBackdrop.classList.add('show');
     boatInfoModal.classList.add('show');
@@ -10216,6 +10219,13 @@
     return best;
   }
   function pfCatches(name){ return hmAll().filter(function(c){ return catchPlain(c.who) === catchPlain(name); }); }
+  // someone's catches in this lake, newest first (the boat box and the profile): "● Gädda 78 cm   26/9 13:00"
+  function pfCatchRows(name){
+    var l = pfCatches(name).sort(function(a, b){ return b.t - a.t; });
+    return l.slice(0, 8).map(function(c){
+      return '<div class="pfRow"><span><span class="hmSpDot" style="background:rgb(' + HM_COL[c.sp] + ')"></span>' + hmSpName(c.sp) + ' <small>' + hmWhen(c.t) + '</small></span><b>' + pfCm(c.cm) + '</b></div>';
+    }).join('') + (l.length > 8 ? '<div class="pfRow"><span><small>+ ' + (l.length - 8) + ' till</small></span></div>' : '');
+  }
   function openProfile(name){
     var p = profileOf(name); if (!p) return false;
     hmCloseCard(); closeMsgCard(); hideBoatInfo();
@@ -10238,7 +10248,8 @@
     document.getElementById('pfRes').innerHTML = p.res.length ? p.res.map(function(r){
       return '<div class="pfRow"><span>' + escHtml(r.c) + ' <small>' + pfDate(r.d) + '</small></span><b>' + (r.r ? pfOrd(r.r) : '–') + (r.t ? ' · ' + pfCm(r.t) : '') + '</b></div>';
     }).join('') : '<div class="pfRow"><span>Inga ännu</span></div>';
-    var boat = pfBoat(p.n), n = pfCatches(p.n).length;
+    var boat = pfBoat(p.n), n = pfCatches(p.n).length, pl = document.getElementById('pfList');
+    pl.innerHTML = n ? '<div class="pfH">Fångster</div>' + pfCatchRows(p.n) : '';
     document.getElementById('pfBoat').textContent = boat && !boat.me ? 'Båten på kartan · uppdaterad ' + timeAgo(boat.updatedAt) : '';
     document.getElementById('pfMap').hidden = !boat;
     var cb = document.getElementById('pfCatches'); cb.hidden = !n; cb.textContent = 'Fångster i ' + LAKE.name + ' (' + n + ')';

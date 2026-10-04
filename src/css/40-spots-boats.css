@@ -309,6 +309,7 @@
   #boatInfoModal.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1);}
   #boatInfoModal .modalDesc{margin-bottom:0;}
   .boatInfoNamesList{display:flex;flex-direction:column;gap:6px;margin:2px 0 14px;}
+  #boatInfoCatches{max-height:34vh;overflow-y:auto;margin-bottom:12px;}
   .boatInfoNameRow{
     background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);
     border-radius:9px;padding:9px 12px;font-size:13.5px;font-weight:600;color:var(--offwhite);

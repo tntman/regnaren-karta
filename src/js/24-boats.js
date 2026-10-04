@@ -96,12 +96,11 @@
   var boatInfoModal = document.getElementById('boatInfoModal');
   var boatInfoNameEl = document.getElementById('boatInfoName');
   var boatInfoNamesListEl = document.getElementById('boatInfoNamesList');
+  var boatInfoCatchesEl = document.getElementById('boatInfoCatches');
   var boatInfoMetaEl = document.getElementById('boatInfoMeta');
   var boatInfoCloseBtn = document.getElementById('boatInfoClose');
   function showBoatInfo(cluster){
     var names = cluster.names || [cluster.name || 'Okänd'];
-    var withCatch = names.filter(function(n){ return pfCatches(n).length; });
-    if (withCatch.length){ hideBoatInfo(); hmSet.who = withCatch.join('|'); hmSet.style = 'dots'; hmSave(); hmHeatCache = null; hmSetOn(true, true); return; }   // their catches on the heat map (67-profiles.js, 68-heatmap.js)
     if (names.length === 1 && openProfile(names[0])) return;   // one person with a profile: their profile (67-profiles.js)
     boatInfoNamesListEl.innerHTML = '';
     if (names.length === 1){
@@ -118,6 +117,7 @@
       });
       boatInfoNamesListEl.style.display = 'flex';
     }
+    boatInfoCatchesEl.innerHTML = names.map(function(n){ var r = pfCatchRows(n); return r ? '<div class="pfH">' + (names.length > 1 ? escHtml(n) + ' · ' : '') + 'Fångster</div>' + r : ''; }).join('');   // (67-profiles.js)
     boatInfoMetaEl.textContent = 'Uppdaterad ' + timeAgo(cluster.updatedAt);
     boatInfoBackdrop.classList.add('show');
     boatInfoModal.classList.add('show');
