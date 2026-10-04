@@ -17,7 +17,10 @@ live = [dict(fakefb.api_row(ms_ago(30), 'regnaren2', 'Filip', 'gadda', 78, B3[0]
         dict(fakefb.api_row(ms_ago(15), 'regnaren2', 'Calle', 'gos', 55, B1[0], B1[1]), approved=True),
         dict(fakefb.api_row(ms_ago(12), 'regnaren2', 'Calle', 'gadda', 40, B1[0], B1[1]), approved=True),       # under 50 cm: not counted
         dict(fakefb.api_row(ms_ago(10), 'regnaren2', 'Calle', 'gadda', 60, B1[0], B1[1]), approved=True),
-        dict(fakefb.api_row(ms_ago(8), 'regnaren2', 'Olle', 'abborre', 30, B1[0], B1[1]), approved=True)]
+        dict(fakefb.api_row(ms_ago(8), 'regnaren2', 'Olle', 'abborre', 30, B1[0], B1[1]), approved=True),
+        # the same competition in another water (Östra Vitten, inside Regnaren's map) and one without GPS: count in Ledare, not on the heat map
+        dict(fakefb.api_row(ms_ago(6), 'regnaren2', 'Olle', 'gadda', 55, 58.991037, 15.714671, lake='Östra Vitten'), approved=True),
+        dict(fakefb.api_row(ms_ago(5), 'regnaren2', 'Olle', 'abborre', 26, None, None), approved=True)]
 comps = [{'competition_id': 'reg2', 'competition_name': 'Regnaren 2', 'date': TODAY, 'status': 'active', 'water': 'Regnaren'}]
 with sync_playwright() as p:
     b, ctx, pg, errs = new_page(p, geo=B3, cfg={'api': {'heatmap': [], 'competitions': comps, 'live': {'reg2': live}},
@@ -29,8 +32,10 @@ with sync_playwright() as p:
     check('off by default: no list, no crown', not s['on'] and not s['shown'] and not pg.is_visible('#leadPill') and '👑' not in pg.inner_text('#boatsLayer'), s)
     pg.evaluate("document.getElementById('toggleLeader').click()"); pg.wait_for_timeout(500)
     s = pg.evaluate('window.__ffLeader()')
-    check('on: Calle leads with 115 (60 pike + 55 zander; the 40 cm pike is under the minimum), then Filip 78 (the perch was not approved)',
-          s['shown'] and [(r['who'], r['total']) for r in s['list']] == [('Calle', 115), ('Filip', 78), ('Olle', 30)], s)
+    check('on: Calle leads with 115 (60 pike + 55 zander; the 40 cm pike is under the minimum), then Olle 111 (other water + no GPS count), then Filip 78 (the perch was not approved)',
+          s['shown'] and [(r['who'], r['total']) for r in s['list']] == [('Calle', 115), ('Olle', 111), ('Filip', 78)], s)
+    cs = pg.evaluate('window.__ffCatches()')
+    check('the heat map data: only the catches in this lake (not Östra Vitten, not the one without GPS)', len(cs) == 6 and not any(c['cm'] in (55, 26) and c['who'] == 'Olle' for c in cs), cs)
     t = pg.evaluate("document.getElementById('leadPill').textContent")
     check('the list under the weather chip: no title, the leader with a crown, you in amber', 'Regnaren 2' not in t and 'Ledare' not in t and 'Calle 👑' in t and pg.evaluate("document.querySelector('#leadPill .ldRow.me .ldW').textContent") == 'Filip', t)
     check('the crown after Calle on the map, not after Pia', pg.evaluate("Array.from(document.querySelectorAll('.boatName')).map(e => e.textContent)") == ['Calle 👑Olle', 'Pia'], pg.evaluate("Array.from(document.querySelectorAll('.boatName')).map(e => e.textContent)"))

@@ -35,7 +35,7 @@
   msgOwn.addEventListener('click', function(e){ e.stopPropagation(); });
   document.addEventListener('pointerdown', function(e){ if (msgOwn.classList.contains('show') && !msgOwn.contains(e.target)) openMsgOwn(false); });
   function msgMyCatch(){   // your latest counted catch in the competition going on (live), or null
-    var me = catchPlain(userName), L = (catchLive && catchLiveComp() ? catchLive.list : []).filter(function(c){ return !c.no && me && catchPlain(c.who) === me; });
+    var me = catchPlain(userName), L = (catchLive && catchLiveComp() ? catchLive.all : []).filter(function(c){ return !c.no && me && catchPlain(c.who) === me; });
     return L.length ? L.reduce(function(a, b){ return b.t > a.t ? b : a; }) : null;
   }
   function msgFishText(c){ return Array.from(hmSpName(c.sp) + ' ' + String(c.cm).replace('.', ',') + ' 🐟').slice(0, MSG_OWN_MAX).join(''); }

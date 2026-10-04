@@ -11,7 +11,7 @@
   var leadList = [];   // [{ who, total, n }] best first
   function leadCompute(){
     var by = {};
-    (catchLive && catchLiveComp() ? catchLive.list : []).forEach(function(c){
+    (catchLive && catchLiveComp() ? catchLive.all : []).forEach(function(c){   // (the whole competition, other waters too)
       if (c.no || c.cm < LEAD_MIN[c.sp]) return;
       var k = catchPlain(c.who); if (!k) return;
       var p = by[k] || (by[k] = { who: c.who, sp: { abborre: [], gadda: [], gos: [] } });

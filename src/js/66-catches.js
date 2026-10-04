@@ -24,11 +24,13 @@
   function catchPlain(s){ return String(s || '').toLowerCase().replace(/[åä]/g, 'a').replace(/ö/g, 'o').replace(/[^a-z0-9]/g, ''); }
   function catchSpecies(s){ var p = catchPlain(s); return p.indexOf('abbor') === 0 ? 'abborre' : p.indexOf('gad') === 0 ? 'gadda' : p.indexOf('gos') === 0 ? 'gos' : null; }
   // one catch from a record with (more or less) these names -- the CSV's columns, or a future database's
-  function normCatch(o){
+  // (anyPlace: a catch without a usable position is kept too, lat/lon null -- the competition's own list)
+  function normCatch(o, anyPlace){
     var g = function(){ for (var i = 0; i < arguments.length; i++){ var v = o[arguments[i]]; if (v !== undefined && v !== null && String(v).trim() !== '') return v; } return null; };
     var t = g('t', 'timestamp', 'time', 'tid'), sp = catchSpecies(g('sp', 'species', 'art')), lat = catchNum(g('lat', 'latitude')), lon = catchNum(g('lon', 'lng', 'longitude'));
     t = typeof t === 'number' ? t : Date.parse(String(t || ''));
-    if (!isFinite(t) || !sp || lat == null || lon == null || Math.abs(lat) > 90 || Math.abs(lon) > 180) return null;
+    if (lat == null || lon == null || Math.abs(lat) > 90 || Math.abs(lon) > 180){ if (anyPlace !== true) return null; lat = lon = null; }   // (=== true: .map(normCatch) passes the index)
+    if (!isFinite(t) || !sp) return null;
     var who = String(g('who', 'name', 'namn') || '').trim(), cm = catchNum(g('cm', 'length', 'langd')) || 0, comp = String(g('comp', 'competitionId', 'competition', 'tavling') || '').trim();
     var c = { id: t + '|' + who + '|' + sp + '|' + cm, t: t, comp: comp, who: who, sp: sp, cm: cm, lat: lat, lon: lon, lake: String(g('lake', 'sjo') || '').trim() };
     if (o.approved === false) c.no = 1;   // (live: not counted, e.g. a perch under 25 cm)
@@ -146,7 +148,7 @@
     var last = catchLive && catchLive.comp === c.id ? catchLive.at : 0, rate = catchLiveFast() ? CATCH_LIVE_FAST : CATCH_LIVE_SLOW;
     var wait = opening && Date.now() - last > 60e3 ? 0 : last + rate - Date.now();
     if (wait > 0){ catchLiveTimer = setTimeout(catchLiveTick, wait); return; }
-    if (!catchLive || catchLive.comp !== c.id) catchLive = { comp: c.id, name: c.name, at: 0, list: [] };
+    if (!catchLive || catchLive.comp !== c.id) catchLive = { comp: c.id, name: c.name, at: 0, list: [], all: [] };
     var L = catchLive; L.loading = true;
     catchGet('tavling.php?action=bootstrap&competitionId=' + encodeURIComponent(c.id), 'l', function(err, d){
       L.loading = false; L.at = Date.now();
@@ -155,8 +157,10 @@
       else {   // (an annulled catch = the catch + a "VOID" row pointing at it: both go)
         var voided = {}; d.catches.forEach(function(x){ if (x.voidRef) voided[x.voidRef] = 1; });
         L.err = null;
-        L.list = d.catches.filter(function(x){ return x.displayValue !== 'VOID' && !voided[x.timestamp]; })
-          .map(normCatch).filter(function(x){ return x && catchLakeOf(x) === LAKE_ID; });
+        // all: the whole competition, whichever water (Ledare, Senaste fisk); list: only those caught in this lake (the heat map)
+        L.all = d.catches.filter(function(x){ return x.displayValue !== 'VOID' && !voided[x.timestamp]; })
+          .map(function(x){ return normCatch(x, true); }).filter(Boolean);
+        L.list = L.all.filter(function(x){ return x.lat != null && catchLakeOf(x) === LAKE_ID; });
       }
       if (catchLive === L) catchMerge();
       catchLiveTick();
