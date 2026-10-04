@@ -77,7 +77,7 @@
   /* iPhone home-screen app, upright: the fade starts in the status bar's own blue (theme-color
      #06141C -- no edge between them) and fades out over the map */
   @media (orientation:portrait){
-    html.iosApp header{background:linear-gradient(to bottom, rgb(6,20,28) 0%, rgba(6,20,28,.6) 22%, rgba(6,20,28,.3) 60%, rgba(6,20,28,0) 100%);}
+    html.iosApp header::before{background:linear-gradient(to bottom, rgb(6,20,28) 0%, rgba(6,20,28,.6) 22%, rgba(6,20,28,.3) 60%, rgba(6,20,28,0) 100%);}
   }
   #mapLoading{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:1;color:var(--text-muted);font-size:13px;pointer-events:none;display:none;}
   #mapLoading.show{display:block;}
@@ -85,9 +85,11 @@
   header{
     position:absolute;top:0;left:0;right:0;z-index:20;
     padding:calc(env(safe-area-inset-top,0px) + 24px) 18px 24px 64px;
-    background:linear-gradient(to bottom, rgba(6,20,28,.85) 0%, rgba(6,20,28,.4) 65%, rgba(6,20,28,0) 100%);
     pointer-events:none;
   }
+  /* the fade is a fixed height at the top -- it doesn't follow the pills (Ledare, Heatmap...) hanging under the weather chip */
+  header::before{content:'';position:absolute;left:0;right:0;top:0;height:calc(env(safe-area-inset-top,0px) + 100px);z-index:-1;
+    background:linear-gradient(to bottom, rgba(6,20,28,.85) 0%, rgba(6,20,28,.4) 65%, rgba(6,20,28,0) 100%);}
   #bottomFade{
     position:absolute;left:0;right:0;bottom:0;z-index:19;
     height:calc(env(safe-area-inset-bottom,0px) + 130px);
