@@ -41,5 +41,4 @@
     background:conic-gradient(from var(--rba, 0deg),var(--sp),var(--spl),var(--sp) 30%,rgba(0,0,0,.25) 50%,var(--sp) 70%,var(--spl),var(--sp));
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);
     animation:rbSpin 2.2s linear infinite;}
-  .msgRb.sp{--spl:color-mix(in srgb,var(--sp) 55%,#fff);background:conic-gradient(from var(--rba, 0deg),var(--sp),var(--spl),var(--sp) 30%,rgba(0,0,0,.35) 50%,var(--sp) 70%,var(--spl),var(--sp));}
   @media (prefers-reduced-motion:reduce){ #msgPop .msgFish::before{animation:none;} }

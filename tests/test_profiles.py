@@ -108,12 +108,12 @@ with sync_playwright() as p:
     pg.click('#msgFishBtn'); pg.wait_for_timeout(500)
     w = [x for x in pg.evaluate('window.__posWrites') if x.get('msg')]
     check('sent by hand: "Gädda 78 cm", the species and the photo (600 px wide) with it', w and w[-1]['msg'] == 'Gädda 78 cm' and w[-1]['msgSp'] == 'gadda' and w[-1]['msgImg'] == PHOTO.replace('w_2000', 'w_600'), w[-1:] if w else w)
-    check('...your bubble: the edge in the species\' colour, not the rainbow', pg.evaluate("(() => { var r = document.querySelector('.msgBub.mine .msgRb'); return !!r && r.classList.contains('sp') && r.style.getPropertyValue('--sp') === '#35D24A'; })()"))
+    check('...your bubble: the species colour sweeping through the text, as for everyone', pg.evaluate("(() => { var t = document.querySelector('.msgBub.mine .mT.sp'); return !!t && t.style.getPropertyValue('--sp') === '#35D24A'; })()"))
     pg.click('#msgBtn'); pg.wait_for_timeout(300)
     check('the same fish can be sent again (no lock)', pg.is_visible('#msgFishBtn'))
     pg.click('#msgBtn'); pg.wait_for_timeout(200)
     # Calle's catch message: green? no -- the zander's blue; his photo in the panel; his name -> his profile
-    check("Calle's catch bubble: the zander's blue edge", pg.evaluate("(() => { var l = Array.from(document.querySelectorAll('.mLine')).filter(x => x.textContent.indexOf('Gös 55') >= 0)[0]; var r = l && l.closest('.msgBub').querySelector('.msgRb'); return !!r && r.style.getPropertyValue('--sp') === '#3A86FF'; })()"))
+    check("Calle's catch bubble: the zander's blue in the text", pg.evaluate("(() => { var l = Array.from(document.querySelectorAll('.mLine')).filter(x => x.textContent.indexOf('Gös 55') >= 0)[0]; var t = l && l.querySelector('.mT.sp'); return !!t && t.style.getPropertyValue('--sp') === '#3A86FF'; })()"))
     pg.evaluate("Array.from(document.querySelectorAll('.mLine')).filter(x => x.textContent.indexOf('Gös 55') >= 0)[0].click()"); pg.wait_for_timeout(400)
     check('...his panel shows the photo (only loaded now)', pg.is_visible('#msgCard') and pg.get_attribute('#msgCardImg', 'src') == PHOTO and not pg.eval_on_selector('#msgCardImg', 'e => e.hidden'))
     pg.click('#msgCardWho'); pg.wait_for_timeout(400)

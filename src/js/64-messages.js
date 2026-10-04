@@ -1,11 +1,10 @@
   /* ================= Snabbmeddelanden (quick messages) =================
      A small button at the bottom: tap -> the choices; tap one -> it shows as a bubble at
-     your boat for everyone for 15 min (sent with your position, positions/<you>.msg).
+     your boat for everyone for 7 min (sent with your position, positions/<you>.msg).
      Tap your own bubble to take it back; tap someone else's to hide it for you. */
   var MSG_TEXTS = ['Fisk!!! 🎣', 'Kommer 🚤', 'Åker in 🏠', 'Mat? 🍔', 'Bajs 💩'];
   var MSG_OWN_MAX = 15;                // "Egen text": at most 15 characters (an emoji = 1)
-  var MSG_NEW_MS = 5 * 60000;          // the first 5 min: a thin rainbow edge running round the bubble
-  var MSG_MS = 15 * 60000;
+  var MSG_MS = 7 * 60000;
   // your latest catch as a message ("Gädda 78 cm"): first in the choices while a competition is on; the edge spins in the species' colour
   var MSG_SP_COL = { gadda: '#35D24A', abborre: '#FF7A1A', gos: '#3A86FF' };
   function msgImgOk(u){ return typeof u === 'string' && (/^https:\/\/res\.cloudinary\.com\//.test(u) || (TEST_MODE && u === TEST_IMG)) ? u : null; }   // (only the catch photos, never any address someone writes; the test mode: its picture)
@@ -74,7 +73,7 @@
     ownMsg = { text: text, at: Date.now(), sp: fish && fish.sp, img: fish && fish.img };
     writeMsg(text, ownMsg.at, fish);
     renderMessages();
-    showMsgToast('Syns i 15 minuter, tryck på meddelandet för att ta bort.');
+    showMsgToast('Syns i 7 minuter, tryck på meddelandet för att ta bort.');
     centerOnFix();
   }
   var msgToastT = null;
@@ -83,17 +82,10 @@
     el.textContent = t; el.classList.add('show');
     clearTimeout(msgToastT); msgToastT = setTimeout(function(){ el.classList.remove('show'); }, 2600);
   }
-  // the rainbow edge follows the bubble's outline, its little tail included: an SVG outline of the
-  // shape is the mask of a spinning rainbow (conic gradient)
-  function msgRainbow(el){
-    var w = el.offsetWidth, h = el.offsetHeight, r = 14, P = 3, rb = el.querySelector('.msgRb'); if (!rb || !w) return;
-    var d = 'M' + (P + r) + ' ' + P + 'H' + (P + w - r) + 'A' + r + ' ' + r + ' 0 0 1 ' + (P + w) + ' ' + (P + r) + 'V' + (P + h - r) +
-      'A' + r + ' ' + r + ' 0 0 1 ' + (P + w - r) + ' ' + (P + h) + 'H' + (P + 26) + 'L' + (P + 19) + ' ' + (P + h + 7) + 'L' + (P + 12) + ' ' + (P + h) +
-      'H' + (P + r) + 'A' + r + ' ' + r + ' 0 0 1 ' + P + ' ' + (P + h - r) + 'V' + (P + r) + 'A' + r + ' ' + r + ' 0 0 1 ' + (P + r) + ' ' + P + 'Z';
-    var svg = 'url("data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="' + (w + 2 * P) + '" height="' + (h + 7 + 2 * P) + '"><path d="' + d + '" fill="none" stroke="#000" stroke-width="3.2" stroke-linejoin="round"/></svg>') + '")';
-    rb.style.width = (w + 2 * P) + 'px'; rb.style.height = (h + 7 + 2 * P) + 'px';
-    rb.style.webkitMaskImage = svg; rb.style.maskImage = svg;
-  }
+  // the text of a line: a catch = its species' colour sweeping through it, "Egen text" = the rainbow, the ready-made ones plain black
+  function msgKind(it){ return it.sp ? ' sp" style="--sp:' + MSG_SP_COL[it.sp] : MSG_TEXTS.indexOf(it.text) < 0 ? ' rbText' : ''; }
+  // "Calle…": the name that slides in after the text (cut to 9 characters)
+  function msgWho(it){ var c = Array.from(it.mine ? 'Du' : (it.who || '')); return (c.length > 9 ? c.slice(0, 9).join('').replace(/\s+$/, '') : c.join('')) + '…'; }
   var msgItems = {};
   function renderMessages(){
     if (!msgLayerEl) return;
@@ -112,22 +104,17 @@
       if (g) g.items.push(it); else groups.push({ lat: it.lat, lon: it.lon, items: [it] });
     });
     var keep = {};
-    function fade(it){ return 1 - 0.55 * Math.min(1, (now - it.at) / MSG_MS); }       // fades over the 15 min
+    function fade(it){ return 1 - 0.55 * Math.min(1, (now - it.at) / MSG_MS); }       // fades over the 7 min
     groups.forEach(function(g){
       var gk = g.items.map(function(it){ return it.key.replace(/"/g, ''); }).join('|');
       keep[gk] = 1;
       var el = null; Array.prototype.forEach.call(msgLayerEl.children, function(c){ if (c.getAttribute('data-k') === gk) el = c; });
       if (!el){ el = document.createElement('div'); el.setAttribute('data-k', gk); msgLayerEl.appendChild(el); }
       el.className = 'msgBub' + (g.items.length === 1 && g.items[0].mine ? ' mine' : '') + (g.items.length > 1 ? ' multi' : '');
-      var isNew = g.items.some(function(it){ return now - it.at < MSG_NEW_MS; }), sp = isNew && g.items[0].sp;   // (a catch, newest: its species' colour instead of the rainbow)
-      var html = g.items.map(function(it){
-        return '<div class="mLine' + (it.mine ? ' mine' : '') + '" data-k="' + escHtml(it.key.replace(/"/g, '')) + '">' + escHtml(it.text) + '<small>' + escHtml(it.who || '') + '</small></div>';
+      var html = g.items.map(function(it){   // text and name share a cell: every 10 s the text slides out to the right, the name in from the left, and back (css 75-messages.css)
+        return '<div class="mLine' + (it.mine ? ' mine' : '') + '" data-k="' + escHtml(it.key.replace(/"/g, '')) + '"><div class="mWin" style="--d:-' + (it.at % 10000) + 'ms"><span class="mT' + msgKind(it) + '">' + escHtml(it.text) + '</span><span class="mN">' + escHtml(msgWho(it)) + '</span></div></div>';
       }).join('');
-      if (el.getAttribute('data-h') !== html + isNew + sp){
-        el.setAttribute('data-h', html + isNew + sp);
-        el.innerHTML = html + (isNew ? '<i class="msgRb' + (sp ? ' sp" style="--sp:' + MSG_SP_COL[sp] : '') + '"></i>' : '');
-        if (isNew) msgRainbow(el);
-      }
+      if (el.getAttribute('data-h') !== html){ el.setAttribute('data-h', html); el.innerHTML = html; }
       var top = fade(g.items[0]);
       el.style.opacity = top.toFixed(2);
       Array.prototype.forEach.call(el.querySelectorAll('.mLine'), function(ln, k){ ln.style.opacity = (fade(g.items[k]) / top).toFixed(2); });

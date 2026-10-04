@@ -1,5 +1,5 @@
   /* ================= Snabbmeddelanden (quick messages) ================= */
-  /* ---- quick messages: a small button at the bottom, bubbles at the boats (15 min) ---- */
+  /* ---- quick messages: a small button at the bottom, bubbles at the boats (7 min) ---- */
   #msgBtn{position:absolute;left:50%;transform:translateX(-50%);z-index:22;      /* (its height: 90-buttons.css) */
     width:42px;height:42px;border-radius:50%;background:var(--navy-glass);backdrop-filter:blur(6px);color:var(--offwhite);
     border:1px solid rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.35);padding:0;-webkit-tap-highlight-color:transparent;}
@@ -14,19 +14,15 @@
     background:rgba(11,42,58,.95);border:1px solid rgba(232,163,61,.6);color:#fff;border-radius:14px;padding:8px 14px;font-size:13.5px;opacity:0;pointer-events:none;transition:opacity .2s;text-align:center;}
   #msgToast.show{opacity:1;}
   #msgLayer{position:absolute;inset:0;z-index:17;pointer-events:none;}
-  .msgBub{position:absolute;left:0;top:0;pointer-events:auto;cursor:pointer;background:#fff;color:#0B2A3A;border-radius:14px;padding:4px 10px;
-    font-weight:700;font-size:13.5px;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,.5);transform:translate(-14px,calc(-100% - 20px));-webkit-tap-highlight-color:transparent;}
-  .msgBub::after{content:'';position:absolute;left:12px;bottom:-7px;border:7px solid transparent;border-top-color:#fff;border-bottom:0;}
-  .msgBub small{font-weight:400;color:#557;margin-left:4px;}
+  .msgBub{position:absolute;left:0;top:0;pointer-events:auto;cursor:pointer;background:#fff;color:#0B2A3A;border:1px solid rgba(11,42,58,.3);border-radius:11px;padding:1px 7px;
+    font-weight:700;font-size:12px;white-space:nowrap;box-shadow:0 2px 7px rgba(0,0,0,.45);transform:translate(-11px,calc(-100% - 17px));-webkit-tap-highlight-color:transparent;}
+  .msgBub::after{content:'';position:absolute;left:9px;bottom:-5px;border:5px solid transparent;border-top-color:#fff;border-bottom:0;}
   .msgBub.mine{background:#FFE7B8;} .msgBub.mine::after{border-top-color:#FFE7B8;}
   @media (orientation:landscape) and (max-height:520px){
     #msgBtn{width:38px;height:38px;}
   }
-  /* ---- quick messages: fading, the rainbow edge while new, the panel when tapped ---- */
+  /* ---- quick messages: fading, text and name taking turns, the panel when tapped ---- */
   .msgBub{transition:opacity 1s;}
-  .msgRb{position:absolute;left:-3px;top:-3px;pointer-events:none;
-    background:conic-gradient(from var(--rba, 0deg),#ff004c,#ff9f00,#ffee00,#27e23f,#00c8ff,#6a5cff,#ff00c8,#ff004c);
-    -webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;animation:rbSpin 2.2s linear infinite;}
   @property --rba{syntax:'<angle>';initial-value:0deg;inherits:false;}
   @keyframes rbSpin{to{--rba:360deg;}}
   #msgCard{position:absolute;left:0;right:0;bottom:0;z-index:27;background:var(--navy);border-top:1px solid rgba(255,255,255,.14);border-radius:18px 18px 0 0;
@@ -59,6 +55,22 @@
   #msgOwnN{font-size:11px;color:var(--text-muted);min-width:32px;text-align:right;font-variant-numeric:tabular-nums;}
   #msgOwnN.full{color:#ff8a80;}
   #msgOwnGo{width:34px;height:34px;border-radius:50%;border:none;background:var(--amber);color:var(--navy);font-size:15px;font-weight:900;cursor:pointer;flex:0 0 auto;}
-  .msgBub .mLine{white-space:nowrap;line-height:1.45;}
-  .msgBub.multi{padding:5px 11px;}
-  .msgBub:not(.mine) .mLine.mine{background:#FFE7B8;border-radius:7px;margin:0 -6px;padding:0 6px;}
+  .msgBub .mLine{white-space:nowrap;line-height:1.4;}
+  .msgBub.multi{padding:2px 8px;}
+  .msgBub:not(.mine) .mLine.mine{background:#FFE7B8;border-radius:6px;margin:0 -5px;padding:0 5px;}
+  /* the text and the name ("Calle…") share a cell: every 10 s (a full turn) the text slides out to the right and the name
+     comes in from the left (~2.4 s), then back. The text stays longest. Catch = the species' colour sweeping through it,
+     "Egen text" = the rainbow, the ready-made ones black. */
+  .mWin{display:grid;overflow:hidden;}
+  .mWin>span{grid-area:1/1;display:block;width:100%;animation-duration:10s;animation-timing-function:ease-in-out;animation-iteration-count:infinite;animation-delay:var(--d,0s);}
+  .mT{animation-name:mTx;}
+  .mN{animation-name:mNx;font-weight:400;color:#557;}
+  @keyframes mTx{0%,62%{transform:none;}68%,92%{transform:translateX(105%);}92.01%{transform:translateX(-105%);}98%,100%{transform:none;}}
+  @keyframes mNx{0%,62%{transform:translateX(-105%);}68%,92%{transform:none;}98%{transform:translateX(105%);}98.01%,100%{transform:translateX(-105%);}}
+  .mT.sp{--spl:color-mix(in srgb,var(--sp) 55%,#fff);-webkit-text-fill-color:transparent;color:transparent;-webkit-background-clip:text;background-clip:text;background-size:250% 100%;
+    background-image:linear-gradient(100deg,var(--sp) 0%,var(--spl) 50%,var(--sp) 100%);}
+  .mT.sp{animation-name:mTx,mSweep;animation-duration:10s,2.6s;animation-timing-function:ease-in-out,linear;animation-delay:var(--d,0s),0s;}
+  .mT.rbText{animation-name:mTx,rbSlide;animation-duration:10s,6s;animation-timing-function:ease-in-out,linear;animation-delay:var(--d,0s),0s;}
+  .mT.rbText{background-image:linear-gradient(90deg,#e8344a,#f08a00,#c9a800,#1fb83a,#0fa0d8,#6a5cff,#d41fa8,#e8344a);}   /* (stronger than in the menu: on white) */
+  @keyframes mSweep{from{background-position:0 0;}to{background-position:-250% 0;}}
+  @media (prefers-reduced-motion:reduce){ .mWin>span{animation:none;} .mN{display:none;} }

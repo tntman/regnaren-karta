@@ -71,3 +71,5 @@ i avsnitt, Ångra, åskvarningen alltid + "dragit förbi", solnedgången, Täckn
 - [ ] 2026-10-04 – Ledare (Filter → Lager, av som standard): under en pågående tävling en lista under väderchipet med de som leder (poäng = de 5 längsta av varje art ihop) och en 👑 efter ledarens namn på kartan. Avsnitt: Filter (Lager), Kartan/Båtarna. Nyhet: "Se vem som leder tävlingen live – slå på Ledare i Filter".
 
 - Ledare/båtar: tryck på namn i listan = centrera; båtrutan/profilen listar personens fångster.
+
+- Snabbmeddelanden: 7 min (inte 15), mindre bubblor med tunn ram, namnet "Calle…" turas om med texten, fisk i artens färg, Egen text regnbåge. (Hjälp-texten rad ~237 säger 15 min + regnbågskant – skriv om.)

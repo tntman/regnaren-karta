@@ -105,15 +105,15 @@ with sync_playwright() as p:
     w = [x for x in pg.evaluate('window.__posWrites') if x.get('msg')]
     check('sent with your position (for everyone)', w and w[-1]['msg'] == 'Åker in 🏠' and w[-1]['lat'] and not pg.is_visible('#msgPop'), w)
     check('your bubble at your boat', any(m['k'] == 'me' and 'Åker in' in m['t'] for m in pg.evaluate('window.__ffMsgs()')))
-    check('sent: the note "Syns i 15 minuter"', pg.is_visible('#msgToast') and 'Syns i 15 minuter' in pg.inner_text('#msgToast'))
+    check('sent: the note "Syns i 7 minuter"', pg.is_visible('#msgToast') and 'Syns i 7 minuter' in pg.inner_text('#msgToast'))
     pg.screenshot(path='shot_msgs.png')
-    check('a new message: the rainbow edge (first 5 min), round the tail too', pg.evaluate("(() => { var bb = document.querySelector('.mLine.mine').closest('.msgBub'), r = bb.querySelector('.msgRb'); return !!r && r.offsetHeight > bb.offsetHeight + 5; })()"))
+    check('a bubble: a thin plain border, no rainbow edge, a small one (font 12 px)', pg.evaluate("(() => { var bb = document.querySelector('.mLine.mine').closest('.msgBub'), cs = getComputedStyle(bb); return !bb.querySelector('.msgRb') && cs.borderTopWidth === '1px' && cs.fontSize === '12px'; })()"))
     op = [[m['k'], m['o']] for m in pg.evaluate('window.__ffMsgs()')]
     check("they fade with age: Calle's (2 min) less than yours (new)", dict(op).get('me', 0) > [v for k, v in op if k != 'me'][0], op)
-    check("Calle's (2 min old) also has the rainbow edge", pg.evaluate("!!document.querySelector('.mLine:not(.mine)').closest('.msgBub').querySelector('.msgRb')"))
+    check('the text and the name ("Calle…") take turns in each line', pg.evaluate("(() => { var w = document.querySelector('.mLine:not(.mine) .mWin'); return !!w && w.querySelector('.mT') && /…$/.test(w.querySelector('.mN').textContent) && w.querySelector('.mN').textContent === 'Calle…'; })()"))
     pg.evaluate("document.querySelector('.mLine:not(.mine)').click()"); pg.wait_for_timeout(500)
     card = pg.inner_text('#msgCard')
-    check("tap Calle's: a panel with when it was written and when it goes", pg.eval_on_selector('#msgCard', 'e => e.classList.contains("show")') and 'CALLE' in card and 'Hugg!' in card and 'Skrivet' in card and '2 min sedan' in card and 'Försvinner om 13 min' in card, card)
+    check("tap Calle's: a panel with when it was written and when it goes", pg.eval_on_selector('#msgCard', 'e => e.classList.contains("show")') and 'CALLE' in card and 'Hugg!' in card and 'Skrivet' in card and '2 min sedan' in card and 'Försvinner om 5 min' in card, card)
     pg.click('#msgCardGo'); pg.wait_for_timeout(700)
     check('"Åk hit": the lead line on Calle\'s boat', pg.eval_on_selector('#probe', 'e => e.classList.contains("show")') and not pg.eval_on_selector('#msgCard', 'e => e.classList.contains("show")'))
     pg.evaluate("document.querySelector('.mLine:not(.mine)').click()"); pg.wait_for_timeout(700)
@@ -159,7 +159,7 @@ with sync_playwright() as p:
 
     # several messages from the same boat: ONE bubble, a row per person, newest first
     cfg3 = {'waypoints': cfg['waypoints'], 'positions': [
-        {'uid': 'kalle', 'name': 'Calle', 'lat': B1[0], 'lon': B1[1], 'ageMin': 0, 'msg': 'Kommer 🚤', 'msgAgeMin': 9},
+        {'uid': 'kalle', 'name': 'Calle', 'lat': B1[0], 'lon': B1[1], 'ageMin': 0, 'msg': 'Kommer 🚤', 'msgAgeMin': 6},
         {'uid': 'pia', 'name': 'Pia', 'lat': B1[0] + 0.00005, 'lon': B1[1], 'ageMin': 0, 'msg': 'Fisk!!! 🎣', 'msgAgeMin': 1},
         {'uid': 'olle', 'name': 'Olle', 'lat': B1[0], 'lon': B1[1] + 0.00008, 'ageMin': 0, 'msg': 'Mat? 🍔', 'msgAgeMin': 4}]}
     b, ctx, pg, errs = new_page(p, geo=B3, cfg=cfg3, name='Filip')
@@ -168,7 +168,7 @@ with sync_playwright() as p:
     check('three in the same boat: one shared bubble', pg.evaluate("document.querySelectorAll('.msgBub').length") == 1 and len(ms) == 3 and len(set(m['bubble'] for m in ms)) == 1, ms)
     check('...one row per person, newest first (Pia, Olle, Calle)', [m['t'].split('🎣')[0] for m in ms][0].startswith('Fisk') and 'Pia' in ms[0]['t'] and 'Olle' in ms[1]['t'] and 'Calle' in ms[2]['t'], ms)
     check('...older rows fainter', ms[0]['o'] > ms[1]['o'] > ms[2]['o'], [m['o'] for m in ms])
-    check('...the rainbow edge round the whole bubble (one is new)', pg.evaluate("!!document.querySelector('.msgBub.multi .msgRb')"))
+    check('...custom text is the rainbow, a ready-made one plain', pg.evaluate("document.querySelectorAll('.msgBub.multi .mT').length") == 3 and not pg.evaluate("!!document.querySelector('.msgBub.multi .msgRb')"))
     pg.screenshot(path='shot_msgs_group.png')
     pg.evaluate("[].filter.call(document.querySelectorAll('.mLine'), e => e.textContent.indexOf('Olle') >= 0)[0].click()"); pg.wait_for_timeout(500)
     card = pg.inner_text('#msgCard')

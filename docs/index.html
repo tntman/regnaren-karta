@@ -1629,7 +1629,7 @@
   #leadPill .ldT{font-variant-numeric:tabular-nums;}
   #leadPill .ldGap{padding-left:17px;opacity:.5;line-height:8px;}
   /* ================= Snabbmeddelanden (quick messages) ================= */
-  /* ---- quick messages: a small button at the bottom, bubbles at the boats (15 min) ---- */
+  /* ---- quick messages: a small button at the bottom, bubbles at the boats (7 min) ---- */
   #msgBtn{position:absolute;left:50%;transform:translateX(-50%);z-index:22;      /* (its height: 90-buttons.css) */
     width:42px;height:42px;border-radius:50%;background:var(--navy-glass);backdrop-filter:blur(6px);color:var(--offwhite);
     border:1px solid rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.35);padding:0;-webkit-tap-highlight-color:transparent;}
@@ -1644,19 +1644,15 @@
     background:rgba(11,42,58,.95);border:1px solid rgba(232,163,61,.6);color:#fff;border-radius:14px;padding:8px 14px;font-size:13.5px;opacity:0;pointer-events:none;transition:opacity .2s;text-align:center;}
   #msgToast.show{opacity:1;}
   #msgLayer{position:absolute;inset:0;z-index:17;pointer-events:none;}
-  .msgBub{position:absolute;left:0;top:0;pointer-events:auto;cursor:pointer;background:#fff;color:#0B2A3A;border-radius:14px;padding:4px 10px;
-    font-weight:700;font-size:13.5px;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,.5);transform:translate(-14px,calc(-100% - 20px));-webkit-tap-highlight-color:transparent;}
-  .msgBub::after{content:'';position:absolute;left:12px;bottom:-7px;border:7px solid transparent;border-top-color:#fff;border-bottom:0;}
-  .msgBub small{font-weight:400;color:#557;margin-left:4px;}
+  .msgBub{position:absolute;left:0;top:0;pointer-events:auto;cursor:pointer;background:#fff;color:#0B2A3A;border:1px solid rgba(11,42,58,.3);border-radius:11px;padding:1px 7px;
+    font-weight:700;font-size:12px;white-space:nowrap;box-shadow:0 2px 7px rgba(0,0,0,.45);transform:translate(-11px,calc(-100% - 17px));-webkit-tap-highlight-color:transparent;}
+  .msgBub::after{content:'';position:absolute;left:9px;bottom:-5px;border:5px solid transparent;border-top-color:#fff;border-bottom:0;}
   .msgBub.mine{background:#FFE7B8;} .msgBub.mine::after{border-top-color:#FFE7B8;}
   @media (orientation:landscape) and (max-height:520px){
     #msgBtn{width:38px;height:38px;}
   }
-  /* ---- quick messages: fading, the rainbow edge while new, the panel when tapped ---- */
+  /* ---- quick messages: fading, text and name taking turns, the panel when tapped ---- */
   .msgBub{transition:opacity 1s;}
-  .msgRb{position:absolute;left:-3px;top:-3px;pointer-events:none;
-    background:conic-gradient(from var(--rba, 0deg),#ff004c,#ff9f00,#ffee00,#27e23f,#00c8ff,#6a5cff,#ff00c8,#ff004c);
-    -webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;animation:rbSpin 2.2s linear infinite;}
   @property --rba{syntax:'<angle>';initial-value:0deg;inherits:false;}
   @keyframes rbSpin{to{--rba:360deg;}}
   #msgCard{position:absolute;left:0;right:0;bottom:0;z-index:27;background:var(--navy);border-top:1px solid rgba(255,255,255,.14);border-radius:18px 18px 0 0;
@@ -1689,9 +1685,25 @@
   #msgOwnN{font-size:11px;color:var(--text-muted);min-width:32px;text-align:right;font-variant-numeric:tabular-nums;}
   #msgOwnN.full{color:#ff8a80;}
   #msgOwnGo{width:34px;height:34px;border-radius:50%;border:none;background:var(--amber);color:var(--navy);font-size:15px;font-weight:900;cursor:pointer;flex:0 0 auto;}
-  .msgBub .mLine{white-space:nowrap;line-height:1.45;}
-  .msgBub.multi{padding:5px 11px;}
-  .msgBub:not(.mine) .mLine.mine{background:#FFE7B8;border-radius:7px;margin:0 -6px;padding:0 6px;}
+  .msgBub .mLine{white-space:nowrap;line-height:1.4;}
+  .msgBub.multi{padding:2px 8px;}
+  .msgBub:not(.mine) .mLine.mine{background:#FFE7B8;border-radius:6px;margin:0 -5px;padding:0 5px;}
+  /* the text and the name ("Calle…") share a cell: every 10 s (a full turn) the text slides out to the right and the name
+     comes in from the left (~2.4 s), then back. The text stays longest. Catch = the species' colour sweeping through it,
+     "Egen text" = the rainbow, the ready-made ones black. */
+  .mWin{display:grid;overflow:hidden;}
+  .mWin>span{grid-area:1/1;display:block;width:100%;animation-duration:10s;animation-timing-function:ease-in-out;animation-iteration-count:infinite;animation-delay:var(--d,0s);}
+  .mT{animation-name:mTx;}
+  .mN{animation-name:mNx;font-weight:400;color:#557;}
+  @keyframes mTx{0%,62%{transform:none;}68%,92%{transform:translateX(105%);}92.01%{transform:translateX(-105%);}98%,100%{transform:none;}}
+  @keyframes mNx{0%,62%{transform:translateX(-105%);}68%,92%{transform:none;}98%{transform:translateX(105%);}98.01%,100%{transform:translateX(-105%);}}
+  .mT.sp{--spl:color-mix(in srgb,var(--sp) 55%,#fff);-webkit-text-fill-color:transparent;color:transparent;-webkit-background-clip:text;background-clip:text;background-size:250% 100%;
+    background-image:linear-gradient(100deg,var(--sp) 0%,var(--spl) 50%,var(--sp) 100%);}
+  .mT.sp{animation-name:mTx,mSweep;animation-duration:10s,2.6s;animation-timing-function:ease-in-out,linear;animation-delay:var(--d,0s),0s;}
+  .mT.rbText{animation-name:mTx,rbSlide;animation-duration:10s,6s;animation-timing-function:ease-in-out,linear;animation-delay:var(--d,0s),0s;}
+  .mT.rbText{background-image:linear-gradient(90deg,#e8344a,#f08a00,#c9a800,#1fb83a,#0fa0d8,#6a5cff,#d41fa8,#e8344a);}   /* (stronger than in the menu: on white) */
+  @keyframes mSweep{from{background-position:0 0;}to{background-position:-250% 0;}}
+  @media (prefers-reduced-motion:reduce){ .mWin>span{animation:none;} .mN{display:none;} }
   /* ================= Profiler (js/67-profiles.js) + a catch as a quick message ================= */
   #pfCard{position:absolute;left:0;right:0;bottom:0;z-index:27;background:var(--navy);border-top:1px solid rgba(255,255,255,.14);border-radius:18px 18px 0 0;
     padding:8px 16px calc(env(safe-area-inset-bottom,0px) + 16px);box-shadow:0 -10px 30px rgba(0,0,0,.45);transform:translateY(105%);transition:transform .25s ease;overflow-y:auto;max-height:88vh;}
@@ -1735,7 +1747,6 @@
     background:conic-gradient(from var(--rba, 0deg),var(--sp),var(--spl),var(--sp) 30%,rgba(0,0,0,.25) 50%,var(--sp) 70%,var(--spl),var(--sp));
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);
     animation:rbSpin 2.2s linear infinite;}
-  .msgRb.sp{--spl:color-mix(in srgb,var(--sp) 55%,#fff);background:conic-gradient(from var(--rba, 0deg),var(--sp),var(--spl),var(--sp) 30%,rgba(0,0,0,.35) 50%,var(--sp) 70%,var(--spl),var(--sp));}
   @media (prefers-reduced-motion:reduce){ #msgPop .msgFish::before{animation:none;} }
   /* ================= bottom panels (Kartanalys, a message, a spot): see tools/UI.md ================= */
   /* ---- panels that can be dragged smaller: the grip always drags; once smaller, the rest scrolls ---- */
@@ -9761,12 +9772,11 @@
 
   /* ================= Snabbmeddelanden (quick messages) =================
      A small button at the bottom: tap -> the choices; tap one -> it shows as a bubble at
-     your boat for everyone for 15 min (sent with your position, positions/<you>.msg).
+     your boat for everyone for 7 min (sent with your position, positions/<you>.msg).
      Tap your own bubble to take it back; tap someone else's to hide it for you. */
   var MSG_TEXTS = ['Fisk!!! 🎣', 'Kommer 🚤', 'Åker in 🏠', 'Mat? 🍔', 'Bajs 💩'];
   var MSG_OWN_MAX = 15;                // "Egen text": at most 15 characters (an emoji = 1)
-  var MSG_NEW_MS = 5 * 60000;          // the first 5 min: a thin rainbow edge running round the bubble
-  var MSG_MS = 15 * 60000;
+  var MSG_MS = 7 * 60000;
   // your latest catch as a message ("Gädda 78 cm"): first in the choices while a competition is on; the edge spins in the species' colour
   var MSG_SP_COL = { gadda: '#35D24A', abborre: '#FF7A1A', gos: '#3A86FF' };
   function msgImgOk(u){ return typeof u === 'string' && (/^https:\/\/res\.cloudinary\.com\//.test(u) || (TEST_MODE && u === TEST_IMG)) ? u : null; }   // (only the catch photos, never any address someone writes; the test mode: its picture)
@@ -9835,7 +9845,7 @@
     ownMsg = { text: text, at: Date.now(), sp: fish && fish.sp, img: fish && fish.img };
     writeMsg(text, ownMsg.at, fish);
     renderMessages();
-    showMsgToast('Syns i 15 minuter, tryck på meddelandet för att ta bort.');
+    showMsgToast('Syns i 7 minuter, tryck på meddelandet för att ta bort.');
     centerOnFix();
   }
   var msgToastT = null;
@@ -9844,17 +9854,10 @@
     el.textContent = t; el.classList.add('show');
     clearTimeout(msgToastT); msgToastT = setTimeout(function(){ el.classList.remove('show'); }, 2600);
   }
-  // the rainbow edge follows the bubble's outline, its little tail included: an SVG outline of the
-  // shape is the mask of a spinning rainbow (conic gradient)
-  function msgRainbow(el){
-    var w = el.offsetWidth, h = el.offsetHeight, r = 14, P = 3, rb = el.querySelector('.msgRb'); if (!rb || !w) return;
-    var d = 'M' + (P + r) + ' ' + P + 'H' + (P + w - r) + 'A' + r + ' ' + r + ' 0 0 1 ' + (P + w) + ' ' + (P + r) + 'V' + (P + h - r) +
-      'A' + r + ' ' + r + ' 0 0 1 ' + (P + w - r) + ' ' + (P + h) + 'H' + (P + 26) + 'L' + (P + 19) + ' ' + (P + h + 7) + 'L' + (P + 12) + ' ' + (P + h) +
-      'H' + (P + r) + 'A' + r + ' ' + r + ' 0 0 1 ' + P + ' ' + (P + h - r) + 'V' + (P + r) + 'A' + r + ' ' + r + ' 0 0 1 ' + (P + r) + ' ' + P + 'Z';
-    var svg = 'url("data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="' + (w + 2 * P) + '" height="' + (h + 7 + 2 * P) + '"><path d="' + d + '" fill="none" stroke="#000" stroke-width="3.2" stroke-linejoin="round"/></svg>') + '")';
-    rb.style.width = (w + 2 * P) + 'px'; rb.style.height = (h + 7 + 2 * P) + 'px';
-    rb.style.webkitMaskImage = svg; rb.style.maskImage = svg;
-  }
+  // the text of a line: a catch = its species' colour sweeping through it, "Egen text" = the rainbow, the ready-made ones plain black
+  function msgKind(it){ return it.sp ? ' sp" style="--sp:' + MSG_SP_COL[it.sp] : MSG_TEXTS.indexOf(it.text) < 0 ? ' rbText' : ''; }
+  // "Calle…": the name that slides in after the text (cut to 9 characters)
+  function msgWho(it){ var c = Array.from(it.mine ? 'Du' : (it.who || '')); return (c.length > 9 ? c.slice(0, 9).join('').replace(/\s+$/, '') : c.join('')) + '…'; }
   var msgItems = {};
   function renderMessages(){
     if (!msgLayerEl) return;
@@ -9873,22 +9876,17 @@
       if (g) g.items.push(it); else groups.push({ lat: it.lat, lon: it.lon, items: [it] });
     });
     var keep = {};
-    function fade(it){ return 1 - 0.55 * Math.min(1, (now - it.at) / MSG_MS); }       // fades over the 15 min
+    function fade(it){ return 1 - 0.55 * Math.min(1, (now - it.at) / MSG_MS); }       // fades over the 7 min
     groups.forEach(function(g){
       var gk = g.items.map(function(it){ return it.key.replace(/"/g, ''); }).join('|');
       keep[gk] = 1;
       var el = null; Array.prototype.forEach.call(msgLayerEl.children, function(c){ if (c.getAttribute('data-k') === gk) el = c; });
       if (!el){ el = document.createElement('div'); el.setAttribute('data-k', gk); msgLayerEl.appendChild(el); }
       el.className = 'msgBub' + (g.items.length === 1 && g.items[0].mine ? ' mine' : '') + (g.items.length > 1 ? ' multi' : '');
-      var isNew = g.items.some(function(it){ return now - it.at < MSG_NEW_MS; }), sp = isNew && g.items[0].sp;   // (a catch, newest: its species' colour instead of the rainbow)
-      var html = g.items.map(function(it){
-        return '<div class="mLine' + (it.mine ? ' mine' : '') + '" data-k="' + escHtml(it.key.replace(/"/g, '')) + '">' + escHtml(it.text) + '<small>' + escHtml(it.who || '') + '</small></div>';
+      var html = g.items.map(function(it){   // text and name share a cell: every 10 s the text slides out to the right, the name in from the left, and back (css 75-messages.css)
+        return '<div class="mLine' + (it.mine ? ' mine' : '') + '" data-k="' + escHtml(it.key.replace(/"/g, '')) + '"><div class="mWin" style="--d:-' + (it.at % 10000) + 'ms"><span class="mT' + msgKind(it) + '">' + escHtml(it.text) + '</span><span class="mN">' + escHtml(msgWho(it)) + '</span></div></div>';
       }).join('');
-      if (el.getAttribute('data-h') !== html + isNew + sp){
-        el.setAttribute('data-h', html + isNew + sp);
-        el.innerHTML = html + (isNew ? '<i class="msgRb' + (sp ? ' sp" style="--sp:' + MSG_SP_COL[sp] : '') + '"></i>' : '');
-        if (isNew) msgRainbow(el);
-      }
+      if (el.getAttribute('data-h') !== html){ el.setAttribute('data-h', html); el.innerHTML = html; }
       var top = fade(g.items[0]);
       el.style.opacity = top.toFixed(2);
       Array.prototype.forEach.call(el.querySelectorAll('.mLine'), function(ln, k){ ln.style.opacity = (fade(g.items[k]) / top).toFixed(2); });
