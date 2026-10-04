@@ -1608,8 +1608,8 @@
   /* ================= "Namn" (Filter, Lager): place names from OpenStreetMap -- off by default ================= */
   #osmNames{position:absolute;inset:0;z-index:11;pointer-events:none;display:none;}   /* furthest back: under track, route, spots and boats, taps go through to the map */
   #osmNames.on{display:block;}
-  .osmN{position:absolute;left:0;top:0;white-space:nowrap;will-change:transform;}
-  .osmN::before{content:"";position:absolute;left:-3.5px;top:-3.5px;width:7px;height:7px;border-radius:50%;background:#fff;box-shadow:0 0 0 1.5px rgba(6,20,28,.8);}
+  .osmN{position:absolute;left:0;top:0;white-space:nowrap;will-change:transform;opacity:.5;}
+  .osmN::before{content:"";position:absolute;left:-.9px;top:-.9px;width:1.75px;height:1.75px;border-radius:50%;background:#fff;box-shadow:0 0 0 .4px rgba(6,20,28,.8);}
   .osmN span{position:absolute;left:7px;top:-8px;font:700 12px/16px Calibri,"Segoe UI",system-ui,sans-serif;color:#fff;
     text-shadow:0 0 3px rgba(6,20,28,.95),0 0 3px rgba(6,20,28,.95),0 1px 2px rgba(6,20,28,.9);}
   .osmN.land span{font-weight:600;color:#f4eed8;}
@@ -1713,14 +1713,14 @@
   .catchImg{display:block;width:100%;max-height:240px;object-fit:cover;border-radius:12px;margin:6px 0 10px;background:rgba(255,255,255,.05);}
   .catchImg[hidden]{display:none;}
   /* your latest catch, first in the quick messages: the edge spins in the species' colour */
-  #msgPop .msgFish{position:relative;border-color:transparent;display:inline-flex;align-items:center;gap:6px;}
+  #msgPop .msgFish{--spl:color-mix(in srgb,var(--sp) 55%,#fff);position:relative;border-color:transparent;display:inline-flex;align-items:center;gap:6px;}
   #msgPop .msgFish small{font-weight:400;color:var(--text-muted);}
   #msgPop .msgFish .hmSpDot{margin:0;}
   #msgPop .msgFish::before{content:'';position:absolute;inset:-1px;border-radius:inherit;padding:2px;pointer-events:none;
-    background:conic-gradient(from var(--rba, 0deg),var(--sp),rgba(255,255,255,.9),var(--sp) 30%,rgba(0,0,0,.25) 50%,var(--sp) 70%,rgba(255,255,255,.9),var(--sp));
+    background:conic-gradient(from var(--rba, 0deg),var(--sp),var(--spl),var(--sp) 30%,rgba(0,0,0,.25) 50%,var(--sp) 70%,var(--spl),var(--sp));
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);
     animation:rbSpin 2.2s linear infinite;}
-  .msgRb.sp{background:conic-gradient(from var(--rba, 0deg),var(--sp),rgba(255,255,255,.95),var(--sp) 30%,rgba(0,0,0,.35) 50%,var(--sp) 70%,rgba(255,255,255,.95),var(--sp));}
+  .msgRb.sp{--spl:color-mix(in srgb,var(--sp) 55%,#fff);background:conic-gradient(from var(--rba, 0deg),var(--sp),var(--spl),var(--sp) 30%,rgba(0,0,0,.35) 50%,var(--sp) 70%,var(--spl),var(--sp));}
   @media (prefers-reduced-motion:reduce){ #msgPop .msgFish::before{animation:none;} }
   /* ================= bottom panels (Kartanalys, a message, a spot): see tools/UI.md ================= */
   /* ---- panels that can be dragged smaller: the grip always drags; once smaller, the rest scrolls ---- */

@@ -34,12 +34,12 @@
   .catchImg{display:block;width:100%;max-height:240px;object-fit:cover;border-radius:12px;margin:6px 0 10px;background:rgba(255,255,255,.05);}
   .catchImg[hidden]{display:none;}
   /* your latest catch, first in the quick messages: the edge spins in the species' colour */
-  #msgPop .msgFish{position:relative;border-color:transparent;display:inline-flex;align-items:center;gap:6px;}
+  #msgPop .msgFish{--spl:color-mix(in srgb,var(--sp) 55%,#fff);position:relative;border-color:transparent;display:inline-flex;align-items:center;gap:6px;}
   #msgPop .msgFish small{font-weight:400;color:var(--text-muted);}
   #msgPop .msgFish .hmSpDot{margin:0;}
   #msgPop .msgFish::before{content:'';position:absolute;inset:-1px;border-radius:inherit;padding:2px;pointer-events:none;
-    background:conic-gradient(from var(--rba, 0deg),var(--sp),rgba(255,255,255,.9),var(--sp) 30%,rgba(0,0,0,.25) 50%,var(--sp) 70%,rgba(255,255,255,.9),var(--sp));
+    background:conic-gradient(from var(--rba, 0deg),var(--sp),var(--spl),var(--sp) 30%,rgba(0,0,0,.25) 50%,var(--sp) 70%,var(--spl),var(--sp));
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);
     animation:rbSpin 2.2s linear infinite;}
-  .msgRb.sp{background:conic-gradient(from var(--rba, 0deg),var(--sp),rgba(255,255,255,.95),var(--sp) 30%,rgba(0,0,0,.35) 50%,var(--sp) 70%,rgba(255,255,255,.95),var(--sp));}
+  .msgRb.sp{--spl:color-mix(in srgb,var(--sp) 55%,#fff);background:conic-gradient(from var(--rba, 0deg),var(--sp),var(--spl),var(--sp) 30%,rgba(0,0,0,.35) 50%,var(--sp) 70%,var(--spl),var(--sp));}
   @media (prefers-reduced-motion:reduce){ #msgPop .msgFish::before{animation:none;} }
