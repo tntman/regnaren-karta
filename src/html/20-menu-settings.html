@@ -403,6 +403,16 @@
         <div class="adminNote">GPX går att läsa in i sjökortsplottrar (Garmin, Lowrance m.fl.), CSV öppnas i Excel. Bra som backup.</div>
       </div>
       <div class="adminCard">
+        <div class="settingsRowTitle">Säkerhetskopia</div>
+        <div class="btnRowWrap">
+          <button id="adminBackupMake" class="btnAdmin" type="button">Gör en kopia</button>
+          <button id="adminBackupRestore" class="btnAdmin" type="button">Återställ från kopia</button>
+          <input id="adminBackupFile" type="file" accept=".json,application/json" hidden>
+        </div>
+        <div class="adminNote" id="adminBackupStatus" style="color:var(--offwhite);"></div>
+        <div class="adminNote">Hela databasen i en fil: fiskeplatserna på alla sjöar, spåren och inställningarna (inte båtarna). Spara filen i Filer eller maila den till dig själv. Återställ lägger tillbaka allt som finns i filen – även platser som tagits bort sedan dess. Det som tillkommit efter kopian rörs inte.</div>
+      </div>
+      <div class="adminCard">
         <div class="settingsRowTitle">Båtar på kartan</div>
         <div class="btnRowWrap">
           <button id="adminHideStale" class="btnAdmin" type="button">Dölj grå båtar</button>

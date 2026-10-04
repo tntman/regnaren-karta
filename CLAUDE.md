@@ -139,6 +139,10 @@ Uppdatera rätt anteckning när något ändras.
 - **Heatmap** (Kartlägen → Heatmap sist): fångster från tävlingarna, fyra stilar, egen bottenruta, inte
   samtidigt som Kartanalys, "Heatmap"-skylt under väder. Data från Fiskfiskarnas API (historik +
   live under tävling, kopia i telefonen, Inställningar → Fångstdata). Allt i `tools/NOTES_HEATMAP.md`.
+- **Säkerhetskopia** (Admin, `js/36-admin.js`): hela databasen (waypoints alla sjöar, config, tracks, trackusers –
+  inte positions/usage) till en JSON-fil och tillbaka. Gratisplanen har ingen egen backup, och reglerna kräver bara
+  inloggning (vem som helst kan logga in anonymt). Återställ = `set` på allt i filen, bara till samma projekt. Ny
+  samling som ska sparas för evigt → lägg till i `BACKUP_COLS`.
 - **Pushnotiser**: inte gjort (kräver server/Firebase-betalplan).
 
 ## Firestore-regler (aktuella, i Firebase-konsolen)

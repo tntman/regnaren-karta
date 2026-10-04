@@ -150,7 +150,7 @@ FAKE_FIREBASE_JS = r"""
   var cfgListeners = [];
   function cfgSnap(){ var d = window.__cfgDoc; return { exists: !!d, data: function(){ return d; }, metadata: { fromCache: false } }; }
   window.__setCfg = function(d){ window.__cfgDoc = d; cfgListeners.forEach(function(l){ l.cb(cfgSnap()); }); };
-  var configCol = { doc: function(id){
+  var configCol = { get: function(){ var d = {}; if (window.__cfgDoc) d['regnaren'] = window.__cfgDoc; return Promise.resolve(snapOf(d)); }, doc: function(id){
     // cfg.configByLake = { regnaren: {...}, ... }: a different config/<lake> per lake
     if (cfg.configByLake && !window.__cfgPicked){ window.__cfgPicked = true; window.__cfgDoc = cfg.configByLake[id] ? JSON.parse(JSON.stringify(cfg.configByLake[id])) : null; }
     return {
@@ -182,6 +182,7 @@ FAKE_FIREBASE_JS = r"""
     } }; }
   var tracksCol = {
     where: function(f, op, v){ return tracksQuery([[f, op, v]]); },
+    get: function(){ return tracksQuery([]).get(); },
     doc: function(id){ return { set: function(d){
       window.__trackSets.push({ id: id, t: Date.now(), n: d.n, day: d.day, pts: d.pts, st: d.st, lakeDay: d.lakeDay, ownKey: d.ownKey, uid: d.uid, lake: d.lake });
       window.__trackDocs[id] = JSON.parse(JSON.stringify(Object.assign({}, d, { updatedAt: null }))); return Promise.resolve();
@@ -189,7 +190,7 @@ FAKE_FIREBASE_JS = r"""
   };
   // trackusers/<lake> (who has tracks on the lake): cfg.trackusers = { regnaren: { users: { calle: {u:'calle', n:'Calle'} } } }
   window.__trackUsersDocs = JSON.parse(JSON.stringify(cfg.trackusers || {})); window.__trackUserGets = 0; window.__trackUserSets = [];
-  var trackUsersCol = { doc: function(id){ return {
+  var trackUsersCol = { get: function(){ return Promise.resolve(snapOf(window.__trackUsersDocs)); }, doc: function(id){ return {
     get: function(){ window.__trackUserGets++; var d = window.__trackUsersDocs[id]; return Promise.resolve({ exists: !!d, data: function(){ return d; }, metadata: { fromCache: false } }); },
     set: function(d, opt){
       window.__trackUserSets.push(JSON.parse(JSON.stringify(d)));

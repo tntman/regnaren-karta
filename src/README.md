@@ -58,7 +58,7 @@ specificitet.
 | `33-avatars.js` | profilbilderna (`AVATARS`, genereras av `tools/make_avatars.py` ur `tools/fiskare/`) |
 | `34-name.js` | ditt namn, profilbild på menyknappen, "Logga ut" i menyn |
 | `35-logo3d.js` | loggan som 3D-skylt på "Vem är du?", i Hjälp och Inställningar (three.js från `assets/three-r170*.js`, laddas bara där), trappar ner på äldre telefoner |
-| `36-admin.js` | admin, export (GPX/CSV) |
+| `36-admin.js` | admin, export (GPX/CSV), Säkerhetskopia (hela databasen till en fil och tillbaka, test_backup) |
 | `37-testmode.js` | testläget: låtsastävlingen i `config/<sjö>.test`, Admin → Testläge (tävling, fångster, testbåtar, blixtar, rensa) – `tools/NOTES_TESTLAGE.md` |
 | `38-speed-depth.js` | fart, riktningspilen, djup |
 | `40-route.js` | rutten sjövägen, snittfart |

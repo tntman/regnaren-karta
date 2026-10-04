@@ -150,6 +150,7 @@
 
   function renderAdmin(){
     testRender();   // (Testläge, 37-testmode.js: only in Demo Mode)
+    backupRenderStatus();
     var now = Date.now();
     var midnight = new Date(); midnight.setHours(0, 0, 0, 0);
     var users = collectUsers();
@@ -368,5 +369,102 @@
   });
   document.getElementById('adminExportCsv').addEventListener('click', function(){
     exportFile('ffmap-' + LAKE_ID + '-fiskeplatser-' + exportStamp() + '.csv', 'text/csv', buildCsv());
+  });
+
+  /* ---- Säkerhetskopia: the whole database to a file, and back ----
+     What's worth keeping: the spots (all lakes), config, the Spår and trackusers -- not the boats or the
+     usage counters (they come back by themselves). A Timestamp is saved as {__ts: ms}. Two taps: "Gör en
+     kopia" fetches, then "Spara filen" hands it over (the iPhone's share sheet wants a fresh tap).
+     Restoring writes every doc in the file back (set): what was deleted or changed since comes back,
+     what was added since is left alone. A copy only goes back into the project it came from. */
+  var BACKUP_COLS = ['waypoints', 'config', 'tracks', 'trackusers'];
+  var BACKUP_AT_KEY = testKey('ffmap_backup_at_v1');
+  var backupMakeBtn = document.getElementById('adminBackupMake');
+  var backupStatusEl = document.getElementById('adminBackupStatus');
+  var backupFile = null, backupBusy = false;
+  function bkOut(v){
+    if (v && typeof v.toMillis === 'function') return { __ts: v.toMillis() };
+    if (Array.isArray(v)) return v.map(bkOut);
+    if (v && typeof v === 'object'){ var o = {}; for (var k in v) o[k] = bkOut(v[k]); return o; }
+    return v;
+  }
+  function bkIn(v){
+    if (Array.isArray(v)) return v.map(bkIn);
+    if (v && typeof v === 'object'){
+      var ks = Object.keys(v);
+      if (ks.length === 1 && ks[0] === '__ts') return firebase.firestore.Timestamp.fromMillis(v.__ts);
+      var o = {}; ks.forEach(function(k){ o[k] = bkIn(v[k]); }); return o;
+    }
+    return v;
+  }
+  function backupCounts(cols){
+    var n = function(c){ return Object.keys(cols[c] || {}).length; };
+    return n('waypoints') + ' fiskeplatser, ' + n('tracks') + ' spårdagar, ' + n('config') + ' inställningar';
+  }
+  function backupRenderStatus(){
+    if (backupBusy || backupFile) return;
+    var at = 0; try { at = +localStorage.getItem(BACKUP_AT_KEY) || 0; } catch(e){}
+    if (!at){ backupStatusEl.textContent = 'Ingen kopia sparad från den här telefonen än.'; return; }
+    var days = Math.floor((Date.now() - at) / 86400000);
+    backupStatusEl.textContent = 'Senaste kopia: ' + new Date(at).toLocaleDateString('sv-SE') + (days > 0 ? ' (för ' + days + (days === 1 ? ' dag' : ' dagar') + ' sedan)' : ' (idag)');
+  }
+  backupMakeBtn.addEventListener('click', function(){
+    if (backupFile){   // second tap: hand the file over
+      exportFile(backupFile.name, 'application/json', backupFile.text);
+      try { localStorage.setItem(BACKUP_AT_KEY, String(Date.now())); } catch(e){}
+      backupFile = null; backupMakeBtn.textContent = 'Gör en kopia';
+      backupRenderStatus(); return;
+    }
+    if (backupBusy) return;
+    if (!USE_FIREBASE){ backupStatusEl.textContent = 'Inte ansluten till databasen – försök igen när du har täckning.'; return; }
+    backupBusy = true; backupStatusEl.textContent = 'Hämtar allt från databasen…';
+    var fsdb = firebase.firestore(), out = { app: 'ffmap', v: 1, project: FIREBASE_CONFIG.projectId, at: Date.now(), cols: {} };
+    Promise.all(BACKUP_COLS.map(function(c){
+      return fsdb.collection(c).get({ source: 'server' }).then(function(snap){
+        countGetReads(snap);
+        var docs = out.cols[c] = {};
+        snap.forEach(function(d){ docs[d.id] = bkOut(d.data()); });
+      });
+    })).then(function(){
+      var text = JSON.stringify(out);
+      backupFile = { name: (TEST_MODE ? 'ffmap-testlage-kopia-' : 'ffmap-kopia-') + exportStamp() + '.json', text: text };
+      backupBusy = false; backupMakeBtn.textContent = 'Spara filen';
+      backupStatusEl.textContent = 'Klar: ' + backupCounts(out.cols) + ' (' + (text.length / 1048576).toFixed(1).replace('.', ',') + ' MB). Tryck Spara filen.';
+    }).catch(function(e){
+      backupBusy = false;
+      backupStatusEl.textContent = 'Kunde inte hämta allt (' + ((e && e.code) || 'fel') + '). Försök igen när du har täckning.';
+    });
+  });
+  var backupInput = document.getElementById('adminBackupFile');
+  document.getElementById('adminBackupRestore').addEventListener('click', function(){
+    if (backupBusy) return;
+    if (!USE_FIREBASE){ backupStatusEl.textContent = 'Inte ansluten till databasen – försök igen när du har täckning.'; return; }
+    backupInput.value = ''; backupInput.click();
+  });
+  backupInput.addEventListener('change', function(){
+    var f = backupInput.files && backupInput.files[0];
+    if (!f) return;
+    f.text().then(function(text){
+      var data = null; try { data = JSON.parse(text); } catch(e){}
+      if (!data || data.app !== 'ffmap' || !data.cols){ alert('Det här är ingen säkerhetskopia från FF Map.'); return; }
+      if (data.project !== FIREBASE_CONFIG.projectId){
+        alert('Kopian är från en annan databas (' + data.project + ') och läggs inte in här.' + (TEST_MODE ? ' Du är i Demo Mode (testdatabasen).' : ''));
+        return;
+      }
+      if (!confirm('Lägga tillbaka kopian från ' + new Date(data.at).toLocaleString('sv-SE').slice(0, 16) + '?\n\n' + backupCounts(data.cols) +
+        '.\n\nAllt i kopian får tillbaka sina värden från kopian – även platser som tagits bort sedan dess. Det som tillkommit efter kopian rörs inte.')) return;
+      var fsdb = firebase.firestore(), jobs = [], ok = 0, bad = 0;
+      BACKUP_COLS.forEach(function(c){
+        var docs = data.cols[c] || {};
+        Object.keys(docs).forEach(function(id){
+          jobs.push(fsdb.collection(c).doc(id).set(bkIn(docs[id])).then(function(){ ok++; }, function(){ bad++; }));
+        });
+      });
+      backupBusy = true; backupStatusEl.textContent = 'Lägger tillbaka ' + jobs.length + ' saker… (utan täckning skickas de när den kommer tillbaka)';
+      Promise.all(jobs).then(function(){
+        backupBusy = false;
+        backupStatusEl.textContent = bad ? ok + ' tillbaka, ' + bad + ' nekades av databasen.' : 'Klart: alla ' + ok + ' är tillbaka.';
+      });
+    });
   });
 
