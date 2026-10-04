@@ -55,6 +55,8 @@ with sync_playwright() as p:
     check('..."Visa på kartan" (you are on the map) and "Fångster i Regnaren (3)"', pg.is_visible('#pfMap') and pg.inner_text('#pfCatches') == 'Fångster i Regnaren (3)')
     t = pg.inner_text('#pfList')
     check('...the list: his 3 here + the 53 cm pike in Östra Vitten during Regnaren 2 (not the 99 cm from another competition)', pg.evaluate("document.querySelectorAll('#pfList .pfRow').length") == 4 and '53 cm' in t and '99 cm' not in t, t)
+    check('...under "Fångster i tävlingen <name>" (orange), each row ends with its water: (Regnaren) / (Östra Vitten)',
+          'Fångster i tävlingen' in pg.evaluate("document.getElementById('pfList').textContent") and pg.evaluate("document.querySelectorAll('#pfList .pfComp').length") >= 1 and '53 cm (Östra Vitten)' in t and '(Regnaren)' in t, t)
     pg.screenshot(path='shot_profile.png')
     # "Fångster": the heat map with only Filip's catches; ✕ = everyone's again
     pg.click('#pfCatches'); pg.wait_for_timeout(700)

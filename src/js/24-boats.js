@@ -111,10 +111,9 @@
     var group = names.length > 1;                       // several in the boat: no title, each name is the heading over their own catches
     boatInfoNameEl.hidden = group; boatInfoNamesListEl.style.display = 'none'; boatInfoNameEl.classList.add('pfLink');
     boatInfoNameEl.textContent = names[0];
-    boatInfoCatchesEl.innerHTML = names.map(function(n){
-      var r = pfCatchRows(n, group ? 4 : 8, live);   // (67-profiles.js)
-      return group ? '<div class="pfH biWho pfLink" data-who=""' + escHtml(n) + '">' + escHtml(n) + '</div>' + (r || '<div class="pfRow"><span><small>Inga fångster</small></span></div>')
-                   : r ? '<div class="pfH">Fångster</div>' + r : '';
+    boatInfoCatchesEl.innerHTML = (group && live.length ? pfCompHead(catchLive.comp) : '') + names.map(function(n){   // ("Fångster i tävlingen X": once)
+      var r = pfCatchRows(n, group ? 4 : 8, live, !group);   // (67-profiles.js)
+      return group ? '<div class="pfH biWho pfLink" data-who="' + escHtml(n) + '">' + escHtml(n) + '</div>' + (r || '<div class="pfRow"><span><small>Inga fångster</small></span></div>') : r;
     }).join('');
     boatInfoMetaEl.textContent = 'Uppdaterad ' + timeAgo(cluster.updatedAt);
     boatInfoBackdrop.classList.add('show');

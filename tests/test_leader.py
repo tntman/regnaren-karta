@@ -45,6 +45,11 @@ with sync_playwright() as p:
     pg.evaluate("Array.from(document.querySelectorAll('.boatPip')).filter(e => e.textContent.indexOf('Calle') > -1)[0].click()"); pg.wait_for_timeout(800)
     t = pg.evaluate("document.getElementById('boatInfoCatches').textContent")
     check('tap the boat with two in it: one tight box: no title, each name once over their own catches', pg.evaluate("document.getElementById('boatInfoName').hidden") and t.count('Calle') == 1 and t.count('Olle') == 1 and 'Gädda' in t and '60 cm' in t and '30 cm' in t, t)
+    check('...one heading for the competition (its name in orange), each row ends with its water',
+          t.count('Fångster i tävlingen') == 1 and pg.evaluate("document.querySelector('#boatInfoCatches .pfComp').textContent") == 'Regnaren 2' and '55 cm (Östra Vitten)' in t and '60 cm (Regnaren)' in t, t)
+    pg.evaluate("document.querySelector('#boatInfoCatches .biWho[data-who=\"Olle\"]').click()"); pg.wait_for_timeout(500)
+    check("...a name in it opens that person's profile", pg.evaluate("document.getElementById('pfCard').classList.contains('show') && document.getElementById('pfName').textContent") == 'Olle')
+    pg.evaluate("document.getElementById('pfClose').click()"); pg.wait_for_timeout(300)
     pg.reload(); pg.wait_for_timeout(2500)
     check('the switch is remembered', pg.evaluate("window.__ffLeader().on && document.getElementById('toggleLeader').checked"))
     pg.evaluate("document.getElementById('toggleLeader').click()"); pg.wait_for_timeout(300)

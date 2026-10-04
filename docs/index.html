@@ -1041,11 +1041,13 @@
     opacity:0;pointer-events:none;transition:opacity .22s ease, transform .22s ease;
     width:min(86vw,320px);
     background:var(--navy);border:1px solid rgba(255,255,255,.14);
-    border-radius:16px;padding:20px 20px calc(env(safe-area-inset-bottom,0px) + 18px);
+    border-radius:16px;padding:18px 18px 16px;
     box-shadow:0 12px 32px rgba(0,0,0,.5);
   }
   #boatInfoModal.show, #lockCard.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1);}
-  #boatInfoModal .modalDesc{margin-bottom:0;}
+  #boatInfoModal .modalDesc{margin-bottom:12px;}
+  #boatInfoModal .sheetRow, #lockCard .sheetRow{flex-wrap:nowrap;}       /* the buttons share the width, not huddled to the right */
+  #boatInfoModal .sheetRow button, #lockCard .sheetRow button{flex:1;}
   #lockCard .modalDesc b{color:var(--offwhite);}
   .boatInfoNamesList{display:flex;flex-direction:column;gap:6px;margin:2px 0 14px;}
   #boatInfoCatches{max-height:34vh;overflow-y:auto;margin-bottom:12px;}
@@ -1728,6 +1730,8 @@
   @media (orientation:landscape) and (max-height:520px){ #pfCard{left:auto;width:420px;} }
   /* a name that opens a profile: Vem in a catch, who wrote a message, a name in "Samma båt" */
   .pfLink{cursor:pointer;}
+  .pfH .pfComp{font-style:normal;color:var(--amber);}                 /* "Fångster i tävlingen REGNAREN 1" */
+  .pfRow .pfLake{font-weight:400;color:var(--text-muted);}            /* "78 cm (Östra Vitten)" */
   .wpTile.pfLink b, #msgCardWho.pfLink, .boatInfoNameRow.pfLink, #boatInfoName.pfLink{text-decoration:underline;text-decoration-color:rgba(232,163,61,.7);text-underline-offset:3px;}
   /* the heat map showing one person's catches: "Bara Filip ✕" */
   .hmWho{background:var(--amber);color:var(--navy);border:none;border-radius:12px;padding:2px 9px;font:inherit;font-weight:700;font-size:12.5px;margin-right:4px;cursor:pointer;}
@@ -4387,10 +4391,9 @@
     var group = names.length > 1;                       // several in the boat: no title, each name is the heading over their own catches
     boatInfoNameEl.hidden = group; boatInfoNamesListEl.style.display = 'none'; boatInfoNameEl.classList.add('pfLink');
     boatInfoNameEl.textContent = names[0];
-    boatInfoCatchesEl.innerHTML = names.map(function(n){
-      var r = pfCatchRows(n, group ? 4 : 8, live);   // (67-profiles.js)
-      return group ? '<div class="pfH biWho pfLink" data-who=""' + escHtml(n) + '">' + escHtml(n) + '</div>' + (r || '<div class="pfRow"><span><small>Inga fångster</small></span></div>')
-                   : r ? '<div class="pfH">Fångster</div>' + r : '';
+    boatInfoCatchesEl.innerHTML = (group && live.length ? pfCompHead(catchLive.comp) : '') + names.map(function(n){   // ("Fångster i tävlingen X": once)
+      var r = pfCatchRows(n, group ? 4 : 8, live, !group);   // (67-profiles.js)
+      return group ? '<div class="pfH biWho pfLink" data-who="' + escHtml(n) + '">' + escHtml(n) + '</div>' + (r || '<div class="pfRow"><span><small>Inga fångster</small></span></div>') : r;
     }).join('');
     boatInfoMetaEl.textContent = 'Uppdaterad ' + timeAgo(cluster.updatedAt);
     boatInfoBackdrop.classList.add('show');
@@ -10082,10 +10085,10 @@
     }
     return null;
   }
-  function catchPack(list){ return JSON.stringify(list.map(function(c){ return [c.t, c.comp, c.who, c.sp, c.cm, c.lat == null ? null : +c.lat.toFixed(6), c.lon == null ? null : +c.lon.toFixed(6)]; })); }
+  function catchPack(list){ return JSON.stringify(list.map(function(c){ return [c.t, c.comp, c.who, c.sp, c.cm, c.lat == null ? null : +c.lat.toFixed(6), c.lon == null ? null : +c.lon.toFixed(6), c.lake || '']; })); }
   function catchUnpack(rows, anyPlace){
     var a = []; try { a = JSON.parse(rows || '[]'); } catch(e){}
-    return a.map(function(r){ return normCatch({ t: r[0], comp: r[1], who: r[2], sp: r[3], cm: r[4], lat: r[5], lon: r[6] }, anyPlace === true); }).filter(Boolean);
+    return a.map(function(r){ return normCatch({ t: r[0], comp: r[1], who: r[2], sp: r[3], cm: r[4], lat: r[5], lon: r[6], lake: r[7] }, anyPlace === true); }).filter(Boolean);
   }
   function catchOnMap(list){
     list.forEach(function(c){ var p = latLonToImgPx(c.lat, c.lon); c.px = p.x; c.py = p.y; });
@@ -10354,10 +10357,23 @@
   // (catchData.comp: caught in this lake + the lake's competitions in other waters -- a competition can move lake)
   function pfCatches(name, list){ return (list || (catchData ? catchData.comp : [])).filter(function(c){ return catchPlain(c.who) === catchPlain(name); }); }
   // someone's catches in this lake and its competitions, newest first (the boat box and the profile): "● Gädda 78 cm   26/9 13:00"
-  function pfCatchRows(name, max, list){ max = max || 8;   // (list: these catches instead -- the boat box: the live competition's)
-    var l = pfCatches(name, list).sort(function(a, b){ return b.t - a.t; });
+  // a competition's name (the live one, or the lake's in the copy), and the water a catch was taken in
+  function pfCompName(id){
+    if (catchLive && catchLive.comp === id && catchLive.name) return catchLive.name;
+    var c = catchHist ? catchHist.comps.filter(function(x){ return x.id === id; })[0] : null; return (c && c.name) || '';
+  }
+  function pfCompHead(id){ var n = pfCompName(id); return '<div class="pfH">' + (n ? 'Fångster i tävlingen <em class="pfComp">' + escHtml(n) + '</em>' : 'Fångster') + '</div>'; }
+  function pfWater(c){
+    var id = c.lat != null ? catchLakeOf(c) : null, L = id ? LAKES.filter(function(x){ return x.id === id; })[0] : null;
+    return L ? L.name : c.lake || '';
+  }
+  // (heads: "Fångster i tävlingen X" over each competition's rows; every row ends with its water: "(Östra Vitten)")
+  function pfCatchRows(name, max, list, heads){ max = max || 8;   // (list: these catches instead -- the boat box: the live competition's)
+    var l = pfCatches(name, list).sort(function(a, b){ return b.t - a.t; }), prev = null;
     return l.slice(0, max).map(function(c){
-      return '<div class="pfRow"><span><span class="hmSpDot" style="background:rgb(' + HM_COL[c.sp] + ')"></span>' + hmSpName(c.sp) + ' <small>' + hmWhen(c.t) + '</small></span><b>' + pfCm(c.cm) + '</b></div>';
+      var h = heads && c.comp !== prev ? pfCompHead(c.comp) : ''; prev = c.comp;
+      var w = pfWater(c);
+      return h + '<div class="pfRow"><span><span class="hmSpDot" style="background:rgb(' + HM_COL[c.sp] + ')"></span>' + hmSpName(c.sp) + ' <small>' + hmWhen(c.t) + '</small></span><b>' + pfCm(c.cm) + (w ? ' <small class="pfLake">(' + escHtml(w) + ')</small>' : '') + '</b></div>';
     }).join('') + (l.length > max ? '<div class="pfRow"><span><small>+ ' + (l.length - max) + ' till</small></span></div>' : '');
   }
   // always opens (any name): without a profile only the name, their catches and boat (+ "Ladda in data" when none are fetched)
@@ -10390,7 +10406,7 @@
       return '<div class="pfRow"><span>' + escHtml(r.c) + ' <small>' + pfDate(r.d) + '</small></span><b>' + (r.r ? pfOrd(r.r) : '–') + (r.t ? ' · ' + pfCm(r.t) : '') + '</b></div>';
     }).join('') : '<div class="pfRow"><span>Inga ännu</span></div>';
     var boat = pfBoat(p.n), n = pfCatches(p.n).length, pl = document.getElementById('pfList');
-    pl.innerHTML = n ? '<div class="pfH">Fångster</div>' + pfCatchRows(p.n) : '';
+    pl.innerHTML = n ? pfCatchRows(p.n, 8, null, true) : '';
     document.getElementById('pfBoat').textContent = boat && !boat.me ? 'Båten på kartan · uppdaterad ' + timeAgo(boat.updatedAt) : '';
     document.getElementById('pfMap').hidden = !boat;
     document.getElementById('pfGo').hidden = !boat || !!boat.me;

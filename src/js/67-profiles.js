@@ -71,10 +71,23 @@
   // (catchData.comp: caught in this lake + the lake's competitions in other waters -- a competition can move lake)
   function pfCatches(name, list){ return (list || (catchData ? catchData.comp : [])).filter(function(c){ return catchPlain(c.who) === catchPlain(name); }); }
   // someone's catches in this lake and its competitions, newest first (the boat box and the profile): "● Gädda 78 cm   26/9 13:00"
-  function pfCatchRows(name, max, list){ max = max || 8;   // (list: these catches instead -- the boat box: the live competition's)
-    var l = pfCatches(name, list).sort(function(a, b){ return b.t - a.t; });
+  // a competition's name (the live one, or the lake's in the copy), and the water a catch was taken in
+  function pfCompName(id){
+    if (catchLive && catchLive.comp === id && catchLive.name) return catchLive.name;
+    var c = catchHist ? catchHist.comps.filter(function(x){ return x.id === id; })[0] : null; return (c && c.name) || '';
+  }
+  function pfCompHead(id){ var n = pfCompName(id); return '<div class="pfH">' + (n ? 'Fångster i tävlingen <em class="pfComp">' + escHtml(n) + '</em>' : 'Fångster') + '</div>'; }
+  function pfWater(c){
+    var id = c.lat != null ? catchLakeOf(c) : null, L = id ? LAKES.filter(function(x){ return x.id === id; })[0] : null;
+    return L ? L.name : c.lake || '';
+  }
+  // (heads: "Fångster i tävlingen X" over each competition's rows; every row ends with its water: "(Östra Vitten)")
+  function pfCatchRows(name, max, list, heads){ max = max || 8;   // (list: these catches instead -- the boat box: the live competition's)
+    var l = pfCatches(name, list).sort(function(a, b){ return b.t - a.t; }), prev = null;
     return l.slice(0, max).map(function(c){
-      return '<div class="pfRow"><span><span class="hmSpDot" style="background:rgb(' + HM_COL[c.sp] + ')"></span>' + hmSpName(c.sp) + ' <small>' + hmWhen(c.t) + '</small></span><b>' + pfCm(c.cm) + '</b></div>';
+      var h = heads && c.comp !== prev ? pfCompHead(c.comp) : ''; prev = c.comp;
+      var w = pfWater(c);
+      return h + '<div class="pfRow"><span><span class="hmSpDot" style="background:rgb(' + HM_COL[c.sp] + ')"></span>' + hmSpName(c.sp) + ' <small>' + hmWhen(c.t) + '</small></span><b>' + pfCm(c.cm) + (w ? ' <small class="pfLake">(' + escHtml(w) + ')</small>' : '') + '</b></div>';
     }).join('') + (l.length > max ? '<div class="pfRow"><span><small>+ ' + (l.length - max) + ' till</small></span></div>' : '');
   }
   // always opens (any name): without a profile only the name, their catches and boat (+ "Ladda in data" when none are fetched)
@@ -107,7 +120,7 @@
       return '<div class="pfRow"><span>' + escHtml(r.c) + ' <small>' + pfDate(r.d) + '</small></span><b>' + (r.r ? pfOrd(r.r) : '–') + (r.t ? ' · ' + pfCm(r.t) : '') + '</b></div>';
     }).join('') : '<div class="pfRow"><span>Inga ännu</span></div>';
     var boat = pfBoat(p.n), n = pfCatches(p.n).length, pl = document.getElementById('pfList');
-    pl.innerHTML = n ? '<div class="pfH">Fångster</div>' + pfCatchRows(p.n) : '';
+    pl.innerHTML = n ? pfCatchRows(p.n, 8, null, true) : '';
     document.getElementById('pfBoat').textContent = boat && !boat.me ? 'Båten på kartan · uppdaterad ' + timeAgo(boat.updatedAt) : '';
     document.getElementById('pfMap').hidden = !boat;
     document.getElementById('pfGo').hidden = !boat || !!boat.me;

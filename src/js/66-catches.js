@@ -52,10 +52,10 @@
     }
     return null;
   }
-  function catchPack(list){ return JSON.stringify(list.map(function(c){ return [c.t, c.comp, c.who, c.sp, c.cm, c.lat == null ? null : +c.lat.toFixed(6), c.lon == null ? null : +c.lon.toFixed(6)]; })); }
+  function catchPack(list){ return JSON.stringify(list.map(function(c){ return [c.t, c.comp, c.who, c.sp, c.cm, c.lat == null ? null : +c.lat.toFixed(6), c.lon == null ? null : +c.lon.toFixed(6), c.lake || '']; })); }
   function catchUnpack(rows, anyPlace){
     var a = []; try { a = JSON.parse(rows || '[]'); } catch(e){}
-    return a.map(function(r){ return normCatch({ t: r[0], comp: r[1], who: r[2], sp: r[3], cm: r[4], lat: r[5], lon: r[6] }, anyPlace === true); }).filter(Boolean);
+    return a.map(function(r){ return normCatch({ t: r[0], comp: r[1], who: r[2], sp: r[3], cm: r[4], lat: r[5], lon: r[6], lake: r[7] }, anyPlace === true); }).filter(Boolean);
   }
   function catchOnMap(list){
     list.forEach(function(c){ var p = latLonToImgPx(c.lat, c.lon); c.px = p.x; c.py = p.y; });

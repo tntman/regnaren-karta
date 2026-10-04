@@ -30,6 +30,8 @@
   @media (orientation:landscape) and (max-height:520px){ #pfCard{left:auto;width:420px;} }
   /* a name that opens a profile: Vem in a catch, who wrote a message, a name in "Samma båt" */
   .pfLink{cursor:pointer;}
+  .pfH .pfComp{font-style:normal;color:var(--amber);}                 /* "Fångster i tävlingen REGNAREN 1" */
+  .pfRow .pfLake{font-weight:400;color:var(--text-muted);}            /* "78 cm (Östra Vitten)" */
   .wpTile.pfLink b, #msgCardWho.pfLink, .boatInfoNameRow.pfLink, #boatInfoName.pfLink{text-decoration:underline;text-decoration-color:rgba(232,163,61,.7);text-underline-offset:3px;}
   /* the heat map showing one person's catches: "Bara Filip ✕" */
   .hmWho{background:var(--amber);color:var(--navy);border:none;border-radius:12px;padding:2px 9px;font:inherit;font-weight:700;font-size:12.5px;margin-right:4px;cursor:pointer;}

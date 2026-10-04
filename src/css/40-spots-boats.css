@@ -302,11 +302,13 @@
     opacity:0;pointer-events:none;transition:opacity .22s ease, transform .22s ease;
     width:min(86vw,320px);
     background:var(--navy);border:1px solid rgba(255,255,255,.14);
-    border-radius:16px;padding:20px 20px calc(env(safe-area-inset-bottom,0px) + 18px);
+    border-radius:16px;padding:18px 18px 16px;
     box-shadow:0 12px 32px rgba(0,0,0,.5);
   }
   #boatInfoModal.show, #lockCard.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1);}
-  #boatInfoModal .modalDesc{margin-bottom:0;}
+  #boatInfoModal .modalDesc{margin-bottom:12px;}
+  #boatInfoModal .sheetRow, #lockCard .sheetRow{flex-wrap:nowrap;}       /* the buttons share the width, not huddled to the right */
+  #boatInfoModal .sheetRow button, #lockCard .sheetRow button{flex:1;}
   #lockCard .modalDesc b{color:var(--offwhite);}
   .boatInfoNamesList{display:flex;flex-direction:column;gap:6px;margin:2px 0 14px;}
   #boatInfoCatches{max-height:34vh;overflow-y:auto;margin-bottom:12px;}
