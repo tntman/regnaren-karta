@@ -98,7 +98,8 @@
     for (var i = keep.length; i < n; i++){
       var p = saved[i] && isFinite(saved[i].lat) ? saved[i] : randomDemoPoint();
       keep.push({ id: 'bot_' + (i + 1), name: 'Testbåt ' + (i + 1), lat: p.lat, lon: p.lon, cLat: p.lat, cLon: p.lon, hd: Math.random() * 360, turn: 0,
-                  kn: 2 + Math.random() * 3, wAt: 0, msgAt: Date.now() + (2 + Math.random() * 5) * 60000 });
+                  kn: 2 + Math.random() * 3, wAt: 0, f: i % 2 ? i - 1 : -1,   // (f: every second boat sits in the one before = "same boat")
+                  msgAt: Date.now() + (2 + Math.random() * 5) * 60000 });
     }
     testBots = keep;
     testBotsRemember();
@@ -119,7 +120,8 @@
   function testBotsTick(){
     var now = Date.now();
     testBots.forEach(function(b){
-      var cosLat = Math.cos(b.lat * Math.PI / 180);
+      var cosLat = Math.cos(b.lat * Math.PI / 180), lead = b.f >= 0 && testBots[b.f];
+      if (lead){ b.lat = lead.lat + 0.00003; b.lon = lead.lon + 0.00003; if (now - b.wAt >= posIntervalS * 1000) testBotWrite(b); return; }
       b.turn = (b.turn + (Math.random() - 0.5) * 4) * 0.85;
       var dN = (b.cLat - b.lat) * 111320, dE = (b.cLon - b.lon) * 111320 * cosLat;
       if (Math.sqrt(dN * dN + dE * dE) > 500){

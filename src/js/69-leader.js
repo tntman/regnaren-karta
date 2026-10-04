@@ -33,13 +33,18 @@
     if (show){
       var comp = catchLiveComp(), top = leadList.slice(0, 5), mine = leadList.map(function(r){ return catchPlain(r.who); }).indexOf(me);
       var row = function(i, r){
-        return '<div class="ldRow' + (me && catchPlain(r.who) === me ? ' me' : '') + '"><span class="ldN">' + (i + 1) + '</span><span class="ldW">' + escHtml(r.who) + (i === 0 ? ' \u{1F451}' : '') + '</span><span class="ldT">' + r.total + ' cm</span></div>';
+        return '<div class="ldRow' + (me && catchPlain(r.who) === me ? ' me' : '') + '"><span class="ldN">' + (i + 1) + '</span><span class="ldW" data-who="' + escHtml(r.who) + '">' + escHtml(r.who) + (i === 0 ? ' \u{1F451}' : '') + '</span><span class="ldT">' + r.total + ' cm</span></div>';
       };
       leadPill.innerHTML = '<div class="ldHead">Ledare' + (comp && comp.name ? ' · ' + escHtml(comp.name) : '') + '</div>' + top.map(function(r, i){ return row(i, r); }).join('') +
         (mine >= 5 ? '<div class="ldGap">…</div>' + row(mine, leadList[mine]) : '');
     }
     if ((leadList.length ? leadList[0].who : '') !== was || !show) renderBoats();   // (the crown moves)
   }
+  leadPill.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
+  leadPill.addEventListener('click', function(e){   // a name: the map goes to that person's boat
+    var r = e.target.closest ? e.target.closest('.ldRow') : null, b = r && pfBoat(r.querySelector('.ldW').getAttribute('data-who'));
+    if (b) b.me ? centerOnFix() : centerOnWaypoint(b);
+  });
   catchListeners.push(leadRender);
   toggleLeadEl.checked = leadOn;
   toggleLeadEl.addEventListener('change', function(){

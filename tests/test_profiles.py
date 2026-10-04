@@ -66,12 +66,11 @@ with sync_playwright() as p:
         pg.click('#hmCardData .pfLink'); pg.wait_for_timeout(500)
         check('...opens it (the catch panel closes)', pf(pg) and not shown(pg, 'hmCard') and pg.inner_text('#pfName') == 'Filip', [shown(pg, 'hmCard'), pg.inner_text('#pfName')])
     pg.click('#pfClose'); pg.wait_for_timeout(300)
-    # a boat: one person with a profile -> the profile; without -> the old box
+    # a boat with catches -> the heat map with only their catches; without catches -> the old box
     boat(pg, 'Calle')
-    t = pg.inner_text('#pfCard')
-    check("tap Calle's boat: his profile (no stats: – / Inga ännu), Båten på kartan · uppdaterad …, Visa på kartan", pf(pg) and pg.inner_text('#pfName') == 'Calle' and 'Båten på kartan' in t and pg.is_visible('#pfMap') and 'Inga ännu' in t and '–' in pg.inner_text('#pfData'), t[:200])
-    check('...his 2 catches here: "Fångster i Regnaren (2)"', pg.inner_text('#pfCatches') == 'Fångster i Regnaren (2)', pg.inner_text('#pfCatches'))
-    pg.click('#pfClose'); pg.wait_for_timeout(300)
+    t = pg.inner_text('#hmResult')
+    check("tap Calle's boat: the heat map, only his 2 catches", not pf(pg) and 'Bara Calle' in t and '2 fångster' in t, t)
+    pg.click('#hmOff'); pg.wait_for_timeout(300)
     boat(pg, 'Pia')
     check('tap Pia\'s boat (no profile): the old box', not pf(pg) and pg.is_visible('#boatInfoModal') and pg.inner_text('#boatInfoName') == 'Pia')
     pg.click('#boatInfoClose'); pg.wait_for_timeout(200)

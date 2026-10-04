@@ -100,6 +100,8 @@
   var boatInfoCloseBtn = document.getElementById('boatInfoClose');
   function showBoatInfo(cluster){
     var names = cluster.names || [cluster.name || 'Okänd'];
+    var withCatch = names.filter(function(n){ return pfCatches(n).length; });
+    if (withCatch.length){ hideBoatInfo(); hmSet.who = withCatch.join('|'); hmSet.style = 'dots'; hmSave(); hmHeatCache = null; hmSetOn(true, true); return; }   // their catches on the heat map (67-profiles.js, 68-heatmap.js)
     if (names.length === 1 && openProfile(names[0])) return;   // one person with a profile: their profile (67-profiles.js)
     boatInfoNamesListEl.innerHTML = '';
     if (names.length === 1){

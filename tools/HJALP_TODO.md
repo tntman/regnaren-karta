@@ -69,3 +69,5 @@ i avsnitt, Ångra, åskvarningen alltid + "dragit förbi", solnedgången, Täckn
 - [ ] 2026-10-04 – Loggan är en 3D-skylt på "Vem är du?" och i Hjälps och Inställningars sidhuvud: vaggar själv, dra för att snurra den. Hjälp: troligen inget avsnitt. Nyhet: "Snurra på loggan när du väljer namn" (KUL)
 - [ ] 2026-10-04 – Demo Mode = testläge: alla i Demo Mode ser bara varandra (egen testdatabas, inget sparas på riktigt), admin kan köra en låtsastävling (fångster, testbåtar, blixtar). Riktig åskvarning är av i Demo Mode. Avsnitt: Inställningar (Demo Mode). Nyhet: "Testa appen ihop i Demo Mode – utan att något sparas på riktigt"
 - [ ] 2026-10-04 – Ledare (Filter → Lager, av som standard): under en pågående tävling en lista under väderchipet med de som leder (poäng = de 5 längsta av varje art ihop) och en 👑 efter ledarens namn på kartan. Avsnitt: Filter (Lager), Kartan/Båtarna. Nyhet: "Se vem som leder tävlingen live – slå på Ledare i Filter".
+
+- Ledare/båtar: tryck på namn i listan = centrera; tryck på båt = deras fångster på kartan (Heatmap, "Bara …").

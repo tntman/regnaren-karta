@@ -1616,7 +1616,7 @@
   /* ================= Ledare: the list under the weather chip (a .mapPill that only shows) ================= */
   #leadPill{flex-direction:column;align-items:stretch;gap:2px;padding:6px 12px 7px 10px;min-width:150px;max-width:210px;cursor:default;pointer-events:none;}
   #leadPill .ldHead{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--amber);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px;}
-  #leadPill .ldRow{display:flex;gap:7px;align-items:baseline;}
+  #leadPill .ldRow{display:flex;gap:7px;align-items:baseline;pointer-events:auto;cursor:pointer;}
   #leadPill .ldRow.me{color:var(--amber);}
   #leadPill .ldN{width:10px;opacity:.65;}
   #leadPill .ldW{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -2526,7 +2526,7 @@
         </span>
       </label>
       <label class="visRow">
-        <span class="visSwatch visSwatch--wx">👑</span>
+        <span class="visSwatch visSwatch--wx"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18 3 7l5 4 4-6 4 6 5-4-1 11z"></path></svg></span>
         <span class="visLabel">Ledare</span>
         <span class="toggle">
           <input type="checkbox" id="toggleLeader">
@@ -4325,6 +4325,8 @@
   var boatInfoCloseBtn = document.getElementById('boatInfoClose');
   function showBoatInfo(cluster){
     var names = cluster.names || [cluster.name || 'Okänd'];
+    var withCatch = names.filter(function(n){ return pfCatches(n).length; });
+    if (withCatch.length){ hideBoatInfo(); hmSet.who = withCatch.join('|'); hmSet.style = 'dots'; hmSave(); hmHeatCache = null; hmSetOn(true, true); return; }   // their catches on the heat map (67-profiles.js, 68-heatmap.js)
     if (names.length === 1 && openProfile(names[0])) return;   // one person with a profile: their profile (67-profiles.js)
     boatInfoNamesListEl.innerHTML = '';
     if (names.length === 1){
@@ -6439,7 +6441,8 @@
     for (var i = keep.length; i < n; i++){
       var p = saved[i] && isFinite(saved[i].lat) ? saved[i] : randomDemoPoint();
       keep.push({ id: 'bot_' + (i + 1), name: 'Testbåt ' + (i + 1), lat: p.lat, lon: p.lon, cLat: p.lat, cLon: p.lon, hd: Math.random() * 360, turn: 0,
-                  kn: 2 + Math.random() * 3, wAt: 0, msgAt: Date.now() + (2 + Math.random() * 5) * 60000 });
+                  kn: 2 + Math.random() * 3, wAt: 0, f: i % 2 ? i - 1 : -1,   // (f: every second boat sits in the one before = "same boat")
+                  msgAt: Date.now() + (2 + Math.random() * 5) * 60000 });
     }
     testBots = keep;
     testBotsRemember();
@@ -6460,7 +6463,8 @@
   function testBotsTick(){
     var now = Date.now();
     testBots.forEach(function(b){
-      var cosLat = Math.cos(b.lat * Math.PI / 180);
+      var cosLat = Math.cos(b.lat * Math.PI / 180), lead = b.f >= 0 && testBots[b.f];
+      if (lead){ b.lat = lead.lat + 0.00003; b.lon = lead.lon + 0.00003; if (now - b.wAt >= posIntervalS * 1000) testBotWrite(b); return; }
       b.turn = (b.turn + (Math.random() - 0.5) * 4) * 0.85;
       var dN = (b.cLat - b.lat) * 111320, dE = (b.cLon - b.lon) * 111320 * cosLat;
       if (Math.sqrt(dN * dN + dE * dE) > 500){
@@ -10312,7 +10316,7 @@
     var by = {}; hmAll().forEach(function(c){ (by[c.comp] = by[c.comp] || []).push(c); });
     return Object.keys(by).map(function(k){ return { id: k, list: by[k] }; }).sort(function(a, b){ return b.list[0].t - a.list[0].t; });
   }
-  function hmInComp(c){ return (hmSet.comp === 'all' || c.comp === hmSet.comp) && (!hmSet.who || catchPlain(c.who) === catchPlain(hmSet.who)); }
+  function hmInComp(c){ return (hmSet.comp === 'all' || c.comp === hmSet.comp) && (!hmSet.who || hmSet.who.split('|').some(function(n){ return catchPlain(c.who) === catchPlain(n); })); }
   function hmHour(c){ return new Date(c.t).getHours(); }
   function hmHourOn(){ return hmSet.h0 > 0 || hmSet.h1 < 23; }
   function hmVisible(anyHour){   // (anyHour: ignore the time window -- the "När" graph shows the whole day)
@@ -10394,7 +10398,7 @@
     else if (!all.length) res.innerHTML = catchErr ? 'Kunde inte hämta fångsterna (ingen anslutning?).' : 'Inga fångster i ' + escHtml(LAKE.name) + ' än.';
     else {
       var v = hmVisible(), c2 = { abborre: 0, gadda: 0, gos: 0 }; v.forEach(function(c){ c2[c.sp]++; });
-      res.innerHTML = (hmSet.who ? '<button type="button" class="hmWho" data-who="">Bara ' + escHtml(hmSet.who) + ' ✕</button> ' : '') + '<b>' + v.length + ' fångster</b> i ' + escHtml(LAKE.name) + (catchLiveComp() ? ' · <b class="hmLive">Live</b>' : '') + (hmHourOn() ? ' · kl ' + hmHourTxt() : '') + ' · ' + HM_SP.map(function(x){ return c2[x[0]] + ' ' + x[1].toLowerCase(); }).join(', ') +
+      res.innerHTML = (hmSet.who ? '<button type="button" class="hmWho" data-who="">Bara ' + escHtml(hmSet.who.split('|').join(', ')) + ' ✕</button> ' : '') + '<b>' + v.length + ' fångster</b> i ' + escHtml(LAKE.name) + (catchLiveComp() ? ' · <b class="hmLive">Live</b>' : '') + (hmHourOn() ? ' · kl ' + hmHourTxt() : '') + ' · ' + HM_SP.map(function(x){ return c2[x[0]] + ' ' + x[1].toLowerCase(); }).join(', ') +
         '<span class="note">' + (st === 'dots' ? 'Tryck på en prick för allt om fångsten.' : st === 'hex' ? 'Tryck på en ruta för fångsterna i den.' : 'Tryck på kartan där det är färg för fångsterna där.') + '</span>' +
         (!hmShow ? '<span class="pnHid"> · Dold – slå på Heatmap i Filter</span>' : '');
     }
@@ -10731,13 +10735,18 @@
     if (show){
       var comp = catchLiveComp(), top = leadList.slice(0, 5), mine = leadList.map(function(r){ return catchPlain(r.who); }).indexOf(me);
       var row = function(i, r){
-        return '<div class="ldRow' + (me && catchPlain(r.who) === me ? ' me' : '') + '"><span class="ldN">' + (i + 1) + '</span><span class="ldW">' + escHtml(r.who) + (i === 0 ? ' \u{1F451}' : '') + '</span><span class="ldT">' + r.total + ' cm</span></div>';
+        return '<div class="ldRow' + (me && catchPlain(r.who) === me ? ' me' : '') + '"><span class="ldN">' + (i + 1) + '</span><span class="ldW" data-who="' + escHtml(r.who) + '">' + escHtml(r.who) + (i === 0 ? ' \u{1F451}' : '') + '</span><span class="ldT">' + r.total + ' cm</span></div>';
       };
       leadPill.innerHTML = '<div class="ldHead">Ledare' + (comp && comp.name ? ' · ' + escHtml(comp.name) : '') + '</div>' + top.map(function(r, i){ return row(i, r); }).join('') +
         (mine >= 5 ? '<div class="ldGap">…</div>' + row(mine, leadList[mine]) : '');
     }
     if ((leadList.length ? leadList[0].who : '') !== was || !show) renderBoats();   // (the crown moves)
   }
+  leadPill.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
+  leadPill.addEventListener('click', function(e){   // a name: the map goes to that person's boat
+    var r = e.target.closest ? e.target.closest('.ldRow') : null, b = r && pfBoat(r.querySelector('.ldW').getAttribute('data-who'));
+    if (b) b.me ? centerOnFix() : centerOnWaypoint(b);
+  });
   catchListeners.push(leadRender);
   toggleLeadEl.checked = leadOn;
   toggleLeadEl.addEventListener('change', function(){

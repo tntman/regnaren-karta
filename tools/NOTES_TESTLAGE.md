@@ -70,3 +70,5 @@ Tills konfigurationen är ifylld kan testläget inte logga in. Då visas "Offlin
 
 ## Tester
 `tests/test_testmode.py`. fakefb kommer ihåg vilket projekt som startades: `window.__fbProject`, och ett annat projekt börjar tomt eller från `cfg.testDb`. Utgångna positioner sparas i `sessionStorage` (`__fbUpdates`), så att de syns även efter omladdningen.
+
+- Testbåtar: varannan båt (2, 4) sitter i båten före ("Samma båt", `f` i `testBots`, `js/37-testmode.js`) och följer den ~4 m bort.
