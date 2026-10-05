@@ -638,7 +638,7 @@
     var map = { anSlope: 'slope', anTopP: 'topP', anHoleP: 'holeP', anHmin: 'hmin', anCCov: 'cCov' };
     if (!map[t.id]) return;
     anSet[map[t.id]] = v;
-    t.nextSibling.textContent = t.id === 'anSlope' ? v + ' %' : t.id === 'anHmin' ? AN_HARD[v - 1] : t.id === 'anCCov' ? v + ' av 10 fångster' : '≥ ' + fmtDepth(v) + ' m';
+    t.nextSibling.textContent = t.id === 'anSlope' ? v + ' %' : t.id === 'anHmin' ? AN_HARD[v - 1] : t.id === 'anCCov' ? v + ' av 10 ' + anCatchPl() : '≥ ' + fmtDepth(v) + ' m';
     anLater();
   });
   // dragging a handle of a depth range (either handle; they can't cross)
@@ -759,7 +759,7 @@
       if (res && res.scrollHeight > res.clientHeight + 2 && !res.querySelector('.note .pnList')){ var c = res.cloneNode(true); Array.prototype.forEach.call(c.querySelectorAll('.note'), function(n){ n.remove(); }); parts.push(c.innerHTML); }   // (cut off: all of it here -- unless the list says it all)
       Array.prototype.forEach.call(P.querySelectorAll('.pnRes .note, #anControls .anNote'), function(n){ if (n.textContent.trim()) parts.push(n.innerHTML); });
       if (P === anPanel) parts.unshift('<b>Kartanalys</b> lyser upp det i sjön som ' + (AN_INTRO[anSet.cat] || 'passar inställningarna nedan') + '.');   // (always one line on top: what it does)
-      box.innerHTML = parts.length ? parts.map(function(t){ return /^\s*<ul/.test(t) ? t : '<p>' + t + '</p>'; }).join('') : '<p>Ingen förklaring till det här.</p>';   // (a list as it is)
+      box.innerHTML = parts.length ? parts.map(function(t){ return /^\s*<(ul|p)\b/.test(t) ? t : '<p>' + t + '</p>'; }).join('') : '<p>Ingen förklaring till det här.</p>';   // (a list as it is)
     }
     box.hidden = !pnInfoOn;
     btn.classList.toggle('on', pnInfoOn); btn.setAttribute('aria-pressed', pnInfoOn ? 'true' : 'false');

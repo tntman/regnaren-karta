@@ -14,7 +14,7 @@ def size(pg, root, a, b):   # "Storlek": move the two handles (min, max cm)
       e.dispatchEvent(new Event('input', { bubbles: true })); e.dispatchEvent(new Event('change', { bubbles: true })); })""", [root, a, b])
 def an(pg): return pg.evaluate('window.__ffAnalysis()')
 def lit_pct(pg):
-    m = re.search(r'Tänt: (<?\d+) %', pg.inner_text('#anResult')); return int(m.group(1).replace('<', '')) if m else None
+    m = re.search(r'(<?\d+) % av sjön tänd', pg.inner_text('#anResult')); return int(m.group(1).replace('<', '')) if m else None
 def pixels(pg, test):
     return pg.evaluate("""(t) => { var c = document.getElementById('anLayer'), d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data, n = 0;
       for (var i = 0; i < d.length; i += 4){ var r = d[i], g = d[i + 1], b = d[i + 2], a = d[i + 3];
@@ -42,14 +42,14 @@ with sync_playwright() as p:
           pg.is_visible('#anDataChips') and chips == [['Abborre 3', False], ['Gädda 25', False], ['Gös 0', True]], chips)
     pg.click('#anDataChips button[data-m="c_gadda"]'); pg.wait_for_timeout(2500)
     a = an(pg); res = pg.inner_text('#anResult')
-    check('Gädda (data): what stands out, incl. the depth (averaged within 25 m: "…–3 m")', a['mode'] == 'c_gadda' and a['ready'] and 'Gädda togs oftast' in res and re.search(r'\d–3 m', res), res)
+    check('Gädda (data): short row; what stands out (in ⓘ), incl. the depth (averaged within 25 m: "…–3 m")', a['mode'] == 'c_gadda' and a['ready'] and 'Gädda ·' in res and re.search(r'\d–3 m', pg.evaluate("document.querySelector('#anResult .note').textContent")), res)
     size(pg, '#anControls', 70, 130); pg.wait_for_timeout(1500)
-    check('Storlek in Från fångsterna: minst 70 cm -> 15 gäddor (the button counts them too; abborre keeps its own range: still 3)', 'Gädda togs oftast' in pg.inner_text('#anResult') and 'Gädda 15' in pg.inner_text('#anDataChips') and 'Abborre 3' in pg.inner_text('#anDataChips'), (pg.inner_text('#anDataChips'), pg.inner_text('#anResult')[:200]))
+    check('Storlek in Från fångsterna: minst 70 cm -> 15 gäddor (the button counts them too; abborre keeps its own range: still 3)', 'Gädda ·' in pg.inner_text('#anResult') and 'Gädda 15' in pg.inner_text('#anDataChips') and 'Abborre 3' in pg.inner_text('#anDataChips'), (pg.inner_text('#anDataChips'), pg.inner_text('#anResult')[:200]))
     size(pg, '#anControls', 80, 130); pg.wait_for_timeout(1500)
-    check('...80-85 cm -> 5: no minimum, still worked out (marked uncertain)', 'Gädda togs oftast' in pg.inner_text('#anResult') and 'osäkert, få fångster' in pg.evaluate("document.getElementById('anPanel').textContent"), pg.inner_text('#anResult')[:200])
+    check('...80-85 cm -> 5: no minimum, still worked out (marked uncertain)', 'Gädda ·' in pg.inner_text('#anResult') and 'osäkert, få fångster' in pg.evaluate("document.getElementById('anPanel').textContent"), pg.inner_text('#anResult')[:200])
     size(pg, '#anControls', 0, 130); pg.wait_for_timeout(2000)
     l7 = lit_pct(pg)
-    check('...the data decides how much is lit: "Tänt: x % av sjön – där togs 7 av 10 gäddor" + how clear', l7 is not None and '7 av 10 gäddor' in res and ('mönster' in res), res)
+    check('...the data decides how much is lit, short on the row: "x % av sjön tänd, n× tätare än i snitt · Se ⓘ"', l7 is not None and re.search(r'\d× tätare än i snitt', res) and res.rstrip().endswith('Se ⓘ'), res)
     check('...lit in the species\' colour (green), the catches as dots', pixels(pg, 'green') > 300, pixels(pg, 'green'))
     dots = pg.eval_on_selector_all('#anCF button', 'e => e.map(x => x.textContent)')
     check('each value with dots (how much it alone points gädda out here), at least one ●●●', len(dots) == 6 and all(re.search('[●○]{3}', d) for d in dots) and any('●●●' in d for d in dots), dots)
@@ -60,8 +60,10 @@ with sync_playwright() as p:
     l5, l9 = cov(5), cov(9)
     pg.click('#anPanel .pnInfoBtn'); pg.wait_for_timeout(300)
     info = pg.inner_text('#anPanel .pnInfo')
-    check('ⓘ: a line on top (what Kartanalys does), then the result as a list: Art (+ size), Fångster, Jämför, Togs oftast, Tänt, Mönster; then what the sliders do (Storlek too)',
-          info.startswith('Kartanalys lyser upp') and all(w in info for w in ['Art:', 'Fångster:', 'Jämför:', 'Togs oftast:', 'Tänt:', 'Mönster:', 'Storlek:', 'Likhet:']) and re.search(r'% av sjön · \d av 10 fångster$', pg.inner_text('#anCCov + output')), (info[:300], pg.inner_text('#anCCov + output')))
+    inn = re.search(r'där togs (\d+) av (\d+) av de gäddorna', info)
+    check('ⓘ: a line on top (what Kartanalys does), the whole sentence (Likhet 9: at least 9 of 10 catches inside), the list (Fångster, Täthet), then what the sliders do; Likhet says the species',
+          info.startswith('Kartanalys lyser upp') and 'Med inställningarna nedan' in info and inn and int(inn.group(1)) >= 0.9 * int(inn.group(2)) and all(w in info for w in ['Fångster:', 'Täthet:', 'även där ingen har fiskat', 'Storlek:', 'Likhet:'])
+          and re.search(r'% av sjön · 9 av 10 gäddor$', pg.inner_text('#anCCov + output')), (info[:400], pg.inner_text('#anCCov + output')))
     check('"Likhet" 5 of 10 (Mest likt): smaller; 9 of 10 (Mindre likt): bigger (described behind ⓘ)', l5 <= l7 <= l9 and l5 < l9 and 'Mindre likt' in pg.inner_text('#anPanel .pnInfo'), (l5, l7, l9))
     pg.click('#anPanel .pnInfoBtn'); pg.wait_for_timeout(300)
     cov(7)
@@ -73,7 +75,7 @@ with sync_playwright() as p:
     for k in ['s', 'h', 'v', 'l', 't']: pg.click('#anCF button[data-cf="%s"]' % k); pg.wait_for_timeout(200)
     pg.click('#anCView button[data-cv="grad"]'); pg.wait_for_timeout(2500)
     res = pg.inner_text('#anResult')
-    check('"Skala": the whole lake from unlike to most alike (red), no "Typiskt" slider', 'mest likt fångstplatserna' in res and not pg.query_selector('#anCCov') and pixels(pg, 'red') > 100, (res, pixels(pg, 'red')))
+    check('"Skala": the whole lake from unlike to most alike (red), no "Typiskt" slider', 'från olikt till mest likt' in res and not pg.query_selector('#anCCov') and pixels(pg, 'red') > 100, (res, pixels(pg, 'red')))
     pg.screenshot(path='shot_ancatch_grad.png')
     pg.click('#anCView button[data-cv="area"]'); pg.wait_for_timeout(1500)
     # not together with the heat map

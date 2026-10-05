@@ -96,4 +96,4 @@ i avsnitt, Ångra, åskvarningen alltid + "dragit förbi", solnedgången, Täckn
 
 - Storlek: Heatmap (under Tävling) och Kartanalys → Från fångsterna har ett reglage min–max cm. Avsnitt Heatmap + Kartanalys. Nyhetsrad: "Filtrera fångsterna på storlek i Heatmap och Kartanalys"
 - Heatmap Per art: Art-valet är nu Alla / en art som i de andra stilarna (förr av/på per art). Avsnitt Heatmap. Ingen egen nyhetsrad (hör till Storlek-raden).
-- Kartanalys: "Typiskt" heter nu Likhet (Mest likt – Mindre likt, visar % av sjön); ⓘ har en inledningsrad + resultatet som punktlista; Fångster kräver inget minsta antal. Avsnitt Kartanalys. Nyhetsrad: "Kartanalys förklarar resultatet tydligare"
+- Kartanalys: "Typiskt" heter nu Likhet (Mest likt – Mindre likt, visar % av sjön); Fångster: kort rad ("22 % av sjön tänd, 3× tätare än i snitt · Se ⓘ"), hela förklaringen i ⓘ (inledningsrad, meningen, Fångster, Täthet); Fångster kräver inget minsta antal. Avsnitt Kartanalys. Nyhetsrad: "Kartanalys förklarar resultatet tydligare"
