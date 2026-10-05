@@ -95,8 +95,8 @@
   .wxTile{background:var(--s2);border:none;border-radius:16px;}
   .wxH{background:var(--s2);}
   #boatInfoModal, #lockCard, #msgCard, #measurePanel{background:var(--navy);border:none;border-radius:20px;}
-  #boatInfoName.pfLink, #msgCardWho.pfLink, #boatInfoCatches .biWho.pfLink{text-decoration:none;}
-  #boatInfoName.pfLink::after, #msgCardWho.pfLink::after, #boatInfoCatches .biWho.pfLink::after{content:' ›';color:var(--text-muted);font-weight:400;}
+  /* a name that opens the person's profile: a › after it (never underlined) */
+  #boatInfoName.pfLink::after, #msgCardWho.pfLink::after, #boatInfoCatches .biWho.pfLink::after, .wpTile.pfLink b::after{content:' ›';color:var(--text-muted);font-weight:400;}
   .setSec, .settingsRow, .adminCard, .helpCard{background:var(--navy);border:none;border-radius:20px;}
   .setSecBody .settingsRow{border-top:1px solid var(--line);}
   .logItem{background:var(--navy);border-radius:0;margin-bottom:0;border-top:1px solid var(--line);}

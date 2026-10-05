@@ -1737,7 +1737,6 @@
   .pfLink{cursor:pointer;}
   .pfH .pfComp{font-style:normal;color:var(--amber);}                 /* "Fångster i tävlingen REGNAREN 1" */
   .pfRow .pfLake{font-weight:400;color:var(--text-muted);}            /* "78 cm (Östra Vitten)" */
-  .wpTile.pfLink b, #msgCardWho.pfLink, .boatInfoNameRow.pfLink, #boatInfoName.pfLink{text-decoration:underline;text-decoration-color:rgba(240,154,96,.7);text-underline-offset:3px;}
   /* the heat map showing one person's catches: "Bara Filip ✕" */
   .hmWho{background:var(--amber);color:var(--navy);border:none;border-radius:12px;padding:2px 9px;font:inherit;font-weight:700;font-size:12.5px;margin-right:4px;cursor:pointer;}
   /* a catch's photo (in the message panel and the catch panel) */
@@ -1896,8 +1895,8 @@
   .wxTile{background:var(--s2);border:none;border-radius:16px;}
   .wxH{background:var(--s2);}
   #boatInfoModal, #lockCard, #msgCard, #measurePanel{background:var(--navy);border:none;border-radius:20px;}
-  #boatInfoName.pfLink, #msgCardWho.pfLink, #boatInfoCatches .biWho.pfLink{text-decoration:none;}
-  #boatInfoName.pfLink::after, #msgCardWho.pfLink::after, #boatInfoCatches .biWho.pfLink::after{content:' ›';color:var(--text-muted);font-weight:400;}
+  /* a name that opens the person's profile: a › after it (never underlined) */
+  #boatInfoName.pfLink::after, #msgCardWho.pfLink::after, #boatInfoCatches .biWho.pfLink::after, .wpTile.pfLink b::after{content:' ›';color:var(--text-muted);font-weight:400;}
   .setSec, .settingsRow, .adminCard, .helpCard{background:var(--navy);border:none;border-radius:20px;}
   .setSecBody .settingsRow{border-top:1px solid var(--line);}
   .logItem{background:var(--navy);border-radius:0;margin-bottom:0;border-top:1px solid var(--line);}

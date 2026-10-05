@@ -72,6 +72,8 @@ with sync_playwright() as p:
     sx = pg.evaluate("window.__ffHeatScreen(window.__ffCatches().filter(c => c.who === 'Filip')[0].id)")
     pg.mouse.click(sx[0], sx[1]); pg.wait_for_timeout(600)
     check('a catch: Vem can be tapped (his profile)', pg.is_visible('#hmCard') and pg.is_visible('#hmCardData .pfLink'), pg.inner_text('#hmCardData') if pg.is_visible('#hmCard') else 'no card')
+    st = pg.evaluate("(() => { const b = document.querySelector('#hmCardData .pfLink b'); return b ? [getComputedStyle(b).textDecorationLine, getComputedStyle(b, '::after').content] : null; })()")
+    check('...no underline, a › after the name (as everywhere else)', st and st[0] == 'none' and '›' in st[1], st)
     if pg.is_visible('#hmCardData .pfLink'):
         pg.click('#hmCardData .pfLink'); pg.wait_for_timeout(500)
         check('...opens it (the catch panel closes)', pf(pg) and not shown(pg, 'hmCard') and pg.inner_text('#pfName') == 'Filip', [shown(pg, 'hmCard'), pg.inner_text('#pfName')])
