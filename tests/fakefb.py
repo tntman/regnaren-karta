@@ -51,6 +51,7 @@ if not getattr(_Browser, '_ffGuarded', False):
     def _guarded_new_context(self, *a, **kw):
         kw.setdefault('service_workers', 'block')
         help_seen = kw.pop('help_seen', True)
+        splash = kw.pop('splash', False)
         lock = kw.pop('lock', False)
         ctx = block_real_firebase(_orig_new_context(self, *a, **kw))
         ctx.add_init_script(TEST_PIN_JS)
@@ -58,6 +59,8 @@ if not getattr(_Browser, '_ffGuarded', False):
             ctx.add_init_script("window.__ffNoLock = true;")
         if help_seen:   # Hjälp opens by itself the first time -- tests start as if it's been read (test_help: help_seen=False)
             ctx.add_init_script("try { if (!localStorage.getItem('ffmap_help_seen_v1')) localStorage.setItem('ffmap_help_seen_v1', '999'); } catch(e){}")
+        if not splash:   # the start film (35-splash.js, 3.5 s) only on a first start / after 24 h -- tests start as if in use just now (test_splash: splash=True)
+            ctx.add_init_script("try { if (!localStorage.getItem('ffmap_last_active_v1')) localStorage.setItem('ffmap_last_active_v1', String(Date.now())); } catch(e){}")
         # Inställningar in sections: the tests start with them all open (test_extras checks closing / opening)
         ctx.add_init_script("try { if (!localStorage.getItem('ffmap_settings_open_v1')) localStorage.setItem('ffmap_settings_open_v1', '[\"map\", \"boat\", \"warn\", \"an\", \"catch\", \"off\", \"adv\"]'); } catch(e){}")
         return ctx
@@ -256,7 +259,7 @@ def api_row(t_ms, comp, who, sp, cm, lat, lon, lake='Regnaren'):
     ts = datetime.datetime.utcfromtimestamp(t_ms / 1000.0).strftime('%Y-%m-%dT%H:%M:%S.') + '%03dZ' % (t_ms % 1000)
     return {'timestamp': ts, 'competitionId': comp, 'name': who, 'species': {'gadda': 'Gadda', 'abborre': 'Abborre', 'gos': 'Gos'}.get(sp, sp), 'cm': cm, 'lat': lat, 'lng': lon, 'lake': lake}
 
-def new_page(p, geo=None, perms=True, cfg=None, name='Testare', wakelock_stub=False, sw=False, help_seen=True):
+def new_page(p, geo=None, perms=True, cfg=None, name='Testare', wakelock_stub=False, sw=False, help_seen=True, splash=False):
     import json
     b = p.chromium.launch(**__import__('fakefb').LAUNCH)
     kw = dict(viewport={'width':390,'height':844}, has_touch=True, is_mobile=True,
@@ -266,6 +269,7 @@ def new_page(p, geo=None, perms=True, cfg=None, name='Testare', wakelock_stub=Fa
     if perms:
         kw['permissions'] = ['geolocation']
     kw['help_seen'] = help_seen
+    kw['splash'] = splash
     kw['lock'] = bool((cfg or {}).get('lock'))
     ctx = b.new_context(**kw)
     ctx.add_init_script('window.__fakeCfg = ' + json.dumps(cfg or {}) + ';')

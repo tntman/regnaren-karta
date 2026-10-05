@@ -18,7 +18,7 @@ specificitet.
 
 | Mapp/fil | Innehåll |
 |---|---|
-| `head.html` | `<head>`: titel, ikoner, manifest, Firebase-SDK, statusrad (iOS) |
+| `head.html` | `<head>`: titel, ikoner, manifest, Firebase-SDK, statusrad (iOS), ett litet skript som gör allt svart före första bilden när startfilmen ska visas (`html.splash`) |
 | `sw.js` | service worker (kopieras som den är) |
 | **css/** | |
 | `10-base.css` | färger (`:root`), layout, kartan, rubriken, din pil, skala/zoom |
@@ -36,7 +36,9 @@ specificitet.
 | `80-panels.css` | bottenpanelerna: greppremsan, dra mindre / skrolla (Kartanalys, meddelande, plats) |
 | `85-touch.css` | stora tryckytor i bottenrutorna (blöta fingrar): chips 40, kategorirad 42, knapprader 46 px – kartans egna knappar orörda; läsbar småtext i rutorna (≥ 11 px), Inställningar som spalt på bred skärm, fokusring, "Reducera rörelse" för panelernas rörelser |
 | `90-buttons.css` | de fyra knapparna nere till höger i 2 × 2 (sist: bestämmer storlek/plats över allt ovan) |
+| `96-splash.css` | startfilmen: svart, sken, glöd, blixt, vinjett, filmbrus |
 | **html/** | |
+| `05-splash.html` | startfilmen `#splash` (först i sidan, så den finns redan i första bilden; utanför `#app`) |
 | `10-map.html` | `#app`, kartan och lagren (`#stage`, platser, båtar, bubblor, lodet, heatmap) |
 | `20-menu-settings.html` | menyknapp, meny, Logg, Inställningar, Admin, PIN |
 | `30-map-ui.html` | rubrik, väderkort, mätpanel, knappar, meddelanden, Kartanalys-panel, Heatmap-rutorna, Filter, radar |
@@ -57,7 +59,8 @@ specificitet.
 | `32-demo.js` | Demo Mode = testläget (på/av = omladdning in i testdatabasen, `TEST_MODE` i `10-core.js`) |
 | `33-avatars.js` | profilbilderna (`AVATARS`, genereras av `tools/make_avatars.py` ur `tools/fiskare/`) |
 | `34-name.js` | ditt namn, profilbild på menyknappen, "Logga ut" i menyn |
-| `35-logo3d.js` | loggan som 3D-skylt på "Vem är du?", i Hjälp och Inställningar (three.js från `assets/three-r170*.js`, laddas bara där), trappar ner på äldre telefoner |
+| `35-logo3d.js` | loggan som 3D-skylt på "Vem är du?", i Hjälp och Inställningar (three.js från `assets/three-r170*.js`, laddas bara där), trappar ner på äldre telefoner; `nlMakeSign()` = skylten, även startfilmens |
+| `35-splash.js` | startfilmen (3,5 s, 3D-loggan) vid första starten och efter > 24 h (`ffmap_last_active_v1`), platt logga på äldre telefoner / Reducera rörelse, tryck = hoppa över, `afterSplash()` (namnrutan väntar) – `tools/PLAN_SPLASH.md` |
 | `36-admin.js` | admin, export (GPX/CSV), Säkerhetskopia (hela databasen till en fil och tillbaka, test_backup) |
 | `37-testmode.js` | testläget: låtsastävlingen i `config/<sjö>.test`, Admin → Testläge (tävling, fångster, testbåtar, blixtar, rensa) – `tools/NOTES_TESTLAGE.md` |
 | `38-speed-depth.js` | fart, riktningspilen, djup |

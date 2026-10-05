@@ -113,6 +113,7 @@
   });
 
   function showNameModal(){
+    if (splashOn()){ afterSplash(showNameModal); return; }   // (after the start film, 35-splash.js)
     selectedRosterName = null;
     otherNameMode = false;
     Array.from(nameListEl.children).forEach(function(c){ c.classList.remove('selected'); });

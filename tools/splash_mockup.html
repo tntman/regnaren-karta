@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Splash – förslag</title>
+<style>
+  :root { --bg:#141822; --navy:#1C212C; --s2:#262C39; --text:#D6DAE2; --muted:#9098A8; --amber:#F09A60; }
+  * { box-sizing:border-box; }
+  html, body { margin:0; height:100%; background:#0b0d12; color:var(--text);
+    font:15px/1.4 -apple-system, "SF Pro Text", "Segoe UI", system-ui, sans-serif; }
+  body { display:flex; gap:28px; align-items:center; justify-content:center; padding:16px; flex-wrap:wrap; }
+
+  .phone { position:relative; width:390px; height:844px; max-width:100%; max-height:calc(100vh - 32px);
+    border-radius:44px; overflow:hidden; background:var(--bg); box-shadow:0 0 0 10px #22262f, 0 30px 80px #000a; }
+
+  /* the app behind */
+  .app { position:absolute; inset:0; background:var(--bg) url("../docs/lakes/regnaren/map_v4_s1.jpg") center/cover; }
+  .chip { position:absolute; top:58px; left:50%; transform:translateX(-50%); padding:8px 14px; border-radius:20px;
+    background:rgba(28,33,44,.72); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); font-size:14px; }
+  .names { position:absolute; inset:0; background:rgba(20,24,34,.55); display:flex; align-items:flex-end; }
+  .names .sheet { width:100%; background:var(--navy); border-radius:22px 22px 0 0; padding:22px 18px 40px; }
+  .names h2 { margin:0; font-size:22px; } .names p { margin:2px 0 16px; color:var(--muted); }
+  .names .list { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .names .list div { background:var(--s2); border-radius:12px; padding:13px 14px; }
+  .phone.direct .names { display:none; }
+
+  /* the splash: black, light, the sign, bloom, grain */
+  .splash { position:absolute; inset:0; z-index:5; pointer-events:none; }
+  .splash.gone { display:none; }
+  .splash > * { position:absolute; inset:0; width:100%; height:100%; }
+  .black { background:#000; }
+  .glow { background:radial-gradient(55% 34% at 50% 47%, #5a2c1c 0%, #2a1612 38%, #0a0608 70%, #000 100%); opacity:0; }
+  .logo { }
+  .logo canvas { position:absolute; inset:0; width:100%; height:100%; }
+  .logo .bloom { filter:blur(16px) brightness(1.2) saturate(1.4); mix-blend-mode:screen; opacity:0; }
+  .flash { background:radial-gradient(circle at 50% 47%, #fff6ea, #ffd2a8 40%, #f09a60 100%); opacity:0; }
+  .vig { background:radial-gradient(120% 80% at 50% 47%, transparent 45%, rgba(0,0,0,.85) 100%); }
+  .grain { opacity:.09; mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+
+  /* controls */
+  .ctl { width:270px; display:flex; flex-direction:column; gap:12px; }
+  .ctl h1 { font-size:18px; margin:0 0 4px; }
+  .ctl p { margin:0; color:var(--muted); font-size:13px; }
+  .ctl label { color:var(--muted); font-size:12px; margin:4px 0 -6px; }
+  .ctl button { font:inherit; color:var(--text); background:var(--s2); border:0; border-radius:12px; padding:11px; cursor:pointer; }
+  .ctl button.main { background:var(--amber); color:#1A0C02; font-weight:600; }
+  .ctl .row { display:flex; gap:8px; } .ctl .row button { flex:1; }
+  .ctl .row button.on { outline:2px solid var(--amber); }
+  .ctl .t { font-variant-numeric:tabular-nums; color:var(--muted); font-size:13px; }
+</style>
+</head>
+<body>
+  <div class="phone" id="phone">
+    <div class="app" id="app">
+      <div class="chip">☀ 14° · 3 m/s</div>
+      <div class="names"><div class="sheet">
+        <h2>Vem är du?</h2><p>Tryck på dig själv</p>
+        <div class="list"><div>Filip</div><div>Anna</div><div>Erik</div><div>Johan</div><div>Lisa</div><div>Mats</div></div>
+      </div></div>
+    </div>
+    <div class="splash" id="splash">
+      <div class="black" id="black"></div>
+      <div class="glow" id="glow"></div>
+      <div class="logo" id="logo"><canvas class="bloom" id="bloom"></canvas></div>
+      <div class="flash" id="flash"></div>
+      <div class="vig" id="vig"></div>
+      <div class="grain" id="grain"></div>
+    </div>
+  </div>
+
+  <div class="ctl">
+    <h1>Splash – förslag 7</h1>
+    <p>Visas första gången och när appen inte varit igång på över 24 timmar. 3,5 sekunder.</p>
+    <button class="main" id="replay">▶ Spela igen</button>
+    <label>Fart</label>
+    <div class="row"><button id="slow">Halv fart</button><button id="normal" class="on">Normal</button></div>
+    <label>Sedan</label>
+    <div class="row"><button id="bNames" class="on">"Vem är du?"</button><button id="bDirect">Rakt in</button></div>
+    <div class="t" id="t">0,00 s</div>
+  </div>
+
+<script type="module">
+import * as T from '../docs/three-r170.min.js';
+import { SVGLoader } from '../docs/three-r170-svg.js';
+import { RoomEnvironment } from '../docs/three-r170-room.js';
+
+const DUR = 3.5, $ = id => document.getElementById(id);
+const phone = $('phone'), splash = $('splash'), app = $('app'), bloom = $('bloom'), bctx = bloom.getContext('2d');
+const svg = await (await fetch('../docs/ff_logo.svg')).text();
+
+// the sign as in js/35-logo3d.js, with a clear coat for the glint
+const r = new T.WebGLRenderer({ antialias:true, alpha:true });
+r.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+r.toneMapping = T.ACESFilmicToneMapping;
+$('logo').prepend(r.domElement);
+const scene = new T.Scene();
+const cam = new T.PerspectiveCamera(30, 1, 0.05, 50);
+const pm = new T.PMREMGenerator(r);
+scene.environment = pm.fromScene(new RoomEnvironment(), 0.04).texture;
+// teal/orange: warm key from above left, cold rim from behind, a low warm fill
+const key = new T.SpotLight(0xffd9b0, 0, 0, 0.5, 0.6, 0); scene.add(key, key.target);
+const rim = new T.DirectionalLight(0x7fb0ff, 0); rim.position.set(1.8, 1.2, -2.5); scene.add(rim);
+const rim2 = new T.DirectionalLight(0xff9a60, 0); rim2.position.set(-2, -1, -2); scene.add(rim2);
+
+const red = new T.MeshPhysicalMaterial({ color:0xEE2A28, metalness:0.45, roughness:0.3, clearcoat:1, clearcoatRoughness:0.08 });
+const white = new T.MeshStandardMaterial({ color:0xffffff, metalness:0.05, roughness:0.45 });
+const D = 50, B = 9, inner = new T.Group();
+new SVGLoader().parse(svg).paths.forEach(p => {
+  const isWhite = /^(white|#fff(fff)?)$/i.test(String(p.userData.style.fill).trim());
+  SVGLoader.createShapes(p).forEach(s => {
+    const m = isWhite ? new T.Mesh(new T.ShapeGeometry(s, 8), white)
+      : new T.Mesh(new T.ExtrudeGeometry(s, { depth:D, bevelEnabled:true, bevelThickness:B, bevelSize:B, bevelSegments:4, curveSegments:10 }), red);
+    if (isWhite) m.position.z = D + B + 1;
+    inner.add(m);
+  });
+});
+const box = new T.Box3().setFromObject(inner), c = box.getCenter(new T.Vector3()), sz = box.getSize(new T.Vector3());
+inner.position.set(-c.x, -c.y, -c.z);
+const pivot = new T.Group(), k = 1 / sz.x;
+pivot.add(inner); scene.add(pivot);
+
+const clamp = x => Math.max(0, Math.min(1, x));
+const seg = (t, a, b) => clamp((t - a) / (b - a));
+const outCubic = x => 1 - Math.pow(1 - x, 3), inCubic = x => x * x * x;
+const inOut = x => x < .5 ? 4*x*x*x : 1 - Math.pow(-2*x + 2, 3) / 2;
+const bump = (t, at, w) => Math.exp(-Math.pow((t - at) / w, 2));
+
+/* the timeline (seconds)
+   0–1.9   spins in from total darkness (all black the first 0.25 s); the light comes up with it and is full just as it lands
+   1.9–2.5 at rest, full light; the key light drifts across = the glint
+   2.5–3.5 it turns and flies through the camera, a warm flash, the black dissolves, the app comes in sharp */
+function pose(t){
+  const a = seg(t, 0, 1.9), turn = 1 - Math.pow(1 - a, 2);   // one calm turn, gently slowing
+  const lit = Math.pow(seg(t, 0.25, 1.9), 1.8);   // slow, still rising until it lands
+  t -= 0.5;   // the rest as before
+  const sweep = inOut(seg(t, 0.8, 2.1));
+  const o = inCubic(seg(t, 2.0, 2.6));
+  return {
+    scale: (0.55 + 0.45 * turn) * (1 + 9 * o * o),
+    ry: -360 * (1 - turn) + 5 * Math.sin(t * 2.2) + 140 * o,
+    rx: 10 * (1 - turn) - 25 * o,
+    z: 0.25 * o, lit, sweep,
+    logoA: 1 - seg(t, 2.4, 2.62),
+    flash: 0.55 * bump(t, 2.5, 0.1),
+    blackA: 1 - inOut(seg(t, 2.42, 3.0)),
+    appBlur: 1 - seg(t, 2.42, 3.0),
+  };
+}
+
+const q = new URLSearchParams(location.search).get('t'), FREEZE = q === null ? null : +q;   // ?t=1.5 = stand still there
+let speed = 1, t0 = 0, raf = 0;
+function frame(now){
+  const t = Math.min(FREEZE ?? (now - t0) / 1000 * speed, DUR);
+  const cv = r.domElement, w = cv.clientWidth, h = cv.clientHeight;
+  if (cv.width !== Math.round(w * r.getPixelRatio())){
+    r.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix();
+    bloom.width = Math.round(w / 4); bloom.height = Math.round(h / 4);
+  }
+  const p = pose(t);
+  cam.position.z = 3.5 - 0.3 * seg(t, 0, 2.5) - p.z;
+  const view = 2 * 3.2 * Math.tan(15 * Math.PI / 180) * Math.min(w / h, 1);
+  const s = p.scale * k * 0.84 * view;
+  pivot.scale.set(s, -s, s);
+  pivot.rotation.set(p.rx * Math.PI / 180, p.ry * Math.PI / 180, 0);
+  // the lights
+  key.position.set(-2.4 + 4.8 * p.sweep, 2.2, 2.4);
+  key.intensity = 3.2 * p.lit;
+  rim.intensity = 7 * p.lit;
+  rim2.intensity = 2.2 * p.lit;
+  scene.environmentIntensity = 0.67 * p.lit;
+  r.toneMappingExposure = 0.6 + 0.35 * p.lit;
+  r.render(scene, cam);
+  // fake bloom: the frame, small and blurred, on top with "screen"
+  bctx.clearRect(0, 0, bloom.width, bloom.height);
+  bctx.drawImage(cv, 0, 0, bloom.width, bloom.height);
+  bloom.style.opacity = (0.18 * p.lit).toFixed(3);
+  // the rest
+  $('logo').style.opacity = p.logoA;
+  $('glow').style.opacity = (p.lit * p.logoA).toFixed(3);
+  $('flash').style.opacity = p.flash.toFixed(3);
+  $('black').style.opacity = p.blackA;
+  $('vig').style.opacity = Math.max(p.blackA, p.logoA);
+  $('grain').style.opacity = (0.09 * p.blackA).toFixed(3);
+  $('grain').style.backgroundPosition = (Math.random() * 160 | 0) + 'px ' + (Math.random() * 160 | 0) + 'px';
+  app.style.filter = p.appBlur ? 'blur(' + (14 * p.appBlur).toFixed(1) + 'px) brightness(' + (1 - 0.3 * p.appBlur).toFixed(2) + ')' : '';
+  app.style.transform = p.appBlur ? 'scale(' + (1 + 0.06 * p.appBlur).toFixed(3) + ')' : '';
+  $('t').textContent = t.toFixed(2).replace('.', ',') + ' s';
+  if (t < DUR) raf = requestAnimationFrame(frame); else splash.classList.add('gone');
+}
+function play(){
+  cancelAnimationFrame(raf);
+  splash.classList.remove('gone');
+  t0 = performance.now(); raf = requestAnimationFrame(frame);
+}
+const pick = (on, off, f) => $(on).onclick = () => { $(on).classList.add('on'); $(off).classList.remove('on'); f(); play(); };
+$('replay').onclick = play;
+pick('slow', 'normal', () => speed = 0.5);
+pick('normal', 'slow', () => speed = 1);
+pick('bNames', 'bDirect', () => phone.classList.remove('direct'));
+pick('bDirect', 'bNames', () => phone.classList.add('direct'));
+play();
+</script>
+</body>
+</html>

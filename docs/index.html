@@ -15,6 +15,9 @@
 <meta name="apple-mobile-web-app-title" content="FF Map">
 <!-- the status bar's colour (see above) = the map's background = the top fade: #141822 -->
 <meta name="theme-color" content="#141822">
+<!-- the start film (js/35-splash.js): first start, or > 24 h since the app was last in use -> all black from the
+     very first picture (html.splash), so the map never flashes up before it -->
+<script>try{var t=+localStorage.getItem('ffmap_last_active_v1');if(!t||Date.now()-t>864e5){document.documentElement.classList.add('splash');document.querySelector('meta[name=theme-color]').content='#000'}}catch(e){}</script>
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="data:image/png;base64,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">
@@ -2095,11 +2098,36 @@
      panels and the chosen tab, so they read as lying above ---- */
   .setSec, #settingsBody > .settingsRow, #visMore, #hmPanel, #anPanel, #wpSheet, #menuPanel{box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 18px 50px rgba(0,0,0,.4);}
   .anSeg button.on::before, .helpSeg button.on::before, .segmented button.active::before{box-shadow:inset 0 1px 0 rgba(255,255,255,.08);}
+  /* ---------------- The start film (js/35-splash.js) ----------------
+     html.splash (set in head.html before the page is drawn) = all black over everything at once. */
+  #splash{display:none;}
+  html.splash #splash{display:block;position:fixed;inset:0;z-index:100000;touch-action:none;}
+  #splash > *{position:absolute;inset:0;width:100%;height:100%;}
+  .spBlack{background:#000;}
+  .spGlow{background:radial-gradient(55% 34% at 50% 47%, #5a2c1c 0%, #2a1612 38%, #0a0608 70%, #000 100%);opacity:0;}
+  .spLogo canvas{position:absolute;inset:0;width:100%;height:100%;}
+  .spBloom{filter:blur(16px) brightness(1.2) saturate(1.4);mix-blend-mode:screen;opacity:0;}
+  #splash .spFlat{inset:auto;left:50%;top:47%;width:min(62vw,320px);height:auto;transform:translate(-50%,-50%);}
+  .spFlat:not([src]){display:none;}
+  .spFlash{background:radial-gradient(circle at 50% 47%, #fff6ea, #ffd2a8 40%, #f09a60 100%);opacity:0;}
+  .spVig{background:radial-gradient(120% 80% at 50% 47%, transparent 45%, rgba(0,0,0,.85) 100%);}
+  .spGrain{opacity:.09;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+  #splash.lite .spGrain, #splash.lite .spBloom{display:none;}   /* (older phones, the flat logo) */
 </style>
 </head>
 <body>
 
 
+<!-- the start film (js/35-splash.js, css/96-splash.css): first in the page, so it's there in the very first picture -->
+<div id="splash" aria-hidden="true">
+  <div class="spBlack"></div>
+  <div class="spGlow"></div>
+  <div class="spLogo"><img class="spFlat" alt=""><canvas class="spBloom"></canvas></div>
+  <div class="spFlash"></div>
+  <div class="spVig"></div>
+  <div class="spGrain"></div>
+</div>
 <div id="app">
   <div id="stage">
     <div id="world"><img id="mapImg" alt="Djupkarta över sjön Regnaren" draggable="false"></div>
@@ -6034,6 +6062,7 @@
   });
 
   function showNameModal(){
+    if (splashOn()){ afterSplash(showNameModal); return; }   // (after the start film, 35-splash.js)
     selectedRosterName = null;
     otherNameMode = false;
     Array.from(nameListEl.children).forEach(function(c){ c.classList.remove('selected'); });
@@ -6118,6 +6147,28 @@
     return nlLibP || (nlLibP = Promise.all([import('./three-r170.min.js'), import('./three-r170-svg.js'), import('./three-r170-room.js'),
       fetch('ff_logo.svg').then(function(r){ return r.text(); })]));
   }
+  // the sign: a thick red extrusion with the white parts on its front face, centred; scale k = 1 unit wide
+  // (o.red / o.white: the materials, o.fine: rounder bevels and curves). Also the start film (35-splash.js)
+  function nlMakeSign(T, SVGLoader, svg, o){
+    var D = 50, B = 9;   // the sign's thickness and bevel, in the SVG's units (the logo is ~1488 wide)
+    var inner = new T.Group();
+    new SVGLoader().parse(svg).paths.forEach(function(p){
+      var isWhite = /^(white|#fff(fff)?)$/i.test(String(p.userData.style.fill).trim());
+      SVGLoader.createShapes(p).forEach(function(s){
+        var m = isWhite ? new T.Mesh(new T.ShapeGeometry(s, 8), o.white)
+                        : new T.Mesh(new T.ExtrudeGeometry(s, { depth: D, bevelEnabled: true, bevelThickness: B, bevelSize: B,
+                                                                bevelSegments: o.fine ? 4 : 1, curveSegments: o.fine ? 10 : 5 }), o.red);
+        if (isWhite) m.position.z = D + B + 1;   // on the front face
+        inner.add(m);
+      });
+    });
+    var box = new T.Box3().setFromObject(inner), c = box.getCenter(new T.Vector3()), sz = box.getSize(new T.Vector3());
+    inner.position.set(-c.x, -c.y, -c.z);
+    var pivot = new T.Group(), k = 1 / sz.x;
+    pivot.scale.set(k, -k, k);   // (the SVG's y points down)
+    pivot.add(inner);
+    return { pivot: pivot, k: k };
+  }
 
   function makeLogo3d(el, view){
     var spin = el.querySelector('.nlSpin');
@@ -6162,25 +6213,9 @@
         var l1 = new T.DirectionalLight(0xffffff, 2); l1.position.set(-1, 1.5, 2); scene.add(l1);
         var l2 = new T.DirectionalLight(0xffffff, 1.4); l2.position.set(1, -0.5, -2); scene.add(l2);
       }
-      var red = new T.MeshStandardMaterial({ color: 0xEE2A28, metalness: 0.4, roughness: 0.28 });
-      var white = new T.MeshStandardMaterial({ color: 0xffffff, metalness: 0.05, roughness: 0.5 });
-      var D = 50, B = 9;   // the sign's thickness and bevel, in the SVG's units (the logo is ~1488 wide)
-      var inner = new T.Group();
-      new SVGLoader().parse(svg).paths.forEach(function(p){
-        var isWhite = /^(white|#fff(fff)?)$/i.test(String(p.userData.style.fill).trim());
-        SVGLoader.createShapes(p).forEach(function(s){
-          var m = isWhite ? new T.Mesh(new T.ShapeGeometry(s, 8), white)
-                          : new T.Mesh(new T.ExtrudeGeometry(s, { depth: D, bevelEnabled: true, bevelThickness: B, bevelSize: B,
-                                                                  bevelSegments: full ? 4 : 1, curveSegments: full ? 10 : 5 }), red);
-          if (isWhite) m.position.z = D + B + 1;   // on the front face
-          inner.add(m);
-        });
-      });
-      var box = new T.Box3().setFromObject(inner), c = box.getCenter(new T.Vector3()), sz = box.getSize(new T.Vector3());
-      inner.position.set(-c.x, -c.y, -c.z);
-      var pivot = new T.Group(), k = 1 / sz.x;
-      pivot.scale.set(k, -k, k);   // (the SVG's y points down)
-      pivot.add(inner);
+      var pivot = nlMakeSign(T, SVGLoader, svg, { fine: full,
+        red: new T.MeshStandardMaterial({ color: 0xEE2A28, metalness: 0.4, roughness: 0.28 }),
+        white: new T.MeshStandardMaterial({ color: 0xffffff, metalness: 0.05, roughness: 0.5 }) }).pivot;
       scene.add(pivot);
       el.appendChild(canvas);
       nl.gl = { r: r, scene: scene, cam: cam, pivot: pivot, canvas: canvas, w: 0, h: 0, tier: nlTier };
@@ -6274,6 +6309,165 @@
   window.__ffNameLogo = makeLogo3d(document.getElementById('nameLogo'), nameModal);
   window.__ffHelpLogo = makeLogo3d(document.getElementById('helpLogo'), document.getElementById('helpView'));
   window.__ffSettingsLogo = makeLogo3d(document.getElementById('settingsLogo'), document.getElementById('settingsView'));
+  /* ---------------- The start film (splash), tools/PLAN_SPLASH.md ----------------
+     3.5 s with the logo in 3D: the first start, and when the app hasn't been in use for > 24 h
+     (ffmap_last_active_v1 = when it last was, for the whole phone: written at start, every minute while
+     it's shown and when it's hidden). head.html sets html.splash before the page is drawn (all black,
+     the map never flashes up); coming back from the background after > 24 h without a reload sets it
+     here. three.js and the sign come from 35-logo3d.js (nlLib, nlMakeSign, nlTier); the clock starts
+     when it's all built. Over 1.5 s to load, or it fails -> only the black fades away (0.5 s).
+     'flat' (no WebGL) or Reduce motion -> the flat logo fades in and out (2 s, nothing spins).
+     A tap skips to the end (0.4 s). Afterwards the renderer and its canvas are gone -- nothing keeps running. */
+  var SPLASH_KEY = 'ffmap_last_active_v1', SPLASH_GAP = 24 * 3600000;
+  var spEl = document.getElementById('splash'), spLogo = spEl.querySelector('.spLogo'), spBloom = spEl.querySelector('.spBloom');
+  var spFlatImg = spEl.querySelector('.spFlat'), spApp = document.getElementById('app'), spS = {};
+  ['spBlack', 'spGlow', 'spLogo', 'spFlash', 'spVig', 'spGrain'].forEach(function(c){ spS[c] = spEl.querySelector('.' + c).style; });
+  var spSt = { shown: false, running: false, t: 0, mode: '' }, spRaf = 0, spGl = null, spWait = [], spSafety = 0, spLoadTimer = 0, spBlur = false;
+  function splashOn(){ return document.documentElement.classList.contains('splash'); }
+  function afterSplash(fn){ if (splashOn()) spWait.push(fn); else fn(); }   // (the name picker waits: never two WebGL at once)
+  function splashAge(){ var t = 0; try { t = +localStorage.getItem(SPLASH_KEY) || 0; } catch(e){} return t ? Date.now() - t : Infinity; }
+  function splashMark(){ try { localStorage.setItem(SPLASH_KEY, String(Date.now())); } catch(e){} }
+  function spTheme(c){ var m = document.querySelector('meta[name=theme-color]'); if (m) m.content = c; }   // (the status bar: black during the film)
+
+  function spSeg(t, a, b){ return Math.max(0, Math.min(1, (t - a) / (b - a))); }
+  function spInOut(x){ return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; }
+  // the timeline (s), the same curves as the mockup (tools/splash_mockup.html):
+  // 0-1.9 one calm turn in from the dark, the light full just as it lands; 1.9-2.5 at rest, the key light's glint
+  // drifts across; 2.5-3.1 it turns and flies through the camera, a warm flash at 3.0; 2.9-3.5 the black dissolves
+  function splashPose(t){
+    var a = spSeg(t, 0, 1.9), turn = 1 - Math.pow(1 - a, 2), lit = Math.pow(spSeg(t, 0.25, 1.9), 1.8);
+    t -= 0.5;
+    var o = Math.pow(spSeg(t, 2.0, 2.6), 3);
+    return { scale: (0.55 + 0.45 * turn) * (1 + 9 * o * o), ry: -360 * (1 - turn) + 5 * Math.sin(t * 2.2) + 140 * o,
+      rx: 10 * (1 - turn) - 25 * o, z: 0.25 * o, lit: lit, sweep: spInOut(spSeg(t, 0.8, 2.1)),
+      logoA: 1 - spSeg(t, 2.4, 2.62), flash: 0.55 * Math.exp(-Math.pow((t - 2.5) / 0.1, 2)),
+      blackA: 1 - spInOut(spSeg(t, 2.42, 3.0)), appBlur: 1 - spSeg(t, 2.42, 3.0) };
+  }
+  function spFade(d){ return function(t){ var f = spInOut(spSeg(t, 0, d)); return { lit: 0, logoA: 0, flash: 0, blackA: 1 - f, appBlur: 1 - f }; }; }
+  function spFlatPose(t){   // the flat logo: in from the dark, stays, out with the black
+    var out = spInOut(spSeg(t, 1.4, 2.0));
+    return { lit: 0, logoA: spSeg(t, 0.15, 0.7), flash: 0, blackA: 1 - out, appBlur: 1 - out };
+  }
+  function spApply(p){
+    spS.spLogo.opacity = p.logoA;
+    spS.spGlow.opacity = (p.lit * p.logoA).toFixed(3);
+    spS.spFlash.opacity = p.flash.toFixed(3);
+    spS.spBlack.opacity = p.blackA;
+    spS.spVig.opacity = Math.max(p.blackA, p.logoA);
+    spS.spGrain.opacity = (0.09 * p.blackA).toFixed(3);
+    spS.spGrain.backgroundPosition = (Math.random() * 160 | 0) + 'px ' + (Math.random() * 160 | 0) + 'px';
+    // the app under it: from blurred and darker to sharp (only on phones that manage it)
+    spApp.style.filter = spBlur && p.appBlur ? 'blur(' + (14 * p.appBlur).toFixed(1) + 'px) brightness(' + (1 - 0.3 * p.appBlur).toFixed(2) + ')' : '';
+    spApp.style.transform = spBlur && p.appBlur ? 'scale(' + (1 + 0.06 * p.appBlur).toFixed(3) + ')' : '';
+  }
+  function spPlay(mode, dur, pose, draw){
+    var t0 = 0;
+    cancelAnimationFrame(spRaf);
+    spSt.mode = mode;
+    function frame(now){
+      if (!t0) t0 = now;
+      var t = Math.min((now - t0) / 1000, dur), p = pose(t);
+      spSt.t = t;
+      if (draw) draw(t, p);
+      spApply(p);
+      if (t < dur) spRaf = requestAnimationFrame(frame); else splashDone();
+    }
+    spRaf = requestAnimationFrame(frame);
+  }
+  // the sign as on "Vem är du?", with a clear coat for the glint; lights: warm key gliding left -> right,
+  // cold rim from behind, low warm fill. -> draw(t, pose)
+  function spBuild(T, SVGLoader, Room, svg){
+    var full = nlTier === 'full', canvas = document.createElement('canvas');
+    var r = new T.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });   // (throws without WebGL)
+    r.setPixelRatio(full ? Math.min(window.devicePixelRatio || 1, 2) : 1);
+    r.toneMapping = T.ACESFilmicToneMapping;
+    var scene = new T.Scene(), cam = new T.PerspectiveCamera(30, 1, 0.05, 50), env = null, amb = null;
+    if (full){ var pm = new T.PMREMGenerator(r); env = pm.fromScene(new Room(), 0.04).texture; pm.dispose(); scene.environment = env; }
+    else { amb = new T.AmbientLight(0xffffff, 0); scene.add(amb); }
+    var key = new T.SpotLight(0xffd9b0, 0, 0, 0.5, 0.6, 0); scene.add(key, key.target);
+    var rim = new T.DirectionalLight(0x7fb0ff, 0); rim.position.set(1.8, 1.2, -2.5); scene.add(rim);
+    var rim2 = new T.DirectionalLight(0xff9a60, 0); rim2.position.set(-2, -1, -2); scene.add(rim2);
+    var sign = nlMakeSign(T, SVGLoader, svg, { fine: full,
+      red: new T.MeshPhysicalMaterial({ color: 0xEE2A28, metalness: 0.45, roughness: 0.3, clearcoat: 1, clearcoatRoughness: 0.08 }),
+      white: new T.MeshStandardMaterial({ color: 0xffffff, metalness: 0.05, roughness: 0.45 }) });
+    scene.add(sign.pivot);
+    spLogo.insertBefore(canvas, spBloom);
+    var bctx = full ? spBloom.getContext('2d') : null;   // the fake glow: the frame, small and blurred, on top with "screen"
+    spGl = { r: r, canvas: canvas, scene: scene, env: env };
+    return function(t, p){
+      var w = canvas.clientWidth, h = canvas.clientHeight;
+      if (!w || !h) return;
+      if (canvas.width !== Math.round(w * r.getPixelRatio())){
+        r.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix();
+        if (bctx){ spBloom.width = Math.round(w / 4); spBloom.height = Math.round(h / 4); }
+      }
+      cam.position.z = 3.5 - 0.3 * spSeg(t, 0, 2.5) - p.z;
+      var s = p.scale * sign.k * 0.84 * 2 * 3.2 * Math.tan(15 * Math.PI / 180) * Math.min(w / h, 1);
+      sign.pivot.scale.set(s, -s, s);
+      sign.pivot.rotation.set(p.rx * Math.PI / 180, p.ry * Math.PI / 180, 0);
+      key.position.set(-2.4 + 4.8 * p.sweep, 2.2, 2.4);
+      key.intensity = 3.2 * p.lit; rim.intensity = 7 * p.lit; rim2.intensity = 2.2 * p.lit;
+      if (env) scene.environmentIntensity = 0.67 * p.lit; else amb.intensity = 0.8 * p.lit;
+      r.toneMappingExposure = 0.6 + 0.35 * p.lit;
+      r.render(scene, cam);
+      if (bctx){ bctx.clearRect(0, 0, spBloom.width, spBloom.height); bctx.drawImage(canvas, 0, 0, spBloom.width, spBloom.height); spBloom.style.opacity = (0.18 * p.lit).toFixed(3); }
+    };
+  }
+  function spCancelLoad(){ clearTimeout(spLoadTimer); spLoadTimer = 0; }
+  function splashStart(){
+    spSt.shown = spSt.running = true; spSt.t = 0; spSt.mode = 'load';
+    spTheme('#000');
+    clearTimeout(spSafety); spSafety = setTimeout(splashDone, 9000);   // (whatever happens: never stuck behind the black)
+    var flat = nlTier === 'flat' || nlReduce;
+    spBlur = !flat && nlTier === 'full';
+    spEl.classList.toggle('lite', nlTier !== 'full' || nlReduce);
+    spApply({ lit: 0, logoA: 0, flash: 0, blackA: 1, appBlur: 1 });
+    if (flat){ spFlatImg.src = 'ff_logo.svg'; spPlay('flat', 2, spFlatPose, null); return; }
+    spLoadTimer = setTimeout(function(){ spLoadTimer = 0; spPlay('fade', 0.5, spFade(0.5), null); }, window.__ffSplashLoadMs || 1500);   // (too slow: just fade; the tests' busy browser may wait longer)
+    nlLib().then(function(m){
+      if (!spLoadTimer) return;   // (too late, or tapped away)
+      spCancelLoad();
+      var draw;
+      try { draw = spBuild(m[0], m[1].SVGLoader, m[2].RoomEnvironment, m[3]); }
+      catch(e){ nlSetTier('flat'); spPlay('fade', 0.5, spFade(0.5), null); return; }
+      spPlay('film', 3.5, splashPose, draw);
+    }).catch(function(){ if (!spLoadTimer) return; spCancelLoad(); spPlay('fade', 0.5, spFade(0.5), null); });
+  }
+  function splashDone(){
+    cancelAnimationFrame(spRaf); spRaf = 0; clearTimeout(spSafety); spCancelLoad();
+    if (spGl){
+      spGl.scene.traverse(function(o){ if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
+      if (spGl.env) spGl.env.dispose();
+      spGl.r.dispose(); try { spGl.r.forceContextLoss(); } catch(e){}
+      spGl.canvas.remove(); spGl = null;
+    }
+    spBloom.width = spBloom.height = 0;
+    spFlatImg.removeAttribute('src');
+    spApp.style.filter = spApp.style.transform = '';
+    document.documentElement.classList.remove('splash');
+    spTheme('#141822');   // (as in head.html)
+    spSt.running = false; spSt.mode = '';
+    var w = spWait; spWait = [];
+    w.forEach(function(f){ f(); });
+  }
+  // a tap anywhere: straight to the end
+  spEl.addEventListener('pointerdown', function(e){
+    e.preventDefault();
+    if (!spSt.running || spSt.mode === 'skip') return;
+    spCancelLoad();
+    spPlay('skip', 0.4, spFade(0.4), null);
+  });
+  // in use = now; shown again after > 24 h (also back from the background without a reload)
+  function splashTick(e){
+    var vis = document.visibilityState !== 'hidden';
+    if (vis && !splashOn() && splashAge() > SPLASH_GAP){ document.documentElement.classList.add('splash'); splashStart(); }
+    if (vis || e) splashMark();   // (every minute while it's shown, and when it's hidden)
+  }
+  if (splashOn()) splashStart();
+  splashMark();
+  setInterval(splashTick, 60000);
+  document.addEventListener('visibilitychange', splashTick);
+  window.__ffSplash = function(){ return { shown: spSt.shown, running: spSt.running, t: spSt.t, mode: spSt.mode, gl: !!spGl }; };
   /* ---------------- Admin (bara för Filip, låst med PIN-kod) ----------------
      Note: this is a convenience lock, not real security -- identity in this
      app is just the chosen name, and the Firestore rules (not this page)

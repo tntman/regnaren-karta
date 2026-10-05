@@ -21,6 +21,28 @@
     return nlLibP || (nlLibP = Promise.all([import('./three-r170.min.js'), import('./three-r170-svg.js'), import('./three-r170-room.js'),
       fetch('ff_logo.svg').then(function(r){ return r.text(); })]));
   }
+  // the sign: a thick red extrusion with the white parts on its front face, centred; scale k = 1 unit wide
+  // (o.red / o.white: the materials, o.fine: rounder bevels and curves). Also the start film (35-splash.js)
+  function nlMakeSign(T, SVGLoader, svg, o){
+    var D = 50, B = 9;   // the sign's thickness and bevel, in the SVG's units (the logo is ~1488 wide)
+    var inner = new T.Group();
+    new SVGLoader().parse(svg).paths.forEach(function(p){
+      var isWhite = /^(white|#fff(fff)?)$/i.test(String(p.userData.style.fill).trim());
+      SVGLoader.createShapes(p).forEach(function(s){
+        var m = isWhite ? new T.Mesh(new T.ShapeGeometry(s, 8), o.white)
+                        : new T.Mesh(new T.ExtrudeGeometry(s, { depth: D, bevelEnabled: true, bevelThickness: B, bevelSize: B,
+                                                                bevelSegments: o.fine ? 4 : 1, curveSegments: o.fine ? 10 : 5 }), o.red);
+        if (isWhite) m.position.z = D + B + 1;   // on the front face
+        inner.add(m);
+      });
+    });
+    var box = new T.Box3().setFromObject(inner), c = box.getCenter(new T.Vector3()), sz = box.getSize(new T.Vector3());
+    inner.position.set(-c.x, -c.y, -c.z);
+    var pivot = new T.Group(), k = 1 / sz.x;
+    pivot.scale.set(k, -k, k);   // (the SVG's y points down)
+    pivot.add(inner);
+    return { pivot: pivot, k: k };
+  }
 
   function makeLogo3d(el, view){
     var spin = el.querySelector('.nlSpin');
@@ -65,25 +87,9 @@
         var l1 = new T.DirectionalLight(0xffffff, 2); l1.position.set(-1, 1.5, 2); scene.add(l1);
         var l2 = new T.DirectionalLight(0xffffff, 1.4); l2.position.set(1, -0.5, -2); scene.add(l2);
       }
-      var red = new T.MeshStandardMaterial({ color: 0xEE2A28, metalness: 0.4, roughness: 0.28 });
-      var white = new T.MeshStandardMaterial({ color: 0xffffff, metalness: 0.05, roughness: 0.5 });
-      var D = 50, B = 9;   // the sign's thickness and bevel, in the SVG's units (the logo is ~1488 wide)
-      var inner = new T.Group();
-      new SVGLoader().parse(svg).paths.forEach(function(p){
-        var isWhite = /^(white|#fff(fff)?)$/i.test(String(p.userData.style.fill).trim());
-        SVGLoader.createShapes(p).forEach(function(s){
-          var m = isWhite ? new T.Mesh(new T.ShapeGeometry(s, 8), white)
-                          : new T.Mesh(new T.ExtrudeGeometry(s, { depth: D, bevelEnabled: true, bevelThickness: B, bevelSize: B,
-                                                                  bevelSegments: full ? 4 : 1, curveSegments: full ? 10 : 5 }), red);
-          if (isWhite) m.position.z = D + B + 1;   // on the front face
-          inner.add(m);
-        });
-      });
-      var box = new T.Box3().setFromObject(inner), c = box.getCenter(new T.Vector3()), sz = box.getSize(new T.Vector3());
-      inner.position.set(-c.x, -c.y, -c.z);
-      var pivot = new T.Group(), k = 1 / sz.x;
-      pivot.scale.set(k, -k, k);   // (the SVG's y points down)
-      pivot.add(inner);
+      var pivot = nlMakeSign(T, SVGLoader, svg, { fine: full,
+        red: new T.MeshStandardMaterial({ color: 0xEE2A28, metalness: 0.4, roughness: 0.28 }),
+        white: new T.MeshStandardMaterial({ color: 0xffffff, metalness: 0.05, roughness: 0.5 }) }).pivot;
       scene.add(pivot);
       el.appendChild(canvas);
       nl.gl = { r: r, scene: scene, cam: cam, pivot: pivot, canvas: canvas, w: 0, h: 0, tier: nlTier };
