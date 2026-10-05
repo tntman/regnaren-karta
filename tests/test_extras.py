@@ -48,7 +48,9 @@ def page_with(p, strikes):
 
 with sync_playwright() as p:
     b, ctx, pg, errs = new_page(p, geo=B3, cfg=cfg, name='Filip', wakelock_stub=True)
-    pg.wait_for_timeout(1500)
+    wx0 = _tw.wx_json()   # (the weather chip is measured below; fakefb blocks the real weather)
+    ctx.route('**/api.open-meteo.com/**', lambda r: r.fulfill(status=200, content_type='application/json', body=json.dumps(wx0), headers={'Access-Control-Allow-Origin': '*'}))
+    pg.reload(); pg.wait_for_timeout(1500)
     # ---- Åk hit
     pg.evaluate("n => { var id = Object.keys(window.__wpDocs).filter(k => window.__wpDocs[k].name === n)[0]; document.querySelector('#waypoints [data-id=\"' + id + '\"]').click(); }", 'Djupa hålet')
     pg.wait_for_timeout(400)

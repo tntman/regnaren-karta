@@ -39,7 +39,7 @@ All text i appen är på svenska. Svara Filip på svenska, kort och tydligt.
   i varje context, spärrar service workers (deras anrop går förbi blockeringen – opt-in med
   `new_page(..., sw=True)`) och låser `window.firebase` så att riktiga SDK:t inte kan ersätta
   låtsas-Firebase. Utan det skrev testerna i skarpa databasen (hände 2026-09-28). Ta aldrig bort
-  de skydden. fakefb blockerar även opendata.fmi.fi.
+  de skydden. fakefb blockerar även opendata.fmi.fi och Open-Meteo (vädret – ett test som behöver väder lägger egen `ctx.route`).
 - Admin (Filip, upplåst med koden på enheten) kan alltid ändra och ta bort allas fiskeplatser
   (`adminCanEditAll()` = `isAdminUnlocked()`). Admin-koden står aldrig i testerna: `fakefb.TEST_PIN`
   godtas bara i testwebbläsaren. Ny admin-kod = nytt `ADMIN_PIN_HASH` = sha256("ffmap-admin:" + kod).

@@ -20,6 +20,10 @@ def block_real_firebase(ctx):
     # lightning (FMI): never the real service -- a test that needs strikes routes it
     # itself (a later route wins)
     ctx.route('**/opendata.fmi.fi/**', lambda r: r.abort())
+    # weather (Open-Meteo): never the real one either -- the page fetches it at load, BEFORE a test can route
+    # it, and a late real answer was saved over the test's own weather (Vindkant/test_wind flaky). A test
+    # that needs weather routes it itself (a later route wins)
+    ctx.route('**/api.open-meteo.com/**', lambda r: r.abort())
     # Fiskfiskarnas API (the heat map's catches): never the real one -- new_page serves a fake (FakeApi)
     ctx.route('**/fiskfiskarna.se/**', lambda r: r.abort())
     return ctx
