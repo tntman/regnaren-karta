@@ -48,7 +48,10 @@
   var usageCol = null; // Firestore 'usage' collection: each device's daily read/write counts (admin page)
   var BOAT_GRAY_MS = 15 * 60 * 1000; // a boat that hasn't updated in this long turns grey -- still shown at its last known spot, just marked as not live anymore
   var BOAT_REMOVE_MS = 60 * 60 * 1000; // a boat that hasn't updated in THIS long is finally removed entirely
-  var BOAT_CLUSTER_METERS = 30; // positions this close are treated as "the same boat"
+  // "The same boat": closer than 40 m (two phones' GPS never agree exactly) + how far the boat gets in the time
+  // between the two positions (they're sent every 20 s, not at the same moment -- 4 km/h trolling = ~20 m), max 200 m.
+  var BOAT_SAME_M = 40, BOAT_SAME_MAX_M = 200;
+  function sameBoatM(spd, dtMs){ return Math.min(BOAT_SAME_MAX_M, BOAT_SAME_M + (spd || 0) * Math.abs(dtMs || 0) / 1000); }
 
   // People sitting in the same boat show up as one pip instead of a pile of
   // overlapping dots. Simple greedy clustering: each not-yet-placed person
@@ -64,7 +67,7 @@
       list.forEach(function(other, j){
         if (i === j || used[other.uid]) return;
         var distM = haversineKm(b.lat, b.lon, other.lat, other.lon) * 1000;
-        if (distM <= BOAT_CLUSTER_METERS){
+        if (distM <= sameBoatM(Math.max(b.spd || 0, other.spd || 0), b.updatedAt - other.updatedAt)){
           used[other.uid] = true;
           members.push(other);
         }

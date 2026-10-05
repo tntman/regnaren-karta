@@ -10,7 +10,7 @@ Kod: `src/js/64-messages.js`, CSS i `src/css/75-messages.css`. Test: `tests/test
   De första 3 min (`MSG_FADE_MS`): full styrka och färger – fisk = artens färg sveper i texten (`.mT.sp`, `--sp`),
   Egen text = regnbåge (`.mT.rbText`), färdiga val svarta. Sedan tonas den till ~45 % och texten blir helt svart.
   Fiskmeddelandet = "Gädda 78 🐟" (inget "cm", `msgFishText`).
-- **Flera i samma båt** (< `BOAT_CLUSTER_METERS`): EN bubbla (`.msgBub.multi`), en rad per person
+- **Flera i samma båt** (< `sameBoatM`: 40 m + fart × tidsskillnad, max 200 m, `js/14-spots.js`): EN bubbla (`.msgBub.multi`), en rad per person
   (`.mLine`, egen `data-k`), nyast överst, äldre rader blekare; egen rad ljusgul.
 - Tryck på en rad = rutan `#msgCard` (ett kort i mitten som båtens, `#msgBackdrop` stänger; skrivet kl, försvinner om, Åk hit = lodet på båten, Dölj för
   mig / Ta bort (för alla) för egna).

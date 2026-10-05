@@ -23,7 +23,7 @@
           // for boats far enough away to plausibly be someone else's.
           if (!lastOwnLatLon) return true;
           var distM = haversineKm(lastOwnLatLon.lat, lastOwnLatLon.lon, b.lat, b.lon) * 1000;
-          return distM > BOAT_CLUSTER_METERS;
+          return distM > sameBoatM(b.spd, now - b.updatedAt);   // (your own dot is now)
         });
       // Group live positions only with other live ones, and old (grey) ones
       // only with other old ones -- otherwise a boat passing a spot where
@@ -144,7 +144,11 @@
         else if (!d.msg && ownMsg && d.msgAt === 0) ownMsg = null;
         return;
       }
-      fresh[doc.id] = { lat: d.lat, lon: d.lon, name: d.name || '', uid: d.uid, updatedAt: updatedMs, msg: d.msg || null, msgAt: d.msgAt || 0, msgSp: d.msgSp || null, msgImg: d.msgImg || null };
+      // their speed (m/s) from their previous position -- for "the same boat" (sameBoatM); max 15 m/s = 54 km/h
+      var pv = boatPositions[doc.id], spd = pv ? pv.spd || 0 : 0, dt = pv ? (updatedMs - pv.updatedAt) / 1000 : 0;
+      if (dt >= 5 && dt <= 300) spd = Math.min(15, haversineKm(pv.lat, pv.lon, d.lat, d.lon) * 1000 / dt);
+      else if (dt > 300) spd = 0;
+      fresh[doc.id] = { lat: d.lat, lon: d.lon, name: d.name || '', uid: d.uid, updatedAt: updatedMs, spd: spd, msg: d.msg || null, msgAt: d.msgAt || 0, msgSp: d.msgSp || null, msgImg: d.msgImg || null };
     });
     boatPositions = fresh;
     allPositions = raw;

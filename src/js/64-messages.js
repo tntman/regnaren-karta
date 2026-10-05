@@ -89,18 +89,18 @@
   function renderMessages(){
     if (!msgLayerEl) return;
     var now = Date.now(), items = [];
-    if (ownMsg && now - ownMsg.at < MSG_MS && lastOwnLatLon) items.push({ key: 'me', mine: true, text: ownMsg.text, who: 'du', at: ownMsg.at, sp: MSG_SP_COL[ownMsg.sp] && ownMsg.sp, img: msgImgOk(ownMsg.img), lat: lastOwnLatLon.lat, lon: lastOwnLatLon.lon });
+    if (ownMsg && now - ownMsg.at < MSG_MS && lastOwnLatLon) items.push({ key: 'me', mine: true, text: ownMsg.text, who: 'du', at: ownMsg.at, sp: MSG_SP_COL[ownMsg.sp] && ownMsg.sp, img: msgImgOk(ownMsg.img), lat: lastOwnLatLon.lat, lon: lastOwnLatLon.lon, t: now, spd: 0 });
     Object.keys(boatPositions || {}).forEach(function(id){
       var b = boatPositions[id];
       if (!b.msg || !b.msgAt || now - b.msgAt >= MSG_MS || msgHidden[id + '@' + b.msgAt]) return;
-      items.push({ key: id + '@' + b.msgAt, mine: false, text: b.msg, who: b.name, at: b.msgAt, sp: MSG_SP_COL[b.msgSp] && b.msgSp, img: msgImgOk(b.msgImg), lat: b.lat, lon: b.lon });
+      items.push({ key: id + '@' + b.msgAt, mine: false, text: b.msg, who: b.name, at: b.msgAt, sp: MSG_SP_COL[b.msgSp] && b.msgSp, img: msgImgOk(b.msgImg), lat: b.lat, lon: b.lon, t: b.updatedAt, spd: b.spd });
     });
-    // the same boat (as for the boat pins: closer than BOAT_CLUSTER_METERS) = one bubble; newest first
+    // the same boat (as for the boat pins: sameBoatM) = one bubble; newest first
     items.sort(function(a, b){ return b.at - a.at; });
     var groups = [];
     items.forEach(function(it){
-      var g = groups.filter(function(q){ return haversineKm(q.lat, q.lon, it.lat, it.lon) * 1000 < BOAT_CLUSTER_METERS; })[0];
-      if (g) g.items.push(it); else groups.push({ lat: it.lat, lon: it.lon, items: [it] });
+      var g = groups.filter(function(q){ return haversineKm(q.lat, q.lon, it.lat, it.lon) * 1000 <= sameBoatM(Math.max(q.spd || 0, it.spd || 0), q.t - it.t); })[0];
+      if (g) g.items.push(it); else groups.push({ lat: it.lat, lon: it.lon, t: it.t, spd: it.spd, items: [it] });
     });
     var keep = {};
     function fade(it){ return 1 - 0.55 * Math.min(1, Math.max(0, now - it.at - MSG_FADE_MS) / (MSG_MS - MSG_FADE_MS)); }       // full for 3 min, then fades over the rest

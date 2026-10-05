@@ -91,3 +91,5 @@ i avsnitt, Ångra, åskvarningen alltid + "dragit förbi", solnedgången, Täckn
 - Design A-justeringar: Filter öppnas som eget kort under knapparna; ett tryckt meddelande öppnar samma kort i mitten som en båt (inte en panel nerifrån); "Egen text" och "Syns i 7 minuter" ligger där valen var. Ingen egen nyhetsrad (hör till NY DESIGN).
 
 - Inställningar: överst ett profilkort (bild, namn, "Byt namn") i stället för "Ditt namn" + "Logga ut (Byt namn)". Hör till NY DESIGN.
+
+- Samma båt: fiskare räknas som samma båt upp till 40 m + så långt båten hinner mellan deras positioner (max 200 m) – förr 30 m, då delades båten i fart. Nyhetsrad: "Samma båt håller ihop bättre när ni kör"

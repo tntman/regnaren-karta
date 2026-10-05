@@ -87,7 +87,7 @@ FAKE_FIREBASE_JS = r"""
   }
   function fireWp(){ wpListeners.forEach(function(cb){ cb(snapOf(wpDocs)); }); }
   function firePos(){ posListeners.forEach(function(cb){ cb(snapOf(posDocs)); }); }
-  window.__fireWp = fireWp;
+  window.__fireWp = fireWp; window.__posDocs = posDocs; window.__firePos = firePos;
   window.__setFromCache = function(v){ window.__fromCache = v; fireWp(); };
   window.__addPos = function(p){
     posDocs[p.uid] = { lat:p.lat, lon:p.lon, name:p.name, uid:p.uid, lake:p.lake||'regnaren', device:p.device, updatedAt: ts(Date.now() - (p.ageMin||0)*60000) };

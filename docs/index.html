@@ -3924,7 +3924,10 @@
   var usageCol = null; // Firestore 'usage' collection: each device's daily read/write counts (admin page)
   var BOAT_GRAY_MS = 15 * 60 * 1000; // a boat that hasn't updated in this long turns grey -- still shown at its last known spot, just marked as not live anymore
   var BOAT_REMOVE_MS = 60 * 60 * 1000; // a boat that hasn't updated in THIS long is finally removed entirely
-  var BOAT_CLUSTER_METERS = 30; // positions this close are treated as "the same boat"
+  // "The same boat": closer than 40 m (two phones' GPS never agree exactly) + how far the boat gets in the time
+  // between the two positions (they're sent every 20 s, not at the same moment -- 4 km/h trolling = ~20 m), max 200 m.
+  var BOAT_SAME_M = 40, BOAT_SAME_MAX_M = 200;
+  function sameBoatM(spd, dtMs){ return Math.min(BOAT_SAME_MAX_M, BOAT_SAME_M + (spd || 0) * Math.abs(dtMs || 0) / 1000); }
 
   // People sitting in the same boat show up as one pip instead of a pile of
   // overlapping dots. Simple greedy clustering: each not-yet-placed person
@@ -3940,7 +3943,7 @@
       list.forEach(function(other, j){
         if (i === j || used[other.uid]) return;
         var distM = haversineKm(b.lat, b.lon, other.lat, other.lon) * 1000;
-        if (distM <= BOAT_CLUSTER_METERS){
+        if (distM <= sameBoatM(Math.max(b.spd || 0, other.spd || 0), b.updatedAt - other.updatedAt)){
           used[other.uid] = true;
           members.push(other);
         }
@@ -4597,7 +4600,7 @@
           // for boats far enough away to plausibly be someone else's.
           if (!lastOwnLatLon) return true;
           var distM = haversineKm(lastOwnLatLon.lat, lastOwnLatLon.lon, b.lat, b.lon) * 1000;
-          return distM > BOAT_CLUSTER_METERS;
+          return distM > sameBoatM(b.spd, now - b.updatedAt);   // (your own dot is now)
         });
       // Group live positions only with other live ones, and old (grey) ones
       // only with other old ones -- otherwise a boat passing a spot where
@@ -4718,7 +4721,11 @@
         else if (!d.msg && ownMsg && d.msgAt === 0) ownMsg = null;
         return;
       }
-      fresh[doc.id] = { lat: d.lat, lon: d.lon, name: d.name || '', uid: d.uid, updatedAt: updatedMs, msg: d.msg || null, msgAt: d.msgAt || 0, msgSp: d.msgSp || null, msgImg: d.msgImg || null };
+      // their speed (m/s) from their previous position -- for "the same boat" (sameBoatM); max 15 m/s = 54 km/h
+      var pv = boatPositions[doc.id], spd = pv ? pv.spd || 0 : 0, dt = pv ? (updatedMs - pv.updatedAt) / 1000 : 0;
+      if (dt >= 5 && dt <= 300) spd = Math.min(15, haversineKm(pv.lat, pv.lon, d.lat, d.lon) * 1000 / dt);
+      else if (dt > 300) spd = 0;
+      fresh[doc.id] = { lat: d.lat, lon: d.lon, name: d.name || '', uid: d.uid, updatedAt: updatedMs, spd: spd, msg: d.msg || null, msgAt: d.msgAt || 0, msgSp: d.msgSp || null, msgImg: d.msgImg || null };
     });
     boatPositions = fresh;
     allPositions = raw;
@@ -10252,18 +10259,18 @@
   function renderMessages(){
     if (!msgLayerEl) return;
     var now = Date.now(), items = [];
-    if (ownMsg && now - ownMsg.at < MSG_MS && lastOwnLatLon) items.push({ key: 'me', mine: true, text: ownMsg.text, who: 'du', at: ownMsg.at, sp: MSG_SP_COL[ownMsg.sp] && ownMsg.sp, img: msgImgOk(ownMsg.img), lat: lastOwnLatLon.lat, lon: lastOwnLatLon.lon });
+    if (ownMsg && now - ownMsg.at < MSG_MS && lastOwnLatLon) items.push({ key: 'me', mine: true, text: ownMsg.text, who: 'du', at: ownMsg.at, sp: MSG_SP_COL[ownMsg.sp] && ownMsg.sp, img: msgImgOk(ownMsg.img), lat: lastOwnLatLon.lat, lon: lastOwnLatLon.lon, t: now, spd: 0 });
     Object.keys(boatPositions || {}).forEach(function(id){
       var b = boatPositions[id];
       if (!b.msg || !b.msgAt || now - b.msgAt >= MSG_MS || msgHidden[id + '@' + b.msgAt]) return;
-      items.push({ key: id + '@' + b.msgAt, mine: false, text: b.msg, who: b.name, at: b.msgAt, sp: MSG_SP_COL[b.msgSp] && b.msgSp, img: msgImgOk(b.msgImg), lat: b.lat, lon: b.lon });
+      items.push({ key: id + '@' + b.msgAt, mine: false, text: b.msg, who: b.name, at: b.msgAt, sp: MSG_SP_COL[b.msgSp] && b.msgSp, img: msgImgOk(b.msgImg), lat: b.lat, lon: b.lon, t: b.updatedAt, spd: b.spd });
     });
-    // the same boat (as for the boat pins: closer than BOAT_CLUSTER_METERS) = one bubble; newest first
+    // the same boat (as for the boat pins: sameBoatM) = one bubble; newest first
     items.sort(function(a, b){ return b.at - a.at; });
     var groups = [];
     items.forEach(function(it){
-      var g = groups.filter(function(q){ return haversineKm(q.lat, q.lon, it.lat, it.lon) * 1000 < BOAT_CLUSTER_METERS; })[0];
-      if (g) g.items.push(it); else groups.push({ lat: it.lat, lon: it.lon, items: [it] });
+      var g = groups.filter(function(q){ return haversineKm(q.lat, q.lon, it.lat, it.lon) * 1000 <= sameBoatM(Math.max(q.spd || 0, it.spd || 0), q.t - it.t); })[0];
+      if (g) g.items.push(it); else groups.push({ lat: it.lat, lon: it.lon, t: it.t, spd: it.spd, items: [it] });
     });
     var keep = {};
     function fade(it){ return 1 - 0.55 * Math.min(1, Math.max(0, now - it.at - MSG_FADE_MS) / (MSG_MS - MSG_FADE_MS)); }       // full for 3 min, then fades over the rest
