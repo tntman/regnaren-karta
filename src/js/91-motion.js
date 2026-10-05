@@ -39,15 +39,15 @@
     d._closing = true;
     motionHeight(d, h0, h1, function(){ d.open = false; d._closing = false; });
   }, true);
-  // tabs (.anSeg / .helpSeg): the chosen tab's background glides from the old tab to the new one
+  // tabs (.anSeg / .helpSeg / .segmented): the chosen tab's background glides from the old tab to the new one
   document.addEventListener('click', function(e){
-    var b = e.target && e.target.closest ? e.target.closest('.anSeg button, .helpSeg button') : null;
+    var b = e.target && e.target.closest ? e.target.closest('.anSeg button, .helpSeg button, .segmented button') : null;
     if (!b) return;
-    var seg = b.parentNode, old = seg.querySelector('button.on');
+    var seg = b.parentNode, old = seg.querySelector('button.on, button.active');
     if (!old || old === b) return;
     var r0 = old.getBoundingClientRect();
     setTimeout(function(){                                   // (after the app's own handler has moved .on)
-      var now = seg.isConnected ? seg.querySelector('button.on') : null;   // (a re-drawn row: no glide)
+      var now = seg.isConnected ? seg.querySelector('button.on, button.active') : null;   // (a re-drawn row: no glide)
       if (!now || now === old) return;
       var r1 = now.getBoundingClientRect();
       now.style.setProperty('--sl', (r0.left - r1.left) + 'px'); now.style.setProperty('--sr', (r1.right - r0.right) + 'px');

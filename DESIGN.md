@@ -64,7 +64,7 @@ Färgen i appen kommer från kartan och från fiskarna; gränssnittet tar bara a
 Färgerna "midnatt + aprikos" (2026-10-05, variant 21 på ritytans sida Kontrast – menyer): bläckblå midnatt där varje lager
 är tydligt ljusare, svala hårfina linjer, en tunn ljuskant överst på paneler och vald flik. Samma dag mjukad till 21c "Dimma":
 ytorna två steg ljusare, mjukare text, dämpad aprikos och dämpade cirklar i reglagen (#C9CED8). Alla flikrader (`.anSeg`,
-`.helpSeg`, `.segmented`) har samma bädd: botten, hårfin kant, vald flik = yta 2 med ljuskant.
+`.helpSeg`, `.segmented`) har samma bädd: botten, hårfin kant, vald flik = yta 2 med ljuskant, som glider från förra fliken.
 
 
 - **Botten** (`--bg` #141822): sidorna (Inställningar, Logg, Hjälp, Admin), statusraden (`theme-color`),
