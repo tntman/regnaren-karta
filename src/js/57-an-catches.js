@@ -73,7 +73,7 @@
     }
     var S = scoreWith(on), lit = litShare(S);
     var cco = document.getElementById('anCCov');   // ("Likhet": how much of the lake that is, next to its value)
-    if (cco && cco.nextSibling) cco.nextSibling.textContent = Math.max(1, Math.round(lit.share * 100)) + ' % av sjön · ' + anSet.cCov + ' av 10 ' + nm[1];
+    if (cco && cco.nextSibling) cco.nextSibling.textContent = Math.max(1, Math.round(lit.share * 100)) + ' % av sjön · ' + anSet.cCov * 10 + ' % av ' + nm[1] + 'na';
     // how much each value on its own points the species out (the dots on its button): lit share
     // alone against "no information" (cCov/10 of the lake for cCov/10 of the catches)
     anCatchStrength = {};
@@ -104,20 +104,20 @@
       else { var a = D.b[best[0]], b = D.b[best[best.length - 1] + 1];
         parts.push((b > 1e8 ? 'över ' + String(a).replace('.', ',') : String(a).replace('.', ',') + '–' + String(b).replace('.', ',')) + D.u); }
     });
-    // short on the row ("Se ⓘ"), the whole sentence in ⓘ. Täthet: the share of the catches inside / the share of the lake lit
+    // short on the row ("Se ⓘ"), the whole sentence in ⓘ. Tätare: the share of the catches inside / the share of the lake lit
+    // (= against the catches spread evenly over the whole lake). The share inside can be above Likhet: catches on alike places tie
     var grad = anSet.cView === 'grad', pct = Math.round(lit.share * 100), pctT = pct < 1 ? '<1' : pct;
-    var inN = cells.filter(function(i){ return S[i] >= lit.thr; }).length, dens = (inN / cells.length) / Math.max(0.005, lit.share);
+    var inN = cells.filter(function(i){ return S[i] >= lit.thr; }).length, inPct = Math.round(inN / cells.length * 100), dens = (inN / cells.length) / Math.max(0.005, lit.share);
     var densT = dens >= 2 ? Math.round(dens) : String(Math.round(dens * 10) / 10).replace('.', ','), few = cells.length < 20 ? ' (osäkert, få fångster)' : '';
-    out.text = '<b>' + nm[0] + '</b> · ' +   // (two lines at most: "oftast …" is in ⓘ)
-      (grad ? 'färgen går från olikt till <b>mest likt</b>' : '<b>' + pctT + ' %</b> av sjön tänd, <b>' + densT + '× tätare än i snitt</b>' + few) + ' · <i>Se ⓘ</i>';
+    out.text = '<b>' + nm[0] + '</b> · ' +   // (two lines at most: "oftast …" and "få fångster" are in ⓘ -- the count is on the species button)
+      (grad ? 'Fiska där det lyser starkast: mest likt fångstplatserna' : 'Fiska i det tända: <b>' + inPct + ' %</b> av ' + nm[1] + 'na på <b>' + pctT + ' %</b> av sjön') + ' · <i>Se ⓘ</i>';
     var months = {}; cs.forEach(function(c){ months[HM_MON[new Date(c.t).getMonth()]] = 1; });
     var sr = sizeOf(anSet, sp), sb = sizeBounds(catchData.list.filter(function(c){ return c.sp === sp; }));
     out.note = '<p><b>' + nm[0] + (sb && sizeOn(sr, sb) ? ' ' + sizeTxt(sr, sb) : '') + '</b> ' +
       (parts.length ? 'togs oftast på ' + parts.join(', ') + '.' : 'togs inte oftare på något särskilt slags ställe.') + ' <b>Med inställningarna nedan</b> ' +
       (grad ? 'går färgen från olikt till <b>mest likt</b> fångstplatserna.'
-        : 'är <b>' + pctT + ' % av sjön</b> tänd, och där togs <b>' + inN + ' av ' + cells.length + '</b> av de ' + nm[1] + 'na. Det är <b>' + densT + '× tätare</b> än i snitt' + few + '.') + '</p>' +
+        : 'är <b>' + pctT + ' % av sjön</b> tänd, och där togs <b>' + inN + ' av ' + cells.length + '</b> ' + nm[1] + ' (' + inPct + ' %). Det är <b>' + densT + '× tätare</b> än om fångsterna låg jämnt över sjön' + few + '.') + '</p>' +
       '<ul class="pnList"><li><b>Fångster:</b> ' + cells.length + ' (' + Object.keys(months).join(', ') + ')' + (cs.length > cells.length ? ' + ' + (cs.length - cells.length) + ' utanför djupkartan' : '') + '</li>' +
-      (grad ? '' : '<li><b>Täthet:</b> ' + densT + '× fler ' + nm[1] + ' per yta än i snitt i sjön</li>') +
       '<li>Visar platser som liknar fångstplatserna, även där ingen har fiskat än.</li></ul>';
     out.empty = false;
     return out;
@@ -136,8 +136,8 @@
       '<div class="anLbl2">Vad som jämförs</div>' +
       '<div class="anNote"><ul class="pnList"><li><b>Storlek:</b> bara fångster i spannet räknas.</li>' +
       '<li><b>Vad som jämförs:</b> slå av det du inte vill ha med. ●●● visar hur mycket det ensamt pekar ut arten.</li>' +
-      (anSet.cView === 'grad' ? '' : '<li><b>Likhet:</b> Mindre likt tänder en större yta, och fler av fångsterna hamnar inom den.</li>') + '</ul></div>' +
+      (anSet.cView === 'grad' ? '' : '<li><b>Likhet:</b> Mest likt tänder en liten yta med färre av fångsterna. Mindre likt tänder en större yta med fler av dem.</li>') + '</ul></div>' +
       '<div class="anFactors" id="anCF">' + AN_CF.map(function(x){ return '<button type="button" data-cf="' + x[0] + '" class="' + (anSet.cF[x[0]] ? 'on' : '') + '">' + x[1] + ' <span class="anDots"></span></button>'; }).join('') + '</div>' +
-      (anSet.cView === 'grad' ? '' : anRangeRow('anCCov', 'Likhet', 5, 9, 1, anSet.cCov, function(v){ return v + ' av 10 ' + anCatchPl(); }, ['Mest likt', 'Mindre likt']));
+      (anSet.cView === 'grad' ? '' : anRangeRow('anCCov', 'Likhet', 5, 9, 1, anSet.cCov, function(v){ return v * 10 + ' % av ' + anCatchPl() + 'na'; }, ['Mest likt', 'Mindre likt']));
   }
-  function anCatchPl(){ return (AN_CSP[anSet.mode.slice(2)] || [0, 'fångster'])[1]; }   // ("7 av 10 gäddor" on Likhet)
+  function anCatchPl(){ return (AN_CSP[anSet.mode.slice(2)] || [0, 'fångster'])[1]; }   // ("70 % av gäddorna" on Likhet)

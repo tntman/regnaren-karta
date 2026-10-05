@@ -96,5 +96,5 @@ i avsnitt, Ångra, åskvarningen alltid + "dragit förbi", solnedgången, Täckn
 
 - Storlek: Heatmap (under Tävling) och Kartanalys → Från fångsterna har ett reglage min–max cm. Avsnitt Heatmap + Kartanalys. Nyhetsrad: "Filtrera fångsterna på storlek i Heatmap och Kartanalys"
 - Heatmap Per art: Art-valet är nu Alla / en art som i de andra stilarna (förr av/på per art). Avsnitt Heatmap. Ingen egen nyhetsrad (hör till Storlek-raden).
-- Kartanalys: "Typiskt" heter nu Likhet (Mest likt – Mindre likt, visar % av sjön); Fångster: kort rad ("22 % av sjön tänd, 3× tätare än i snitt · Se ⓘ"), hela förklaringen i ⓘ (inledningsrad, meningen, Fångster, Täthet); Fångster kräver inget minsta antal. Avsnitt Kartanalys. Nyhetsrad: "Kartanalys förklarar resultatet tydligare"
+- Kartanalys: "Typiskt" heter nu Likhet (Mest likt – Mindre likt, visar % av sjön); Fångster: kort rad ("Fiska i det tända: 70 % av gäddorna på 15 % av sjön · Se ⓘ"), hela förklaringen i ⓘ (inledningsrad, meningen med "5× tätare än om fångsterna låg jämnt över sjön", Fångster); Likhet visar "15 % av sjön · 70 % av gäddorna"; Fångster kräver inget minsta antal. Avsnitt Kartanalys. Nyhetsrad: "Kartanalys förklarar resultatet tydligare"
 - Ny sjö: Östra Vitten (Vingåker) i sjömenyn – djup bara i norra delen (Genesis saknar södra). Avsnitt Sjöar/Kartan. Nyhetsrad: "Ny sjö: Östra Vitten"

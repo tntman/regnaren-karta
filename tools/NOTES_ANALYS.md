@@ -85,7 +85,7 @@ Kod: `src/js/57-an-catches.js` (+ inkopplat i 56-analysis.js), test `tests/test_
   (`A.shore`), grynna/håla – i steg (`anCatchBins`, cachat per sjö). Jämfört med hela sjön: hur mycket
   vanligare fångsterna var i varje steg ("lift", utjämnad +1). Varje punkt i sjön får summan av log-lift
   för värdena som är på.
-- **Tänt**: från mest lik och nedåt tills "Likhet" av 10 fångster ryms (reglage 5–9, standard 7; ändarna "Mest likt" – "Mindre likt", värdet "3 % av sjön · 7 av 10 gäddor"; förr "Typiskt") – datan
+- **Tänt**: från mest lik och nedåt tills "Likhet" av 10 fångster ryms (reglage 5–9, standard 7; ändarna "Mest likt" – "Mindre likt", värdet "3 % av sjön · 70 % av gäddorna"; förr "Typiskt") – datan
   bestämmer ytan: litet tänt = tydligt mönster (< 12 % tydligt, 12–25 % måttligt, > 25 % svagt).
   **Skala**: hela sjön olikt → mest likt (`anRes.G`, 4:e kanalen i `anField`, färger som heatmapen).
 - Av/på per värde (minst ett på); prickarna ●○○–●●● = hur mycket värdet ENSAMT pekar ut arten här
@@ -93,4 +93,4 @@ Kod: `src/js/57-an-catches.js` (+ inkopplat i 56-analysis.js), test `tests/test_
 - Fångsterna ritas som små vita prickar (`anRes.pts`). Texten säger vad som sticker ut + att det visar var
   man fick fisk (inte var all fisk finns), månad(er), fångster utanför djupkartan räknas inte.
 - Inte samtidigt som heatmapen (som alla Kartanalys-lägen).
-- **ⓘ** (2026-10-05): alltid en inledningsrad överst ("Kartanalys lyser upp det i sjön som …", `AN_INTRO` per flik). Fångster: raden är kort ("Gädda · 22 % av sjön tänd, 3× tätare än i snitt · Se ⓘ", högst två rader); ⓘ har hela meningen (art + storlek, togs oftast, "Med inställningarna nedan" är x % tänd, där togs N av M av de gäddorna, n× tätare) + listan Fångster, Täthet (andelen fångster inom det tända / andelen av sjön), "Visar platser som liknar fångstplatserna, även där ingen har fiskat än", sedan reglagen (Storlek, Vad som jämförs, Likhet). "Tydligt/Måttligt/Svagt mönster" är borttaget – Täthet säger det.
+- **ⓘ** (2026-10-05): alltid en inledningsrad överst ("Kartanalys lyser upp det i sjön som …", `AN_INTRO` per flik). Fångster: raden är kort och säger vad man ska göra ("Gädda · Fiska i det tända: 70 % av gäddorna på 15 % av sjön · Se ⓘ"; Skala: "Fiska där det lyser starkast"), högst två rader (få fångster: bara i ⓘ, antalet syns på artknappen). Andelen är det verkliga utfallet – kan bli högre än Likhet när fångster ligger på likadana platser. ⓘ har hela meningen (art + storlek, togs oftast, "Med inställningarna nedan" är x % tänd, där togs N av M gäddor (70 %), n× tätare än om fångsterna låg jämnt över sjön = andelen fångster / andelen av sjön, räknat mot HELA sjön även där ingen fiskat) + listan Fångster, "Visar platser som liknar fångstplatserna, även där ingen har fiskat än", sedan reglagen. "Tydligt/Måttligt/Svagt mönster" och raden Täthet är borttagna.
