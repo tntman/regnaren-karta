@@ -1,7 +1,7 @@
   /* ---- weather: small chip under your name, tap for details ---- */
   #wxChip{
     display:none;align-items:center;gap:7px;margin:14px 0 0 -50px;pointer-events:auto;
-    background:rgba(18,22,30,.82);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:4px 10px 4px 8px;
+    background:rgba(28,33,44,.82);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:4px 10px 4px 8px;
     font:600 12px -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;color:var(--offwhite);white-space:nowrap;
     box-shadow:0 4px 14px rgba(0,0,0,.3);cursor:pointer;-webkit-tap-highlight-color:transparent;
   }
@@ -13,7 +13,7 @@
   #wxCard{
     position:absolute;left:14px;right:14px;top:calc(env(safe-area-inset-top,0px) + 84px);z-index:30;
     max-width:460px;display:none;
-    background:rgba(18,22,30,.97);border:1px solid rgba(255,255,255,.14);border-radius:16px;padding:12px 14px 10px;
+    background:rgba(28,33,44,.97);border:1px solid rgba(255,255,255,.14);border-radius:16px;padding:12px 14px 10px;
     color:var(--offwhite);box-shadow:0 10px 30px rgba(0,0,0,.5);
   }
   #wxCard.show{display:block;}
@@ -78,7 +78,7 @@
   .styleOpt .soName{font-size:14px;font-weight:700;}
   .styleOpt .soDesc{font-size:11.5px;color:var(--text-muted);margin-top:2px;}
   .styleOpt .soCheck{width:22px;height:22px;border-radius:50%;flex:0 0 auto;border:2px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;}
-  .styleOpt.active{border-color:var(--amber);background:rgba(255,154,77,.1);}
+  .styleOpt.active{border-color:var(--amber);background:rgba(240,154,96,.1);}
   .styleOpt.active .soCheck{background:var(--amber);border-color:var(--amber);}
   .styleOpt.active .soCheck::after{content:'';width:8px;height:4px;border:2.5px solid var(--navy);border-top:none;border-right:none;transform:rotate(-45deg) translate(1px,-1px);}
   .styleOpt.loading .soCheck{border-top-color:var(--amber);animation:spin .8s linear infinite;}
@@ -223,12 +223,12 @@
   #ltAlarmOk{margin-top:12px;width:100%;min-height:48px;border:2px solid rgba(255,255,255,.85);border-radius:14px;background:none;color:#fff;font:inherit;font-weight:700;font-size:16px;cursor:pointer;}
   #ltAlarmOk:active{background:rgba(255,255,255,.18);}
   /* the all clear after a warning ("Åskan har dragit förbi"): calm, sea-chart blue with a green edge */
-  #ltAlarm.clear{background:rgba(18,22,30,.97);border-color:#7fd88a;}
+  #ltAlarm.clear{background:rgba(28,33,44,.97);border-color:#7fd88a;}
   #ltAlarm.clear b{font-size:20px;color:#7fd88a;}
   #ltAlarm.clear #ltAlarmOk{border-color:rgba(127,216,138,.7);}
   /* the warning is switched off: a pill under the weather chip, like it -- tap = Inställningar */
   #ltOffPill{display:flex;align-items:center;gap:7px;margin:6px 0 0 -50px;pointer-events:auto;width:max-content;
-    background:rgba(18,22,30,.9);border:1.5px solid #ff8a80;border-radius:12px;padding:4px 11px 4px 8px;
+    background:rgba(28,33,44,.9);border:1.5px solid #ff8a80;border-radius:12px;padding:4px 11px 4px 8px;
     font:700 12px -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;color:#fff;box-shadow:0 4px 14px rgba(0,0,0,.3);cursor:pointer;-webkit-tap-highlight-color:transparent;}
   #ltOffPill[hidden]{display:none;}
   .ltOffIc{color:#ff8a80;}
@@ -240,7 +240,7 @@
   #wakeBadge svg{width:11px;height:11px;}
   @media (orientation:landscape) and (max-height:520px){ #wakeNote{top:calc(env(safe-area-inset-top,0px) + 110px);} }
   #wakeNote{position:absolute;left:14px;right:14px;top:calc(env(safe-area-inset-top,0px) + 96px);z-index:30;max-width:400px;display:none;
-    background:rgba(18,22,30,.96);border:1px solid rgba(255,210,26,.6);border-radius:14px;padding:11px 40px 11px 14px;color:var(--offwhite);
+    background:rgba(28,33,44,.96);border:1px solid rgba(255,210,26,.6);border-radius:14px;padding:11px 40px 11px 14px;color:var(--offwhite);
     box-shadow:0 8px 24px rgba(0,0,0,.5);font-size:13px;line-height:1.4;transition:opacity .8s;}
   #wakeNote.show{display:block;}
   #wakeNote.fade{opacity:0;}

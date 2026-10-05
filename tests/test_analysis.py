@@ -143,7 +143,7 @@ with sync_playwright() as p:
     check('the panel: ✕ in the grip strip; the top row (above the categories): ⓘ, ↺ Återställ, ⏻ Stäng av (greyed out with nothing on)', pg.is_visible('#anPanel .grab #anClose') and top[0] and
           top[1] == ['Förklaring', 'Återställ', 'Stäng av kartanalys'] and pg.is_disabled('#anClear'), top)
     a = pick(pg, 'gos')
-    check('...something chosen: ⏻ active, amber (something is on)', pg.is_enabled('#anClear') and pg.evaluate("getComputedStyle(document.getElementById('anClear')).color") == 'rgb(255, 154, 77)')
+    check('...something chosen: ⏻ active, amber (something is on)', pg.is_enabled('#anClear') and pg.evaluate("getComputedStyle(document.getElementById('anClear')).color") == 'rgb(240, 154, 96)')
     pg.click('#anClear'); pg.wait_for_timeout(300)
     check('"Stäng av kartanalys": nothing chosen, nothing drawn; the panel closes (like Heatmap)', an(pg)['mode'] is None and lit(pg) == 0 and not pg.evaluate("document.getElementById('anPanel').classList.contains('show')"))
     # Återställ: every setting back to the start (what's on stays on)

@@ -37,7 +37,7 @@
   #hmBtn{right:calc(100% + 40px);border-radius:20px 0 0 20px;}
   #hmBtn svg{width:20px;height:20px;opacity:.85;border-radius:50%;}
   #hmBtn.on{border:1px solid rgba(255,255,255,.1);border-right:none;background:var(--navy-glass);}
-  #hmBtn.on svg{opacity:1;box-shadow:0 0 0 2px #090B10,0 0 0 3.5px var(--amber),0 0 16px var(--glow);}
+  #hmBtn.on svg{opacity:1;box-shadow:0 0 0 2px #141822,0 0 0 3.5px var(--amber),0 0 16px var(--glow);}
   #mapTypeBtn{border-left:none;}                     /* (no lines between the three: one capsule) */
   #visPanel{border-left:none;border-radius:0 20px 20px 0;padding:9px 12px 9px 8px;position:relative;z-index:3;overflow:visible;max-height:none;}
   /* the Filter menu: its own card under the capsule (like the menu's), the capsule doesn't change */
@@ -64,8 +64,8 @@
   #bottomFade{opacity:.5;}
 
   /* ---- bottom right: round frosted buttons; "on" = orange icon + ring; Sikte the one fully orange ---- */
-  #anBtn.on, #measureBtn.active, #msgBtn.open{background:var(--navy-glass);color:var(--amber);border-color:transparent;box-shadow:inset 0 0 0 1.5px var(--amber),0 0 22px rgba(255,154,77,.35);}
-  #locateBtn{color:var(--on-acc);box-shadow:0 0 0 6px rgba(255,154,77,.14),0 8px 28px var(--glow);}
+  #anBtn.on, #measureBtn.active, #msgBtn.open{background:var(--navy-glass);color:var(--amber);border-color:transparent;box-shadow:inset 0 0 0 1.5px var(--amber),0 0 22px rgba(240,154,96,.35);}
+  #locateBtn{color:var(--on-acc);box-shadow:0 0 0 6px rgba(240,154,96,.14),0 8px 28px var(--glow);}
   #locateBtn.tracking{box-shadow:0 0 0 6px rgba(255,255,255,.12),0 8px 24px rgba(0,0,0,.4);}
   #addHereBtn .addBadge{border:none;color:var(--on-acc);box-shadow:0 0 12px var(--glow);}
   #msgPop{bottom:calc(var(--bb0) + 2 * var(--bb) + var(--bgap) + 14px);gap:8px;}
@@ -109,7 +109,7 @@
   /* ---- buttons: 14 px corners; one orange (main action) with a soft glow; Ta bort = a red icon ---- */
   .sheetActs button, .btnGhost, .btnPrimary, .msgCardBtns button, #undoBtn, #pfLoad, .helpInstallBtn, .offBtn{border-radius:14px;}
   .sheetActs button, .btnGhost, .msgCardBtns button, #pfLoad{background:var(--s2);}
-  .sheetActs .save, .btnPrimary, .msgCardBtns button.a, #undoBtn, .helpInstallBtn, .offBtn{color:var(--on-acc);box-shadow:0 8px 28px rgba(255,154,77,.3);}
+  .sheetActs .save, .btnPrimary, .msgCardBtns button.a, #undoBtn, .helpInstallBtn, .offBtn{color:var(--on-acc);box-shadow:0 8px 28px rgba(240,154,96,.3);}
   .sheetActs .del{background:none;border:none;color:#FF6B63;}
   .mpBtn{background:none;border:none;color:var(--text-muted);}
   .mpClose{color:rgba(255,255,255,.3);}
@@ -136,8 +136,9 @@
   .segGlide::before{animation:segGlide .42s cubic-bezier(.34,1.25,.64,1);}
   @keyframes segGlide{from{left:var(--sl);right:var(--sr);}}
   #anCatSeg button.has{box-shadow:inset 0 -2px 0 var(--amber);}
-  .segmented{background:#0B0B0D;border:none;border-radius:14px;}
-  .segmented button.active{background:var(--s2);color:var(--offwhite);}
+  /* Inställningar's choices (Liten / Normal / Stor ...): the same bed and chosen tab as .anSeg */
+  .segmented{background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:4px;gap:4px;}
+  .segmented button.active{background:var(--s2);color:var(--offwhite);box-shadow:inset 0 1px 0 rgba(255,255,255,.08);}
   .typeSeg button{border:none;background:var(--s2);color:var(--offwhite);border-radius:999px;gap:8px;}
   .typeSeg button::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--tc);flex:0 0 auto;}
   .typeSeg button.active, .typeSeg button[data-type="fara"].active, .typeSeg button[data-type="hem"].active, .typeSeg button[data-type="gos"].active, .typeSeg button[data-type="hem"].active{
@@ -158,7 +159,7 @@
   .nameTitle{font-size:30px;font-weight:600;letter-spacing:-.03em;}
   .nameChip .ava{box-shadow:0 0 0 1px rgba(255,255,255,.14);}
   #nameSave{height:44px;border-radius:14px;font-size:14.5px;font-weight:600;background:var(--s2);}
-  #nameSave.on{color:var(--on-acc);box-shadow:0 8px 28px rgba(255,154,77,.3);}
+  #nameSave.on{color:var(--on-acc);box-shadow:0 8px 28px rgba(240,154,96,.3);}
 
   /* ================= motion ================= */
   /* the same press everywhere: a quick squeeze and a small spring back */
@@ -169,15 +170,15 @@
   .msgCardBtns button:active, #undoBtn:active, .anChips button:active, .typeSeg button:active, #msgPop button:active, .styleOpt:active{transform:scale(.93);}
   #msgBtn:active{transform:translateX(-50%) scale(.93);}
   .hdBtn:active{transform:scale(.86);}
-  .toggleThumb{transition:transform .32s cubic-bezier(.34,1.45,.64,1);}
+  .toggleThumb{background:#C9CED8;transition:transform .32s cubic-bezier(.34,1.45,.64,1);}
   /* orange flares once and fades out (js/91-motion.js adds .ign when something is switched on) */
-  @keyframes ignF{from{box-shadow:inset 0 0 0 1.5px var(--amber),0 0 22px rgba(255,154,77,.35),0 0 0 0 rgba(255,154,77,.75);}
-    to{box-shadow:inset 0 0 0 1.5px var(--amber),0 0 22px rgba(255,154,77,.35),0 0 44px 18px rgba(255,154,77,0);}}
-  @keyframes ignL{from{box-shadow:0 0 0 6px rgba(255,154,77,.14),0 8px 28px var(--glow),0 0 0 0 rgba(255,154,77,.8);}
-    to{box-shadow:0 0 0 6px rgba(255,154,77,.14),0 8px 28px var(--glow),0 0 48px 20px rgba(255,154,77,0);}}
-  @keyframes ignI{from{filter:drop-shadow(0 0 8px var(--glow)) drop-shadow(0 0 0 #FF9A4D);}to{filter:drop-shadow(0 0 8px var(--glow)) drop-shadow(0 0 22px rgba(255,154,77,0));}}
-  @keyframes ignH{from{box-shadow:0 0 0 2px #090B10,0 0 0 3.5px var(--amber),0 0 16px var(--glow),0 0 0 0 rgba(255,154,77,.75);}
-    to{box-shadow:0 0 0 2px #090B10,0 0 0 3.5px var(--amber),0 0 16px var(--glow),0 0 36px 14px rgba(255,154,77,0);}}
+  @keyframes ignF{from{box-shadow:inset 0 0 0 1.5px var(--amber),0 0 22px rgba(240,154,96,.35),0 0 0 0 rgba(240,154,96,.75);}
+    to{box-shadow:inset 0 0 0 1.5px var(--amber),0 0 22px rgba(240,154,96,.35),0 0 44px 18px rgba(240,154,96,0);}}
+  @keyframes ignL{from{box-shadow:0 0 0 6px rgba(240,154,96,.14),0 8px 28px var(--glow),0 0 0 0 rgba(240,154,96,.8);}
+    to{box-shadow:0 0 0 6px rgba(240,154,96,.14),0 8px 28px var(--glow),0 0 48px 20px rgba(240,154,96,0);}}
+  @keyframes ignI{from{filter:drop-shadow(0 0 8px var(--glow)) drop-shadow(0 0 0 #F09A60);}to{filter:drop-shadow(0 0 8px var(--glow)) drop-shadow(0 0 22px rgba(240,154,96,0));}}
+  @keyframes ignH{from{box-shadow:0 0 0 2px #141822,0 0 0 3.5px var(--amber),0 0 16px var(--glow),0 0 0 0 rgba(240,154,96,.75);}
+    to{box-shadow:0 0 0 2px #141822,0 0 0 3.5px var(--amber),0 0 16px var(--glow),0 0 36px 14px rgba(240,154,96,0);}}
   #anBtn.ign, #measureBtn.ign, #msgBtn.ign{animation:ignF .8s ease-out;}
   #locateBtn.ign{animation:ignL .8s ease-out;}
   .hdBtn.ign{animation:ignI .8s ease-out;}
@@ -225,10 +226,10 @@
 
   /* ---- fixes after the first look (2026-10-05) ---- */
   /* coloured sliders: the colours past the thumb dimmed (--f = where the thumb is, 0..1: satFill(), 91-motion.js) */
-  .satSlider:not(.cpSlider)::-webkit-slider-runnable-track{background-image:linear-gradient(90deg,transparent calc(12px + (100% - 24px) * var(--f,1)),rgba(18,22,30,.75) 0),
+  .satSlider:not(.cpSlider)::-webkit-slider-runnable-track{background-image:linear-gradient(90deg,transparent calc(12px + (100% - 24px) * var(--f,1)),rgba(28,33,44,.75) 0),
     linear-gradient(to right,#7b8084,#2f7fe0 55%,#19c9c3 75%,#f5c518 88%,#ef3b2d);}
-  .satSlider.trkSlider::-webkit-slider-runnable-track{background-image:linear-gradient(90deg,transparent calc(12px + (100% - 24px) * var(--f,1)),rgba(18,22,30,.75) 0),
-    linear-gradient(to right,rgba(255,154,77,.15),#FF9A4D);}
+  .satSlider.trkSlider::-webkit-slider-runnable-track{background-image:linear-gradient(90deg,transparent calc(12px + (100% - 24px) * var(--f,1)),rgba(28,33,44,.75) 0),
+    linear-gradient(to right,rgba(240,154,96,.15),#F09A60);}
   /* #app never scrolls (an off-screen panel getting focus or a tap mid-slide used to scroll it -- js/91-motion.js holds it too) */
   #app{overflow:clip;}
   /* small headings: sentence case, like the rest of A */
@@ -273,5 +274,5 @@
 
   /* ---- colours "midnatt + aprikos" (2026-10-05, the canvas' Kontrast page, variant 21): a thin light edge on top of the
      panels and the chosen tab, so they read as lying above ---- */
-  .setSec, #settingsBody > .settingsRow, #visMore, #hmPanel, #anPanel, #wpSheet, #menuPanel{box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 18px 50px rgba(0,0,0,.45);}
+  .setSec, #settingsBody > .settingsRow, #visMore, #hmPanel, #anPanel, #wpSheet, #menuPanel{box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 18px 50px rgba(0,0,0,.4);}
   .anSeg button.on::before, .helpSeg button.on::before{box-shadow:inset 0 1px 0 rgba(255,255,255,.08);}

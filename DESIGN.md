@@ -2,16 +2,16 @@
 name: FF Map
 description: Design A – mörk, platt och lugn, med en orange accent som glöder. Fiskfiskarnas karta för tävlingsdagen på sjön.
 colors:
-  botten: "#090B10"
-  yta-1: "#12161E"
-  yta-2: "#1C222D"
-  yta-3: "#29313F"
+  botten: "#141822"
+  yta-1: "#1C212C"
+  yta-2: "#262C39"
+  yta-3: "#333B4A"
   frost: "rgba(18,22,30,.5)"
-  text: "#EEF0F4"
-  gra-text: "#8A93A5"
-  accent: "#FF9A4D"
+  text: "#D6DAE2"
+  gra-text: "#9098A8"
+  accent: "#F09A60"
   text-pa-accent: "#1A0C02"
-  linje: "rgba(170,190,230,.10)"
+  linje: "rgba(170,190,230,.08)"
   ta-bort: "#FF6B63"
   signalrod: "#D64545"
   art-markering: "#E4E9EC"
@@ -62,19 +62,21 @@ Färgen i appen kommer från kartan och från fiskarna; gränssnittet tar bara a
 ## Colors
 
 Färgerna "midnatt + aprikos" (2026-10-05, variant 21 på ritytans sida Kontrast – menyer): bläckblå midnatt där varje lager
-är tydligt ljusare, svala hårfina linjer, en tunn ljuskant överst på paneler och vald flik.
+är tydligt ljusare, svala hårfina linjer, en tunn ljuskant överst på paneler och vald flik. Samma dag mjukad till 21c "Dimma":
+ytorna två steg ljusare, mjukare text, dämpad aprikos och dämpade cirklar i reglagen (#C9CED8). Alla flikrader (`.anSeg`,
+`.helpSeg`, `.segmented`) har samma bädd: botten, hårfin kant, vald flik = yta 2 med ljuskant.
 
 
-- **Botten** (`--bg` #090B10): sidorna (Inställningar, Logg, Hjälp, Admin), statusraden (`theme-color`),
+- **Botten** (`--bg` #141822): sidorna (Inställningar, Logg, Hjälp, Admin), statusraden (`theme-color`),
   utanför kartbilden, toningarna i över- och underkant.
-- **Yta 1** (`--navy` #12161E): paneler (bottenrutor), menyer, kort, kortlistor.
-- **Yta 2** (`--s2` #1C222D): knappar, fält, chips och valda flikar inne i en panel.
-- **Yta 3** (`--s3` #29313F): reglage som är av, reglagespår.
+- **Yta 1** (`--navy` #1C212C): paneler (bottenrutor), menyer, kort, kortlistor.
+- **Yta 2** (`--s2` #262C39): knappar, fält, chips och valda flikar inne i en panel.
+- **Yta 3** (`--s3` #333B4A): reglage som är av, reglagespår.
 - **Frost** (`--navy-glass` + `--frost` = blur 14 px): allt som ligger fritt på kartan – väderpillret,
   skyltarna, kapseln uppe till höger, de runda knapparna, fart/djup, snabbmeddelandenas val, Ångra-notisen.
   Tunn kant 10 % vitt.
-- **Text** #EEF0F4, **grå text** (`--text-muted` #8A93A5) för beskrivningar och etiketter.
-- **Accent** (`--amber` #FF9A4D, varm aprikos): på / valt / huvudhandlingen (Spara, sikteknappen). Text och ikoner på
+- **Text** #D6DAE2, **grå text** (`--text-muted` #9098A8) för beskrivningar och etiketter.
+- **Accent** (`--amber` #F09A60, varm aprikos): på / valt / huvudhandlingen (Spara, sikteknappen). Text och ikoner på
   accent: `--on-acc` #1A0C02.
 - **Ta bort** #FF6B63 (papperskorgen, Logga ut), signalröd för fel och Fara-nivåer.
 - **Artfärgerna** (markering, abborre, gädda, gös, fara, träffpunkt, hem) och **glöden** (heatmapen) är

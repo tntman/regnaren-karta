@@ -475,7 +475,7 @@
     // from the catches: the catches it's worked out from, small white dots
     if (R.pts) R.pts.forEach(function(p){
       var x = originX + p.x * scale, y = originY + p.y * scale; if (x < -5 || y < -5 || x > W + 5 || y > H + 5) return;
-      anCtx.beginPath(); anCtx.arc(x, y, 2.6, 0, 7); anCtx.fillStyle = '#fff'; anCtx.fill(); anCtx.lineWidth = 1; anCtx.strokeStyle = 'rgba(18,22,30,.9)'; anCtx.stroke();
+      anCtx.beginPath(); anCtx.arc(x, y, 2.6, 0, 7); anCtx.fillStyle = '#fff'; anCtx.fill(); anCtx.lineWidth = 1; anCtx.strokeStyle = 'rgba(28,33,44,.9)'; anCtx.stroke();
     });
     // labels (tops/holes, similar places)
     Array.prototype.forEach.call(anLabelsEl.children, function(el){

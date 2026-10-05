@@ -87,9 +87,9 @@ Uppdatera rätt anteckning när något ändras.
 - **iOS hemskärmsapp:** statusraden är `default` (src/head.html), INTE `black-translucent`: med
   translucent gör iOS 26 webbvyn en statusrad för kort – en död rand längst ner som ingen CSS
   når (WebKit-bugg 301108). `default` lägger sidan under statusraden (som `black`) men ger raden
-  `theme-color`: design A:s midnatt #090B10 (sedan 2026-10-05; innan dess #08080A, ännu tidigare mörkblå #06141C) – samma
+  `theme-color`: design A:s midnatt #141822 (21c, sedan 2026-10-05; innan dess #090B10 och #08080A, ännu tidigare mörkblå #06141C) – samma
   som kartans bakgrund (`#stage`), body, manifestet och toppens tona i stående hemskärmsapp (`html.iosApp`,
-  börjar i #090B10 och tonar ut). Ändrad statusrad kräver att appen läggs till på hemskärmen igen.
+  börjar i #141822 och tonar ut). Ändrad statusrad kräver att appen läggs till på hemskärmen igen.
 - **Ordning/hoisting:** många `var` deklareras i senare js-filer. Sätt checkbox-tillstånd som
   beror på sådana variabler i `boot()` (`js/90-boot.js`, se toggleDepth/toggleTrack).
 - **Firebase-kvot** (gratis: 50k reads/dygn). Positioner delas var 20:e s vid rörelse
