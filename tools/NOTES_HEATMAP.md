@@ -9,7 +9,7 @@ bottenrutan, fångstrutan, tryck på kartan), `src/css/72-heatmap.css`, HTML i `
 - **Kartlägen** (håll kartlägesknappen): **Heatmap** sist i listan (`.hmOpt`, `data-heat`) – inget kartläge
   utan en bottenruta som Kartanalys (`#hmPanel`). Kartan tonas ner och gråtonas som i Kartanalys
   (samma "Mörkare", `anSet.dim`) – kartläget under behålls.
-- Fyra stilar: **Värme** (radie i meter + styrka), **Per art** (värme i artens färg, av/på per art),
+- Fyra stilar: **Värme** (radie i meter + styrka), **Per art** (värme i artens färg; Art-valet Alla/en art som i de andra stilarna, sedan 2026-10-05 – förr av/på per art),
   **Rutor** (sexkanter 30/60/120 m fästa i kartan, antal i rutan), **Prickar** (prick per fångst, större
   fisk = större prick, namn om man vill). Filter: art, tävling ("regnaren1" → "Regnaren 1 · 25–26 sep").
 - **Tryck på kartan** (`hmTapAt`, anropas från `scheduleProbeTap`): närmaste fångst (+ de andra inom 50 m)
@@ -18,7 +18,7 @@ bottenrutan, fångstrutan, tryck på kartan), `src/css/72-heatmap.css`, HTML i `
   **Liknande** (Kartanalys Liknande med fångsten som plats: `anExtraRef` i `anSpots()`; heatmapen stängs).
 - **Inte samtidigt som Kartanalys**: heatmap på → Kartanalys-läget av; ett Kartanalys-läge valt → heatmap av.
 - Översta raden (`.pnHead`, som Kartanalys): resultatet + teckenförklaringen (`#hmLegend`), **ⓘ** (`pnInfo`: noterna i `#hmResult .note` i en ruta), **↺ Återställ** (`HM_DEFAULTS`, grå när allt är som från start) och **⏻ Stäng av heatmap** (`#hmOff`). Art/Tävling: radens namn först (`.rowLbl`), en rad var som skrollar i sidled.
-- **Storlek** (`#hmSize`, under Tävling, 2026-10-05): ett reglage med två handtag, min–max cm i steg om 5. Ändarna = minsta/största fisken som visas (tävling + art, avrundat till 5 cm); ett handtag i änden = ingen gräns åt det hållet; texten visar alltid siffrorna ("85–90 cm", aldrig "minst"). Eget spann per art (`hmSet.size[art]`, Per art = `all`), filtrerar via `sizeOk()` i `hmVisible()`; resultatraden säger "40–90 cm". Samma reglage (`sizeRow`/`sizeInput`/`sizeOk`, `js/56-analysis.js`) finns i Kartanalys → Från fångsterna (`anSet.size[art]`, eget värde).
+- **Storlek** (`#hmSize`, under Tävling, 2026-10-05): ett reglage med två handtag, min–max cm i steg om 5. Ändarna = minsta/största fisken som visas (tävling + art, avrundat till 5 cm); ett handtag i änden = ingen gräns åt det hållet; texten visar alltid siffrorna ("85–90 cm", aldrig "minst"). Eget spann per art (`hmSet.size[art]`), filtrerar via `sizeOk()` i `hmVisible()`; resultatraden säger "40–90 cm". Samma reglage (`sizeRow`/`sizeInput`/`sizeOk`, `js/56-analysis.js`) finns i Kartanalys → Från fångsterna (`anSet.size[art]`, eget värde).
 - **När** (`#hmTime`, `hmRenderTime`, sist i bottenrutan): stapel per timme på dygnet (bara timmar med fångster; färg = glöd), "Bäst kl 11–14 · 95 %" (bästa tre timmarna i rad). Tryck en timme / dra över flera = tidsfönster `hmSet.h0..h1` som filtrerar kartan via `hmVisible()` (grafen själv ignorerar fönstret: `hmVisible(true)`); samma timme igen eller ↺ = alla. Resultatraden säger "kl 11–14". Timmar i enhetens lokala tid.
 - Sjöns kant: tunn vit linje 50 % som i Kartanalys (`hmShoreLayer`: `anField` med egen cache, `edgeW`).
 - Rutan stängd: skylten **Heatmap** under väderchipet (`#hmPill`, klass `.mapPill` som Kartanalys `#anPill`) öppnar den igen.

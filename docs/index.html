@@ -10836,10 +10836,10 @@
      Liknande. Not together with Kartanalys (both tone the map down). Off after a restart,
      kept through a rotation. The panel closed: a "Heatmap" pill under the weather chip. */
   var HM_KEY = lakeKey('ffmap_heatmap_v1', 'heatmap_v1');
-  var hmSet = { style: 'heat', sp: 'all', spOn: { abborre: 1, gadda: 1, gos: 1 }, comp: 'all', rad: 70, str: 50, hexM: 60, cnt: 1, big: 1, names: 0, h0: 0, h1: 23, who: '', size: {} };   // (size: "Storlek" per species, sizeRow in 56-analysis.js)   // (who: only one person's catches -- from their profile, 67-profiles.js)
+  var hmSet = { style: 'heat', sp: 'all', comp: 'all', rad: 70, str: 50, hexM: 60, cnt: 1, big: 1, names: 0, h0: 0, h1: 23, who: '', size: {} };   // (size: "Storlek" per species, sizeRow in 56-analysis.js)   // (who: only one person's catches -- from their profile, 67-profiles.js)
   var HM_DEFAULTS = JSON.stringify(hmSet);   // (for "Återställ")
   try { var hsv = JSON.parse(localStorage.getItem(HM_KEY) || 'null'); if (hsv) for (var hk in hsv) hmSet[hk] = hsv[hk]; } catch(e){}
-  delete hmSet.cm0; delete hmSet.cm1;   // (the first Storlek, one range for all species)
+  delete hmSet.cm0; delete hmSet.cm1; delete hmSet.spOn;   // (the first Storlek: one range for all; Per art: its own species toggles)
   function hmSave(){ try { localStorage.setItem(HM_KEY, JSON.stringify(hmSet)); } catch(e){} }
   // hmOn = chosen (map-style list / its panel); hmShow = shown on the map (Filter → Lager → Heatmap, like Kartanalys)
   var HM_SHOW_KEY = 'ffmap_show_heatmap_v1', hmShow = true;
@@ -10881,8 +10881,8 @@
   function hmHour(c){ return new Date(c.t).getHours(); }
   function hmHourOn(){ return hmSet.h0 > 0 || hmSet.h1 < 23; }
 
-  function hmSpOk(c){ return hmSet.style === 'species' ? !!hmSet.spOn[c.sp] : (hmSet.sp === 'all' || c.sp === hmSet.sp); }
-  function hmSizeKey(){ return hmSet.style === 'species' ? 'all' : hmSet.sp; }   // (Storlek: its own range per species; Per art = Alla)
+  function hmSpOk(c){ return hmSet.sp === 'all' || c.sp === hmSet.sp; }
+  function hmSizeKey(){ return hmSet.sp; }   // (Storlek: its own range per species)
   function hmSizeBounds(){ return sizeBounds(hmAll().filter(function(c){ return hmInComp(c) && hmSpOk(c); })); }
   function hmVisible(anyHour){   // (anyHour: ignore the time window -- the "När" graph shows the whole day)
     return hmAll().filter(function(c){
@@ -10946,9 +10946,10 @@
     inComp.forEach(function(c){ cnt[c.sp]++; });
     var dot = function(sp){ return '<span class="hmSpDot" style="background:rgb(' + HM_COL[sp] + ')"></span>'; };
     // (each row: its name first, then the choices -- one line, sideways if they don't fit)
-    document.getElementById('hmSp').innerHTML = '<span class="rowLbl">' + (st === 'species' ? 'Arter' : 'Art') + '</span>' + (st === 'species'
-      ? HM_SP.map(function(x){ return '<button type="button" data-spt="' + x[0] + '" class="' + (hmSet.spOn[x[0]] ? 'on' : '') + '">' + dot(x[0]) + x[1] + ' ' + cnt[x[0]] + '</button>'; }).join('')
-      : [['all', 'Alla']].concat(HM_SP).map(function(x){ return '<button type="button" data-sp="' + x[0] + '" class="' + (hmSet.sp === x[0] ? 'on' : '') + '">' + x[1] + '</button>'; }).join(''));
+    // (the same choice in every tab; Per art also shows each species' colour and count)
+    document.getElementById('hmSp').innerHTML = '<span class="rowLbl">Art</span>' + [['all', 'Alla']].concat(HM_SP).map(function(x){
+      return '<button type="button" data-sp="' + x[0] + '" class="' + (hmSet.sp === x[0] ? 'on' : '') + '">' + (st === 'species' && x[0] !== 'all' ? dot(x[0]) + x[1] + ' ' + cnt[x[0]] : x[1]) + '</button>';
+    }).join('');
     document.getElementById('hmComp').innerHTML = '<span class="rowLbl">Tävling</span><button type="button" data-comp="all" class="' + (hmSet.comp === 'all' ? 'on' : '') + '">Alla</button>' +
       comps.map(function(c){ return '<button type="button" data-comp="' + escHtml(c.id) + '" class="' + (hmSet.comp === c.id ? 'on' : '') + '">' + escHtml(hmCompName(c.id)) + ' · ' + hmDateRange(c.list) + '</button>'; }).join('');
     var sb = hmSizeBounds(), sr = sizeOf(hmSet, hmSizeKey());
@@ -11024,7 +11025,6 @@
     var a;
     if ((a = t.getAttribute('data-s'))) hmSet.style = a;
     else if ((a = t.getAttribute('data-sp'))) hmSet.sp = a;
-    else if ((a = t.getAttribute('data-spt'))) hmSet.spOn[a] = hmSet.spOn[a] ? 0 : 1;
     else if ((a = t.getAttribute('data-comp'))) hmSet.comp = a;
     else if ((a = t.getAttribute('data-hx'))) hmSet.hexM = +a;
     else if (t.hasAttribute('data-who')) hmSet.who = '';

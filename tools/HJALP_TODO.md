@@ -95,3 +95,4 @@ i avsnitt, Ångra, åskvarningen alltid + "dragit förbi", solnedgången, Täckn
 - Samma båt: fiskare räknas som samma båt upp till 40 m + så långt båten hinner mellan deras positioner (max 200 m) – förr 30 m, då delades båten i fart. Nyhetsrad: "Samma båt håller ihop bättre när ni kör"
 
 - Storlek: Heatmap (under Tävling) och Kartanalys → Från fångsterna har ett reglage min–max cm. Avsnitt Heatmap + Kartanalys. Nyhetsrad: "Filtrera fångsterna på storlek i Heatmap och Kartanalys"
+- Heatmap Per art: Art-valet är nu Alla / en art som i de andra stilarna (förr av/på per art). Avsnitt Heatmap. Ingen egen nyhetsrad (hör till Storlek-raden).
