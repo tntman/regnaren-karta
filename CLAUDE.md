@@ -154,6 +154,8 @@ Uppdatera rätt anteckning när något ändras.
   admin, när appen inte vet (ingen kopia/API-fel), och när admin slagit av låset för alla (Admin → Tävlingslåset, `config/<sjö>.lockOff`). Båtpositioner, meddelanden, spår låses inte. Bara i appen – reglerna släpper in
   alla inloggade. Grindarna ligger i knapparnas handlers (24-boats.js), inte i `deleteWaypointById` (utgångna Träffpunkter, Avbryt
   på ny plats). Testerna: låset av i testwebbläsaren (`window.__ffNoLock`, fakefb) utom med `cfg={'lock': True}` (test_lock.py).
+- **Strandlinje** (Inställningar → Kartan `#toggleShore`, på som standard, `ffmap_shore_v1`): sjöns kant som tunn vit linje på vanliga kartan,
+  samma som Heatmap/Kartanalys ritar (`hmShoreLayer`, `js/68-heatmap.js`); döljs när de visas (de har sin egen).
 - **Pushnotiser**: inte gjort (kräver server/Firebase-betalplan).
 
 ## Firestore-regler (aktuella, i Firebase-konsolen)

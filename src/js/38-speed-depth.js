@@ -112,6 +112,7 @@
       DEPTH_B64 = t.trim();
       if (typeof updateProbeText === 'function') updateProbeText();
       if (typeof updateSpeedPill === 'function') updateSpeedPill();
+      if (typeof shoreDraw === 'function') shoreDraw();   // (Strandlinje needs the lake's outline)
     }).catch(function(e){ console.warn('djupdata', e); });
   }
   fetchDepthGrid();

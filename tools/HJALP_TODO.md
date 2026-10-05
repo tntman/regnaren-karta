@@ -83,3 +83,5 @@ i avsnitt, Ångra, åskvarningen alltid + "dragit förbi", solnedgången, Täckn
 - Profilen öppnas alltid (alla namn, även utan profil hos Fiskfiskarna: namn, fångster, båt); inga profiler i telefonen → "Ladda in data". Demo Mode visar de riktiga profilerna.
 
 - Båten: rutan visar bara fångsterna i tävlingen som pågår (hela tävlingen, även andra sjöar); namnet öppnar profilen. Profilen och Ledare räknar alla fiskar i tävlingen, även de som tas i en annan sjö (heatmapen bara sjön). Nyhetsrad: "Profilen och Ledare räknar alla fiskar i tävlingen, även de som tas i en annan sjö".
+
+- Strandlinje: tunn vit linje där vattnet möter land på vanliga kartan (Inställningar → Kartan, kan stängas av). Nyhetsrad: "Sjöns kant syns nu som en tunn vit linje".

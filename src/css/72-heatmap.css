@@ -1,7 +1,7 @@
   /* ================= Heatmap (fångster): map-style list -> a bottom panel like Kartanalys ================= */
-  #hmLayer, #hmSat{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;display:none;}
+  #shoreLayer, #hmLayer, #hmSat{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;display:none;}
   #hmSat{mix-blend-mode:saturation;}
-  #hmLayer.on, #hmSat.on{display:block;}
+  #shoreLayer.on, #hmLayer.on, #hmSat.on{display:block;}
   /* the pills under the weather chip (like it): Heatmap / Kartanalys is on -- tap = its panel (never both) */
   .mapPill{display:flex;align-items:center;gap:7px;margin:6px 0 0 -50px;pointer-events:auto;width:max-content;
     background:rgba(11,42,58,.82);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:4px 11px 4px 8px;

@@ -400,6 +400,7 @@
   }
   // draw: toned down outside, lit (+ a light edge) inside; per screen point like the lee
   function anDraw(){
+    shoreDraw();                              // (Strandlinje on the plain map, 68-heatmap.js: off while this shows)
     var dpr = window.devicePixelRatio || 1, W = stage.clientWidth, H = stage.clientHeight;
     var on = anShow && anSet.mode && anRes && anRes.M;
     anCanvas.classList.toggle('on', !!on); anSatCanvas.classList.toggle('on', !!on);

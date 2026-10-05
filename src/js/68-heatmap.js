@@ -243,6 +243,7 @@
     return { q: rq, r: rr };
   }
   function hmDraw(){
+    shoreDraw();
     var dpr = window.devicePixelRatio || 1, W = stage.clientWidth, H = stage.clientHeight;
     [hmCanvas, hmSatCanvas].forEach(function(c){ if (c.width !== Math.round(W * dpr) || c.height !== Math.round(H * dpr)){ c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); } });
     hmCtx.setTransform(dpr, 0, 0, dpr, 0, 0); hmCtx.clearRect(0, 0, W, H);
@@ -319,7 +320,7 @@
   // to about one drawn point, the line where it crosses 0,5 -- see anField / edgeW)
   var hmShoreBox = { p: null }, hmShoreCache = null, HM_NOMASK = null;
   function hmShoreLayer(W, H){
-    var A = anBase(); if (!A) return null;
+    var A = AN || shoreBase(); if (!A) return null;
     var STEP = viewStep(W, H), key = [originX.toFixed(1), originY.toFixed(1), scale.toFixed(5), W, H, STEP].join('|');
     if (hmShoreCache && hmShoreCache.key === key) return hmShoreCache;
     if (!HM_NOMASK || HM_NOMASK.length !== A.N) HM_NOMASK = new Uint8Array(A.N);
@@ -348,6 +349,36 @@
   function hmDrawShore(W, H){
     var sh = hmShoreLayer(W, H); if (!sh) return;
     hmCtx.imageSmoothingEnabled = true; hmCtx.drawImage(sh.cv, 0, 0, sh.cv.width * sh.STEP, sh.cv.height * sh.STEP);
+  }
+  // only the lake field (anBase works out slopes, tops etc. too -- too much just for a line on the plain map)
+  var SHORE_A = null;
+  function shoreBase(){
+    if (SHORE_A) return SHORE_A;
+    var g = loadDepthGrid(); if (!g) return null;
+    var N = DEPTH_W * DEPTH_H, lake = new Uint8Array(N);
+    for (var i = 0; i < N; i++) lake[i] = g[i] !== 255 ? 1 : 0;
+    return (SHORE_A = { W: DEPTH_W, H: DEPTH_H, N: N, lake: lake });
+  }
+  // "Strandlinje" (Inställningar -> Kartan, on by default): the same line on the plain map. Not under Heatmap or
+  // Kartanalys -- they draw their own (called from hmDraw / anDraw)
+  var shoreCanvas = document.getElementById('shoreLayer'), shoreCtx = shoreCanvas.getContext('2d'), SHORE_KEY = 'ffmap_shore_v1', shoreOn = true;
+  try { shoreOn = localStorage.getItem(SHORE_KEY) !== '0'; } catch(e){}
+  var toggleShoreEl = document.getElementById('toggleShore');
+  toggleShoreEl.checked = shoreOn;
+  toggleShoreEl.addEventListener('change', function(){
+    shoreOn = toggleShoreEl.checked;
+    try { localStorage.setItem(SHORE_KEY, shoreOn ? '1' : '0'); } catch(e){}
+    shoreDraw();
+  });
+  function shoreDraw(){
+    if (!shoreCanvas) return;          // (render before this file has run)
+    var dpr = window.devicePixelRatio || 1, W = stage.clientWidth, H = stage.clientHeight;
+    var vis = shoreOn && !(hmOn && hmShow) && !(anShow && anSet.mode && anRes && anRes.M) && W >= 2 && H >= 2;
+    shoreCanvas.classList.toggle('on', vis); if (!vis) return;
+    if (shoreCanvas.width !== Math.round(W * dpr) || shoreCanvas.height !== Math.round(H * dpr)){ shoreCanvas.width = Math.round(W * dpr); shoreCanvas.height = Math.round(H * dpr); }
+    shoreCtx.setTransform(dpr, 0, 0, dpr, 0, 0); shoreCtx.clearRect(0, 0, W, H);
+    var sh = hmShoreLayer(W, H); if (!sh) return;
+    shoreCtx.imageSmoothingEnabled = true; shoreCtx.drawImage(sh.cv, 0, 0, sh.cv.width * sh.STEP, sh.cv.height * sh.STEP);
   }
   function hmDotR(c){ return hmSet.big ? Math.max(3.5, Math.min(11, 3 + c.cm / 14)) : 5.5; }
 
