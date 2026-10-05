@@ -37,7 +37,7 @@ with sync_playwright() as p:
     b, ctx, pg, errs = new_page(p, geo=REG, cfg=cfg, name='Filip')
     src = lambda: pg.get_attribute('#mapImg', 'src')
     lakes = pg.eval_on_selector_all('#lakeList .menuItem', 'e=>e.map(x=>x.textContent.trim())')
-    check('lake menu lists all lakes, Regnaren first', lakes == ['Regnaren', 'Sibbofjärden', 'Sjösjön', 'Vågsfjärden'], lakes)
+    check('lake menu lists all lakes, Regnaren first', lakes == ['Regnaren', 'Sibbofjärden', 'Sjösjön', 'Vågsfjärden', 'Östra Vitten'], lakes)
     pg.wait_for_function("(document.getElementById('mapImg').getAttribute('src') || '').length > 0", timeout=15000)
     check('starts on Regnaren (as before)', src() == 'lakes/regnaren/map_v4_s1.jpg', src())
     check("Regnaren shows only Regnaren's spot", titles(pg) == ['Regnarplatsen'])

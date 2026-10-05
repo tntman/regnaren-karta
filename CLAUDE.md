@@ -2,7 +2,7 @@
 
 ## Vad det är
 Webbapp (PWA, "Lägg till på hemskärmen" på iPhone) för fiskegruppen Fiskfiskarna,
-flera sjöar (Regnaren, Sibbofjärden, Sjösjön, Vågsfjärden – väljs i menyn). Djupkarta + GPS + delade fiskeplatser och båtpositioner via Firebase
+flera sjöar (Regnaren, Sibbofjärden, Sjösjön, Vågsfjärden, Östra Vitten – väljs i menyn). Djupkarta + GPS + delade fiskeplatser och båtpositioner via Firebase
 (Firestore, anonym inloggning; identitet = valt namn). Användaren (Filip) är admin.
 All text i appen är på svenska. Svara Filip på svenska, kort och tydligt.
 

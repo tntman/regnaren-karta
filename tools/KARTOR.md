@@ -280,6 +280,11 @@ djup = färgens rang (ej kalibrerat) × 10 m; utjämning σ 4,5 px; Sobel-lutnin
 - [x] Sibbofjärden (`sibbo`, mwID 1206257, OSM relation 1924380, 58,7540–58,8125 N, 17,2760–17,3365 O):
       57 avlästa siffror, 90 % inom 0,12 m, maxdjup 11,2 m (legend 0/4/8/12), `grid_div` 8, filer v1,
       97 MB, ~26 000 rutor (z18 i 3 shards per lager, ~15 min nedladdning). 2026-09-30.
+- [x] Östra Vitten (`vitten`, mwID 1275694, OSM way 154946903, 58,9830–58,9990 N, 15,7080–15,7400 O, Vingåker):
+      24 avlästa siffror, 90 % inom 0,14 m, maxdjup 4,5 m, `grid_div` 4, filer v1, 15 MB, 8 namn (0 i vattnet).
+      Genesis har bara norra delen (ringen runt ön) – södra delen = okänt djup. Steg 1–8 i sidochatt
+      2026-10-05, steg 9–10 (bygg + tester) i main-chatten 2026-10-06. (matplotlib saknades
+      efter ominstallationen – `py -3 -m pip install --user matplotlib`.)
 - [ ] **Stora sjöar (Mälaren):** Filips utsnitt Bålsta–Ekerö var ~42 × 33 km ≈ 45 × Regnaren → uppskattat
       6–7 GB i docs/, ~3 GB offline, ~1,8 miljoner Genesis-rutor. Går inte: GitHub Pages ~1 GB totalt,
       zoom 14-bilden (~7 600 × 7 000 px) för stor för iPhone Safari, Kartanalys räknar hela sjön. Ett
