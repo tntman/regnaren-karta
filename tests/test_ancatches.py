@@ -9,6 +9,9 @@ results = []
 def check(name, cond, info=''):
     results.append(bool(cond)); print(('PASS ' if cond else 'FAIL ') + name + ('  -- ' + str(info) if info != '' else ''))
 B3 = (58.887269, 15.772629)
+def size(pg, root, a, b):   # "Storlek": move the two handles (min, max cm)
+    pg.evaluate("""([r, a, b]) => [['cm1', b], ['cm0', a], ['cm1', b]].forEach(([k, v]) => { var e = document.querySelector(r + ' input[data-r=' + k + ']'); e.value = v;
+      e.dispatchEvent(new Event('input', { bubbles: true })); e.dispatchEvent(new Event('change', { bubbles: true })); })""", [root, a, b])
 def an(pg): return pg.evaluate('window.__ffAnalysis()')
 def lit_pct(pg):
     m = re.search(r'Tänt: (<?\d+) %', pg.inner_text('#anResult')); return int(m.group(1).replace('<', '')) if m else None
@@ -40,6 +43,11 @@ with sync_playwright() as p:
     pg.click('#anDataChips button[data-m="c_gadda"]'); pg.wait_for_timeout(2500)
     a = an(pg); res = pg.inner_text('#anResult')
     check('Gädda (data): what stands out, incl. the depth (averaged within 25 m: "…–3 m")', a['mode'] == 'c_gadda' and a['ready'] and 'Gädda togs oftast' in res and re.search(r'\d–3 m', res), res)
+    size(pg, '#anControls', 70, 130); pg.wait_for_timeout(1500)
+    check('Storlek in Från fångsterna: minst 70 cm -> 15 gäddor (the button counts them too)', 'Gädda togs oftast' in pg.inner_text('#anResult') and 'Gädda 15' in pg.inner_text('#anDataChips'), (pg.inner_text('#anDataChips'), pg.inner_text('#anResult')[:200]))
+    size(pg, '#anControls', 80, 130); pg.wait_for_timeout(1500)
+    check('...minst 80 cm -> 5: too few', 'För få fångster' in pg.inner_text('#anResult'), pg.inner_text('#anResult')[:200])
+    size(pg, '#anControls', 0, 130); pg.wait_for_timeout(2000)
     l7 = lit_pct(pg)
     check('...the data decides how much is lit: "Tänt: x % av sjön – där togs 7 av 10 gäddor" + how clear', l7 is not None and '7 av 10 gäddor' in res and ('mönster' in res), res)
     check('...lit in the species\' colour (green), the catches as dots', pixels(pg, 'green') > 300, pixels(pg, 'green'))

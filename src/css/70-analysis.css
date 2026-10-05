@@ -107,10 +107,20 @@
   #anControls, #hmCtl{display:grid;grid-template-columns:1fr 1fr;column-gap:14px;}
   #anControls > *, #hmCtl > *{grid-column:1 / -1;}
   #anControls > .anRange:has(+ .anRange), #anControls > .anRange + .anRange, #hmCtl > .anRange:has(+ .anRange), #hmCtl > .anRange + .anRange{grid-column:auto;}
-  #anControls .anRange, #hmCtl .anRange{flex-wrap:wrap;row-gap:0;margin-top:8px;}
-  #anControls .anRange label, #hmCtl .anRange label{flex:1 1 auto;}
-  #anControls .anRange output, #hmCtl .anRange output{flex:0 0 auto;}
+  #anControls .anRange, #hmCtl .anRange, #hmSize .anRange{flex-wrap:wrap;row-gap:0;margin-top:8px;}
+  #anControls .anRange label, #hmCtl .anRange label, #hmSize .anRange label{flex:1 1 auto;}
+  #anControls .anRange output, #hmCtl .anRange output, #hmSize .anRange output{flex:0 0 auto;}
   #anControls .anRange input, #hmCtl .anRange input{flex:1 1 100%;order:3;height:24px;}
+  /* "Storlek" (Heatmap, Kartanalys "Från fångsterna", sizeRow in 56-analysis.js): two range inputs on top of each other, only their handles take touches; the part between them orange */
+  #hmSize .anRange{margin-top:6px;}
+  .sizeDual{position:relative;flex:1 1 100%;order:3;height:28px;}
+  .sizeDual::before{content:'';position:absolute;left:10px;right:10px;top:12px;height:4px;border-radius:2px;
+    background:linear-gradient(90deg,var(--s3) var(--a),var(--amber) var(--a),var(--amber) var(--b),var(--s3) var(--b));}
+  :is(#anControls, #hmSize) .sizeDual input{position:absolute;left:0;top:0;width:100%;height:28px;margin:0;-webkit-appearance:none;appearance:none;background:none;pointer-events:none;}
+  .sizeDual input::-webkit-slider-runnable-track{height:28px;background:none;}
+  .sizeDual input::-moz-range-track{background:none;}
+  .sizeDual input::-webkit-slider-thumb{-webkit-appearance:none;pointer-events:auto;width:20px;height:20px;margin-top:4px;border-radius:50%;background:var(--amber);box-shadow:0 1px 4px rgba(0,0,0,.5);cursor:pointer;}
+  .sizeDual input::-moz-range-thumb{pointer-events:auto;width:20px;height:20px;border:none;border-radius:50%;background:var(--amber);box-shadow:0 1px 4px rgba(0,0,0,.5);cursor:pointer;}
   .pnRow2{display:flex;gap:8px;align-items:center;}
   .pnRow2 .anSeg{flex:1 1 auto;} .pnRow2 .anChips{flex:0 0 auto;padding-right:0;-webkit-mask-image:none;mask-image:none;}
   #anPanel .anSeg, #hmPanel .anSeg{margin-top:6px;}

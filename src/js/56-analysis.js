@@ -62,8 +62,28 @@
     A.domeTop = anDome(ft, A.W, A.H, 300); A.domeHole = anDome(fh, A.W, A.H, 300);
     return A;
   }
+  // "Storlek" (Heatmap and Kartanalys' "Från fångsterna"): min-max cm on one slider with two handles; cm1 at the top = no upper limit
+  var SIZE_MAX = 130;
+  function sizeOn(s){ return s.cm0 > 0 || s.cm1 < SIZE_MAX; }
+  function sizeOk(s, c){ return !sizeOn(s) || (c.cm >= s.cm0 && (s.cm1 >= SIZE_MAX || c.cm <= s.cm1)); }
+  function sizeTxt(s){ return sizeOn(s) ? (s.cm1 >= SIZE_MAX ? 'minst ' + s.cm0 : s.cm0 + '–' + s.cm1) + ' cm' : 'Alla'; }
+  function sizeRow(s){
+    var pc = function(v){ return (100 * v / SIZE_MAX) + '%'; };
+    return '<div class="anRange"><label>Storlek</label><div class="sizeDual" style="--a:' + pc(s.cm0) + ';--b:' + pc(s.cm1) + '">' +
+      ['cm0', 'cm1'].map(function(k){ return '<input type="range" data-r="' + k + '" min="0" max="' + SIZE_MAX + '" step="5" value="' + s[k] + '" aria-label="' + (k === 'cm0' ? 'Minsta längd' : 'Största längd') + '">'; }).join('') +
+      '</div><output>' + sizeTxt(s) + '</output></div>';
+  }
+  function sizeInput(e, s){   // a handle moved: true if it was one of these (the two never pass each other)
+    var t = e.target, k = t.getAttribute && t.getAttribute('data-r');
+    if (k !== 'cm0' && k !== 'cm1') return false;
+    var v = k === 'cm0' ? Math.min(+t.value, s.cm1) : Math.max(+t.value, s.cm0);
+    t.value = v; s[k] = v;
+    t.parentNode.style.setProperty(k === 'cm0' ? '--a' : '--b', (100 * v / SIZE_MAX) + '%');
+    t.parentNode.nextSibling.textContent = sizeTxt(s);
+    return true;
+  }
   var anSet = { simF: { d: 1, s: 1, h: 1, v: 1, t: 1 }, simR: 0, mode: null, lo: 4, hi: 6, slope: 10, topP: 0.6, holeP: 0.8, hmin: 3, dim: 0.72, ref: null,
-               cF: { d: 1, s: 1, h: 1, v: 1, l: 1, t: 1 }, cCov: 7, cView: 'area',   // (c* = "Från fångsterna", 57-an-catches.js)
+               cF: { d: 1, s: 1, h: 1, v: 1, l: 1, t: 1 }, cCov: 7, cView: 'area', cm0: 0, cm1: SIZE_MAX,   // (c* = "Från fångsterna", 57-an-catches.js)
                combo: [], near: { tops: 0, veg: 15, hard: 15, wind: 15 } };   // Kartdata combined (mode 'combo'): the parts, "inom … m"
   var AN_DEFAULTS = JSON.stringify(anSet);   // (for "Återställ")
   anSet.cat = 'map';                            // the category shown: map / rule / data / similar
@@ -527,7 +547,7 @@
     var row = document.getElementById('anDataChips'), L = catchData ? catchData.list : [];
     if (!L.length){ row.innerHTML = '<span class="anNote" style="margin-top:2px">' + (catchData ? 'Inga fångster från tävlingarna i ' + escHtml(LAKE.name) + ' än.' : 'Hämtar fångsterna…') + '</span>'; return; }
     row.innerHTML = [['abborre', 'Abborre'], ['gadda', 'Gädda'], ['gos', 'Gös']].map(function(x){
-      var n = L.filter(function(c){ return c.sp === x[0]; }).length;
+      var n = L.filter(function(c){ return c.sp === x[0] && sizeOk(anSet, c); }).length;
       return '<button type="button" data-m="c_' + x[0] + '"' + (n < AN_CMIN ? ' disabled' : '') + '>' + x[1] + ' ' + n + (n < AN_CMIN ? ' · för få' : '') + '</button>';
     }).join('');
   }
@@ -590,6 +610,7 @@
   var anTimer = null;
   function anLater(){ anSave(); clearTimeout(anTimer); anTimer = setTimeout(anCompute, 60); }
   document.getElementById('anControls').addEventListener('input', function(e){
+    if (sizeInput(e, anSet)){ anDataRow(); anLater(); return; }
     var t = e.target, v = parseFloat(t.value);
     if (t.id.indexOf('anNear_') === 0){ anSet.near[t.id.slice(7)] = v; t.nextSibling.textContent = v + ' m'; anLater(); return; }   // (combined: "inom … m")
     var map = { anSlope: 'slope', anTopP: 'topP', anHoleP: 'holeP', anHmin: 'hmin', anCCov: 'cCov' };

@@ -77,6 +77,7 @@ raderas den då (`pagehide`).
   `window.__ffGeo`, `__ffAnalysis()` för tester/verktyg.
 
 ## Från fångsterna (data) – per art
+- **Storlek** (2026-10-05): min–max cm överst i rutan (samma reglage som Heatmap, `sizeRow` i `56-analysis.js`, `anSet.cm0/cm1`). Bara fångster i spannet räknas – även antalet på artknapparna (< 10 = "för få").
 Kod: `src/js/57-an-catches.js` (+ inkopplat i 56-analysis.js), test `tests/test_ancatches.py`.
 - Egen rad i Kartanalys under tumreglerna: **Abborre n · Gädda n · Gös n** (tävlingarnas fångster i sjön,
   66-catches.js). Under 10 fångster: grå, "för få". Bara sjön man är i.

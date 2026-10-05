@@ -22,6 +22,9 @@ ROWS.append([ms(25, 14, 0), 'regnaren1', 'Pia', 'gos', 60, B5[0], B5[1]])
 ROWS.append([ms(20, 10, 0), 'fiskfiskOpen', 'Olle', 'gadda', 90, B5[0] + 0.0003, B5[1] + 0.0004])
 CATCHES = {'heatmap': [fakefb.api_row(*r) for r in ROWS]}
 
+def size(pg, root, a, b):   # "Storlek": move the two handles (min, max cm)
+    pg.evaluate("""([r, a, b]) => [['cm1', b], ['cm0', a], ['cm1', b]].forEach(([k, v]) => { var e = document.querySelector(r + ' input[data-r=' + k + ']'); e.value = v;
+      e.dispatchEvent(new Event('input', { bubbles: true })); e.dispatchEvent(new Event('change', { bubbles: true })); })""", [root, a, b])
 def heat(pg): return pg.evaluate('window.__ffHeat()')
 def open_heat(pg):
     bb = pg.locator('#mapTypeBtn').bounding_box()
@@ -90,7 +93,16 @@ with sync_playwright() as p:
     check('Art: Gädda -> 6 catches', heat(pg)['n'] == 6 and '6 fångster' in pg.inner_text('#hmResult'), heat(pg)['n'])
     pg.click('#hmComp button[data-comp="regnaren1"]'); pg.wait_for_timeout(300)
     check('...+ Tävling: Regnaren 1 -> 5', heat(pg)['n'] == 5, heat(pg)['n'])
-    pg.click('#hmSp button[data-sp="all"]'); pg.click('#hmComp button[data-comp="all"]'); pg.wait_for_timeout(300)
+    pg.click('#hmComp button[data-comp="all"]'); size(pg, '#hmSize', 70, 80); pg.wait_for_timeout(300)
+    check('Storlek 70–80 cm (Gädda): 3 catches, said in the result line', heat(pg)['n'] == 3 and '70–80 cm' in pg.inner_text('#hmResult') and pg.inner_text('#hmSize output') == '70–80 cm', pg.inner_text('#hmResult'))
+    size(pg, '#hmSize', 85, 130); pg.wait_for_timeout(300)
+    check('...the right handle at the end = no upper limit: "minst 85 cm" -> the 90 cm one', heat(pg)['n'] == 1 and pg.inner_text('#hmSize output') == 'minst 85 cm', heat(pg)['n'])
+    size(pg, '#hmSize', 100, 20); pg.wait_for_timeout(300)
+    v = pg.evaluate("[+document.querySelector('#hmSize input[data-r=cm0]').value, +document.querySelector('#hmSize input[data-r=cm1]').value]")
+    check('...the handles never pass each other', v[0] <= v[1], v)
+    size(pg, '#hmSize', 0, 130); pg.wait_for_timeout(300)
+    check('...back to Alla', pg.inner_text('#hmSize output') == 'Alla' and heat(pg)['n'] == 6)
+    pg.click('#hmSp button[data-sp="all"]'); pg.wait_for_timeout(300)
     # ---- Per art ----
     pg.click('#hmStyleSeg button[data-s="species"]'); pg.wait_for_timeout(400)
     g = pg.eval_on_selector('#hmStyleSeg button.on', 'e => [e.dataset.s, e.classList.contains("segGlide"), parseFloat(e.style.getPropertyValue("--sl"))]')

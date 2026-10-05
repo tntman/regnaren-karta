@@ -10,7 +10,7 @@
      Liknande. Not together with Kartanalys (both tone the map down). Off after a restart,
      kept through a rotation. The panel closed: a "Heatmap" pill under the weather chip. */
   var HM_KEY = lakeKey('ffmap_heatmap_v1', 'heatmap_v1');
-  var hmSet = { style: 'heat', sp: 'all', spOn: { abborre: 1, gadda: 1, gos: 1 }, comp: 'all', rad: 70, str: 50, hexM: 60, cnt: 1, big: 1, names: 0, h0: 0, h1: 23, who: '' };   // (who: only one person's catches -- from their profile, 67-profiles.js)
+  var hmSet = { style: 'heat', sp: 'all', spOn: { abborre: 1, gadda: 1, gos: 1 }, comp: 'all', rad: 70, str: 50, hexM: 60, cnt: 1, big: 1, names: 0, h0: 0, h1: 23, who: '', cm0: 0, cm1: SIZE_MAX };   // (cm0 / cm1: "Storlek", sizeRow in 56-analysis.js)   // (who: only one person's catches -- from their profile, 67-profiles.js)
   var HM_DEFAULTS = JSON.stringify(hmSet);   // (for "Återställ")
   try { var hsv = JSON.parse(localStorage.getItem(HM_KEY) || 'null'); if (hsv) for (var hk in hsv) hmSet[hk] = hsv[hk]; } catch(e){}
   function hmSave(){ try { localStorage.setItem(HM_KEY, JSON.stringify(hmSet)); } catch(e){} }
@@ -53,10 +53,12 @@
   function hmInComp(c){ return (hmSet.comp === 'all' || c.comp === hmSet.comp) && (!hmSet.who || hmSet.who.split('|').some(function(n){ return catchPlain(c.who) === catchPlain(n); })); }
   function hmHour(c){ return new Date(c.t).getHours(); }
   function hmHourOn(){ return hmSet.h0 > 0 || hmSet.h1 < 23; }
+
   function hmVisible(anyHour){   // (anyHour: ignore the time window -- the "När" graph shows the whole day)
     return hmAll().filter(function(c){
       if (!hmInComp(c)) return false;
       if (!anyHour && hmHourOn() && (hmHour(c) < hmSet.h0 || hmHour(c) > hmSet.h1)) return false;
+      if (!sizeOk(hmSet, c)) return false;
       return hmSet.style === 'species' ? !!hmSet.spOn[c.sp] : (hmSet.sp === 'all' || c.sp === hmSet.sp);
     });
   }
@@ -119,6 +121,7 @@
       : [['all', 'Alla']].concat(HM_SP).map(function(x){ return '<button type="button" data-sp="' + x[0] + '" class="' + (hmSet.sp === x[0] ? 'on' : '') + '">' + x[1] + '</button>'; }).join(''));
     document.getElementById('hmComp').innerHTML = '<span class="rowLbl">Tävling</span><button type="button" data-comp="all" class="' + (hmSet.comp === 'all' ? 'on' : '') + '">Alla</button>' +
       comps.map(function(c){ return '<button type="button" data-comp="' + escHtml(c.id) + '" class="' + (hmSet.comp === c.id ? 'on' : '') + '">' + escHtml(hmCompName(c.id)) + ' · ' + hmDateRange(c.list) + '</button>'; }).join('');
+    document.getElementById('hmSize').innerHTML = sizeRow(hmSet);
     var rng = function(k, l, min, max, stp){ return '<div class="anRange"><label>' + l + '</label><input type="range" data-r="' + k + '" min="' + min + '" max="' + max + '" step="' + stp + '" value="' + hmSet[k] + '"><output id="hmOut_' + k + '">' + hmOutTxt(k) + '</output></div>'; };
     var tog = function(k, l){ return '<button type="button" data-t="' + k + '" class="' + (hmSet[k] ? 'on' : '') + '">' + (hmSet[k] ? '✓ ' : '') + l + '</button>'; };
     document.getElementById('hmCtl').innerHTML =
@@ -132,7 +135,7 @@
     else if (!all.length) res.innerHTML = catchErr ? 'Kunde inte hämta fångsterna (ingen anslutning?).' : 'Inga fångster i ' + escHtml(LAKE.name) + ' än.';
     else {
       var v = hmVisible(), c2 = { abborre: 0, gadda: 0, gos: 0 }; v.forEach(function(c){ c2[c.sp]++; });
-      res.innerHTML = (hmSet.who ? '<button type="button" class="hmWho" data-who="">Bara ' + escHtml(hmSet.who.split('|').join(', ')) + ' ✕</button> ' : '') + '<b>' + v.length + ' fångster</b> i ' + escHtml(LAKE.name) + (catchLiveComp() ? ' · <b class="hmLive">Live</b>' : '') + (hmHourOn() ? ' · kl ' + hmHourTxt() : '') + ' · ' + HM_SP.map(function(x){ return c2[x[0]] + ' ' + x[1].toLowerCase(); }).join(', ') +
+      res.innerHTML = (hmSet.who ? '<button type="button" class="hmWho" data-who="">Bara ' + escHtml(hmSet.who.split('|').join(', ')) + ' ✕</button> ' : '') + '<b>' + v.length + ' fångster</b> i ' + escHtml(LAKE.name) + (catchLiveComp() ? ' · <b class="hmLive">Live</b>' : '') + (hmHourOn() ? ' · kl ' + hmHourTxt() : '') + (sizeOn(hmSet) ? ' · ' + sizeTxt(hmSet) : '') + ' · ' + HM_SP.map(function(x){ return c2[x[0]] + ' ' + x[1].toLowerCase(); }).join(', ') +
         '<span class="note">' + (st === 'dots' ? 'Tryck på en prick för allt om fångsten.' : st === 'hex' ? 'Tryck på en ruta för fångsterna i den.' : 'Tryck på kartan där det är färg för fångsterna där.') + '</span>' +
         (!hmShow ? '<span class="pnHid"> · Dold – slå på Heatmap i Filter</span>' : '');
     }
@@ -200,11 +203,17 @@
   });
   hmPanel.addEventListener('input', function(e){
     var k = e.target.getAttribute && e.target.getAttribute('data-r'); if (!k) return;
+    if (sizeInput(e, hmSet)){
+      hmSave();
+      document.getElementById('hmReset').disabled = JSON.stringify(hmSet) === HM_DEFAULTS;
+      hmHeatCache = null; hmDraw(); return;
+    }
     hmSet[k] = +e.target.value; hmSave();
     var o = document.getElementById('hmOut_' + k); if (o) o.textContent = hmOutTxt(k);
     document.getElementById('hmReset').disabled = JSON.stringify(hmSet) === HM_DEFAULTS;   // (↺ at once, while dragging)
     hmHeatCache = null; hmDraw();
   });
+  hmPanel.addEventListener('change', function(e){ var k = e.target.getAttribute && e.target.getAttribute('data-r'); if (k === 'cm0' || k === 'cm1') hmRenderPanel(); });   // (let go: the counts and "När" follow)
   document.getElementById('hmClose').addEventListener('click', function(){ hmShowPanel(false); });
   document.getElementById('hmOff').addEventListener('click', function(){ hmSetOn(false); });
   document.getElementById('hmReset').addEventListener('click', function(){ hmSet = JSON.parse(HM_DEFAULTS); hmSave(); hmHeatCache = null; hmRenderPanel(); hmDraw(); resetDone(this); });
