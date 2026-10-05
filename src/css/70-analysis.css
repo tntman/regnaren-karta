@@ -67,6 +67,7 @@
   .anRefRow{display:flex;gap:8px;align-items:center;margin-top:8px;}
   .anRefRow #anRefSel{margin-top:0;flex:1;min-width:0;}
   #anRefGo{flex:0 0 auto;border:1px solid rgba(255,80,160,.7);background:rgba(255,80,160,.18);color:#fff;border-radius:9px;padding:8px 12px;font:inherit;font-weight:700;font-size:13px;cursor:pointer;}
+  .anEnds{order:4;flex:1 1 100%;display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-top:-2px;}   /* (words under a slider's ends) */
   .anNote{font-size:11.5px;color:var(--text-muted);line-height:1.4;margin-top:8px;}
   .anNote b{color:#dbe4e7;} .anNote i{font-style:italic;}
   .anLbl.simRef{width:0;height:0;padding:0;border:none;background:none;box-shadow:none;pointer-events:none;}
@@ -95,6 +96,7 @@
   .pnInfo{margin:2px 0 4px;padding:8px 11px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);font-size:12px;line-height:1.45;color:#c9d4d8;}
   .pnInfo[hidden]{display:none;}
   .pnInfo p{margin:0;} .pnInfo p + p{margin-top:5px;}
+  .pnList{margin:0;padding-left:16px;} .pnList li + li{margin-top:3px;} .pnInfo > * + .pnList, .pnInfo > .pnList + *{margin-top:8px;}
   .pnInfo b{color:#dbe4e7;}
   #anControls .anNote{display:none;}                                    /* (behind ⓘ) */
   /* rows: one line each -- they scroll sideways instead of wrapping (a fade at the edge says there's more) */

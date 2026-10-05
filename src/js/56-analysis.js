@@ -572,8 +572,9 @@
       return '<button type="button" data-m="c_' + x[0] + '"' + (n < AN_CMIN ? ' disabled' : '') + '>' + x[1] + ' ' + n + '</button>';
     }).join('');
   }
-  function anRangeRow(id, label, min, max, step, val, fmt){
-    return '<div class="anRange"><label for="' + id + '">' + label + '</label><input type="range" id="' + id + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + val + '"><output>' + fmt(val) + '</output></div>';
+  function anRangeRow(id, label, min, max, step, val, fmt, ends){   // (ends: words under the two ends, e.g. ['Mest likt', 'Mindre likt'])
+    return '<div class="anRange"><label for="' + id + '">' + label + '</label><input type="range" id="' + id + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + val + '"><output>' + fmt(val) + '</output>' +
+      (ends ? '<div class="anEnds"><span>' + ends[0] + '</span><span>' + ends[1] + '</span></div>' : '') + '</div>';
   }
   // a depth range: one bar in the depth colours (like the legend) with two handles
   function anDualRow(key){
@@ -637,7 +638,7 @@
     var map = { anSlope: 'slope', anTopP: 'topP', anHoleP: 'holeP', anHmin: 'hmin', anCCov: 'cCov' };
     if (!map[t.id]) return;
     anSet[map[t.id]] = v;
-    t.nextSibling.textContent = t.id === 'anSlope' ? v + ' %' : t.id === 'anHmin' ? AN_HARD[v - 1] : t.id === 'anCCov' ? v + ' av 10' : '≥ ' + fmtDepth(v) + ' m';
+    t.nextSibling.textContent = t.id === 'anSlope' ? v + ' %' : t.id === 'anHmin' ? AN_HARD[v - 1] : t.id === 'anCCov' ? v + ' av 10 fångster' : '≥ ' + fmtDepth(v) + ' m';
     anLater();
   });
   // dragging a handle of a depth range (either handle; they can't cross)
@@ -750,13 +751,15 @@
   // it: the notes on the result + the controls' notes. Open or not is remembered on the phone (closed at first).
   var PN_INFO_KEY = 'ffmap_panel_info_v1', pnInfoOn = false;
   try { pnInfoOn = localStorage.getItem(PN_INFO_KEY) === '1'; } catch(e){}
+  var AN_INTRO = { map: 'passar kartdatan nedan', rule: 'passar tumregeln nedan', data: 'liknar platserna där gruppen fått fisk', similar: 'liknar platsen du valt' };
   function pnInfo(P){
     var box = P.querySelector('.pnInfo'), btn = P.querySelector('.pnInfoBtn'), res = P.querySelector('.pnRes'), parts = [];
     if (!box) return;
     if (pnInfoOn){
-      if (res && res.scrollHeight > res.clientHeight + 2){ var c = res.cloneNode(true); Array.prototype.forEach.call(c.querySelectorAll('.note'), function(n){ n.remove(); }); parts.push(c.innerHTML); }
+      if (res && res.scrollHeight > res.clientHeight + 2 && !res.querySelector('.note .pnList')){ var c = res.cloneNode(true); Array.prototype.forEach.call(c.querySelectorAll('.note'), function(n){ n.remove(); }); parts.push(c.innerHTML); }   // (cut off: all of it here -- unless the list says it all)
       Array.prototype.forEach.call(P.querySelectorAll('.pnRes .note, #anControls .anNote'), function(n){ if (n.textContent.trim()) parts.push(n.innerHTML); });
-      box.innerHTML = parts.length ? parts.map(function(t){ return '<p>' + t + '</p>'; }).join('') : '<p>Ingen förklaring till det här.</p>';
+      if (P === anPanel) parts.unshift('<b>Kartanalys</b> lyser upp det i sjön som ' + (AN_INTRO[anSet.cat] || 'passar inställningarna nedan') + '.');   // (always one line on top: what it does)
+      box.innerHTML = parts.length ? parts.map(function(t){ return /^\s*<ul/.test(t) ? t : '<p>' + t + '</p>'; }).join('') : '<p>Ingen förklaring till det här.</p>';   // (a list as it is)
     }
     box.hidden = !pnInfoOn;
     btn.classList.toggle('on', pnInfoOn); btn.setAttribute('aria-pressed', pnInfoOn ? 'true' : 'false');

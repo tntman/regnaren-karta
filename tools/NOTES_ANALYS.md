@@ -85,7 +85,7 @@ Kod: `src/js/57-an-catches.js` (+ inkopplat i 56-analysis.js), test `tests/test_
   (`A.shore`), grynna/håla – i steg (`anCatchBins`, cachat per sjö). Jämfört med hela sjön: hur mycket
   vanligare fångsterna var i varje steg ("lift", utjämnad +1). Varje punkt i sjön får summan av log-lift
   för värdena som är på.
-- **Tänt**: från mest lik och nedåt tills "Typiskt" av 10 fångster ryms (reglage 5–9, standard 7) – datan
+- **Tänt**: från mest lik och nedåt tills "Likhet" av 10 fångster ryms (reglage 5–9, standard 7; ändarna "Mest likt" – "Mindre likt", värdet "3 % av sjön · 7 av 10 fångster"; förr "Typiskt") – datan
   bestämmer ytan: litet tänt = tydligt mönster (< 12 % tydligt, 12–25 % måttligt, > 25 % svagt).
   **Skala**: hela sjön olikt → mest likt (`anRes.G`, 4:e kanalen i `anField`, färger som heatmapen).
 - Av/på per värde (minst ett på); prickarna ●○○–●●● = hur mycket värdet ENSAMT pekar ut arten här
@@ -93,3 +93,4 @@ Kod: `src/js/57-an-catches.js` (+ inkopplat i 56-analysis.js), test `tests/test_
 - Fångsterna ritas som små vita prickar (`anRes.pts`). Texten säger vad som sticker ut + att det visar var
   man fick fisk (inte var all fisk finns), månad(er), fångster utanför djupkartan räknas inte.
 - Inte samtidigt som heatmapen (som alla Kartanalys-lägen).
+- **ⓘ** (2026-10-05): alltid en inledningsrad överst ("Kartanalys lyser upp det i sjön som …", `AN_INTRO` per flik). Fångster: resultatet som punktlista (Art + storlek, Fångster, Jämför, Togs oftast, Tänt, Mönster), sedan reglagen (Storlek, Vad som jämförs, Likhet).

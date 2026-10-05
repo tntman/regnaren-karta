@@ -1,5 +1,5 @@
 # Kartanalys "Från fångsterna (data)": a species from the competitions' catches in this lake ->
-# the parts of the lake most like where it was caught. The data decides how much is lit ("Typiskt":
+# the parts of the lake most like where it was caught. The data decides how much is lit ("Likhet":
 # how many of 10 catches the lit part holds), on/off for each value (dots = how much it points the
 # species out), "Tänt" or "Skala", < 10 catches can't be chosen, not together with the heat map.
 from playwright.sync_api import sync_playwright
@@ -46,7 +46,7 @@ with sync_playwright() as p:
     size(pg, '#anControls', 70, 130); pg.wait_for_timeout(1500)
     check('Storlek in Från fångsterna: minst 70 cm -> 15 gäddor (the button counts them too; abborre keeps its own range: still 3)', 'Gädda togs oftast' in pg.inner_text('#anResult') and 'Gädda 15' in pg.inner_text('#anDataChips') and 'Abborre 3' in pg.inner_text('#anDataChips'), (pg.inner_text('#anDataChips'), pg.inner_text('#anResult')[:200]))
     size(pg, '#anControls', 80, 130); pg.wait_for_timeout(1500)
-    check('...80-85 cm -> 5: no minimum, still worked out (marked uncertain)', 'Gädda togs oftast' in pg.inner_text('#anResult') and 'Osäkert' in pg.evaluate("document.getElementById('anPanel').textContent"), pg.inner_text('#anResult')[:200])
+    check('...80-85 cm -> 5: no minimum, still worked out (marked uncertain)', 'Gädda togs oftast' in pg.inner_text('#anResult') and 'osäkert, få fångster' in pg.evaluate("document.getElementById('anPanel').textContent"), pg.inner_text('#anResult')[:200])
     size(pg, '#anControls', 0, 130); pg.wait_for_timeout(2000)
     l7 = lit_pct(pg)
     check('...the data decides how much is lit: "Tänt: x % av sjön – där togs 7 av 10 gäddor" + how clear', l7 is not None and '7 av 10 gäddor' in res and ('mönster' in res), res)
@@ -59,7 +59,10 @@ with sync_playwright() as p:
         return lit_pct(pg)
     l5, l9 = cov(5), cov(9)
     pg.click('#anPanel .pnInfoBtn'); pg.wait_for_timeout(300)
-    check('"Typiskt" 5 of 10: smaller; 9 of 10: bigger (described behind ⓘ)', l5 <= l7 <= l9 and l5 < l9 and 'udda fångster' in pg.inner_text('#anPanel .pnInfo'), (l5, l7, l9))
+    info = pg.inner_text('#anPanel .pnInfo')
+    check('ⓘ: a line on top (what Kartanalys does), then the result as a list: Art (+ size), Fångster, Jämför, Togs oftast, Tänt, Mönster; then what the sliders do (Storlek too)',
+          info.startswith('Kartanalys lyser upp') and all(w in info for w in ['Art:', 'Fångster:', 'Jämför:', 'Togs oftast:', 'Tänt:', 'Mönster:', 'Storlek:', 'Likhet:']) and re.search(r'% av sjön · \d av 10 fångster$', pg.inner_text('#anCCov + output')), (info[:300], pg.inner_text('#anCCov + output')))
+    check('"Likhet" 5 of 10 (Mest likt): smaller; 9 of 10 (Mindre likt): bigger (described behind ⓘ)', l5 <= l7 <= l9 and l5 < l9 and 'Mindre likt' in pg.inner_text('#anPanel .pnInfo'), (l5, l7, l9))
     pg.click('#anPanel .pnInfoBtn'); pg.wait_for_timeout(300)
     cov(7)
     for k in ['s', 'h', 'v', 'l', 't']: pg.click('#anCF button[data-cf="%s"]' % k); pg.wait_for_timeout(300)
