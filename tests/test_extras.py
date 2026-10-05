@@ -247,7 +247,7 @@ with sync_playwright() as p:
     pg.evaluate("document.querySelector('#waypoints .wpPin--abborre').click()"); pg.wait_for_timeout(600)
     st = pg.evaluate("""(() => ({ dist: getComputedStyle(document.querySelector('.sheetDistance')).color,
       fara: getComputedStyle(document.querySelector('.typeSeg button[data-type=fara]')).color }))()""")
-    check("the distance in a spot's sheet is not orange; a type not chosen: white text (its colour is the dot, design A)", st['dist'] == 'rgb(245, 245, 245)' and st['fara'] == 'rgb(245, 245, 245)', st)
+    check("the distance in a spot's sheet is not orange; a type not chosen: grey text (quiet, like a tab; its colour is the dot, design A)", st['dist'] == 'rgb(245, 245, 245)' and st['fara'] == 'rgb(154, 154, 163)', st)
     pg.set_viewport_size({'width': 844, 'height': 390}); pg.wait_for_timeout(500)
     r = pg.evaluate("(() => { var r = document.getElementById('wpSheet').getBoundingClientRect(); return [Math.round(r.width), Math.round(r.right)]; })()")
     check("on its side: the spot's sheet a 420 px column on the right (the map beside it)", r == [420, 844], r)

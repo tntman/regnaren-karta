@@ -65,7 +65,7 @@ with sync_playwright() as p:
     check('settings changed: ↺ Återställ next to ⏻ Stäng av heatmap in the top row', pg.is_enabled('#hmReset') and pg.get_attribute('#hmReset', 'aria-label') == 'Återställ' and pg.get_attribute('#hmOff', 'aria-label') == 'Stäng av heatmap')
     pg.click('#hmReset'); pg.wait_for_timeout(300)
     check('..."Återställ": back to the start (radius 70 m), still on; then greyed out', pg.inner_text('#hmOut_rad') == '70 m' and heat(pg)['on'] and pg.is_disabled('#hmReset'), pg.inner_text('#hmOut_rad'))
-    check('...and it says so: green with a tick for a moment', pg.get_attribute('#hmReset', 'aria-label') == 'Återställt' and pg.eval_on_selector('#hmReset', 'e => e.classList.contains("rsDone")'))
+    check('...and it says so: the ↺ spins round once', pg.get_attribute('#hmReset', 'aria-label') == 'Återställt' and pg.eval_on_selector('#hmReset', 'e => e.classList.contains("rsDone")'))
     pg.wait_for_timeout(1600)
     check('...then the usual grey ↺', pg.get_attribute('#hmReset', 'aria-label') == 'Återställ' and not pg.eval_on_selector('#hmReset', 'e => e.classList.contains("rsDone")'))
     # ---- "När": a bar per hour, press / drag = a time window filtering the map ----

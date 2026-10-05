@@ -697,14 +697,12 @@
     anExtraRef = null; anSave(); anCtlMode = '#'; anCompute();
     resetDone(this);
   });
-  // "↺ Återställ" (Kartanalys, Heatmap) says it's done: green with a tick for a moment (it turns in),
-  // then the usual grey ↺ (nothing left to reset)
-  var RS_TICK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>';
+  // "↺ Återställ" (Kartanalys, Heatmap, Namn) says it's done: the arrow spins round once, then the usual grey ↺
+  // (nothing left to reset)
   function resetDone(btn){
-    if (!btn._rsIc) btn._rsIc = btn.innerHTML;
     clearTimeout(btn._rsT); btn.classList.remove('rsDone'); void btn.offsetWidth;
-    btn.classList.add('rsDone'); btn.innerHTML = RS_TICK; btn.setAttribute('aria-label', 'Återställt');
-    btn._rsT = setTimeout(function(){ btn.classList.remove('rsDone'); btn.innerHTML = btn._rsIc; btn.setAttribute('aria-label', 'Återställ'); }, 1600);
+    btn.classList.add('rsDone'); btn.setAttribute('aria-label', 'Återställt');
+    btn._rsT = setTimeout(function(){ btn.classList.remove('rsDone'); btn.setAttribute('aria-label', 'Återställ'); }, 700);
   }
   // ⓘ in the top row (Kartanalys, Heatmap): the explanations -- kept out of the panel itself -- in a box under
   // it: the notes on the result + the controls' notes. Open or not is remembered on the phone (closed at first).

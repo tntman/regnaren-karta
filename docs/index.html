@@ -1558,10 +1558,10 @@
   #anPanel .anDual{margin-top:8px;}
   #anListBox:empty{display:none;}
   #anChips.combo button.on::before{content:'+ ';}       /* Kartdata combined: "+ Djup", "+ Branta kanter" -- they work together */
-  /* "↺ Återställ" done: green with a tick for a moment, the tick turns in (resetDone) */
-  .hdBtn.rsDone, .hdBtn.rsDone:disabled{opacity:1;border-color:rgba(127,216,138,.6);color:#7fd88a;background:rgba(127,216,138,.12);}
-  .rsDone svg{animation:rsTick .45s cubic-bezier(.16,1,.3,1);}
-  @keyframes rsTick{from{transform:rotate(-270deg) scale(.5);opacity:0;}to{transform:none;opacity:1;}}
+  /* "↺ Återställ" done: the arrow spins round once (resetDone) */
+  .hdBtn.rsDone, .hdBtn.rsDone:disabled{opacity:1;}
+  .rsDone svg{animation:rsSpin .6s cubic-bezier(.34,1.3,.64,1);}
+  @keyframes rsSpin{to{transform:rotate(-360deg);}}
   @media (prefers-reduced-motion:reduce){ .rsDone svg{animation-name:fadeIn;} }
   /* ================= Heatmap (fångster): map-style list -> a bottom panel like Kartanalys ================= */
   #shoreLayer, #hmLayer, #hmSat{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;display:none;}
@@ -1928,17 +1928,17 @@
   /* ---- choices: chips in grey capsules (chosen = orange tint), tabs (chosen = a lighter tab), types with a colour dot ---- */
   .anChips button, .trkSel{border:none;background:var(--s2);border-radius:999px;}
   .anChips button.on, .trkSel.on{background:var(--tint);color:var(--amber);border:none;}
-  .anSeg, .helpSeg{background:none;padding:0;gap:4px;}
+  .anSeg, .helpSeg{background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:4px;gap:4px;}
   .anSeg button.on, .helpSeg button.on{background:var(--s2);color:var(--offwhite);}
   #anCatSeg button.has{box-shadow:inset 0 -2px 0 var(--amber);}
   .segmented{background:#0B0B0D;border:none;border-radius:14px;}
   .segmented button.active{background:var(--s2);color:var(--offwhite);}
   .typeSeg button{border:none;background:var(--s2);color:var(--offwhite);border-radius:999px;gap:8px;}
   .typeSeg button::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--tc);flex:0 0 auto;}
-  .typeSeg button[data-type="fara"]:not(.active), .typeSeg button[data-type="hem"]:not(.active){color:var(--offwhite);}
   .typeSeg button.active, .typeSeg button[data-type="fara"].active, .typeSeg button[data-type="hem"].active, .typeSeg button[data-type="gos"].active, .typeSeg button[data-type="hem"].active{
-    background:color-mix(in srgb,var(--tc) 26%,transparent);color:var(--tc);box-shadow:inset 0 0 0 2px var(--tc);font-weight:700;}
-  .typeSeg button:not(.active){background:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.16);}   /* (not chosen: just an outline -- the chosen one filled + ringed) */
+    background:color-mix(in srgb,var(--tc) 20%,transparent);color:var(--tc);}
+  .typeSeg button:not(.active), .typeSeg button[data-type="fara"]:not(.active), .typeSeg button[data-type="hem"]:not(.active){color:var(--text-muted);font-weight:500;}   /* (not chosen: quieter, like a tab) */
+  .typeSeg button:not(.active)::before{opacity:.6;}
   .typeSeg button[data-type="fara"].active{color:#FF6B63;}
   .typeSeg button[data-type="hem"].active{color:#D9A06E;}
   .typeSeg button.active::before{box-shadow:0 0 8px var(--tc);}
@@ -2021,6 +2021,11 @@
   }
 
   /* ---- fixes after the first look (2026-10-05) ---- */
+  /* coloured sliders: the colours past the thumb dimmed (--f = where the thumb is, 0..1: satFill(), 91-motion.js) */
+  .satSlider:not(.cpSlider)::-webkit-slider-runnable-track{background-image:linear-gradient(90deg,transparent calc(12px + (100% - 24px) * var(--f,1)),rgba(17,17,19,.75) 0),
+    linear-gradient(to right,#7b8084,#2f7fe0 55%,#19c9c3 75%,#f5c518 88%,#ef3b2d);}
+  .satSlider.trkSlider::-webkit-slider-runnable-track{background-image:linear-gradient(90deg,transparent calc(12px + (100% - 24px) * var(--f,1)),rgba(17,17,19,.75) 0),
+    linear-gradient(to right,rgba(255,138,31,.15),#FF8A1F);}
   /* #app never scrolls (an off-screen panel getting focus or a tap mid-slide used to scroll it -- js/91-motion.js holds it too) */
   #app{overflow:clip;}
   /* small headings: sentence case, like the rest of A */
@@ -8129,7 +8134,7 @@
     if (c.who && !trkWhoSel.querySelector('option[value="' + c.who + '"]')) trkWhoSel.insertAdjacentHTML('beforeend', '<option value="' + c.who + '">' + c.who + '</option>');   // (a name that isn't on the member list)
     trkWhoSel.value = c.who || ''; trkWhoSel.classList.toggle('on', !!c.who);
     document.getElementById('trkStopMinBox').hidden = !c.stops;
-    document.getElementById('trkStopMin').value = String(c.stopMin); document.getElementById('trkStopMinVal').textContent = c.stopMin + ' min';
+    document.getElementById('trkStopMin').value = String(c.stopMin); satFill(document.getElementById('trkStopMin')); document.getElementById('trkStopMinVal').textContent = c.stopMin + ' min';
     Array.from(document.querySelectorAll('#trkRange button')).forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-r') === c.range); });
     Array.from(document.querySelectorAll('#trkDash button')).forEach(function(b){ b.classList.toggle('on', (b.getAttribute('data-d') === '1') === !!c.dash); });
     Array.from(document.querySelectorAll('#trkColors button')).forEach(function(b){ var on = b.getAttribute('data-c').toLowerCase() === String(c.color).toLowerCase(); b.classList.toggle('active', on); b.setAttribute('aria-checked', on ? 'true' : 'false'); });
@@ -9683,14 +9688,12 @@
     anExtraRef = null; anSave(); anCtlMode = '#'; anCompute();
     resetDone(this);
   });
-  // "↺ Återställ" (Kartanalys, Heatmap) says it's done: green with a tick for a moment (it turns in),
-  // then the usual grey ↺ (nothing left to reset)
-  var RS_TICK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>';
+  // "↺ Återställ" (Kartanalys, Heatmap, Namn) says it's done: the arrow spins round once, then the usual grey ↺
+  // (nothing left to reset)
   function resetDone(btn){
-    if (!btn._rsIc) btn._rsIc = btn.innerHTML;
     clearTimeout(btn._rsT); btn.classList.remove('rsDone'); void btn.offsetWidth;
-    btn.classList.add('rsDone'); btn.innerHTML = RS_TICK; btn.setAttribute('aria-label', 'Återställt');
-    btn._rsT = setTimeout(function(){ btn.classList.remove('rsDone'); btn.innerHTML = btn._rsIc; btn.setAttribute('aria-label', 'Återställ'); }, 1600);
+    btn.classList.add('rsDone'); btn.setAttribute('aria-label', 'Återställt');
+    btn._rsT = setTimeout(function(){ btn.classList.remove('rsDone'); btn.setAttribute('aria-label', 'Återställ'); }, 700);
   }
   // ⓘ in the top row (Kartanalys, Heatmap): the explanations -- kept out of the panel itself -- in a box under
   // it: the notes on the result + the controls' notes. Open or not is remembered on the phone (closed at first).
@@ -11308,6 +11311,10 @@
       if (on && !b.disabled) motionIgnite(b);
     }, 0);
   }, true);
+  // coloured sliders: where the thumb is (--f, 0..1), so the colours past it are dimmed (css/95-design-a.css)
+  function satFill(el){ var a = +el.min || 0, b = +el.max || 100; el.style.setProperty('--f', String(Math.max(0, Math.min(1, (el.value - a) / (b - a))))); }
+  Array.prototype.forEach.call(document.querySelectorAll('.satSlider'), satFill);
+  document.addEventListener('input', function(e){ if (e.target.classList && e.target.classList.contains('satSlider')) satFill(e.target); }, true);
   // #app must never scroll (css overflow:clip; this is for browsers without it)
   (function(){
     var app = document.getElementById('app');
