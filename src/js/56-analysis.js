@@ -62,32 +62,53 @@
     A.domeTop = anDome(ft, A.W, A.H, 300); A.domeHole = anDome(fh, A.W, A.H, 300);
     return A;
   }
-  // "Storlek" (Heatmap and Kartanalys' "Från fångsterna"): min-max cm on one slider with two handles; cm1 at the top = no upper limit
-  var SIZE_MAX = 130;
-  function sizeOn(s){ return s.cm0 > 0 || s.cm1 < SIZE_MAX; }
-  function sizeOk(s, c){ return !sizeOn(s) || (c.cm >= s.cm0 && (s.cm1 >= SIZE_MAX || c.cm <= s.cm1)); }
-  function sizeTxt(s){ return sizeOn(s) ? (s.cm1 >= SIZE_MAX ? 'minst ' + s.cm0 : s.cm0 + '–' + s.cm1) + ' cm' : 'Alla'; }
-  function sizeRow(s){
-    var pc = function(v){ return (100 * v / SIZE_MAX) + '%'; };
-    return '<div class="anRange"><label>Storlek</label><div class="sizeDual" style="--a:' + pc(s.cm0) + ';--b:' + pc(s.cm1) + '">' +
-      ['cm0', 'cm1'].map(function(k){ return '<input type="range" data-r="' + k + '" min="0" max="' + SIZE_MAX + '" step="5" value="' + s[k] + '" aria-label="' + (k === 'cm0' ? 'Minsta längd' : 'Största längd') + '">'; }).join('') +
-      '</div><output>' + sizeTxt(s) + '</output></div>';
+  // "Storlek" (Heatmap and Kartanalys' "Från fångsterna"): min-max cm on one slider with two handles. The slider's ends are the
+  // smallest / biggest fish in the data shown (rounded to 5 cm); a handle at its end = no limit that way. Its own range per species:
+  // set.size[key] = [lo, hi] (0 / SIZE_NONE = no limit), no entry = all.
+  var SIZE_NONE = 999;
+  function sizeOf(set, key){ return (set.size && set.size[key]) || [0, SIZE_NONE]; }
+  function sizeOk(r, c){ return (r[0] <= 0 || c.cm >= r[0]) && (r[1] >= SIZE_NONE || c.cm <= r[1]); }
+  function sizeBounds(list){
+    var cm = list.map(function(c){ return c.cm; }).filter(function(v){ return v > 0; });
+    if (!cm.length) return null;
+    var lo = Math.floor(Math.min.apply(null, cm) / 5) * 5, hi = Math.ceil(Math.max.apply(null, cm) / 5) * 5;
+    return [lo, Math.max(hi, lo + 5)];
   }
-  function sizeInput(e, s){   // a handle moved: true if it was one of these (the two never pass each other)
+  function sizeEff(r, b){ return [r[0] <= b[0] ? 0 : Math.min(r[0], b[1]), r[1] >= b[1] ? SIZE_NONE : Math.max(r[1], b[0])]; }   // (as the slider shows it)
+  function sizeOn(r, b){ var e = b ? sizeEff(r, b) : r; return e[0] > 0 || e[1] < SIZE_NONE; }
+  function sizeTxt(r, b){
+    var e = b ? sizeEff(r, b) : r;
+    return !sizeOn(e) ? 'Alla' : (e[1] >= SIZE_NONE ? 'minst ' + e[0] : e[0] <= 0 ? 'högst ' + e[1] : e[0] + '–' + e[1]) + ' cm';
+  }
+  function sizeRow(r, b, key){
+    if (!b) return '';
+    var e = sizeEff(r, b), v = [e[0] || b[0], e[1] >= SIZE_NONE ? b[1] : e[1]];
+    var pc = function(x){ return (100 * (x - b[0]) / (b[1] - b[0])) + '%'; };
+    return '<div class="anRange"><label>Storlek</label><div class="sizeDual" data-k="' + key + '" data-lo="' + b[0] + '" data-hi="' + b[1] + '" style="--a:' + pc(v[0]) + ';--b:' + pc(v[1]) + '">' +
+      [0, 1].map(function(i){ return '<input type="range" data-r="cm' + i + '" min="' + b[0] + '" max="' + b[1] + '" step="5" value="' + v[i] + '" aria-label="' + (i ? 'Största längd' : 'Minsta längd') + '">'; }).join('') +
+      '</div><output>' + sizeTxt(r, b) + '</output></div>';
+  }
+  function sizeInput(e, set){   // a handle moved: true if it was one of these (the two never pass each other)
     var t = e.target, k = t.getAttribute && t.getAttribute('data-r');
     if (k !== 'cm0' && k !== 'cm1') return false;
-    var v = k === 'cm0' ? Math.min(+t.value, s.cm1) : Math.max(+t.value, s.cm0);
-    t.value = v; s[k] = v;
-    t.parentNode.style.setProperty(k === 'cm0' ? '--a' : '--b', (100 * v / SIZE_MAX) + '%');
-    t.parentNode.nextSibling.textContent = sizeTxt(s);
+    var d = t.parentNode, b = [+d.getAttribute('data-lo'), +d.getAttribute('data-hi')], ins = d.querySelectorAll('input');
+    var a = +ins[0].value, z = +ins[1].value;
+    if (a > z){ if (k === 'cm0') a = z; else z = a; }
+    ins[0].value = a; ins[1].value = z;
+    var r = [a <= b[0] ? 0 : a, z >= b[1] ? SIZE_NONE : z], key = d.getAttribute('data-k');
+    set.size = set.size || {};
+    if (sizeOn(r)) set.size[key] = r; else delete set.size[key];
+    d.style.setProperty('--a', (100 * (a - b[0]) / (b[1] - b[0])) + '%'); d.style.setProperty('--b', (100 * (z - b[0]) / (b[1] - b[0])) + '%');
+    d.nextSibling.textContent = sizeTxt(r, b);
     return true;
   }
   var anSet = { simF: { d: 1, s: 1, h: 1, v: 1, t: 1 }, simR: 0, mode: null, lo: 4, hi: 6, slope: 10, topP: 0.6, holeP: 0.8, hmin: 3, dim: 0.72, ref: null,
-               cF: { d: 1, s: 1, h: 1, v: 1, l: 1, t: 1 }, cCov: 7, cView: 'area', cm0: 0, cm1: SIZE_MAX,   // (c* = "Från fångsterna", 57-an-catches.js)
+               cF: { d: 1, s: 1, h: 1, v: 1, l: 1, t: 1 }, cCov: 7, cView: 'area', size: {},   // (c* = "Från fångsterna", 57-an-catches.js)
                combo: [], near: { tops: 0, veg: 15, hard: 15, wind: 15 } };   // Kartdata combined (mode 'combo'): the parts, "inom … m"
   var AN_DEFAULTS = JSON.stringify(anSet);   // (for "Återställ")
   anSet.cat = 'map';                            // the category shown: map / rule / data / similar
   try { var sv = JSON.parse(localStorage.getItem(AN_KEY) || 'null'); if (sv) for (var k0 in sv) anSet[k0] = sv[k0]; } catch(e){}
+  delete anSet.cm0; delete anSet.cm1;   // (the first Storlek, one range for all species)
   if (!rotState) anSet.mode = null;          // a new start of the app: off (turning the phone keeps it)
   var anShow = true;
   try { anShow = localStorage.getItem(SHOW_AN_KEY) !== '0'; } catch(e){}
@@ -547,7 +568,7 @@
     var row = document.getElementById('anDataChips'), L = catchData ? catchData.list : [];
     if (!L.length){ row.innerHTML = '<span class="anNote" style="margin-top:2px">' + (catchData ? 'Inga fångster från tävlingarna i ' + escHtml(LAKE.name) + ' än.' : 'Hämtar fångsterna…') + '</span>'; return; }
     row.innerHTML = [['abborre', 'Abborre'], ['gadda', 'Gädda'], ['gos', 'Gös']].map(function(x){
-      var n = L.filter(function(c){ return c.sp === x[0] && sizeOk(anSet, c); }).length;
+      var n = L.filter(function(c){ return c.sp === x[0] && sizeOk(sizeOf(anSet, x[0]), c); }).length;
       return '<button type="button" data-m="c_' + x[0] + '"' + (n < AN_CMIN ? ' disabled' : '') + '>' + x[1] + ' ' + n + (n < AN_CMIN ? ' · för få' : '') + '</button>';
     }).join('');
   }

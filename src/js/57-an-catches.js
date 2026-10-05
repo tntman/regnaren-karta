@@ -40,7 +40,7 @@
   function anCatchCompute(A, sp, M){
     var out = { n: 0, text: '', note: '', G: null, pts: null, empty: true }, nm = AN_CSP[sp] || [sp, sp];
     if (!catchData){ loadCatches(false); out.text = 'Hämtar fångsterna…'; return out; }
-    var cs = catchData.list.filter(function(c){ return c.sp === sp && sizeOk(anSet, c); }), cells = [];
+    var cs = catchData.list.filter(function(c){ return c.sp === sp && sizeOk(sizeOf(anSet, sp), c); }), cells = [];
     cs.forEach(function(c){ var i = anCellOfImg(c.px, c.py); if (A.wat[i]) cells.push(i); });
     out.pts = cs.map(function(c){ return { x: c.px, y: c.py }; });
     if (cells.length < AN_CMIN){
@@ -122,7 +122,7 @@
   }
   function anCatchControls(){
     return '<div class="anSeg" id="anCView">' + [['area', 'Tänt'], ['grad', 'Skala']].map(function(x){ return '<button type="button" data-cv="' + x[0] + '" class="' + (anSet.cView === x[0] ? 'on' : '') + '">' + x[1] + '</button>'; }).join('') + '</div>' +
-      sizeRow(anSet) +
+      (catchData ? sizeRow(sizeOf(anSet, anSet.mode.slice(2)), sizeBounds(catchData.list.filter(function(c){ return c.sp === anSet.mode.slice(2); })), anSet.mode.slice(2)) : '') +
       '<div class="anLbl2">Vad som jämförs</div>' +
       '<div class="anNote"><b>Vad som jämförs:</b> slå av det du inte vill jämföra. ●●● = hur mycket värdet ensamt pekar ut arten här.</div>' +
       '<div class="anFactors" id="anCF">' + AN_CF.map(function(x){ return '<button type="button" data-cf="' + x[0] + '" class="' + (anSet.cF[x[0]] ? 'on' : '') + '">' + x[1] + ' <span class="anDots"></span></button>'; }).join('') + '</div>' +

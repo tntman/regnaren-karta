@@ -44,7 +44,7 @@ with sync_playwright() as p:
     a = an(pg); res = pg.inner_text('#anResult')
     check('Gädda (data): what stands out, incl. the depth (averaged within 25 m: "…–3 m")', a['mode'] == 'c_gadda' and a['ready'] and 'Gädda togs oftast' in res and re.search(r'\d–3 m', res), res)
     size(pg, '#anControls', 70, 130); pg.wait_for_timeout(1500)
-    check('Storlek in Från fångsterna: minst 70 cm -> 15 gäddor (the button counts them too)', 'Gädda togs oftast' in pg.inner_text('#anResult') and 'Gädda 15' in pg.inner_text('#anDataChips'), (pg.inner_text('#anDataChips'), pg.inner_text('#anResult')[:200]))
+    check('Storlek in Från fångsterna: minst 70 cm -> 15 gäddor (the button counts them too; abborre keeps its own range: still 3)', 'Gädda togs oftast' in pg.inner_text('#anResult') and 'Gädda 15' in pg.inner_text('#anDataChips') and 'Abborre 3' in pg.inner_text('#anDataChips'), (pg.inner_text('#anDataChips'), pg.inner_text('#anResult')[:200]))
     size(pg, '#anControls', 80, 130); pg.wait_for_timeout(1500)
     check('...minst 80 cm -> 5: too few', 'För få fångster' in pg.inner_text('#anResult'), pg.inner_text('#anResult')[:200])
     size(pg, '#anControls', 0, 130); pg.wait_for_timeout(2000)

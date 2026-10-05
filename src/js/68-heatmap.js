@@ -10,9 +10,10 @@
      Liknande. Not together with Kartanalys (both tone the map down). Off after a restart,
      kept through a rotation. The panel closed: a "Heatmap" pill under the weather chip. */
   var HM_KEY = lakeKey('ffmap_heatmap_v1', 'heatmap_v1');
-  var hmSet = { style: 'heat', sp: 'all', spOn: { abborre: 1, gadda: 1, gos: 1 }, comp: 'all', rad: 70, str: 50, hexM: 60, cnt: 1, big: 1, names: 0, h0: 0, h1: 23, who: '', cm0: 0, cm1: SIZE_MAX };   // (cm0 / cm1: "Storlek", sizeRow in 56-analysis.js)   // (who: only one person's catches -- from their profile, 67-profiles.js)
+  var hmSet = { style: 'heat', sp: 'all', spOn: { abborre: 1, gadda: 1, gos: 1 }, comp: 'all', rad: 70, str: 50, hexM: 60, cnt: 1, big: 1, names: 0, h0: 0, h1: 23, who: '', size: {} };   // (size: "Storlek" per species, sizeRow in 56-analysis.js)   // (who: only one person's catches -- from their profile, 67-profiles.js)
   var HM_DEFAULTS = JSON.stringify(hmSet);   // (for "Återställ")
   try { var hsv = JSON.parse(localStorage.getItem(HM_KEY) || 'null'); if (hsv) for (var hk in hsv) hmSet[hk] = hsv[hk]; } catch(e){}
+  delete hmSet.cm0; delete hmSet.cm1;   // (the first Storlek, one range for all species)
   function hmSave(){ try { localStorage.setItem(HM_KEY, JSON.stringify(hmSet)); } catch(e){} }
   // hmOn = chosen (map-style list / its panel); hmShow = shown on the map (Filter → Lager → Heatmap, like Kartanalys)
   var HM_SHOW_KEY = 'ffmap_show_heatmap_v1', hmShow = true;
@@ -54,12 +55,15 @@
   function hmHour(c){ return new Date(c.t).getHours(); }
   function hmHourOn(){ return hmSet.h0 > 0 || hmSet.h1 < 23; }
 
+  function hmSpOk(c){ return hmSet.style === 'species' ? !!hmSet.spOn[c.sp] : (hmSet.sp === 'all' || c.sp === hmSet.sp); }
+  function hmSizeKey(){ return hmSet.style === 'species' ? 'all' : hmSet.sp; }   // (Storlek: its own range per species; Per art = Alla)
+  function hmSizeBounds(){ return sizeBounds(hmAll().filter(function(c){ return hmInComp(c) && hmSpOk(c); })); }
   function hmVisible(anyHour){   // (anyHour: ignore the time window -- the "När" graph shows the whole day)
     return hmAll().filter(function(c){
       if (!hmInComp(c)) return false;
       if (!anyHour && hmHourOn() && (hmHour(c) < hmSet.h0 || hmHour(c) > hmSet.h1)) return false;
-      if (!sizeOk(hmSet, c)) return false;
-      return hmSet.style === 'species' ? !!hmSet.spOn[c.sp] : (hmSet.sp === 'all' || c.sp === hmSet.sp);
+      if (!sizeOk(sizeOf(hmSet, hmSizeKey()), c)) return false;
+      return hmSpOk(c);
     });
   }
 
@@ -121,7 +125,8 @@
       : [['all', 'Alla']].concat(HM_SP).map(function(x){ return '<button type="button" data-sp="' + x[0] + '" class="' + (hmSet.sp === x[0] ? 'on' : '') + '">' + x[1] + '</button>'; }).join(''));
     document.getElementById('hmComp').innerHTML = '<span class="rowLbl">Tävling</span><button type="button" data-comp="all" class="' + (hmSet.comp === 'all' ? 'on' : '') + '">Alla</button>' +
       comps.map(function(c){ return '<button type="button" data-comp="' + escHtml(c.id) + '" class="' + (hmSet.comp === c.id ? 'on' : '') + '">' + escHtml(hmCompName(c.id)) + ' · ' + hmDateRange(c.list) + '</button>'; }).join('');
-    document.getElementById('hmSize').innerHTML = sizeRow(hmSet);
+    var sb = hmSizeBounds(), sr = sizeOf(hmSet, hmSizeKey());
+    document.getElementById('hmSize').innerHTML = sizeRow(sr, sb, hmSizeKey());
     var rng = function(k, l, min, max, stp){ return '<div class="anRange"><label>' + l + '</label><input type="range" data-r="' + k + '" min="' + min + '" max="' + max + '" step="' + stp + '" value="' + hmSet[k] + '"><output id="hmOut_' + k + '">' + hmOutTxt(k) + '</output></div>'; };
     var tog = function(k, l){ return '<button type="button" data-t="' + k + '" class="' + (hmSet[k] ? 'on' : '') + '">' + (hmSet[k] ? '✓ ' : '') + l + '</button>'; };
     document.getElementById('hmCtl').innerHTML =
@@ -135,7 +140,7 @@
     else if (!all.length) res.innerHTML = catchErr ? 'Kunde inte hämta fångsterna (ingen anslutning?).' : 'Inga fångster i ' + escHtml(LAKE.name) + ' än.';
     else {
       var v = hmVisible(), c2 = { abborre: 0, gadda: 0, gos: 0 }; v.forEach(function(c){ c2[c.sp]++; });
-      res.innerHTML = (hmSet.who ? '<button type="button" class="hmWho" data-who="">Bara ' + escHtml(hmSet.who.split('|').join(', ')) + ' ✕</button> ' : '') + '<b>' + v.length + ' fångster</b> i ' + escHtml(LAKE.name) + (catchLiveComp() ? ' · <b class="hmLive">Live</b>' : '') + (hmHourOn() ? ' · kl ' + hmHourTxt() : '') + (sizeOn(hmSet) ? ' · ' + sizeTxt(hmSet) : '') + ' · ' + HM_SP.map(function(x){ return c2[x[0]] + ' ' + x[1].toLowerCase(); }).join(', ') +
+      res.innerHTML = (hmSet.who ? '<button type="button" class="hmWho" data-who="">Bara ' + escHtml(hmSet.who.split('|').join(', ')) + ' ✕</button> ' : '') + '<b>' + v.length + ' fångster</b> i ' + escHtml(LAKE.name) + (catchLiveComp() ? ' · <b class="hmLive">Live</b>' : '') + (hmHourOn() ? ' · kl ' + hmHourTxt() : '') + (sb && sizeOn(sr, sb) ? ' · ' + sizeTxt(sr, sb) : '') + ' · ' + HM_SP.map(function(x){ return c2[x[0]] + ' ' + x[1].toLowerCase(); }).join(', ') +
         '<span class="note">' + (st === 'dots' ? 'Tryck på en prick för allt om fångsten.' : st === 'hex' ? 'Tryck på en ruta för fångsterna i den.' : 'Tryck på kartan där det är färg för fångsterna där.') + '</span>' +
         (!hmShow ? '<span class="pnHid"> · Dold – slå på Heatmap i Filter</span>' : '');
     }
