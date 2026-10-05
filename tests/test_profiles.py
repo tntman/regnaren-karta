@@ -52,6 +52,8 @@ with sync_playwright() as p:
     t = pg.inner_text('#pfCard')
     check('...opens your profile: picture, name, nickname, since, home, bio', pf(pg) and pg.is_visible('#pfAva img') and 'Filip' in t and '”Hajen”' in t and 'sedan 2020' in t and 'Valdemarsvik' in t and 'Född i en vass.' in t, t[:200])
     check('...rank, ELO, wins, competitions; biggest fish, the pike a club record (★)', '2:a' in t and '2606' in t and '15 · 43 %' in t and '35' in t and '112 cm' in t and '★ Klubbrekord' in t and '42 cm' in t and t.count('Klubbrekord') == 1, t)
+    clip = pg.evaluate("Array.from(document.querySelectorAll('#pfData .wpTile b')).filter(e => e.scrollWidth > e.clientWidth).map(e => e.textContent)")
+    check('...no number cut off (Segrar "15 · 43 %" gets the room it needs)', not clip, clip)
     check('..."Visa på kartan" (you are on the map) and "Fångster i Regnaren (3)"', pg.is_visible('#pfMap') and pg.inner_text('#pfCatches') == 'Fångster i Regnaren (3)')
     t = pg.inner_text('#pfList')
     check('...the list: his 3 here + the 53 cm pike in Östra Vitten during Regnaren 2 (not the 99 cm from another competition)', pg.evaluate("document.querySelectorAll('#pfList .pfRow').length") == 4 and '53 cm' in t and '99 cm' not in t, t)

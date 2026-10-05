@@ -16,7 +16,7 @@
   #pfNone{font-size:13.5px;color:var(--text-muted);margin:10px 0 2px;display:flex;flex-direction:column;align-items:flex-start;gap:8px;}
   #pfNone[hidden], #pfStats[hidden], #pfLoad[hidden]{display:none;}
   #pfLoad{min-height:46px;padding:0 16px;border-radius:10px;border:none;font:inherit;font-weight:700;font-size:14px;background:rgba(255,255,255,.08);color:var(--offwhite);cursor:pointer;}
-  #pfCard .wpData{margin:10px 0 8px;}
+  #pfCard .wpData{margin:10px 0 8px;grid-template-columns:repeat(4,auto);}   /* (each as wide as it needs: "Segrar 15 · 43 %" not cut off) */
   .pfH{font-size:11px;letter-spacing:.06em;font-weight:700;text-transform:uppercase;color:var(--text-muted);margin:10px 0 3px;}
   .pfRow{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:14px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.07);}
   .pfRow span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
