@@ -34,11 +34,11 @@ try {
             $n = $queue.Dequeue()
             $p = Start-Process py -ArgumentList '-3', $n -NoNewWindow -PassThru `
                 -RedirectStandardOutput (Join-Path $tmp "$n.out") -RedirectStandardError (Join-Path $tmp "$n.err")
-            $running += [pscustomobject]@{ Name = $n; Proc = $p }
+            $running += [pscustomobject]@{ Name = $n; Proc = $p; T = Get-Date }
         }
         Start-Sleep -Milliseconds 300
         $still = @()
-        foreach ($r in $running) { if ($r.Proc.HasExited) { $done[$r.Name] = $true } else { $still += $r } }
+        foreach ($r in $running) { if ($r.Proc.HasExited) { $done[$r.Name] = ((Get-Date) - $r.T).TotalSeconds } else { $still += $r } }   # (seconds it took)
         $running = $still
     }
 } finally {
@@ -50,7 +50,7 @@ foreach ($n in ($done.Keys | Sort-Object)) {
     $lines = @(Get-Content (Join-Path $tmp "$n.out") -Encoding UTF8 -ErrorAction SilentlyContinue) + @(Get-Content (Join-Path $tmp "$n.err") -Encoding UTF8 -ErrorAction SilentlyContinue)
     $out = ($lines | Where-Object { $_ -match '^\d+/\d+ passed' } | Select-Object -Last 1)
     if (-not $out) { $out = ($lines | Where-Object { $_ } | Select-Object -Last 1) }
-    "{0,-24} {1}" -f $n, $out
+    "{0,-24} {1,-14} {2,4:N0} s" -f $n, $out, $done[$n]
     if ($out -match '^(\d+)/(\d+) passed') { if ($Matches[1] -ne $Matches[2]) { $fail = 1 } } else { $fail = 1 }
     # failing checks, so you see what broke without running it again
     $lines | Where-Object { $_ -match '^FAIL ' } | ForEach-Object { '    ' + $_.Substring(0, [Math]::Min(160, $_.Length)) }
