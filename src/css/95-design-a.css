@@ -78,7 +78,8 @@
   #msgToast{border-radius:18px;padding:11px 16px;font-size:14px;}
 
   /* ---- panels (bottom sheets): solid, 28 px corners, grey drag line and ✕ ---- */
-  #wpSheet, #anPanel, #hmPanel, #hmCard, #pfCard, #trkPanel{border-top:none;border-radius:28px 28px 0 0;}
+  /* bottom sheets: a thin light edge along the rounded top (a border -- an inset shadow ends up under the .grab) */
+  #wpSheet, #anPanel, #hmPanel, #hmCard, #pfCard, #trkPanel{border-top:1px solid rgba(255,255,255,.12);border-radius:28px 28px 0 0;}
   #wpSheet .sheetGrab, #anPanel .grab, #hmPanel .grab, #hmCard .grab, #pfCard .grab, #trkPanel .grab{border-radius:28px 28px 0 0;}
   .gripX{font-size:15px;color:rgba(255,255,255,.3);}
 

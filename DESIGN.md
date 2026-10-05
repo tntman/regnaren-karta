@@ -153,7 +153,7 @@ Kort och med lite fjäder, aldrig loopande (utom GPS-ringen).
 ### Do:
 - **Do** låt kartan synas: frostat på kartan, solitt i panelerna, så lite som möjligt ovanpå.
 - **Do** använd orange för exakt det som är på eller valt, med mörk text på.
-- **Do** öppna allt nytt som en bottenpanel med draglinje och ✕.
+- **Do** öppna allt nytt som en bottenpanel med draglinje och ✕ (28 px hörn, tunn ljuskant längs överkanten: `border-top` 12 % vitt).
 - **Do** håll tryckytor stora för blöta fingrar (chips 34–40, knapprader 44–46, rundknappar 48 px).
 - **Do** visa tangentbordsfokus med en 2 px orange ring.
 
