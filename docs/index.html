@@ -1847,6 +1847,11 @@
     max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 84px);overflow-y:auto;overscroll-behavior:contain;}
   .visMoreBtn[aria-expanded="true"]{gap:5px;color:var(--amber);}
   .visMoreBtn[aria-expanded="true"] .visChevronBox{width:14px;}
+  /* Filter's rows: just the icon on the background, no white circles */
+  .visRow .visSwatch{background:none;border:none;color:var(--text-muted);width:20px;height:20px;}
+  .visRow .visSwatch svg{width:18px;height:18px;}
+  .visRow .boatSwatchDot{width:10px;height:10px;background:none;border:1.8px solid currentColor;border-radius:1.5px;}
+  .visRow .visSwatch .hmDot{width:15px;height:15px;}
   .visHead{text-transform:none;letter-spacing:0;font-size:11.5px;font-weight:500;}
 
   /* ---- bottom left: scale, speed/depth (a low frosted capsule), the depth scale as a thin line ---- */
@@ -1891,8 +1896,8 @@
   .wxTile{background:var(--s2);border:none;border-radius:16px;}
   .wxH{background:var(--s2);}
   #boatInfoModal, #lockCard, #msgCard, #measurePanel{background:var(--navy);border:none;border-radius:20px;}
-  #boatInfoName.pfLink, #msgCardWho.pfLink{text-decoration:none;}
-  #boatInfoName.pfLink::after, #msgCardWho.pfLink::after{content:' ›';color:var(--text-muted);font-weight:400;}
+  #boatInfoName.pfLink, #msgCardWho.pfLink, #boatInfoCatches .biWho.pfLink{text-decoration:none;}
+  #boatInfoName.pfLink::after, #msgCardWho.pfLink::after, #boatInfoCatches .biWho.pfLink::after{content:' ›';color:var(--text-muted);font-weight:400;}
   .setSec, .settingsRow, .adminCard, .helpCard{background:var(--navy);border:none;border-radius:20px;}
   .setSecBody .settingsRow{border-top:1px solid var(--line);}
   .logItem{background:var(--navy);border-radius:0;margin-bottom:0;border-top:1px solid var(--line);}
@@ -1932,7 +1937,8 @@
   .typeSeg button::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--tc);flex:0 0 auto;}
   .typeSeg button[data-type="fara"]:not(.active), .typeSeg button[data-type="hem"]:not(.active){color:var(--offwhite);}
   .typeSeg button.active, .typeSeg button[data-type="fara"].active, .typeSeg button[data-type="hem"].active, .typeSeg button[data-type="gos"].active, .typeSeg button[data-type="hem"].active{
-    background:color-mix(in srgb,var(--tc) 20%,transparent);color:var(--tc);}
+    background:color-mix(in srgb,var(--tc) 26%,transparent);color:var(--tc);box-shadow:inset 0 0 0 2px var(--tc);font-weight:700;}
+  .typeSeg button:not(.active){background:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.16);}   /* (not chosen: just an outline -- the chosen one filled + ringed) */
   .typeSeg button[data-type="fara"].active{color:#FF6B63;}
   .typeSeg button[data-type="hem"].active{color:#D9A06E;}
   .typeSeg button.active::before{box-shadow:0 0 8px var(--tc);}

@@ -132,7 +132,8 @@ with sync_playwright() as p:
     b.close()
 
     # ---- your latest catch as a quick message ----
-    live = [dict(fakefb.api_row(ms_ago(30), 'regnaren2', 'Filip', 'gadda', 78, B3[0], B3[1]), approved=True, imageUrl=PHOTO),
+    t30 = ms_ago(30)
+    live = [dict(fakefb.api_row(t30, 'regnaren2', 'Filip', 'gadda', 78, B3[0], B3[1]), approved=True, imageUrl=PHOTO),
             dict(fakefb.api_row(ms_ago(10), 'regnaren2', 'Filip', 'abborre', 22, B3[0], B3[1]), approved=False, imageUrl=''),     # not counted (under 25 cm)
             dict(fakefb.api_row(ms_ago(5), 'regnaren2', 'Calle', 'gos', 55, B1[0], B1[1]), approved=True)]                          # someone else's
     comps = [{'competition_id': 'reg2', 'competition_name': 'Regnaren 2', 'date': TODAY, 'status': 'active', 'water': 'Regnaren'}]
@@ -144,7 +145,7 @@ with sync_playwright() as p:
     pg.wait_for_timeout(2500)
     pg.click('#msgBtn'); pg.wait_for_timeout(300)
     opts = pg.eval_on_selector_all('#msgPop button', 'e => e.map(x => x.textContent)')
-    hm = pg.evaluate("(() => { var d = new Date(Date.now() - 30 * 60000); return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2); })()")
+    hm = pg.evaluate("(() => { var d = new Date(%d); return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2); })()" % t30)
     check('competition on: your latest counted catch first ("Gädda 78 🐟 · hh:mm"), not the 22 cm perch, not Calle\'s', opts[0] == 'Gädda 78 🐟 · ' + hm and opts[1] == 'Fisk!!! 🎣' and not any('Gös' in o or 'Abborre' in o for o in opts), opts)
     check("...a plain edge like the others, no dot; the pike's green sweeping through the text", pg.evaluate("(() => { var b = document.getElementById('msgFishBtn'), o = document.querySelector('#msgPop button:not(.msgFish)'), t = b.querySelector('.mT.sp'); return !b.querySelector('.hmSpDot') && !!t && b.style.getPropertyValue('--sp') === '#35D24A' && getComputedStyle(b).borderTopColor === getComputedStyle(o).borderTopColor && getComputedStyle(b, '::before').content === 'none'; })()"))
     pg.click('#msgFishBtn'); pg.wait_for_timeout(500)
