@@ -81,7 +81,7 @@
   }
 
   // the lake's name wherever the page shows it
-  document.getElementById('lakeTitle').textContent = LAKE.name.toUpperCase();
+  document.getElementById('lakeTitle').textContent = LAKE.name;
   document.getElementById('mapImg').alt = 'Djupkarta över sjön ' + LAKE.name;
   document.getElementById('wxTitle').textContent = 'Väder vid ' + LAKE.name;
   document.getElementById('wxCard').setAttribute('aria-label', 'Väder vid ' + LAKE.name);

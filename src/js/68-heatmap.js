@@ -281,7 +281,7 @@
       L.forEach(function(c){ var h = hmHexOf(c.px * mI, c.py * mI, R), k = h.q + ',' + h.r; (cells[k] = cells[k] || { q: h.q, r: h.r, list: [] }).list.push(c); });
       for (var k in cells) mx = Math.max(mx, cells[k].list.length);
       var Rpx = R / mI * scale;
-      hmCtx.textAlign = 'center'; hmCtx.textBaseline = 'middle'; hmCtx.font = '700 ' + Math.max(8, Math.min(13, Rpx * 0.75)) + 'px Calibri,"Segoe UI",sans-serif';
+      hmCtx.textAlign = 'center'; hmCtx.textBaseline = 'middle'; hmCtx.font = '700 ' + Math.max(8, Math.min(13, Rpx * 0.75)) + 'px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
       for (var k2 in cells){
         var h2 = cells[k2], cx = originX + R * Math.sqrt(3) * (h2.q + h2.r / 2) / mI * scale, cy = originY + R * 1.5 * h2.r / mI * scale;
         h2.x = cx; h2.y = cy;
@@ -292,7 +292,7 @@
         hmCtx.closePath();
         hmCtx.fillStyle = 'rgba(' + (col[0] | 0) + ',' + (col[1] | 0) + ',' + (col[2] | 0) + ',0.75)'; hmCtx.fill();
         hmCtx.lineWidth = 1; hmCtx.strokeStyle = 'rgba(255,255,255,0.55)'; hmCtx.stroke();
-        if (hmSet.cnt && Rpx >= 8){ hmCtx.fillStyle = col[0] * 0.3 + col[1] * 0.59 + col[2] * 0.11 < 140 ? '#fff' : '#0B2A3A'; hmCtx.fillText(String(h2.list.length), cx, cy + 0.5); }
+        if (hmSet.cnt && Rpx >= 8){ hmCtx.fillStyle = col[0] * 0.3 + col[1] * 0.59 + col[2] * 0.11 < 140 ? '#fff' : '#111113'; hmCtx.fillText(String(h2.list.length), cx, cy + 0.5); }
       }
       hmHexCells = { R: R, cells: cells, rpx: Rpx };
     } else {
@@ -300,9 +300,9 @@
         if (p.x < -20 || p.y < -20 || p.x > W + 20 || p.y > H + 20) return;
         var col = HM_COL[p.c.sp], r = hmDotR(p.c);
         hmCtx.beginPath(); hmCtx.arc(p.x, p.y, r, 0, 7); hmCtx.fillStyle = 'rgba(' + col + ',0.9)'; hmCtx.fill();
-        hmCtx.lineWidth = 1.3; hmCtx.strokeStyle = 'rgba(11,42,58,0.9)'; hmCtx.stroke();
+        hmCtx.lineWidth = 1.3; hmCtx.strokeStyle = 'rgba(17,17,19,0.9)'; hmCtx.stroke();
         if (hmSet.names && p.c.who){
-          hmCtx.font = '600 11px Calibri,"Segoe UI",sans-serif'; hmCtx.textAlign = 'left'; hmCtx.textBaseline = 'middle';
+          hmCtx.font = '600 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif'; hmCtx.textAlign = 'left'; hmCtx.textBaseline = 'middle';
           hmCtx.lineWidth = 3; hmCtx.strokeStyle = 'rgba(6,14,20,0.85)'; hmCtx.strokeText(p.c.who, p.x + r + 3, p.y);
           hmCtx.fillStyle = '#fff'; hmCtx.fillText(p.c.who, p.x + r + 3, p.y);
         }

@@ -104,19 +104,19 @@
       // radar
       var c = ltRadarCv.getContext('2d'), Wc = ltRadarCv.width, R = Wc / 2 - 2, cx = Wc / 2, cy = Wc / 2, k = Wc / 100;
       c.clearRect(0, 0, Wc, Wc);
-      c.beginPath(); c.arc(cx, cy, R, 0, 2 * Math.PI); c.fillStyle = 'rgba(11,42,58,.88)'; c.fill();
+      c.beginPath(); c.arc(cx, cy, R, 0, 2 * Math.PI); c.fillStyle = 'rgba(17,17,19,.88)'; c.fill();
       c.lineWidth = k; c.strokeStyle = 'rgba(255,255,255,.3)'; c.stroke();
       [10, 20].forEach(function(rk){ c.beginPath(); c.arc(cx, cy, R * rk / LT_RANGE_KM, 0, 2 * Math.PI); c.strokeStyle = 'rgba(255,255,255,.2)'; c.stroke(); });
-      c.font = '700 ' + (9 * k) + 'px Calibri,"Segoe UI",sans-serif'; c.textAlign = 'center'; c.fillStyle = 'rgba(255,255,255,.65)';
+      c.font = '700 ' + (9 * k) + 'px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif'; c.textAlign = 'center'; c.fillStyle = 'rgba(255,255,255,.65)';
       c.fillText('N', cx, cy - R + 10 * k);
-      c.font = (8 * k) + 'px Calibri,"Segoe UI",sans-serif'; c.fillStyle = 'rgba(255,255,255,.45)';
+      c.font = (8 * k) + 'px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif'; c.fillStyle = 'rgba(255,255,255,.45)';
       c.fillText('10', cx + R / 3 * 0.71 + 6 * k, cy + R / 3 * 0.71 + 6 * k);
       inRange.forEach(function(r){
         var st = ltStyle(r.age), a = r.br * Math.PI / 180, d = R * r.km / LT_RANGE_KM;
         c.beginPath(); c.arc(cx + Math.sin(a) * d, cy - Math.cos(a) * d, (r.age < 5 ? 2.6 : 2) * k, 0, 2 * Math.PI);
         c.fillStyle = 'rgba(' + st.c + ',' + Math.max(0.35, st.a) + ')'; c.fill();
       });
-      c.beginPath(); c.arc(cx, cy, 3.5 * k, 0, 2 * Math.PI); c.fillStyle = '#E8A33D'; c.fill(); c.strokeStyle = '#fff'; c.lineWidth = k; c.stroke();
+      c.beginPath(); c.arc(cx, cy, 3.5 * k, 0, 2 * Math.PI); c.fillStyle = '#FF8A1F'; c.fill(); c.strokeStyle = '#fff'; c.lineWidth = k; c.stroke();
     }
     ltDrawMap();
   }
@@ -165,10 +165,10 @@
           lctx.beginPath(); lctx.moveTo(ex + ux * 31, ey + uy * 31);
           lctx.lineTo(ex + ux * 18 - uy * 9, ey + uy * 18 + ux * 9); lctx.lineTo(ex + ux * 18 + uy * 9, ey + uy * 18 - ux * 9);
           lctx.closePath(); lctx.fillStyle = col; lctx.fill();
-          lctx.beginPath(); lctx.arc(ex, ey, 24, 0, 2 * Math.PI); lctx.fillStyle = 'rgba(11,42,58,.93)'; lctx.fill();
+          lctx.beginPath(); lctx.arc(ex, ey, 24, 0, 2 * Math.PI); lctx.fillStyle = 'rgba(17,17,19,.93)'; lctx.fill();
           lctx.lineWidth = 3; lctx.strokeStyle = col; lctx.stroke();
           ltBolt(lctx, ex, ey - 7, 8, '255,220,70', 1);
-          lctx.font = '700 10.5px Calibri,"Segoe UI",sans-serif'; lctx.textAlign = 'center'; lctx.fillStyle = '#fff';
+          lctx.font = '700 10.5px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif'; lctx.textAlign = 'center'; lctx.fillStyle = '#fff';
           lctx.fillText(ltKm(n.km) + ' km', ex, ey + 14);
           edge = { x: ex, y: ey, km: n.km };
         }

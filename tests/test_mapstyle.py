@@ -11,7 +11,7 @@ with sync_playwright() as p:
     src = lambda: pg.eval_on_selector('#mapImg', 'e=>e.getAttribute("src")')
     check('default style: the zoom-14 map loaded', src() == 'lakes/regnaren/map_v4_s1.jpg' and pg.eval_on_selector('#mapImg', 'e=>e.naturalWidth') == REG_W)
     pz = pg.evaluate("fetch('index.html').then(r => r.text()).then(t => t.length)")   # (the file: the DOM also holds the pictures of the name picker)
-    check('page itself is small now (map not inside it)', pz < 900000, pz)
+    check('page itself is small now (map not inside it)', pz < 960000, pz)   # (design A added ~15 kB of CSS)
     pg.click('#menuBtn'); pg.click('#menuItemSettings'); pg.wait_for_timeout(200)
     n = pg.evaluate("document.querySelectorAll('#mapStyleList .styleOpt').length")
     check('Settings lists 8 styles with previews (no Natt)', n == 8 and pg.evaluate("Array.from(document.querySelectorAll('#mapStyleList img')).every(i => i.naturalWidth > 0)"))

@@ -242,12 +242,12 @@ with sync_playwright() as p:
     check('...the map controls unchanged (menu 40 px)', pg.evaluate("document.getElementById('menuBtn').getBoundingClientRect().height") == 40)
     check('no page errors', not errs, errs)
     b.close()
-    # DESIGN.md's rules: amber only for what's chosen, the serif only on the lake's name, Fara readable, the spot's sheet a column on its side
+    # DESIGN.md's rules: orange only for what's chosen, one sans font, types as white text + colour dot, the spot's sheet a column on its side
     b, ctx, pg, errs = new_page(p, geo=B3, cfg=cfg, name='Filip'); pg.wait_for_timeout(1500)
     pg.evaluate("document.querySelector('#waypoints .wpPin--abborre').click()"); pg.wait_for_timeout(600)
     st = pg.evaluate("""(() => ({ dist: getComputedStyle(document.querySelector('.sheetDistance')).color,
       fara: getComputedStyle(document.querySelector('.typeSeg button[data-type=fara]')).color }))()""")
-    check("the distance in a spot's sheet is not amber; Fara's text readable (lighter red)", st['dist'] == 'rgb(244, 247, 248)' and st['fara'] == 'rgb(255, 107, 99)', st)
+    check("the distance in a spot's sheet is not orange; a type not chosen: white text (its colour is the dot, design A)", st['dist'] == 'rgb(245, 245, 245)' and st['fara'] == 'rgb(245, 245, 245)', st)
     pg.set_viewport_size({'width': 844, 'height': 390}); pg.wait_for_timeout(500)
     r = pg.evaluate("(() => { var r = document.getElementById('wpSheet').getBoundingClientRect(); return [Math.round(r.width), Math.round(r.right)]; })()")
     check("on its side: the spot's sheet a 420 px column on the right (the map beside it)", r == [420, 844], r)
@@ -255,7 +255,7 @@ with sync_playwright() as p:
     pg.click('#menuBtn'); pg.click('#menuItemSettings'); pg.wait_for_timeout(400)
     fonts = pg.evaluate("""(() => [getComputedStyle(document.querySelector('#settingsHeader .kicker')).fontFamily, getComputedStyle(document.getElementById('lakeTitle')).fontFamily,
       getComputedStyle(document.getElementById('settingsNameDisplay')).color])()""")
-    check("view titles in the app's font, the serif only on the lake's name; the name field not amber", 'Calibri' in fonts[0] and 'Cambria' in fonts[1] and fonts[2] == 'rgb(244, 247, 248)', fonts)
+    check("design A: view titles and the lake's name in the app's own font (no serif); the name field not orange", '-apple-system' in fonts[0] and 'Cambria' not in fonts[1] and fonts[2] == 'rgb(245, 245, 245)', fonts)
     check('no page errors', not errs, errs)
     b.close()
     # Inställningar in sections: closed = the title and a line of what's chosen; which are open is remembered

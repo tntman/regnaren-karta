@@ -17,7 +17,7 @@ with sync_playwright() as p:
     # ---- knot meter with real (emulated) GPS moving north at ~2 kn ----
     check('knot meter visible on the lake', pg.is_visible('#speedPill'), pg.inner_text('#speedPill'))
     w = pg.evaluate("[document.getElementById('speedPill').getBoundingClientRect().width, document.getElementById('legend').getBoundingClientRect().width, document.getElementById('speedPill').scrollWidth - document.getElementById('speedPill').clientWidth]")
-    check('knot/depth box as wide as the depth scale, text fits', abs(w[0] - w[1]) < 1 and w[2] <= 0, w)
+    check('knot/depth capsule (design A): as wide as its text, no wider than the depth scale, text fits', 0 < w[0] <= w[1] + 1 and w[2] <= 0, w)
     lat = ME[0]
     for i in range(12):
         lat += 1.03 / 111320.0            # 1.03 m per second = 2.0 kn

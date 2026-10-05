@@ -39,6 +39,8 @@ i avsnitt, Ångra, åskvarningen alltid + "dragit förbi", solnedgången, Täckn
 - [ ] ÅÅÅÅ-MM-DD – Vad som ändrats. Hjälp: avsnitt X (text) + animering `namn`. Nyhet: "…" (NYTT/BÄTTRE/FIXAT)
 -->
 
+- [ ] 2026-10-05 – NY DESIGN (A): nästan svart, platt, vita ikoner, en orange accent; allt som ligger på kartan på frostad botten (väder, knapparna uppe till höger som en kapsel, de runda knapparna, fart/djup); sjönamnet utan versaler/serif; rutorna med 28 px hörn; rörelser (tryck som fjädrar, orange som tänds, menyer som växer ut). Hjälp: ALLA animeringar och skärmbilder spelas in igen (`py -3 tools/help_anim.py` – alla), texter som nämner "bärnsten"/"blå" gränssnitt. Nyhet: "Ny design – mörkare, renare, med frostade knappar" (NYTT)
+
 ---
 
 ## Klart

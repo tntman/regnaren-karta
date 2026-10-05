@@ -170,8 +170,8 @@ with sync_playwright() as p:
     check('shortcut button: heat map off, button not lit', not heat(pg)['on'] and pg.get_attribute('#hmBtn', 'aria-pressed') == 'false')
     tf = pg.evaluate("getComputedStyle(document.getElementById('world')).transform")
     pg.click('#hmBtn'); pg.wait_for_timeout(1200)
-    check('shortcut button: on, lit, panel open, left of the map button, map not moved', heat(pg)['on'] and heat(pg)['panel'] and pg.get_attribute('#hmBtn', 'aria-pressed') == 'true'
-          and pg.evaluate("document.getElementById('hmBtn').getBoundingClientRect().right < document.getElementById('mapTypeBtn').getBoundingClientRect().left")
+    check('shortcut button: on, lit, panel open, left of the map button (one capsule, design A), map not moved', heat(pg)['on'] and heat(pg)['panel'] and pg.get_attribute('#hmBtn', 'aria-pressed') == 'true'
+          and pg.evaluate("document.getElementById('hmBtn').getBoundingClientRect().right <= document.getElementById('mapTypeBtn').getBoundingClientRect().left + 0.5")
           and pg.evaluate("getComputedStyle(document.getElementById('world')).transform") == tf)
     legend = pg.evaluate("getComputedStyle(document.querySelector('#hmPill .hmDot')).backgroundImage")
     check('"glöd" scale: violet -> warm white (not the depth colours)', 'rgb(255, 245, 200)' in legend and 'rgb(0, 220, 230)' not in legend, legend)

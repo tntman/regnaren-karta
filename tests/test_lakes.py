@@ -55,7 +55,7 @@ with sync_playwright() as p:
     boats = pg.eval_on_selector_all('#boatsLayer .boatPip', 'e=>e.map(x=>x.textContent)')
     check("only the boat on Vågsfjärden (Pia), not Calle on Regnaren", any('Pia' in x for x in boats) and not any('Calle' in x for x in boats), boats)
     check('weather card named after the lake', pg.inner_text('#wxTitle') == 'Väder vid Vågsfjärden')
-    check('title = the lake', pg.inner_text('#lakeTitle') == 'VÅGSFJÄRDEN', pg.inner_text('#lakeTitle'))
+    check('title = the lake', pg.inner_text('#lakeTitle') == 'Vågsfjärden', pg.inner_text('#lakeTitle'))
     ticks = pg.eval_on_selector_all('#legendTicks span', 'e=>e.map(x=>x.textContent)')
     check("legend runs to the lake's own max depth (Vågsfjärden ~37 m -> 0 / 20 / 40 m)", ticks == ['0 m', '20 m', '40 m'], ticks)
     bar = pg.eval_on_selector('#legend .bar', 'e=>e.style.background')
@@ -130,7 +130,7 @@ with sync_playwright() as p:
     # ---- Sjösjön: opens, and the depth matches Genesis' own labels
     b, ctx, pg, errs = new_page(p, geo=SJO_POINTS[0][:2], cfg=cfg, name='Filip')
     pg.goto('http://localhost:8899/index.html?lake=sjosjon'); pg.wait_for_timeout(1500)
-    check('?lake=sjosjon opens Sjösjön', pg.get_attribute('#mapImg', 'src') == 'lakes/sjosjon/map_v1_s1.jpg' and pg.inner_text('#lakeTitle') == 'SJÖSJÖN', pg.get_attribute('#mapImg', 'src'))
+    check('?lake=sjosjon opens Sjösjön', pg.get_attribute('#mapImg', 'src') == 'lakes/sjosjon/map_v1_s1.jpg' and pg.inner_text('#lakeTitle') == 'Sjösjön', pg.get_attribute('#mapImg', 'src'))
     for la, lo, want in SJO_POINTS:
         ctx.set_geolocation({'latitude': la, 'longitude': lo, 'accuracy': 5}); pg.wait_for_timeout(1500)
         got = pg.inner_text('#depthVal')
@@ -144,7 +144,7 @@ with sync_playwright() as p:
     SIB_POINTS = [(58.777728, 17.29557, 4.0), (58.786086, 17.307876, 8.0), (58.779502, 17.311438, 10.5)]
     b, ctx, pg, errs = new_page(p, geo=SIB_POINTS[0][:2], cfg=cfg, name='Filip')
     pg.goto('http://localhost:8899/index.html?lake=sibbo'); pg.wait_for_timeout(1500)
-    check('?lake=sibbo opens Sibbofjärden', pg.get_attribute('#mapImg', 'src') == 'lakes/sibbo/map_v1_s1.jpg' and pg.inner_text('#lakeTitle') == 'SIBBOFJÄRDEN', pg.get_attribute('#mapImg', 'src'))
+    check('?lake=sibbo opens Sibbofjärden', pg.get_attribute('#mapImg', 'src') == 'lakes/sibbo/map_v1_s1.jpg' and pg.inner_text('#lakeTitle') == 'Sibbofjärden', pg.get_attribute('#mapImg', 'src'))
     for la, lo, want in SIB_POINTS:
         ctx.set_geolocation({'latitude': la, 'longitude': lo, 'accuracy': 5}); pg.wait_for_timeout(1500)
         got = pg.inner_text('#depthVal')

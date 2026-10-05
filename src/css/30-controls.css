@@ -21,11 +21,11 @@
     pointer-events:auto;cursor:pointer;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;padding:0;
   }
   #hmBtn svg{width:26px;height:26px;display:block;opacity:.55;}
-  #hmBtn.on{border:2px solid var(--amber);background:rgba(232,163,61,.18);}
+  #hmBtn.on{border:2px solid var(--amber);background:rgba(255,138,31,.18);}
   #hmBtn.on svg{opacity:1;}
   #hmBtn:active{transform:scale(.93);}
   #visMoreBtn .visLabel{display:none;}
-  #mapTypeToast{position:absolute;right:calc(100% + 8px);top:48px;white-space:nowrap;background:var(--navy);color:var(--amber);border:1px solid rgba(232,163,61,.5);
+  #mapTypeToast{position:absolute;right:calc(100% + 8px);top:48px;white-space:nowrap;background:var(--navy);color:var(--amber);border:1px solid rgba(255,138,31,.5);
     border-radius:14px;padding:4px 11px;font-size:12px;font-weight:700;opacity:0;transition:opacity .2s;pointer-events:none;}
   #mapTypeToast.show{opacity:1;}
   #mapTypePop{position:absolute;right:calc(100% + 8px);top:48px;width:230px;max-height:70vh;overflow-y:auto;display:none;flex-direction:column;gap:6px;padding:8px;
@@ -180,7 +180,7 @@
     flex:0 0 auto;
   }
   /* the views' titles: the app's own font, spaced (the serif is only the lake's name) */
-  #logHeader .kicker,#settingsHeader .kicker,#adminHeader .kicker,#helpHeader .kicker{font-family:Calibri,"Segoe UI",system-ui,-apple-system,sans-serif;font-size:17px;letter-spacing:.08em;}
+  #logHeader .kicker,#settingsHeader .kicker,#adminHeader .kicker,#helpHeader .kicker{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,-apple-system,sans-serif;font-size:17px;letter-spacing:.08em;}
   #logBackBtn,#settingsBackBtn{
     width:36px;height:36px;border-radius:50%;flex:0 0 auto;
     background:rgba(255,255,255,.08);border:none;color:var(--offwhite);
@@ -249,7 +249,7 @@
   .demoBannerSub{font-weight:600;font-size:10.5px;letter-spacing:.02em;margin-top:2px;opacity:.85;line-height:1.25;}
   .demoBannerTimer{font-weight:600;font-size:10px;margin-top:3px;opacity:.75;white-space:nowrap;}
   .demoBannerTimer:empty{display:none;}
-  .demoBannerWarn{font-weight:700;font-size:10px;margin-top:4px;line-height:1.25;padding-top:4px;border-top:1px solid rgba(6,20,28,.3);}
+  .demoBannerWarn{font-weight:700;font-size:10px;margin-top:4px;line-height:1.25;padding-top:4px;border-top:1px solid rgba(8,8,10,.3);}
   .demoBannerWarn[hidden]{display:none;}
   @keyframes demoBannerBlink{
     0%, 100% { background:var(--amber); }
@@ -278,7 +278,7 @@
      pill under the lake name + user name, same style as the offline badge */
   #farAway{
     display:none;align-items:flex-start;gap:6px;margin-top:5px;margin-left:-50px; /* flush with the menu button (14px from the edge) */
-    background:rgba(11,42,58,.82);border:1px solid rgba(232,163,61,.5);
+    background:rgba(17,17,19,.82);border:1px solid rgba(255,138,31,.5);
     border-radius:12px;padding:4px 10px 4px 7px;width:max-content;
     max-width:min(300px, calc(100vw - 28px));
   }
