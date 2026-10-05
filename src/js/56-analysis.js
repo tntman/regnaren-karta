@@ -719,11 +719,15 @@
     box.hidden = !pnInfoOn;
     btn.classList.toggle('on', pnInfoOn); btn.setAttribute('aria-pressed', pnInfoOn ? 'true' : 'false');
   }
+  function btn0(b){ Array.prototype.forEach.call(document.querySelectorAll('.pnInfoBtn'), function(x){ x.classList.remove('on'); x.setAttribute('aria-pressed', 'false'); }); }
   Array.prototype.forEach.call(document.querySelectorAll('.pnInfoBtn'), function(b){
     b.addEventListener('click', function(e){
       e.stopPropagation(); pnInfoOn = !pnInfoOn;
       try { localStorage.setItem(PN_INFO_KEY, pnInfoOn ? '1' : '0'); } catch(err){}
-      pnInfo(anPanel); pnInfo(hmPanel);
+      var P = b.closest('#anPanel, #hmPanel'), box = P && P.querySelector('.pnInfo'), h0 = box && !box.hidden ? box.offsetHeight : 0;
+      if (!box){ pnInfo(anPanel); pnInfo(hmPanel); }
+      else if (pnInfoOn){ pnInfo(anPanel); pnInfo(hmPanel); motionHeight(box, 0, box.offsetHeight); }   // (it unfolds softly, 91-motion.js)
+      else { btn0(b); motionHeight(box, h0, 0, function(){ pnInfo(anPanel); pnInfo(hmPanel); }); }
     });
   });
   anLabelsEl.addEventListener('pointerdown', function(e){ e.stopPropagation(); if (e.target.closest && e.target.closest('.anLbl')) mapPointerDown(e, true); });

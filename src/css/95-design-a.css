@@ -242,3 +242,34 @@
   /* map styles: only the chosen one is lighter */
   .styleOpt{background:none;}
   .styleOpt.active{background:var(--s2);}
+
+  /* ---- second look (2026-10-05) ---- */
+  /* top right: ONE frosted capsule under all three (no seams in the blur) -- the buttons themselves are clear */
+  #topRight::before{content:'';position:absolute;top:0;right:0;width:calc(100% + 80px);height:40px;box-sizing:border-box;border-radius:20px;
+    background:var(--navy-glass);-webkit-backdrop-filter:var(--frost);backdrop-filter:var(--frost);border:1px solid rgba(255,255,255,.1);pointer-events:none;}
+  #hmBtn, #hmBtn.on, #mapTypeBtn, #visPanel{background:none;-webkit-backdrop-filter:none;backdrop-filter:none;border-color:transparent;}
+  /* Inställningar: a profile card on top (picture, name, Admin · lake, "Byt namn") */
+  .profRow{min-height:64px;padding:10px 16px;}
+  .profAva{width:40px;height:40px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;background:var(--tint) center/cover no-repeat;color:var(--amber);font-weight:600;font-size:16px;}
+  .profTxt{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;}
+  #settingsNameDisplay{width:auto;margin:0;padding:0;background:none;border:none;border-radius:0;font-size:15.5px;font-weight:600;color:var(--offwhite);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .profSub{font-size:13px;color:var(--text-muted);margin-top:2px;}
+  .profSwap{flex:0 0 auto;background:none;border:none;padding:10px 0 10px 10px;color:var(--amber);font:inherit;font-size:14.5px;font-weight:500;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+  .profSwap:active{opacity:.6;}
+  /* frost wakes up: the signs under the weather, the message note and box, "far away" */
+  .mapPill:not([hidden]), #ltOffPill:not([hidden]), #farAway.show, #msgOwn.show{animation:frostIn .4s cubic-bezier(.16,1,.3,1);}
+  #msgToast.show{animation:frostIn .4s cubic-bezier(.16,1,.3,1);}
+  /* the other panels slide up with their rows following, like the spot's */
+  #trkPanel, #pfCard, #hmCard{transition-duration:.42s;transition-timing-function:cubic-bezier(.16,1,.3,1);}
+  #trkPanel.show > :not(.grab), #pfCard.show > :not(.grab), #hmCard.show > :not(.grab){animation:rowUp .45s cubic-bezier(.16,1,.3,1) both;animation-delay:.11s;}
+  #trkPanel.show > :nth-child(3), #pfCard.show > :nth-child(3), #hmCard.show > :nth-child(3){animation-delay:.15s;}
+  #trkPanel.show > :nth-child(n+4), #pfCard.show > :nth-child(n+4), #hmCard.show > :nth-child(n+4){animation-delay:.19s;}
+  /* the heatmap / Kartanalys fade in on the map */
+  @keyframes layerIn{from{opacity:0;}}
+  #hmLayer.on, #hmSat.on, #anLayer.on{animation:layerIn .6s ease;}
+  /* a slider's knob grows a little while held */
+  .satSlider::-webkit-slider-thumb{transition:transform .15s;}
+  .satSlider:active::-webkit-slider-thumb{transform:scale(1.15);}
+  @media (prefers-reduced-motion:reduce){
+    .mapPill:not([hidden]), #ltOffPill:not([hidden]), #farAway.show, #msgOwn.show, #msgToast.show, #trkPanel.show > *, #pfCard.show > *, #hmCard.show > *{animation:fadeIn .15s ease both !important;}
+  }

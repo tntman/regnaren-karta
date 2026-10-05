@@ -89,3 +89,5 @@ i avsnitt, Ångra, åskvarningen alltid + "dragit förbi", solnedgången, Täckn
 - Strandlinje: tunn vit linje där vattnet möter land på vanliga kartan (Inställningar → Kartan, kan stängas av). Nyhetsrad: "Sjöns kant syns nu som en tunn vit linje".
 
 - Design A-justeringar: Filter öppnas som eget kort under knapparna; ett tryckt meddelande öppnar samma kort i mitten som en båt (inte en panel nerifrån); "Egen text" och "Syns i 7 minuter" ligger där valen var. Ingen egen nyhetsrad (hör till NY DESIGN).
+
+- Inställningar: överst ett profilkort (bild, namn, "Byt namn") i stället för "Ditt namn" + "Logga ut (Byt namn)". Hör till NY DESIGN.

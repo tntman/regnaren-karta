@@ -2043,6 +2043,37 @@
   /* map styles: only the chosen one is lighter */
   .styleOpt{background:none;}
   .styleOpt.active{background:var(--s2);}
+
+  /* ---- second look (2026-10-05) ---- */
+  /* top right: ONE frosted capsule under all three (no seams in the blur) -- the buttons themselves are clear */
+  #topRight::before{content:'';position:absolute;top:0;right:0;width:calc(100% + 80px);height:40px;box-sizing:border-box;border-radius:20px;
+    background:var(--navy-glass);-webkit-backdrop-filter:var(--frost);backdrop-filter:var(--frost);border:1px solid rgba(255,255,255,.1);pointer-events:none;}
+  #hmBtn, #hmBtn.on, #mapTypeBtn, #visPanel{background:none;-webkit-backdrop-filter:none;backdrop-filter:none;border-color:transparent;}
+  /* Inställningar: a profile card on top (picture, name, Admin · lake, "Byt namn") */
+  .profRow{min-height:64px;padding:10px 16px;}
+  .profAva{width:40px;height:40px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;background:var(--tint) center/cover no-repeat;color:var(--amber);font-weight:600;font-size:16px;}
+  .profTxt{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;}
+  #settingsNameDisplay{width:auto;margin:0;padding:0;background:none;border:none;border-radius:0;font-size:15.5px;font-weight:600;color:var(--offwhite);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .profSub{font-size:13px;color:var(--text-muted);margin-top:2px;}
+  .profSwap{flex:0 0 auto;background:none;border:none;padding:10px 0 10px 10px;color:var(--amber);font:inherit;font-size:14.5px;font-weight:500;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+  .profSwap:active{opacity:.6;}
+  /* frost wakes up: the signs under the weather, the message note and box, "far away" */
+  .mapPill:not([hidden]), #ltOffPill:not([hidden]), #farAway.show, #msgOwn.show{animation:frostIn .4s cubic-bezier(.16,1,.3,1);}
+  #msgToast.show{animation:frostIn .4s cubic-bezier(.16,1,.3,1);}
+  /* the other panels slide up with their rows following, like the spot's */
+  #trkPanel, #pfCard, #hmCard{transition-duration:.42s;transition-timing-function:cubic-bezier(.16,1,.3,1);}
+  #trkPanel.show > :not(.grab), #pfCard.show > :not(.grab), #hmCard.show > :not(.grab){animation:rowUp .45s cubic-bezier(.16,1,.3,1) both;animation-delay:.11s;}
+  #trkPanel.show > :nth-child(3), #pfCard.show > :nth-child(3), #hmCard.show > :nth-child(3){animation-delay:.15s;}
+  #trkPanel.show > :nth-child(n+4), #pfCard.show > :nth-child(n+4), #hmCard.show > :nth-child(n+4){animation-delay:.19s;}
+  /* the heatmap / Kartanalys fade in on the map */
+  @keyframes layerIn{from{opacity:0;}}
+  #hmLayer.on, #hmSat.on, #anLayer.on{animation:layerIn .6s ease;}
+  /* a slider's knob grows a little while held */
+  .satSlider::-webkit-slider-thumb{transition:transform .15s;}
+  .satSlider:active::-webkit-slider-thumb{transform:scale(1.15);}
+  @media (prefers-reduced-motion:reduce){
+    .mapPill:not([hidden]), #ltOffPill:not([hidden]), #farAway.show, #msgOwn.show, #msgToast.show, #trkPanel.show > *, #pfCard.show > *, #hmCard.show > *{animation:fadeIn .15s ease both !important;}
+  }
 </style>
 </head>
 <body>
@@ -2138,13 +2169,10 @@
       <div class="logo3d headLogo" id="settingsLogo"><div class="nlSpin"><img src="ff_logo.svg" alt="Fiskfiskarna"><i class="nlBack"></i></div></div>
     </div>
     <div id="settingsBody">
-      <div class="settingsRow" style="flex-direction:column;align-items:stretch;">
-        <div class="settingsRowText">
-          <div class="settingsRowTitle">Ditt namn</div>
-          <div class="settingsRowDesc">Namnet är kopplat till dig och dina fiskeplatser — var du än loggar in med samma namn ser du dem som är dina.</div>
-        </div>
-        <div id="settingsNameDisplay"></div>
-        <button id="logoutBtn" class="btnLogout" type="button">Logga ut (Byt namn)</button>
+      <div class="settingsRow profRow" title="Namnet är kopplat till dig och dina fiskeplatser – loggar du in med samma namn ser du dem som dina.">
+        <span class="profAva" id="settingsAva" aria-hidden="true"></span>
+        <span class="profTxt"><span id="settingsNameDisplay"></span><span class="profSub" id="settingsNameSub"></span></span>
+        <button id="logoutBtn" class="profSwap" type="button">Byt namn</button>
       </div>
       <details class="setSec" data-sec="map">
         <summary><span class="setSecText"><span class="setSecTitle">Kartan</span><span class="setSecSum" id="setSum-map"></span></span><svg class="setSecChev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></summary>
@@ -5480,6 +5508,7 @@
   function showSettingsView(){
     updateSpeedSettings(); // fresh speed numbers the moment it opens
     setSums();
+    document.getElementById('settingsNameSub').textContent = (isAdminUnlocked() ? 'Admin · ' : '') + LAKE.name;
     settingsView.classList.add('show');
     logView.classList.remove('show');
     menuItemMap.classList.remove('menuItem--active');
@@ -5907,7 +5936,9 @@
   function showUserName(){
     updateAdminVisibility();
     settingsNameDisplay.textContent = userName;
-    var pic = AVATARS[userName];
+    var pic = AVATARS[userName], sa = document.getElementById('settingsAva');   // (the profile card on top of Inställningar)
+    sa.textContent = pic ? '' : (userName || '?').charAt(0).toUpperCase();
+    sa.style.backgroundImage = pic ? 'url("' + pic + '")' : '';
     menuAva.hidden = menuChev.hidden = !pic;
     menuBurger.style.display = pic ? 'none' : '';
     menuBtn.classList.toggle('hasAva', !!pic);
@@ -9717,11 +9748,15 @@
     box.hidden = !pnInfoOn;
     btn.classList.toggle('on', pnInfoOn); btn.setAttribute('aria-pressed', pnInfoOn ? 'true' : 'false');
   }
+  function btn0(b){ Array.prototype.forEach.call(document.querySelectorAll('.pnInfoBtn'), function(x){ x.classList.remove('on'); x.setAttribute('aria-pressed', 'false'); }); }
   Array.prototype.forEach.call(document.querySelectorAll('.pnInfoBtn'), function(b){
     b.addEventListener('click', function(e){
       e.stopPropagation(); pnInfoOn = !pnInfoOn;
       try { localStorage.setItem(PN_INFO_KEY, pnInfoOn ? '1' : '0'); } catch(err){}
-      pnInfo(anPanel); pnInfo(hmPanel);
+      var P = b.closest('#anPanel, #hmPanel'), box = P && P.querySelector('.pnInfo'), h0 = box && !box.hidden ? box.offsetHeight : 0;
+      if (!box){ pnInfo(anPanel); pnInfo(hmPanel); }
+      else if (pnInfoOn){ pnInfo(anPanel); pnInfo(hmPanel); motionHeight(box, 0, box.offsetHeight); }   // (it unfolds softly, 91-motion.js)
+      else { btn0(b); motionHeight(box, h0, 0, function(){ pnInfo(anPanel); pnInfo(hmPanel); }); }
     });
   });
   anLabelsEl.addEventListener('pointerdown', function(e){ e.stopPropagation(); if (e.target.closest && e.target.closest('.anLbl')) mapPointerDown(e, true); });
@@ -11317,6 +11352,25 @@
       var on = b.id === 'locateBtn' || b.classList.contains('on') || b.classList.contains('active') || b.classList.contains('open');
       if (on && !b.disabled) motionIgnite(b);
     }, 0);
+  }, true);
+  // sections (Inställningar) and the ⓘ boxes unfold softly: the height glides open -- and closed again
+  function motionHeight(el, from, to, done){
+    if (!el.animate || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)){ if (done) done(); return; }
+    el.style.overflow = 'hidden';
+    var a = el.animate([{ height: from + 'px' }, { height: to + 'px' }], { duration: 380, easing: 'cubic-bezier(.16,1,.3,1)' });
+    a.onfinish = a.oncancel = function(){ el.style.overflow = ''; if (done) done(); };
+  }
+  document.addEventListener('click', function(e){
+    var sm = e.target && e.target.closest ? e.target.closest('details.setSec > summary') : null;
+    if (!sm) return;
+    var d = sm.parentNode;
+    e.preventDefault();                                     // (we open / close it ourselves, after the glide)
+    if (d._closing) return;
+    var h0 = d.offsetHeight;
+    if (!d.open){ d.open = true; motionHeight(d, h0, d.offsetHeight); return; }
+    d.open = false; var h1 = d.offsetHeight; d.open = true;  // (the closed height, measured without a paint)
+    d._closing = true;
+    motionHeight(d, h0, h1, function(){ d.open = false; d._closing = false; });
   }, true);
   // tabs (.anSeg / .helpSeg): the chosen tab's background glides from the old tab to the new one
   document.addEventListener('click', function(e){

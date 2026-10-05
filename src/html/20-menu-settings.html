@@ -61,13 +61,10 @@
       <div class="logo3d headLogo" id="settingsLogo"><div class="nlSpin"><img src="ff_logo.svg" alt="Fiskfiskarna"><i class="nlBack"></i></div></div>
     </div>
     <div id="settingsBody">
-      <div class="settingsRow" style="flex-direction:column;align-items:stretch;">
-        <div class="settingsRowText">
-          <div class="settingsRowTitle">Ditt namn</div>
-          <div class="settingsRowDesc">Namnet är kopplat till dig och dina fiskeplatser — var du än loggar in med samma namn ser du dem som är dina.</div>
-        </div>
-        <div id="settingsNameDisplay"></div>
-        <button id="logoutBtn" class="btnLogout" type="button">Logga ut (Byt namn)</button>
+      <div class="settingsRow profRow" title="Namnet är kopplat till dig och dina fiskeplatser – loggar du in med samma namn ser du dem som dina.">
+        <span class="profAva" id="settingsAva" aria-hidden="true"></span>
+        <span class="profTxt"><span id="settingsNameDisplay"></span><span class="profSub" id="settingsNameSub"></span></span>
+        <button id="logoutBtn" class="profSwap" type="button">Byt namn</button>
       </div>
       <details class="setSec" data-sec="map">
         <summary><span class="setSecText"><span class="setSecTitle">Kartan</span><span class="setSecSum" id="setSum-map"></span></span><svg class="setSecChev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></summary>

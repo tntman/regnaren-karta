@@ -123,7 +123,8 @@ pillren är kapslar. Platt: inga skuggor på det frostade; menyer och kort över
 - **Kort i mitten** (båten, ett meddelande, tävlingslåset): solida, 20 px, mörk bakgrund bakom; namnet med › öppnar profilen.
 - **Menyer** (Meny, Kartlägen, Filter): solida, 18 px, kompakta som förut. Valt = orange text / ljusare rad,
   ingen bock.
-- **Listor** (Logg, Inställningar): ett kort med tunna linjer mellan raderna.
+- **Listor** (Logg, Inställningar): ett kort med tunna linjer mellan raderna. Överst i Inställningar ett profilkort: bild, namn,
+  "Admin · sjön" och "Byt namn" i orange.
 - **Startskärmen:** loggan, "Vem är du?", medlemmarna i tre kolumner utan ring, knappen grå tills någon är vald.
 
 ## Motion
@@ -135,7 +136,9 @@ Kort och med lite fjäder, aldrig loopande (utom GPS-ringen).
 - **Menyer** växer ut ur sin knapp och raderna följer efter varandra (0,38 s, 20–30 ms mellan raderna).
   Pilen på profilbilden vänds.
 - **Paneler** glider upp (0,42 s) och innehållet följer rad för rad. Valt chip studsar till.
-- **Frost** klarnar fram när något frostat visas (snabbmeddelandenas val poppar upp ett i taget).
+- **Frost** klarnar fram när något frostat visas (skyltarna under vädret, notiser; snabbmeddelandenas val poppar upp ett i taget).
+- **Avsnitt** (Inställningar) och ⓘ-rutorna fälls ut och ihop mjukt (höjden glider, 0,38 s). Valda fliken glider över, ↺ snurrar ett varv.
+- **Heatmap och Kartanalys** tonar in på kartan.
 - **En ny plats landar** (nålen faller, ringen sprids) – det enda stora ögonblicket.
 - "Reducera rörelse": bara snabba toningar.
 

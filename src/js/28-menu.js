@@ -151,6 +151,7 @@
   function showSettingsView(){
     updateSpeedSettings(); // fresh speed numbers the moment it opens
     setSums();
+    document.getElementById('settingsNameSub').textContent = (isAdminUnlocked() ? 'Admin · ' : '') + LAKE.name;
     settingsView.classList.add('show');
     logView.classList.remove('show');
     menuItemMap.classList.remove('menuItem--active');

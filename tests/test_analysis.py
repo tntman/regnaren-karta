@@ -76,7 +76,7 @@ with sync_playwright() as p:
     pg.click('#anPanel .pnInfoBtn'); pg.wait_for_timeout(300)
     info = pg.inner_text('#anPanel .pnInfo')
     check('ⓘ: the explanation of a grynna and a håla opens under the top row (ⓘ lit)', 'Grynna' in info and 'Håla' in info and 'sadeln' in info and pg.get_attribute('#anPanel .pnInfoBtn', 'aria-pressed') == 'true', info)
-    pg.click('#anPanel .pnInfoBtn'); pg.wait_for_timeout(300)
+    pg.click('#anPanel .pnInfoBtn'); pg.wait_for_timeout(550)   # (it folds away softly first)
     check('...ⓘ again: closed', not pg.is_visible('#anPanel .pnInfo') and pg.evaluate("localStorage.getItem('ffmap_panel_info_v1')") == '0')
     setr('anTopP', 0.6); setr('anHoleP', 0.8); pg.wait_for_timeout(900)
     lbl = pg.query_selector('.anLbl')

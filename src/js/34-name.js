@@ -44,7 +44,9 @@
   function showUserName(){
     updateAdminVisibility();
     settingsNameDisplay.textContent = userName;
-    var pic = AVATARS[userName];
+    var pic = AVATARS[userName], sa = document.getElementById('settingsAva');   // (the profile card on top of Inställningar)
+    sa.textContent = pic ? '' : (userName || '?').charAt(0).toUpperCase();
+    sa.style.backgroundImage = pic ? 'url("' + pic + '")' : '';
     menuAva.hidden = menuChev.hidden = !pic;
     menuBurger.style.display = pic ? 'none' : '';
     menuBtn.classList.toggle('hasAva', !!pic);
