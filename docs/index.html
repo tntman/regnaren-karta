@@ -1999,6 +1999,8 @@
   #menuPanel.show > :nth-child(7), #mapTypePop.show > :nth-child(7), #visMore .visCol > :nth-child(7){animation-delay:.14s;}
   #menuPanel.show > :nth-child(n+8), #mapTypePop.show > :nth-child(n+8), #visMore .visCol > :nth-child(n+8){animation-delay:.16s;}
   /* frost sharpens in as a frosted thing appears; the message choices pop up one by one */
+  /* (the same for the boxes centred with translateX(-50%) -- frostIn would drop it and slide them in from the side) */
+  @keyframes frostInC{from{opacity:0;transform:translateX(-50%) translateY(16px) scale(.85);-webkit-backdrop-filter:blur(0);backdrop-filter:blur(0);}}
   @keyframes frostIn{from{opacity:0;transform:translateY(16px) scale(.85);-webkit-backdrop-filter:blur(0);backdrop-filter:blur(0);}}
   #msgPop.show button{animation:frostIn .4s cubic-bezier(.34,1.35,.64,1) both;}
   #msgPop.show button:nth-child(2){animation-delay:.035s;} #msgPop.show button:nth-child(3){animation-delay:.07s;}
@@ -2056,8 +2058,9 @@
   .profSwap{flex:0 0 auto;background:none;border:none;padding:10px 0 10px 10px;color:var(--amber);font:inherit;font-size:14.5px;font-weight:500;cursor:pointer;-webkit-tap-highlight-color:transparent;}
   .profSwap:active{opacity:.6;}
   /* frost wakes up: the signs under the weather, the message note and box, "far away" */
-  .mapPill:not([hidden]), #ltOffPill:not([hidden]), #farAway.show, #msgOwn.show{animation:frostIn .4s cubic-bezier(.16,1,.3,1);}
-  #msgToast.show{animation:frostIn .4s cubic-bezier(.16,1,.3,1);}
+  .mapPill:not([hidden]), #ltOffPill:not([hidden]), #farAway.show{animation:frostIn .4s cubic-bezier(.16,1,.3,1);}
+  #msgOwn.show{animation:frostInC .4s cubic-bezier(.16,1,.3,1);}
+  #msgToast.show{animation:frostInC .4s cubic-bezier(.16,1,.3,1);}
   /* the other panels slide up with their rows following, like the spot's */
   #trkPanel, #pfCard, #hmCard{transition-duration:.42s;transition-timing-function:cubic-bezier(.16,1,.3,1);}
   #trkPanel.show > :not(.grab), #pfCard.show > :not(.grab), #hmCard.show > :not(.grab){animation:rowUp .45s cubic-bezier(.16,1,.3,1) both;animation-delay:.11s;}
@@ -10184,8 +10187,16 @@
   var msgOwn = document.getElementById('msgOwn'), msgOwnIn = document.getElementById('msgOwnIn'), msgOwnN = document.getElementById('msgOwnN');
   function openMsgOwn(open){
     msgOwn.classList.toggle('show', open);
-    if (open){ msgOwnIn.value = ''; msgOwnCount(); msgOwnIn.focus(); } else msgOwnIn.blur();
+    if (open){ msgOwnIn.value = ''; msgOwnCount(); msgOwnIn.focus(); } else { msgOwnIn.blur(); msgOwnPlace(); }
   }
+  // the phone's keyboard: the box sits just above it (iOS only shrinks the visual viewport, the page stays tall);
+  // closed = back in its place, and the page iOS scrolled up to show the field goes back down
+  function msgOwnPlace(){
+    var vv = window.visualViewport, kb = vv ? window.innerHeight - vv.height - vv.offsetTop : 0;
+    if (msgOwn.classList.contains('show') && kb > 80) msgOwn.style.bottom = (kb + 10) + 'px';
+    else { msgOwn.style.bottom = ''; if (window.scrollY) window.scrollTo(0, 0); }
+  }
+  if (window.visualViewport){ visualViewport.addEventListener('resize', msgOwnPlace); visualViewport.addEventListener('scroll', msgOwnPlace); }
   function msgOwnCount(){
     var ch = Array.from(msgOwnIn.value);
     if (ch.length > MSG_OWN_MAX){ msgOwnIn.value = ch.slice(0, MSG_OWN_MAX).join(''); ch = ch.slice(0, MSG_OWN_MAX); }
