@@ -38,15 +38,15 @@ with sync_playwright() as p:
     pg.click('#anBtn'); pg.wait_for_timeout(1500)
     pg.click('#anCatSeg button[data-cat="data"]'); pg.wait_for_timeout(300)
     chips = pg.eval_on_selector_all('#anDataChips button', 'e => e.map(x => [x.textContent, x.disabled])')
-    check('Kartanalys: "Från fångsterna (data)" -- Abborre 3 (för få, can\'t be chosen), Gädda 25, Gös 0',
-          pg.is_visible('#anDataChips') and chips == [['Abborre 3 · för få', True], ['Gädda 25', False], ['Gös 0 · för få', True]], chips)
+    check('Kartanalys: "Från fångsterna (data)" -- Abborre 3 (no minimum: can be chosen), Gädda 25, Gös 0 (none: cannot)',
+          pg.is_visible('#anDataChips') and chips == [['Abborre 3', False], ['Gädda 25', False], ['Gös 0', True]], chips)
     pg.click('#anDataChips button[data-m="c_gadda"]'); pg.wait_for_timeout(2500)
     a = an(pg); res = pg.inner_text('#anResult')
     check('Gädda (data): what stands out, incl. the depth (averaged within 25 m: "…–3 m")', a['mode'] == 'c_gadda' and a['ready'] and 'Gädda togs oftast' in res and re.search(r'\d–3 m', res), res)
     size(pg, '#anControls', 70, 130); pg.wait_for_timeout(1500)
     check('Storlek in Från fångsterna: minst 70 cm -> 15 gäddor (the button counts them too; abborre keeps its own range: still 3)', 'Gädda togs oftast' in pg.inner_text('#anResult') and 'Gädda 15' in pg.inner_text('#anDataChips') and 'Abborre 3' in pg.inner_text('#anDataChips'), (pg.inner_text('#anDataChips'), pg.inner_text('#anResult')[:200]))
     size(pg, '#anControls', 80, 130); pg.wait_for_timeout(1500)
-    check('...minst 80 cm -> 5: too few', 'För få fångster' in pg.inner_text('#anResult'), pg.inner_text('#anResult')[:200])
+    check('...80-85 cm -> 5: no minimum, still worked out (marked uncertain)', 'Gädda togs oftast' in pg.inner_text('#anResult') and 'Osäkert' in pg.evaluate("document.getElementById('anPanel').textContent"), pg.inner_text('#anResult')[:200])
     size(pg, '#anControls', 0, 130); pg.wait_for_timeout(2000)
     l7 = lit_pct(pg)
     check('...the data decides how much is lit: "Tänt: x % av sjön – där togs 7 av 10 gäddor" + how clear', l7 is not None and '7 av 10 gäddor' in res and ('mönster' in res), res)

@@ -563,13 +563,13 @@
     anView = null; anDraw();
   }
   // a slider with one handle: label, the bar, the value
-  // "Från fångsterna (data)": a button per species with its number of catches here (< 10: can't be chosen)
+  // "Från fångsterna (data)": a button per species with its number of catches here (none: can't be chosen)
   function anDataRow(){
     var row = document.getElementById('anDataChips'), L = catchData ? catchData.list : [];
     if (!L.length){ row.innerHTML = '<span class="anNote" style="margin-top:2px">' + (catchData ? 'Inga fångster från tävlingarna i ' + escHtml(LAKE.name) + ' än.' : 'Hämtar fångsterna…') + '</span>'; return; }
     row.innerHTML = [['abborre', 'Abborre'], ['gadda', 'Gädda'], ['gos', 'Gös']].map(function(x){
       var n = L.filter(function(c){ return c.sp === x[0] && sizeOk(sizeOf(anSet, x[0]), c); }).length;
-      return '<button type="button" data-m="c_' + x[0] + '"' + (n < AN_CMIN ? ' disabled' : '') + '>' + x[1] + ' ' + n + (n < AN_CMIN ? ' · för få' : '') + '</button>';
+      return '<button type="button" data-m="c_' + x[0] + '"' + (n < AN_CMIN ? ' disabled' : '') + '>' + x[1] + ' ' + n + '</button>';
     }).join('');
   }
   function anRangeRow(id, label, min, max, step, val, fmt){

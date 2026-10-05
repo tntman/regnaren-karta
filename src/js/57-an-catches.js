@@ -6,9 +6,9 @@
      Every bit of the lake gets a score (the lifts of the values that are switched on, multiplied).
      Lit ("Tänt"): from the most alike down until "cCov" of 10 catches are inside -- so the DATA
      decides how much is lit: a clear pattern = a small area. "Skala": the whole lake coloured from
-     unlike to most alike. Too few catches (< 10 on the depth map): can't be chosen. */
+     unlike to most alike. No catches on the depth map: can't be chosen (few = "Osäkert"). */
   var AN_CF = [['d', 'Djup'], ['s', 'Lutning'], ['h', 'Botten'], ['v', 'Växter'], ['l', 'Från land'], ['t', 'Grynna/håla']];
-  var AN_CMIN = 10, anCatchStrength = {};
+  var AN_CMIN = 1, anCatchStrength = {};   // (no minimum beyond one catch -- few = "Osäkert" in the note; Storlek can narrow it down a lot)
   var AN_CSP = { abborre: ['Abborre', 'abborrar'], gadda: ['Gädda', 'gäddor'], gos: ['Gös', 'gösar'] };
   // per value: the step each bit of the lake is in (-1 = not known there); cached per lake (+ bottom data)
   function anCatchBins(A){
@@ -44,7 +44,7 @@
     cs.forEach(function(c){ var i = anCellOfImg(c.px, c.py); if (A.wat[i]) cells.push(i); });
     out.pts = cs.map(function(c){ return { x: c.px, y: c.py }; });
     if (cells.length < AN_CMIN){
-      out.text = 'För få fångster av ' + nm[0].toLowerCase() + ' här: ' + cells.length + (cs.length > cells.length ? ' på djupkartan (av ' + cs.length + ')' : '') + ' – minst ' + AN_CMIN + ' behövs.';
+      out.text = 'Inga fångster av ' + nm[0].toLowerCase() + ' här' + (cs.length ? ' på djupkartan (' + cs.length + ' utanför)' : sizeOn(sizeOf(anSet, sp)) ? ' i den storleken' : '') + '.';
       return out;
     }
     var B = anCatchBins(A), N = A.N, wat = A.wat, L = {};
@@ -53,7 +53,7 @@
       cells.forEach(function(i){ var j = bins[i]; if (j >= 0){ ca[j]++; nc++; } });
       var logl = new Float32Array(nb), lift = [];
       for (var j = 0; j < nb; j++){ var l = lake[j] ? ((ca[j] + 1) / (nc + nb)) / ((lake[j] + 1) / (B.tot[k] + nb)) : 1; lift.push(l); logl[j] = Math.log(l); }
-      L[k] = { ca: ca, nc: nc, lift: lift, logl: logl, ok: nc >= 5 };
+      L[k] = { ca: ca, nc: nc, lift: lift, logl: logl, ok: nc >= 1 };
     });
     var on = AN_CF.map(function(x){ return x[0]; }).filter(function(k){ return anSet.cF[k] && L[k].ok; });
     if (!on.length){ out.text = 'Slå på minst en sak att jämföra (' + AN_CF.filter(function(x){ return L[x[0]].ok; }).map(function(x){ return x[1].toLowerCase(); }).join(', ') + ').'; return out; }

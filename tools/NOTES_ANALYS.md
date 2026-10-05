@@ -77,10 +77,10 @@ raderas den då (`pagehide`).
   `window.__ffGeo`, `__ffAnalysis()` för tester/verktyg.
 
 ## Från fångsterna (data) – per art
-- **Storlek** (2026-10-05): min–max cm överst i rutan (samma reglage som Heatmap, `sizeRow` i `56-analysis.js`, `anSet.size[art]`, ändarna = minsta/största fisken av arten, eget spann per art). Bara fångster i spannet räknas – även antalet på artknapparna (< 10 = "för få").
+- **Storlek** (2026-10-05): min–max cm överst i rutan (samma reglage som Heatmap, `sizeRow` i `56-analysis.js`, `anSet.size[art]`, ändarna = minsta/största fisken av arten, eget spann per art). Bara fångster i spannet räknas – även antalet på artknapparna (inget minimum, 0 = grå).
 Kod: `src/js/57-an-catches.js` (+ inkopplat i 56-analysis.js), test `tests/test_ancatches.py`.
 - Egen rad i Kartanalys under tumreglerna: **Abborre n · Gädda n · Gös n** (tävlingarnas fångster i sjön,
-  66-catches.js). Under 10 fångster: grå, "för få". Bara sjön man är i.
+  66-catches.js). Inget minimum (sedan 2026-10-05, förr 10): 0 fångster = grå; under 20 = "Osäkert" i ⓘ. Bara sjön man är i.
 - För varje fångst: platsen (inom 25 m, `anSimFeatures(A, 25)`) – djup, lutning, botten, växter, från land
   (`A.shore`), grynna/håla – i steg (`anCatchBins`, cachat per sjö). Jämfört med hela sjön: hur mycket
   vanligare fångsterna var i varje steg ("lift", utjämnad +1). Varje punkt i sjön får summan av log-lift
