@@ -12,7 +12,7 @@ Kod: `src/js/64-messages.js`, CSS i `src/css/75-messages.css`. Test: `tests/test
   Fiskmeddelandet = "Gädda 78 🐟" (inget "cm", `msgFishText`).
 - **Flera i samma båt** (< `BOAT_CLUSTER_METERS`): EN bubbla (`.msgBub.multi`), en rad per person
   (`.mLine`, egen `data-k`), nyast överst, äldre rader blekare; egen rad ljusgul.
-- Tryck på en rad = rutan `#msgCard` (skrivet kl, försvinner om, Åk hit = lodet på båten, Dölj för
+- Tryck på en rad = rutan `#msgCard` (ett kort i mitten som båtens, `#msgBackdrop` stänger; skrivet kl, försvinner om, Åk hit = lodet på båten, Dölj för
   mig / Ta bort (för alla) för egna).
 - `window.__ffMsgs()` för testerna: raderna `{k, t, bubble, o}`.
 

@@ -113,7 +113,7 @@ with sync_playwright() as p:
     check('the name after the text, in a smaller print, no turning', pg.evaluate("(() => { var l = document.querySelector('.mLine:not(.mine)'), n = l.querySelector('small'); return !l.querySelector('.mWin') && n.textContent === 'Calle' && parseFloat(getComputedStyle(n).fontSize) < parseFloat(getComputedStyle(l).fontSize); })()"))
     pg.evaluate("document.querySelector('.mLine:not(.mine)').click()"); pg.wait_for_timeout(500)
     card = pg.inner_text('#msgCard')
-    check("tap Calle's: a panel with when it was written and when it goes", pg.eval_on_selector('#msgCard', 'e => e.classList.contains("show")') and 'CALLE' in card and 'Hugg!' in card and 'Skrivet' in card and '4 min sedan' in card and 'Försvinner om 3 min' in card, card)
+    check("tap Calle's: a panel with when it was written and when it goes", pg.eval_on_selector('#msgCard', 'e => e.classList.contains("show")') and 'Calle' in card and 'Hugg!' in card and 'Skrivet' in card and '4 min sedan' in card and 'Försvinner om 3 min' in card, card)
     pg.click('#msgCardGo'); pg.wait_for_timeout(700)
     check('"Åk hit": the lead line on Calle\'s boat', pg.eval_on_selector('#probe', 'e => e.classList.contains("show")') and not pg.eval_on_selector('#msgCard', 'e => e.classList.contains("show")'))
     pg.evaluate("document.querySelector('.mLine:not(.mine)').click()"); pg.wait_for_timeout(700)
@@ -172,7 +172,7 @@ with sync_playwright() as p:
     pg.screenshot(path='shot_msgs_group.png')
     pg.evaluate("[].filter.call(document.querySelectorAll('.mLine'), e => e.textContent.indexOf('Olle') >= 0)[0].click()"); pg.wait_for_timeout(500)
     card = pg.inner_text('#msgCard')
-    check("tap Olle's row: his message's panel", 'OLLE' in card and 'Mat?' in card, card)
+    check("tap Olle's row: his message's panel", 'Olle' in card and 'Mat?' in card, card)
     pg.click('#msgCardClose'); pg.wait_for_timeout(400)
     # a finger that starts on a spot still pans the map; a plain tap opens it
     s0 = pg.evaluate('window.__ffGeo.screenOf(%f, %f)' % B4)

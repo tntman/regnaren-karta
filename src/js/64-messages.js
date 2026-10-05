@@ -131,13 +131,13 @@
     var line = (e.target.closest && e.target.closest('.mLine')) || el.querySelector('.mLine');   // (a row of a shared bubble)
     if (line) openMsgCard(line.getAttribute('data-k'));
   });
-  var msgCard = document.getElementById('msgCard'), msgCardK = null, msgCardT = null;
+  var msgCard = document.getElementById('msgCard'), msgBackdrop = document.getElementById('msgBackdrop'), msgCardK = null, msgCardT = null;
   function fmtClock(ms){ var d = new Date(ms); return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2); }
   function openMsgCard(k){
     var it = msgItems[k]; if (!it) return;
-    msgCardK = k; if (msgCard._resetSize) msgCard._resetSize();
+    msgCardK = k;
     var now = Date.now(), age = Math.max(0, now - it.at), left = Math.max(0, MSG_MS - age);
-    document.getElementById('msgCardWho').textContent = (it.mine ? 'DU' : String(it.who || '').toUpperCase()) + ' · MEDDELANDE';
+    document.getElementById('msgCardWho').textContent = it.mine ? 'Du' : String(it.who || '');
     document.getElementById('msgCardTxt').textContent = it.text;
     catchImg(document.getElementById('msgCardImg'), it.img);
     document.getElementById('msgCardWho').classList.toggle('pfLink', !!(it.mine ? userName : it.who));   // (tap: their profile)
@@ -146,12 +146,12 @@
     document.getElementById('msgCardBar').style.width = (100 * left / MSG_MS).toFixed(1) + '%';
     document.getElementById('msgCardGo').hidden = !!it.mine;
     document.getElementById('msgCardDrop').textContent = it.mine ? 'Ta bort (för alla)' : 'Dölj för mig';
-    msgCard.classList.add('show');
+    msgCard.classList.add('show'); msgBackdrop.classList.add('show');
     clearTimeout(msgCardT); msgCardT = setTimeout(function(){ if (msgCard.classList.contains('show') && msgItems[msgCardK]) openMsgCard(msgCardK); }, 20000);
   }
-  function closeMsgCard(){ msgCard.classList.remove('show'); msgCardK = null; clearTimeout(msgCardT); }
+  function closeMsgCard(){ msgCard.classList.remove('show'); msgBackdrop.classList.remove('show'); msgCardK = null; clearTimeout(msgCardT); }
   msgCard.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
-  sheetSwipe(msgCard, closeMsgCard);
+  msgBackdrop.addEventListener('click', closeMsgCard);   // (a card in the middle, like a boat's -- 24-boats.js)
   document.getElementById('msgCardClose').addEventListener('click', closeMsgCard);
   document.getElementById('msgCardWho').addEventListener('click', function(){ var it = msgItems[msgCardK]; if (it && this.classList.contains('pfLink')) openProfile(it.mine ? userName : it.who); });
   document.getElementById('msgCardGo').addEventListener('click', function(){

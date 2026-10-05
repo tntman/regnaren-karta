@@ -87,3 +87,5 @@ i avsnitt, Ångra, åskvarningen alltid + "dragit förbi", solnedgången, Täckn
 - Båten: rutan visar bara fångsterna i tävlingen som pågår (hela tävlingen, även andra sjöar); namnet öppnar profilen. Profilen och Ledare räknar alla fiskar i tävlingen, även de som tas i en annan sjö (heatmapen bara sjön). Nyhetsrad: "Profilen och Ledare räknar alla fiskar i tävlingen, även de som tas i en annan sjö".
 
 - Strandlinje: tunn vit linje där vattnet möter land på vanliga kartan (Inställningar → Kartan, kan stängas av). Nyhetsrad: "Sjöns kant syns nu som en tunn vit linje".
+
+- Design A-justeringar: Filter öppnas som eget kort under knapparna; ett tryckt meddelande öppnar samma kort i mitten som en båt (inte en panel nerifrån); "Egen text" och "Syns i 7 minuter" ligger där valen var. Ingen egen nyhetsrad (hör till NY DESIGN).

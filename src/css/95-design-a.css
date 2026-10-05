@@ -21,6 +21,7 @@
   #wxChip, .mapPill{height:28px;padding:0 11px;border-radius:999px;font-size:12.5px;font-weight:500;}
   #wxChip{margin-top:12px;}
   .mapPill{margin-top:6px;}
+  #leadPill{height:auto;padding:7px 12px 8px 10px;border-radius:16px;}   /* (Ledare: all five rows in the frost) */
 
   /* ---- top left: the profile picture is the menu; a small frosted circle with the chevron cuts a notch in it ---- */
   #menuBtn.hasAva{background:none;border:none;-webkit-backdrop-filter:none;backdrop-filter:none;overflow:visible;}
@@ -37,9 +38,14 @@
   #hmBtn svg{width:20px;height:20px;opacity:.85;border-radius:50%;}
   #hmBtn.on{border:1px solid rgba(255,255,255,.1);border-right:none;background:var(--navy-glass);}
   #hmBtn.on svg{opacity:1;box-shadow:0 0 0 2px #08080A,0 0 0 3.5px var(--amber),0 0 16px var(--glow);}
-  #visPanel{border-radius:0 20px 20px 0;padding:9px 12px 9px 8px;}
-  #visPanel:has(#visMoreBtn[aria-expanded="true"]){border-radius:0 18px 18px 18px;background:var(--navy);border-color:transparent;box-shadow:0 18px 50px rgba(0,0,0,.55);}
-  .visMoreBtn[aria-expanded="true"]{color:var(--amber);}
+  #mapTypeBtn{border-left:none;}                     /* (no lines between the three: one capsule) */
+  #visPanel{border-left:none;border-radius:0 20px 20px 0;padding:9px 12px 9px 8px;position:relative;z-index:3;overflow:visible;max-height:none;}
+  /* the Filter menu: its own card under the capsule (like the menu's), the capsule doesn't change */
+  #visMore{position:absolute;right:0;top:calc(100% + 8px);margin:0;padding:12px 14px;width:max-content;min-width:190px;
+    background:var(--navy);border-radius:18px;box-shadow:0 18px 50px rgba(0,0,0,.55);
+    max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 84px);overflow-y:auto;overscroll-behavior:contain;}
+  .visMoreBtn[aria-expanded="true"]{gap:5px;color:var(--amber);}
+  .visMoreBtn[aria-expanded="true"] .visChevronBox{width:14px;}
   .visHead{text-transform:none;letter-spacing:0;font-size:11.5px;font-weight:500;}
 
   /* ---- bottom left: scale, speed/depth (a low frosted capsule), the depth scale as a thin line ---- */
@@ -60,10 +66,15 @@
   #msgPop{bottom:calc(var(--bb0) + 2 * var(--bb) + var(--bgap) + 14px);gap:8px;}
   #msgPop button{height:42px;padding:0 16px;border-radius:999px;font-weight:600;}
   #msgPop button:active{background:var(--amber);color:var(--on-acc);}
+  /* "Egen text" and the "Syns i 7 minuter" note: frosted, where the choices were */
+  #msgOwn, #msgToast{bottom:calc(var(--bb0) + 2 * var(--bb) + var(--bgap) + 14px);background:var(--navy-glass);-webkit-backdrop-filter:var(--frost);backdrop-filter:var(--frost);
+    border:1px solid rgba(255,255,255,.1);box-shadow:none;}
+  #msgOwn{border-radius:999px;}
+  #msgToast{border-radius:18px;padding:11px 16px;font-size:14px;}
 
   /* ---- panels (bottom sheets): solid, 28 px corners, grey drag line and ✕ ---- */
-  #wpSheet, #anPanel, #hmPanel, #hmCard, #msgCard, #pfCard, #trkPanel{border-top:none;border-radius:28px 28px 0 0;}
-  #wpSheet .sheetGrab, #anPanel .grab, #hmPanel .grab, #hmCard .grab, #msgCard .grab, #pfCard .grab, #trkPanel .grab{border-radius:28px 28px 0 0;}
+  #wpSheet, #anPanel, #hmPanel, #hmCard, #pfCard, #trkPanel{border-top:none;border-radius:28px 28px 0 0;}
+  #wpSheet .sheetGrab, #anPanel .grab, #hmPanel .grab, #hmCard .grab, #pfCard .grab, #trkPanel .grab{border-radius:28px 28px 0 0;}
   .gripX{font-size:15px;color:rgba(255,255,255,.3);}
 
   /* ---- menus and cards: solid, rounded, no frame ---- */
@@ -78,9 +89,9 @@
   #wxCard{background:var(--navy);border:none;border-radius:20px;box-shadow:0 18px 50px rgba(0,0,0,.55);}
   .wxTile{background:var(--s2);border:none;border-radius:16px;}
   .wxH{background:var(--s2);}
-  #boatInfoModal, #lockCard, #measurePanel{background:var(--navy);border:none;border-radius:20px;}
-  #boatInfoName.pfLink{text-decoration:none;}
-  #boatInfoName.pfLink::after{content:' ›';color:var(--text-muted);font-weight:400;}
+  #boatInfoModal, #lockCard, #msgCard, #measurePanel{background:var(--navy);border:none;border-radius:20px;}
+  #boatInfoName.pfLink, #msgCardWho.pfLink{text-decoration:none;}
+  #boatInfoName.pfLink::after, #msgCardWho.pfLink::after{content:' ›';color:var(--text-muted);font-weight:400;}
   .setSec, .settingsRow, .adminCard, .helpCard{background:var(--navy);border:none;border-radius:20px;}
   .setSecBody .settingsRow{border-top:1px solid var(--line);}
   .logItem{background:var(--navy);border-radius:0;margin-bottom:0;border-top:1px solid var(--line);}
@@ -194,7 +205,7 @@
   @keyframes chipPop{45%{transform:scale(1.07);}}
   .anChips button.on, .typeSeg button.active{animation:chipPop .32s cubic-bezier(.34,1.6,.64,1);}
   /* boat card and the lock card pop in with a little spring */
-  #boatInfoModal, #lockCard{transition:opacity .2s ease,transform .42s cubic-bezier(.34,1.45,.64,1);transform:translate(-50%,-50%) scale(.88);}
+  #boatInfoModal, #lockCard, #msgCard{transition:opacity .2s ease,transform .42s cubic-bezier(.34,1.45,.64,1);transform:translate(-50%,-50%) scale(.88);}
 
   @media (prefers-reduced-motion:reduce){
     #menuPanel.show, #mapTypePop.show, #visMore:not([hidden]), #menuPanel.show > *, #lakeList > *, #mapTypePop.show > *, #visMore .visCol > *, #msgPop.show button, #undoToast.show,

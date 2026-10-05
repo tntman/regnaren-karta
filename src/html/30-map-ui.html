@@ -61,8 +61,9 @@
   <div id="msgPop" role="menu" aria-label="Skicka snabbmeddelande"></div>
   <div id="msgOwn"><input id="msgOwnIn" type="text" autocomplete="off" enterkeyhint="send" aria-label="Egen text (högst 15 tecken)"><span id="msgOwnN">0/15</span><button type="button" id="msgOwnGo" aria-label="Skicka">➤</button></div>
   <div id="msgToast" role="status"></div>
-  <div id="msgCard" role="dialog" aria-label="Meddelande"><div class="grab"><button type="button" id="msgCardClose" class="gripX" aria-label="Stäng">✕</button></div>
-    <div id="msgCardWho"></div><div id="msgCardTxt"></div><img id="msgCardImg" class="catchImg" alt="Foto av fångsten" hidden>
+  <div id="msgBackdrop"></div>
+  <div id="msgCard" role="dialog" aria-label="Meddelande"><button type="button" id="msgCardClose" class="gripX" aria-label="Stäng">✕</button>
+    <div id="msgCardWho" class="modalTitle"></div><div id="msgCardTxt"></div><img id="msgCardImg" class="catchImg" alt="Foto av fångsten" hidden>
     <div class="msgCardMeta"><span id="msgCardWhen"></span><span id="msgCardLeft"></span></div>
     <div class="msgCardBar"><i id="msgCardBar"></i></div>
     <div class="msgCardBtns"><button type="button" id="msgCardGo" class="a">➤ Åk hit</button><button type="button" id="msgCardDrop">Dölj för mig</button></div>

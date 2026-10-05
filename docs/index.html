@@ -1039,12 +1039,12 @@
   .modalTitle{font-weight:700;font-size:18px;color:var(--offwhite);margin-bottom:6px;}
   .modalDesc{font-size:12.5px;color:var(--text-muted);line-height:1.4;margin-bottom:14px;}
   .modalError{color:var(--danger);font-size:12px;margin:-8px 0 4px;}
-  #boatInfoBackdrop, #lockBackdrop{
+  #boatInfoBackdrop, #lockBackdrop, #msgBackdrop{
     position:fixed;inset:0;background:rgba(4,4,6,.6);z-index:40;
     opacity:0;pointer-events:none;transition:opacity .22s ease;
   }
-  #boatInfoBackdrop.show, #lockBackdrop.show{opacity:1;pointer-events:auto;}
-  #boatInfoModal, #lockCard{
+  #boatInfoBackdrop.show, #lockBackdrop.show, #msgBackdrop.show{opacity:1;pointer-events:auto;}
+  #boatInfoModal, #lockCard, #msgCard{
     position:fixed;left:50%;top:50%;z-index:41;
     transform:translate(-50%,-50%) scale(.94);
     opacity:0;pointer-events:none;transition:opacity .22s ease, transform .22s ease;
@@ -1053,7 +1053,7 @@
     border-radius:16px;padding:18px 18px 16px;
     box-shadow:0 12px 32px rgba(0,0,0,.5);
   }
-  #boatInfoModal.show, #lockCard.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1);}
+  #boatInfoModal.show, #lockCard.show, #msgCard.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1);}
   #boatInfoModal .modalDesc{margin-bottom:12px;}
   #boatInfoModal .sheetRow, #lockCard .sheetRow{flex-wrap:nowrap;}       /* the buttons share the width, not huddled to the right */
   #boatInfoModal .sheetRow button, #lockCard .sheetRow button{flex:1;}
@@ -1665,21 +1665,18 @@
   .msgBub{transition:opacity 1s;}
   @property --rba{syntax:'<angle>';initial-value:0deg;inherits:false;}
   @keyframes rbSpin{to{--rba:360deg;}}
-  #msgCard{position:absolute;left:0;right:0;bottom:0;z-index:27;background:var(--navy);border-top:1px solid rgba(255,255,255,.14);border-radius:18px 18px 0 0;
-    padding:8px 16px calc(env(safe-area-inset-bottom,0px) + 16px);box-shadow:0 -10px 30px rgba(0,0,0,.45);transform:translateY(105%);transition:transform .25s ease;overflow-y:auto;}
-  #msgCard.show{transform:none;}
-  #msgCard.dragging{transition:none;}
-  #msgCard .grab{margin:-8px -16px 4px;top:-8px;}
-  #msgCardWho{font-size:12px;letter-spacing:.06em;font-weight:700;color:var(--text-muted);}
-  #msgCardTxt{font-size:23px;font-weight:700;margin:4px 0 8px;}
-  .msgCardMeta{display:flex;justify-content:space-between;gap:8px;font-size:13.5px;color:#dbe4e7;}
+  /* the card in the middle when a message is tapped: the same as a boat's (#boatInfoModal, 40-spots-boats.css) */
+  #msgCard .gripX{top:8px;}
+  #msgCardWho{padding-right:28px;}
+  #msgCardTxt{font-size:22px;font-weight:700;margin:2px 0 10px;overflow-wrap:anywhere;}
+  .msgCardMeta{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;color:var(--text-muted);}
+  .msgCardMeta b{color:var(--offwhite);font-weight:600;}
   .msgCardBar{height:5px;border-radius:3px;background:rgba(255,255,255,.12);margin:7px 0 12px;overflow:hidden;}
   .msgCardBar i{display:block;height:100%;background:var(--amber);}
   .msgCardBtns{display:flex;gap:8px;}
   .msgCardBtns button{flex:1;padding:10px;border-radius:10px;border:none;font:inherit;font-weight:700;font-size:14px;background:rgba(255,255,255,.08);color:var(--offwhite);cursor:pointer;}
   .msgCardBtns button.a{background:var(--amber);color:var(--navy);}
   .msgCardBtns button[hidden]{display:none;}
-  @media (orientation:landscape) and (max-height:520px){ #msgCard{left:auto;width:420px;} }
   /* "Egen text": a rainbow sliding slowly through the words, the pen after them */
   .rbText{background:linear-gradient(90deg,#ff5f6d,#ffc371,#fff36b,#6bff95,#5ee7ff,#8f7bff,#ff6bd6,#ff5f6d);background-size:300% 100%;
     -webkit-background-clip:text;background-clip:text;color:transparent;animation:rbSlide 6s linear infinite;}
@@ -1825,6 +1822,7 @@
   #wxChip, .mapPill{height:28px;padding:0 11px;border-radius:999px;font-size:12.5px;font-weight:500;}
   #wxChip{margin-top:12px;}
   .mapPill{margin-top:6px;}
+  #leadPill{height:auto;padding:7px 12px 8px 10px;border-radius:16px;}   /* (Ledare: all five rows in the frost) */
 
   /* ---- top left: the profile picture is the menu; a small frosted circle with the chevron cuts a notch in it ---- */
   #menuBtn.hasAva{background:none;border:none;-webkit-backdrop-filter:none;backdrop-filter:none;overflow:visible;}
@@ -1841,9 +1839,14 @@
   #hmBtn svg{width:20px;height:20px;opacity:.85;border-radius:50%;}
   #hmBtn.on{border:1px solid rgba(255,255,255,.1);border-right:none;background:var(--navy-glass);}
   #hmBtn.on svg{opacity:1;box-shadow:0 0 0 2px #08080A,0 0 0 3.5px var(--amber),0 0 16px var(--glow);}
-  #visPanel{border-radius:0 20px 20px 0;padding:9px 12px 9px 8px;}
-  #visPanel:has(#visMoreBtn[aria-expanded="true"]){border-radius:0 18px 18px 18px;background:var(--navy);border-color:transparent;box-shadow:0 18px 50px rgba(0,0,0,.55);}
-  .visMoreBtn[aria-expanded="true"]{color:var(--amber);}
+  #mapTypeBtn{border-left:none;}                     /* (no lines between the three: one capsule) */
+  #visPanel{border-left:none;border-radius:0 20px 20px 0;padding:9px 12px 9px 8px;position:relative;z-index:3;overflow:visible;max-height:none;}
+  /* the Filter menu: its own card under the capsule (like the menu's), the capsule doesn't change */
+  #visMore{position:absolute;right:0;top:calc(100% + 8px);margin:0;padding:12px 14px;width:max-content;min-width:190px;
+    background:var(--navy);border-radius:18px;box-shadow:0 18px 50px rgba(0,0,0,.55);
+    max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 84px);overflow-y:auto;overscroll-behavior:contain;}
+  .visMoreBtn[aria-expanded="true"]{gap:5px;color:var(--amber);}
+  .visMoreBtn[aria-expanded="true"] .visChevronBox{width:14px;}
   .visHead{text-transform:none;letter-spacing:0;font-size:11.5px;font-weight:500;}
 
   /* ---- bottom left: scale, speed/depth (a low frosted capsule), the depth scale as a thin line ---- */
@@ -1864,10 +1867,15 @@
   #msgPop{bottom:calc(var(--bb0) + 2 * var(--bb) + var(--bgap) + 14px);gap:8px;}
   #msgPop button{height:42px;padding:0 16px;border-radius:999px;font-weight:600;}
   #msgPop button:active{background:var(--amber);color:var(--on-acc);}
+  /* "Egen text" and the "Syns i 7 minuter" note: frosted, where the choices were */
+  #msgOwn, #msgToast{bottom:calc(var(--bb0) + 2 * var(--bb) + var(--bgap) + 14px);background:var(--navy-glass);-webkit-backdrop-filter:var(--frost);backdrop-filter:var(--frost);
+    border:1px solid rgba(255,255,255,.1);box-shadow:none;}
+  #msgOwn{border-radius:999px;}
+  #msgToast{border-radius:18px;padding:11px 16px;font-size:14px;}
 
   /* ---- panels (bottom sheets): solid, 28 px corners, grey drag line and ✕ ---- */
-  #wpSheet, #anPanel, #hmPanel, #hmCard, #msgCard, #pfCard, #trkPanel{border-top:none;border-radius:28px 28px 0 0;}
-  #wpSheet .sheetGrab, #anPanel .grab, #hmPanel .grab, #hmCard .grab, #msgCard .grab, #pfCard .grab, #trkPanel .grab{border-radius:28px 28px 0 0;}
+  #wpSheet, #anPanel, #hmPanel, #hmCard, #pfCard, #trkPanel{border-top:none;border-radius:28px 28px 0 0;}
+  #wpSheet .sheetGrab, #anPanel .grab, #hmPanel .grab, #hmCard .grab, #pfCard .grab, #trkPanel .grab{border-radius:28px 28px 0 0;}
   .gripX{font-size:15px;color:rgba(255,255,255,.3);}
 
   /* ---- menus and cards: solid, rounded, no frame ---- */
@@ -1882,9 +1890,9 @@
   #wxCard{background:var(--navy);border:none;border-radius:20px;box-shadow:0 18px 50px rgba(0,0,0,.55);}
   .wxTile{background:var(--s2);border:none;border-radius:16px;}
   .wxH{background:var(--s2);}
-  #boatInfoModal, #lockCard, #measurePanel{background:var(--navy);border:none;border-radius:20px;}
-  #boatInfoName.pfLink{text-decoration:none;}
-  #boatInfoName.pfLink::after{content:' ›';color:var(--text-muted);font-weight:400;}
+  #boatInfoModal, #lockCard, #msgCard, #measurePanel{background:var(--navy);border:none;border-radius:20px;}
+  #boatInfoName.pfLink, #msgCardWho.pfLink{text-decoration:none;}
+  #boatInfoName.pfLink::after, #msgCardWho.pfLink::after{content:' ›';color:var(--text-muted);font-weight:400;}
   .setSec, .settingsRow, .adminCard, .helpCard{background:var(--navy);border:none;border-radius:20px;}
   .setSecBody .settingsRow{border-top:1px solid var(--line);}
   .logItem{background:var(--navy);border-radius:0;margin-bottom:0;border-top:1px solid var(--line);}
@@ -1998,7 +2006,7 @@
   @keyframes chipPop{45%{transform:scale(1.07);}}
   .anChips button.on, .typeSeg button.active{animation:chipPop .32s cubic-bezier(.34,1.6,.64,1);}
   /* boat card and the lock card pop in with a little spring */
-  #boatInfoModal, #lockCard{transition:opacity .2s ease,transform .42s cubic-bezier(.34,1.45,.64,1);transform:translate(-50%,-50%) scale(.88);}
+  #boatInfoModal, #lockCard, #msgCard{transition:opacity .2s ease,transform .42s cubic-bezier(.34,1.45,.64,1);transform:translate(-50%,-50%) scale(.88);}
 
   @media (prefers-reduced-motion:reduce){
     #menuPanel.show, #mapTypePop.show, #visMore:not([hidden]), #menuPanel.show > *, #lakeList > *, #mapTypePop.show > *, #visMore .visCol > *, #msgPop.show button, #undoToast.show,
@@ -2603,8 +2611,9 @@
   <div id="msgPop" role="menu" aria-label="Skicka snabbmeddelande"></div>
   <div id="msgOwn"><input id="msgOwnIn" type="text" autocomplete="off" enterkeyhint="send" aria-label="Egen text (högst 15 tecken)"><span id="msgOwnN">0/15</span><button type="button" id="msgOwnGo" aria-label="Skicka">➤</button></div>
   <div id="msgToast" role="status"></div>
-  <div id="msgCard" role="dialog" aria-label="Meddelande"><div class="grab"><button type="button" id="msgCardClose" class="gripX" aria-label="Stäng">✕</button></div>
-    <div id="msgCardWho"></div><div id="msgCardTxt"></div><img id="msgCardImg" class="catchImg" alt="Foto av fångsten" hidden>
+  <div id="msgBackdrop"></div>
+  <div id="msgCard" role="dialog" aria-label="Meddelande"><button type="button" id="msgCardClose" class="gripX" aria-label="Stäng">✕</button>
+    <div id="msgCardWho" class="modalTitle"></div><div id="msgCardTxt"></div><img id="msgCardImg" class="catchImg" alt="Foto av fångsten" hidden>
     <div class="msgCardMeta"><span id="msgCardWhen"></span><span id="msgCardLeft"></span></div>
     <div class="msgCardBar"><i id="msgCardBar"></i></div>
     <div class="msgCardBtns"><button type="button" id="msgCardGo" class="a">➤ Åk hit</button><button type="button" id="msgCardDrop">Dölj för mig</button></div>
@@ -10229,13 +10238,13 @@
     var line = (e.target.closest && e.target.closest('.mLine')) || el.querySelector('.mLine');   // (a row of a shared bubble)
     if (line) openMsgCard(line.getAttribute('data-k'));
   });
-  var msgCard = document.getElementById('msgCard'), msgCardK = null, msgCardT = null;
+  var msgCard = document.getElementById('msgCard'), msgBackdrop = document.getElementById('msgBackdrop'), msgCardK = null, msgCardT = null;
   function fmtClock(ms){ var d = new Date(ms); return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2); }
   function openMsgCard(k){
     var it = msgItems[k]; if (!it) return;
-    msgCardK = k; if (msgCard._resetSize) msgCard._resetSize();
+    msgCardK = k;
     var now = Date.now(), age = Math.max(0, now - it.at), left = Math.max(0, MSG_MS - age);
-    document.getElementById('msgCardWho').textContent = (it.mine ? 'DU' : String(it.who || '').toUpperCase()) + ' · MEDDELANDE';
+    document.getElementById('msgCardWho').textContent = it.mine ? 'Du' : String(it.who || '');
     document.getElementById('msgCardTxt').textContent = it.text;
     catchImg(document.getElementById('msgCardImg'), it.img);
     document.getElementById('msgCardWho').classList.toggle('pfLink', !!(it.mine ? userName : it.who));   // (tap: their profile)
@@ -10244,12 +10253,12 @@
     document.getElementById('msgCardBar').style.width = (100 * left / MSG_MS).toFixed(1) + '%';
     document.getElementById('msgCardGo').hidden = !!it.mine;
     document.getElementById('msgCardDrop').textContent = it.mine ? 'Ta bort (för alla)' : 'Dölj för mig';
-    msgCard.classList.add('show');
+    msgCard.classList.add('show'); msgBackdrop.classList.add('show');
     clearTimeout(msgCardT); msgCardT = setTimeout(function(){ if (msgCard.classList.contains('show') && msgItems[msgCardK]) openMsgCard(msgCardK); }, 20000);
   }
-  function closeMsgCard(){ msgCard.classList.remove('show'); msgCardK = null; clearTimeout(msgCardT); }
+  function closeMsgCard(){ msgCard.classList.remove('show'); msgBackdrop.classList.remove('show'); msgCardK = null; clearTimeout(msgCardT); }
   msgCard.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
-  sheetSwipe(msgCard, closeMsgCard);
+  msgBackdrop.addEventListener('click', closeMsgCard);   // (a card in the middle, like a boat's -- 24-boats.js)
   document.getElementById('msgCardClose').addEventListener('click', closeMsgCard);
   document.getElementById('msgCardWho').addEventListener('click', function(){ var it = msgItems[msgCardK]; if (it && this.classList.contains('pfLink')) openProfile(it.mine ? userName : it.who); });
   document.getElementById('msgCardGo').addEventListener('click', function(){

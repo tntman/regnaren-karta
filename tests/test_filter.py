@@ -74,7 +74,7 @@ with sync_playwright() as p:
     pg.click('#visMoreBtn'); pg.wait_for_timeout(100)
     for w,h in [(844,390),(667,375)]:
         pg.set_viewport_size({'width':w,'height':h}); pg.wait_for_timeout(400)
-        r = pg.eval_on_selector('#visPanel', 'e=>{var r=e.getBoundingClientRect();return [r.top,r.bottom,e.scrollHeight>e.clientHeight]}')
+        r = pg.eval_on_selector('#visMore', 'e=>{var r=e.getBoundingClientRect();return [r.top,r.bottom,e.scrollHeight>e.clientHeight]}')
         check('landscape %dx%d: panel fits (scrolls if needed)' % (w,h), r[1] <= h, r)
         pg.screenshot(path='shot_filter_land_%d.png' % w)
     check('no page errors', not errs, errs)

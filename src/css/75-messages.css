@@ -26,21 +26,18 @@
   .msgBub{transition:opacity 1s;}
   @property --rba{syntax:'<angle>';initial-value:0deg;inherits:false;}
   @keyframes rbSpin{to{--rba:360deg;}}
-  #msgCard{position:absolute;left:0;right:0;bottom:0;z-index:27;background:var(--navy);border-top:1px solid rgba(255,255,255,.14);border-radius:18px 18px 0 0;
-    padding:8px 16px calc(env(safe-area-inset-bottom,0px) + 16px);box-shadow:0 -10px 30px rgba(0,0,0,.45);transform:translateY(105%);transition:transform .25s ease;overflow-y:auto;}
-  #msgCard.show{transform:none;}
-  #msgCard.dragging{transition:none;}
-  #msgCard .grab{margin:-8px -16px 4px;top:-8px;}
-  #msgCardWho{font-size:12px;letter-spacing:.06em;font-weight:700;color:var(--text-muted);}
-  #msgCardTxt{font-size:23px;font-weight:700;margin:4px 0 8px;}
-  .msgCardMeta{display:flex;justify-content:space-between;gap:8px;font-size:13.5px;color:#dbe4e7;}
+  /* the card in the middle when a message is tapped: the same as a boat's (#boatInfoModal, 40-spots-boats.css) */
+  #msgCard .gripX{top:8px;}
+  #msgCardWho{padding-right:28px;}
+  #msgCardTxt{font-size:22px;font-weight:700;margin:2px 0 10px;overflow-wrap:anywhere;}
+  .msgCardMeta{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;color:var(--text-muted);}
+  .msgCardMeta b{color:var(--offwhite);font-weight:600;}
   .msgCardBar{height:5px;border-radius:3px;background:rgba(255,255,255,.12);margin:7px 0 12px;overflow:hidden;}
   .msgCardBar i{display:block;height:100%;background:var(--amber);}
   .msgCardBtns{display:flex;gap:8px;}
   .msgCardBtns button{flex:1;padding:10px;border-radius:10px;border:none;font:inherit;font-weight:700;font-size:14px;background:rgba(255,255,255,.08);color:var(--offwhite);cursor:pointer;}
   .msgCardBtns button.a{background:var(--amber);color:var(--navy);}
   .msgCardBtns button[hidden]{display:none;}
-  @media (orientation:landscape) and (max-height:520px){ #msgCard{left:auto;width:420px;} }
   /* "Egen text": a rainbow sliding slowly through the words, the pen after them */
   .rbText{background:linear-gradient(90deg,#ff5f6d,#ffc371,#fff36b,#6bff95,#5ee7ff,#8f7bff,#ff6bd6,#ff5f6d);background-size:300% 100%;
     -webkit-background-clip:text;background-clip:text;color:transparent;animation:rbSlide 6s linear infinite;}

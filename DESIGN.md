@@ -94,7 +94,7 @@ Rubriker i vanlig skrift (inga versaler): "Regnaren", "Inställningar", "Art", "
 Samma delar på samma ställen som förut (kartan fyller skärmen, allt annat i lager ovanpå):
 - **Uppe till vänster:** profilbilden är menyknappen – en liten frostad cirkel med pilen skär ett hack i
   bilden (pilen vänds när menyn är öppen). Sjönamnet bredvid. Under: väderpillret och skyltarna, frostade.
-- **Uppe till höger:** Heatmap, Kartläge och Filter som **en** frostad kapsel. Filter fälls ut under den.
+- **Uppe till höger:** Heatmap, Kartläge och Filter som **en** frostad kapsel. Filter öppnas som ett eget kort under den – kapseln ändras inte.
 - **Nere till vänster:** skalan (strecket överst, "100 m · 15,2 × L 15" under), fart/djup i en låg
   frostad kapsel (30 px), djupskalan som en tunn linje med siffror – ingen låda.
 - **Nere till höger:** de runda knapparna i 2 × 2 (48 px, frostade), ny plats-nålen med platt orange +,
@@ -120,6 +120,7 @@ pillren är kapslar. Platt: inga skuggor på det frostade; menyer och kort över
 - **Flikar** (Kartdata/Tumregler …, Värme/Per art …): ingen bädd, vald flik = yta 2 med vit text.
 - **Reglage:** av = yta 3, på = orange med svagt sken.
 - **Fakta** (Djup, Lutning, Botten, Växter): en rad med tunna streck emellan, inga rutor.
+- **Kort i mitten** (båten, ett meddelande, tävlingslåset): solida, 20 px, mörk bakgrund bakom; namnet med › öppnar profilen.
 - **Menyer** (Meny, Kartlägen, Filter): solida, 18 px, kompakta som förut. Valt = orange text / ljusare rad,
   ingen bock.
 - **Listor** (Logg, Inställningar): ett kort med tunna linjer mellan raderna.
