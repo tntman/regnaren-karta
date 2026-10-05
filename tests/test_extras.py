@@ -247,7 +247,7 @@ with sync_playwright() as p:
     pg.evaluate("document.querySelector('#waypoints .wpPin--abborre').click()"); pg.wait_for_timeout(600)
     st = pg.evaluate("""(() => ({ dist: getComputedStyle(document.querySelector('.sheetDistance')).color,
       fara: getComputedStyle(document.querySelector('.typeSeg button[data-type=fara]')).color }))()""")
-    check("the distance in a spot's sheet is not orange; a type not chosen: grey text (quiet, like a tab; its colour is the dot, design A)", st['dist'] == 'rgb(245, 245, 245)' and st['fara'] == 'rgb(154, 154, 163)', st)
+    check("the distance in a spot's sheet is not orange; a type not chosen: grey text (quiet, like a tab; its colour is the dot, design A)", st['dist'] == 'rgb(238, 240, 244)' and st['fara'] == 'rgb(138, 147, 165)', st)
     pg.set_viewport_size({'width': 844, 'height': 390}); pg.wait_for_timeout(500)
     r = pg.evaluate("(() => { var r = document.getElementById('wpSheet').getBoundingClientRect(); return [Math.round(r.width), Math.round(r.right)]; })()")
     check("on its side: the spot's sheet a 420 px column on the right (the map beside it)", r == [420, 844], r)
@@ -255,7 +255,7 @@ with sync_playwright() as p:
     pg.click('#menuBtn'); pg.click('#menuItemSettings'); pg.wait_for_timeout(400)
     fonts = pg.evaluate("""(() => [getComputedStyle(document.querySelector('#settingsHeader .kicker')).fontFamily, getComputedStyle(document.getElementById('lakeTitle')).fontFamily,
       getComputedStyle(document.getElementById('settingsNameDisplay')).color])()""")
-    check("design A: view titles and the lake's name in the app's own font (no serif); the name field not orange", '-apple-system' in fonts[0] and 'Cambria' not in fonts[1] and fonts[2] == 'rgb(245, 245, 245)', fonts)
+    check("design A: view titles and the lake's name in the app's own font (no serif); the name field not orange", '-apple-system' in fonts[0] and 'Cambria' not in fonts[1] and fonts[2] == 'rgb(238, 240, 244)', fonts)
     check('no page errors', not errs, errs)
     b.close()
     # Inställningar in sections: closed = the title and a line of what's chosen; which are open is remembered

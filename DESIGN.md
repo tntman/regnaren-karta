@@ -2,16 +2,16 @@
 name: FF Map
 description: Design A – mörk, platt och lugn, med en orange accent som glöder. Fiskfiskarnas karta för tävlingsdagen på sjön.
 colors:
-  botten: "#08080A"
-  yta-1: "#111113"
-  yta-2: "#1C1C1F"
-  yta-3: "#2A2A2E"
-  frost: "rgba(22,22,25,.42)"
-  text: "#F5F5F5"
-  gra-text: "#9A9AA3"
-  accent: "#FF8A1F"
+  botten: "#090B10"
+  yta-1: "#12161E"
+  yta-2: "#1C222D"
+  yta-3: "#29313F"
+  frost: "rgba(18,22,30,.5)"
+  text: "#EEF0F4"
+  gra-text: "#8A93A5"
+  accent: "#FF9A4D"
   text-pa-accent: "#1A0C02"
-  linje: "rgba(255,255,255,.07)"
+  linje: "rgba(170,190,230,.10)"
   ta-bort: "#FF6B63"
   signalrod: "#D64545"
   art-markering: "#E4E9EC"
@@ -61,16 +61,20 @@ Färgen i appen kommer från kartan och från fiskarna; gränssnittet tar bara a
 
 ## Colors
 
-- **Botten** (`--bg` #08080A): sidorna (Inställningar, Logg, Hjälp, Admin), statusraden (`theme-color`),
+Färgerna "midnatt + aprikos" (2026-10-05, variant 21 på ritytans sida Kontrast – menyer): bläckblå midnatt där varje lager
+är tydligt ljusare, svala hårfina linjer, en tunn ljuskant överst på paneler och vald flik.
+
+
+- **Botten** (`--bg` #090B10): sidorna (Inställningar, Logg, Hjälp, Admin), statusraden (`theme-color`),
   utanför kartbilden, toningarna i över- och underkant.
-- **Yta 1** (`--navy` #111113): paneler (bottenrutor), menyer, kort, kortlistor.
-- **Yta 2** (`--s2` #1C1C1F): knappar, fält, chips och valda flikar inne i en panel.
-- **Yta 3** (`--s3` #2A2A2E): reglage som är av, reglagespår.
+- **Yta 1** (`--navy` #12161E): paneler (bottenrutor), menyer, kort, kortlistor.
+- **Yta 2** (`--s2` #1C222D): knappar, fält, chips och valda flikar inne i en panel.
+- **Yta 3** (`--s3` #29313F): reglage som är av, reglagespår.
 - **Frost** (`--navy-glass` + `--frost` = blur 14 px): allt som ligger fritt på kartan – väderpillret,
   skyltarna, kapseln uppe till höger, de runda knapparna, fart/djup, snabbmeddelandenas val, Ångra-notisen.
   Tunn kant 10 % vitt.
-- **Text** #F5F5F5, **grå text** (`--text-muted` #9A9AA3) för beskrivningar och etiketter.
-- **Accent** (`--amber` #FF8A1F): på / valt / huvudhandlingen (Spara, sikteknappen). Text och ikoner på
+- **Text** #EEF0F4, **grå text** (`--text-muted` #8A93A5) för beskrivningar och etiketter.
+- **Accent** (`--amber` #FF9A4D, varm aprikos): på / valt / huvudhandlingen (Spara, sikteknappen). Text och ikoner på
   accent: `--on-acc` #1A0C02.
 - **Ta bort** #FF6B63 (papperskorgen, Logga ut), signalröd för fel och Fara-nivåer.
 - **Artfärgerna** (markering, abborre, gädda, gös, fara, träffpunkt, hem) och **glöden** (heatmapen) är

@@ -52,7 +52,7 @@
     if (fogEl.width !== Math.round(W * dpr) || fogEl.height !== Math.round(H * dpr)){ fogEl.width = Math.round(W * dpr); fogEl.height = Math.round(H * dpr); }
     fogCtx.setTransform(dpr, 0, 0, dpr, 0, 0); fogCtx.globalCompositeOperation = 'source-over'; fogCtx.clearRect(0, 0, W, H);
     if (!(W >= 2 && H >= 2)) return;
-    fogCtx.fillStyle = 'rgba(8,8,10,.93)'; fogCtx.fillRect(0, 0, W, H);
+    fogCtx.fillStyle = 'rgba(9,11,16,.93)'; fogCtx.fillRect(0, 0, W, H);
     fogCtx.globalCompositeOperation = 'destination-out'; fogCtx.imageSmoothingEnabled = true;
     var k = scale * fogM / WEB_METERS_PER_PX;   // mask pixel -> screen pixel
     fogCtx.drawImage(fogMask, originX, originY, fogMask.width * k, fogMask.height * k);

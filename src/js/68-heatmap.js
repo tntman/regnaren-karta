@@ -292,7 +292,7 @@
         hmCtx.closePath();
         hmCtx.fillStyle = 'rgba(' + (col[0] | 0) + ',' + (col[1] | 0) + ',' + (col[2] | 0) + ',0.75)'; hmCtx.fill();
         hmCtx.lineWidth = 1; hmCtx.strokeStyle = 'rgba(255,255,255,0.55)'; hmCtx.stroke();
-        if (hmSet.cnt && Rpx >= 8){ hmCtx.fillStyle = col[0] * 0.3 + col[1] * 0.59 + col[2] * 0.11 < 140 ? '#fff' : '#111113'; hmCtx.fillText(String(h2.list.length), cx, cy + 0.5); }
+        if (hmSet.cnt && Rpx >= 8){ hmCtx.fillStyle = col[0] * 0.3 + col[1] * 0.59 + col[2] * 0.11 < 140 ? '#fff' : '#12161E'; hmCtx.fillText(String(h2.list.length), cx, cy + 0.5); }
       }
       hmHexCells = { R: R, cells: cells, rpx: Rpx };
     } else {
@@ -300,7 +300,7 @@
         if (p.x < -20 || p.y < -20 || p.x > W + 20 || p.y > H + 20) return;
         var col = HM_COL[p.c.sp], r = hmDotR(p.c);
         hmCtx.beginPath(); hmCtx.arc(p.x, p.y, r, 0, 7); hmCtx.fillStyle = 'rgba(' + col + ',0.9)'; hmCtx.fill();
-        hmCtx.lineWidth = 1.3; hmCtx.strokeStyle = 'rgba(17,17,19,0.9)'; hmCtx.stroke();
+        hmCtx.lineWidth = 1.3; hmCtx.strokeStyle = 'rgba(18,22,30,0.9)'; hmCtx.stroke();
         if (hmSet.names && p.c.who){
           hmCtx.font = '600 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif'; hmCtx.textAlign = 'left'; hmCtx.textBaseline = 'middle';
           hmCtx.lineWidth = 3; hmCtx.strokeStyle = 'rgba(6,14,20,0.85)'; hmCtx.strokeText(p.c.who, p.x + r + 3, p.y);

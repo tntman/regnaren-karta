@@ -37,7 +37,7 @@
   #hmBtn{right:calc(100% + 40px);border-radius:20px 0 0 20px;}
   #hmBtn svg{width:20px;height:20px;opacity:.85;border-radius:50%;}
   #hmBtn.on{border:1px solid rgba(255,255,255,.1);border-right:none;background:var(--navy-glass);}
-  #hmBtn.on svg{opacity:1;box-shadow:0 0 0 2px #08080A,0 0 0 3.5px var(--amber),0 0 16px var(--glow);}
+  #hmBtn.on svg{opacity:1;box-shadow:0 0 0 2px #090B10,0 0 0 3.5px var(--amber),0 0 16px var(--glow);}
   #mapTypeBtn{border-left:none;}                     /* (no lines between the three: one capsule) */
   #visPanel{border-left:none;border-radius:0 20px 20px 0;padding:9px 12px 9px 8px;position:relative;z-index:3;overflow:visible;max-height:none;}
   /* the Filter menu: its own card under the capsule (like the menu's), the capsule doesn't change */
@@ -64,8 +64,8 @@
   #bottomFade{opacity:.5;}
 
   /* ---- bottom right: round frosted buttons; "on" = orange icon + ring; Sikte the one fully orange ---- */
-  #anBtn.on, #measureBtn.active, #msgBtn.open{background:var(--navy-glass);color:var(--amber);border-color:transparent;box-shadow:inset 0 0 0 1.5px var(--amber),0 0 22px rgba(255,138,31,.35);}
-  #locateBtn{color:var(--on-acc);box-shadow:0 0 0 6px rgba(255,138,31,.14),0 8px 28px var(--glow);}
+  #anBtn.on, #measureBtn.active, #msgBtn.open{background:var(--navy-glass);color:var(--amber);border-color:transparent;box-shadow:inset 0 0 0 1.5px var(--amber),0 0 22px rgba(255,154,77,.35);}
+  #locateBtn{color:var(--on-acc);box-shadow:0 0 0 6px rgba(255,154,77,.14),0 8px 28px var(--glow);}
   #locateBtn.tracking{box-shadow:0 0 0 6px rgba(255,255,255,.12),0 8px 24px rgba(0,0,0,.4);}
   #addHereBtn .addBadge{border:none;color:var(--on-acc);box-shadow:0 0 12px var(--glow);}
   #msgPop{bottom:calc(var(--bb0) + 2 * var(--bb) + var(--bgap) + 14px);gap:8px;}
@@ -109,7 +109,7 @@
   /* ---- buttons: 14 px corners; one orange (main action) with a soft glow; Ta bort = a red icon ---- */
   .sheetActs button, .btnGhost, .btnPrimary, .msgCardBtns button, #undoBtn, #pfLoad, .helpInstallBtn, .offBtn{border-radius:14px;}
   .sheetActs button, .btnGhost, .msgCardBtns button, #pfLoad{background:var(--s2);}
-  .sheetActs .save, .btnPrimary, .msgCardBtns button.a, #undoBtn, .helpInstallBtn, .offBtn{color:var(--on-acc);box-shadow:0 8px 28px rgba(255,138,31,.3);}
+  .sheetActs .save, .btnPrimary, .msgCardBtns button.a, #undoBtn, .helpInstallBtn, .offBtn{color:var(--on-acc);box-shadow:0 8px 28px rgba(255,154,77,.3);}
   .sheetActs .del{background:none;border:none;color:#FF6B63;}
   .mpBtn{background:none;border:none;color:var(--text-muted);}
   .mpClose{color:rgba(255,255,255,.3);}
@@ -153,13 +153,13 @@
   .hdBtn.on, .hdBtn.pwBtn:not(:disabled){background:none;color:var(--amber);filter:drop-shadow(0 0 8px var(--glow));}
   /* toggles: orange when on, with a soft glow */
   .toggleTrack{background:var(--s3);}
-  .toggle input:checked ~ .toggleTrack{box-shadow:0 0 14px rgba(255,138,31,.4);}
+  .toggle input:checked ~ .toggleTrack{box-shadow:0 0 14px rgba(255,154,77,.4);}
 
   /* ---- "Vem är du?" ---- */
   .nameTitle{font-size:30px;font-weight:600;letter-spacing:-.03em;}
   .nameChip .ava{box-shadow:0 0 0 1px rgba(255,255,255,.14);}
   #nameSave{height:44px;border-radius:14px;font-size:14.5px;font-weight:600;background:var(--s2);}
-  #nameSave.on{color:var(--on-acc);box-shadow:0 8px 28px rgba(255,138,31,.3);}
+  #nameSave.on{color:var(--on-acc);box-shadow:0 8px 28px rgba(255,154,77,.3);}
 
   /* ================= motion ================= */
   /* the same press everywhere: a quick squeeze and a small spring back */
@@ -172,14 +172,14 @@
   .hdBtn:active{transform:scale(.86);}
   .toggleThumb{transition:transform .32s cubic-bezier(.34,1.45,.64,1);}
   /* orange flares once and fades out (js/91-motion.js adds .ign when something is switched on) */
-  @keyframes ignF{from{box-shadow:inset 0 0 0 1.5px var(--amber),0 0 22px rgba(255,138,31,.35),0 0 0 0 rgba(255,138,31,.75);}
-    to{box-shadow:inset 0 0 0 1.5px var(--amber),0 0 22px rgba(255,138,31,.35),0 0 44px 18px rgba(255,138,31,0);}}
-  @keyframes ignL{from{box-shadow:0 0 0 6px rgba(255,138,31,.14),0 8px 28px var(--glow),0 0 0 0 rgba(255,138,31,.8);}
-    to{box-shadow:0 0 0 6px rgba(255,138,31,.14),0 8px 28px var(--glow),0 0 48px 20px rgba(255,138,31,0);}}
-  @keyframes ignT{from{box-shadow:0 0 14px rgba(255,138,31,.4),0 0 0 0 rgba(255,138,31,.75);}to{box-shadow:0 0 14px rgba(255,138,31,.4),0 0 32px 12px rgba(255,138,31,0);}}
-  @keyframes ignI{from{filter:drop-shadow(0 0 8px var(--glow)) drop-shadow(0 0 0 #FF8A1F);}to{filter:drop-shadow(0 0 8px var(--glow)) drop-shadow(0 0 22px rgba(255,138,31,0));}}
-  @keyframes ignH{from{box-shadow:0 0 0 2px #08080A,0 0 0 3.5px var(--amber),0 0 16px var(--glow),0 0 0 0 rgba(255,138,31,.75);}
-    to{box-shadow:0 0 0 2px #08080A,0 0 0 3.5px var(--amber),0 0 16px var(--glow),0 0 36px 14px rgba(255,138,31,0);}}
+  @keyframes ignF{from{box-shadow:inset 0 0 0 1.5px var(--amber),0 0 22px rgba(255,154,77,.35),0 0 0 0 rgba(255,154,77,.75);}
+    to{box-shadow:inset 0 0 0 1.5px var(--amber),0 0 22px rgba(255,154,77,.35),0 0 44px 18px rgba(255,154,77,0);}}
+  @keyframes ignL{from{box-shadow:0 0 0 6px rgba(255,154,77,.14),0 8px 28px var(--glow),0 0 0 0 rgba(255,154,77,.8);}
+    to{box-shadow:0 0 0 6px rgba(255,154,77,.14),0 8px 28px var(--glow),0 0 48px 20px rgba(255,154,77,0);}}
+  @keyframes ignT{from{box-shadow:0 0 14px rgba(255,154,77,.4),0 0 0 0 rgba(255,154,77,.75);}to{box-shadow:0 0 14px rgba(255,154,77,.4),0 0 32px 12px rgba(255,154,77,0);}}
+  @keyframes ignI{from{filter:drop-shadow(0 0 8px var(--glow)) drop-shadow(0 0 0 #FF9A4D);}to{filter:drop-shadow(0 0 8px var(--glow)) drop-shadow(0 0 22px rgba(255,154,77,0));}}
+  @keyframes ignH{from{box-shadow:0 0 0 2px #090B10,0 0 0 3.5px var(--amber),0 0 16px var(--glow),0 0 0 0 rgba(255,154,77,.75);}
+    to{box-shadow:0 0 0 2px #090B10,0 0 0 3.5px var(--amber),0 0 16px var(--glow),0 0 36px 14px rgba(255,154,77,0);}}
   #anBtn.ign, #measureBtn.ign, #msgBtn.ign{animation:ignF .8s ease-out;}
   #locateBtn.ign{animation:ignL .8s ease-out;}
   .toggleTrack.ign{animation:ignT .8s ease-out;}
@@ -228,10 +228,10 @@
 
   /* ---- fixes after the first look (2026-10-05) ---- */
   /* coloured sliders: the colours past the thumb dimmed (--f = where the thumb is, 0..1: satFill(), 91-motion.js) */
-  .satSlider:not(.cpSlider)::-webkit-slider-runnable-track{background-image:linear-gradient(90deg,transparent calc(12px + (100% - 24px) * var(--f,1)),rgba(17,17,19,.75) 0),
+  .satSlider:not(.cpSlider)::-webkit-slider-runnable-track{background-image:linear-gradient(90deg,transparent calc(12px + (100% - 24px) * var(--f,1)),rgba(18,22,30,.75) 0),
     linear-gradient(to right,#7b8084,#2f7fe0 55%,#19c9c3 75%,#f5c518 88%,#ef3b2d);}
-  .satSlider.trkSlider::-webkit-slider-runnable-track{background-image:linear-gradient(90deg,transparent calc(12px + (100% - 24px) * var(--f,1)),rgba(17,17,19,.75) 0),
-    linear-gradient(to right,rgba(255,138,31,.15),#FF8A1F);}
+  .satSlider.trkSlider::-webkit-slider-runnable-track{background-image:linear-gradient(90deg,transparent calc(12px + (100% - 24px) * var(--f,1)),rgba(18,22,30,.75) 0),
+    linear-gradient(to right,rgba(255,154,77,.15),#FF9A4D);}
   /* #app never scrolls (an off-screen panel getting focus or a tap mid-slide used to scroll it -- js/91-motion.js holds it too) */
   #app{overflow:clip;}
   /* small headings: sentence case, like the rest of A */
@@ -273,3 +273,8 @@
   @media (prefers-reduced-motion:reduce){
     .mapPill:not([hidden]), #ltOffPill:not([hidden]), #farAway.show, #msgOwn.show, #msgToast.show, #trkPanel.show > *, #pfCard.show > *, #hmCard.show > *{animation:fadeIn .15s ease both !important;}
   }
+
+  /* ---- colours "midnatt + aprikos" (2026-10-05, the canvas' Kontrast page, variant 21): a thin light edge on top of the
+     panels and the chosen tab, so they read as lying above ---- */
+  .setSec, #settingsBody > .settingsRow, #visMore, #hmPanel, #anPanel, #wpSheet, #menuPanel{box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 18px 50px rgba(0,0,0,.45);}
+  .anSeg button.on::before, .helpSeg button.on::before{box-shadow:inset 0 1px 0 rgba(255,255,255,.08);}

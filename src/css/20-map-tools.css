@@ -34,7 +34,7 @@
   #probe .pbWt{position:absolute;left:0;top:-3px;transform:translate(-50%,-50%);}
   #probe .pbWt svg{display:block;}
   #probe .pbTag{position:absolute;left:0;bottom:34px;transform:translateX(-50%);white-space:nowrap;display:flex;align-items:center;gap:7px;padding:3px 8px;
-    background:rgba(17,17,19,.96);color:#F4F7F8;border:1.2px solid rgba(255,255,255,.25);border-radius:9px;box-shadow:0 4px 12px rgba(0,0,0,.5);}
+    background:rgba(18,22,30,.96);color:#F4F7F8;border:1.2px solid rgba(255,255,255,.25);border-radius:9px;box-shadow:0 4px 12px rgba(0,0,0,.5);}
   /* the tag can be tapped: "set a spot here" -- a light sweeps across it now and then so it reads as a button */
   #probe .pbTag{pointer-events:auto;cursor:pointer;overflow:hidden;-webkit-tap-highlight-color:transparent;}
   #probe .pbTag::after{content:'';position:absolute;top:0;bottom:0;left:-60%;width:45%;pointer-events:none;
@@ -70,11 +70,11 @@
   #trackLayer{position:absolute;left:0;top:0;width:100%;height:100%;z-index:13;pointer-events:none;overflow:visible;}
   #trackLayer path{fill:none;stroke-linecap:round;stroke-linejoin:round;}
   #trackLayer{opacity:.6;} /* "Spårets synlighet" in Settings (default 60 %) */
-  .satSlider.trkSlider::-webkit-slider-runnable-track{background:linear-gradient(to right, rgba(255,138,31,.15), #FF8A1F);}
-  .satSlider.trkSlider::-moz-range-track{background:linear-gradient(to right, rgba(255,138,31,.15), #FF8A1F);}
+  .satSlider.trkSlider::-webkit-slider-runnable-track{background:linear-gradient(to right, rgba(255,154,77,.15), #FF9A4D);}
+  .satSlider.trkSlider::-moz-range-track{background:linear-gradient(to right, rgba(255,154,77,.15), #FF9A4D);}
   #trackLayer path{stroke-dasharray:7 5;}
   #trackLayer .trkUnder{stroke:rgba(10,20,26,.8);stroke-width:3.4;}
-  #trackLayer .trkLine{stroke:#FF8A1F;stroke-width:1.8;}
+  #trackLayer .trkLine{stroke:#FF9A4D;stroke-width:1.8;}
   #trackLayer.off{display:none;}
   #measureLayer .mlUnder{fill:none;stroke:rgba(0,0,0,.55);stroke-width:6;stroke-linecap:round;stroke-linejoin:round;}
   #measureLayer .mlLine{fill:none;stroke:var(--amber);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:9 6;}
@@ -86,7 +86,7 @@
     bottom:calc(env(safe-area-inset-bottom,0px) + 146px);z-index:24;
     width:min(calc(100vw - 28px), 420px);
     display:none;align-items:center;gap:8px;
-    background:var(--navy);border:1px solid rgba(255,138,31,.5);border-radius:14px;
+    background:var(--navy);border:1px solid rgba(255,154,77,.5);border-radius:14px;
     padding:9px 9px 9px 14px;box-shadow:0 6px 20px rgba(0,0,0,.45);
   }
   #measurePanel.show{display:flex;}
