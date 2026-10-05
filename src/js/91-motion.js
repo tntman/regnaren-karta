@@ -27,6 +27,21 @@
       if (on && !b.disabled) motionIgnite(b);
     }, 0);
   }, true);
+  // tabs (.anSeg / .helpSeg): the chosen tab's background glides from the old tab to the new one
+  document.addEventListener('click', function(e){
+    var b = e.target && e.target.closest ? e.target.closest('.anSeg button, .helpSeg button') : null;
+    if (!b) return;
+    var seg = b.parentNode, old = seg.querySelector('button.on');
+    if (!old || old === b) return;
+    var r0 = old.getBoundingClientRect();
+    setTimeout(function(){                                   // (after the app's own handler has moved .on)
+      var now = seg.isConnected ? seg.querySelector('button.on') : null;   // (a re-drawn row: no glide)
+      if (!now || now === old) return;
+      var r1 = now.getBoundingClientRect();
+      now.style.setProperty('--sl', (r0.left - r1.left) + 'px'); now.style.setProperty('--sr', (r1.right - r0.right) + 'px');
+      now.classList.remove('segGlide'); void now.offsetWidth; now.classList.add('segGlide');
+    }, 0);
+  }, true);
   // coloured sliders: where the thumb is (--f, 0..1), so the colours past it are dimmed (css/95-design-a.css)
   function satFill(el){ var a = +el.min || 0, b = +el.max || 100; el.style.setProperty('--f', String(Math.max(0, Math.min(1, (el.value - a) / (b - a))))); }
   Array.prototype.forEach.call(document.querySelectorAll('.satSlider'), satFill);

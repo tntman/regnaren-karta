@@ -1929,7 +1929,13 @@
   .anChips button, .trkSel{border:none;background:var(--s2);border-radius:999px;}
   .anChips button.on, .trkSel.on{background:var(--tint);color:var(--amber);border:none;}
   .anSeg, .helpSeg{background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:4px;gap:4px;}
-  .anSeg button.on, .helpSeg button.on{background:var(--s2);color:var(--offwhite);}
+  .anSeg button.on, .helpSeg button.on{background:none;color:var(--offwhite);}
+  /* the chosen tab's background is a layer of its own, so it can glide over from the old tab (.segGlide, 91-motion.js) */
+  .anSeg, .helpSeg{position:relative;isolation:isolate;}            /* (the glide goes under every tab's text) */
+  .anSeg button, .helpSeg button{position:relative;transition:color .25s;}
+  .anSeg button.on::before, .helpSeg button.on::before{content:'';position:absolute;top:0;bottom:0;left:0;right:0;z-index:-1;border-radius:inherit;background:var(--s2);}
+  .segGlide::before{animation:segGlide .42s cubic-bezier(.34,1.25,.64,1);}
+  @keyframes segGlide{from{left:var(--sl);right:var(--sr);}}
   #anCatSeg button.has{box-shadow:inset 0 -2px 0 var(--amber);}
   .segmented{background:#0B0B0D;border:none;border-radius:14px;}
   .segmented button.active{background:var(--s2);color:var(--offwhite);}
@@ -2018,6 +2024,7 @@
     #menuPanel.show, #mapTypePop.show, #visMore:not([hidden]), #menuPanel.show > *, #lakeList > *, #mapTypePop.show > *, #visMore .visCol > *, #msgPop.show button, #undoToast.show,
     #wpSheet.show > *, #anPanel.show > *, #hmPanel.show > *, .anChips button.on, .typeSeg button.active, .ign, .ign svg{animation:fadeIn .15s ease both !important;}
     #menuChev svg{transition:none;}
+    .segGlide::before{animation:none;}
   }
 
   /* ---- fixes after the first look (2026-10-05) ---- */
@@ -11309,6 +11316,21 @@
     setTimeout(function(){
       var on = b.id === 'locateBtn' || b.classList.contains('on') || b.classList.contains('active') || b.classList.contains('open');
       if (on && !b.disabled) motionIgnite(b);
+    }, 0);
+  }, true);
+  // tabs (.anSeg / .helpSeg): the chosen tab's background glides from the old tab to the new one
+  document.addEventListener('click', function(e){
+    var b = e.target && e.target.closest ? e.target.closest('.anSeg button, .helpSeg button') : null;
+    if (!b) return;
+    var seg = b.parentNode, old = seg.querySelector('button.on');
+    if (!old || old === b) return;
+    var r0 = old.getBoundingClientRect();
+    setTimeout(function(){                                   // (after the app's own handler has moved .on)
+      var now = seg.isConnected ? seg.querySelector('button.on') : null;   // (a re-drawn row: no glide)
+      if (!now || now === old) return;
+      var r1 = now.getBoundingClientRect();
+      now.style.setProperty('--sl', (r0.left - r1.left) + 'px'); now.style.setProperty('--sr', (r1.right - r0.right) + 'px');
+      now.classList.remove('segGlide'); void now.offsetWidth; now.classList.add('segGlide');
     }, 0);
   }, true);
   // coloured sliders: where the thumb is (--f, 0..1), so the colours past it are dimmed (css/95-design-a.css)

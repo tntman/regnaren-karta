@@ -93,6 +93,8 @@ with sync_playwright() as p:
     pg.click('#hmSp button[data-sp="all"]'); pg.click('#hmComp button[data-comp="all"]'); pg.wait_for_timeout(300)
     # ---- Per art ----
     pg.click('#hmStyleSeg button[data-s="species"]'); pg.wait_for_timeout(400)
+    g = pg.eval_on_selector('#hmStyleSeg button.on', 'e => [e.dataset.s, e.classList.contains("segGlide"), parseFloat(e.style.getPropertyValue("--sl"))]')
+    check('the chosen tab glides over from the old one (Värme -> Per art: starts one tab to the left)', g[0] == 'species' and g[1] and g[2] < -20, g)
     chips = pg.eval_on_selector_all('#hmSp button', 'e => e.map(x => x.textContent)')
     check('Per art: a colour per species, toggles with counts', chips == ['Abborre 12', 'Gädda 6', 'Gös 1'] and coloured(pg) > 100, chips)
     pg.click('#hmSp button[data-spt="abborre"]'); pg.wait_for_timeout(300)
