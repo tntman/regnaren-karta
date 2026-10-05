@@ -153,7 +153,6 @@
   .hdBtn.on, .hdBtn.pwBtn:not(:disabled){background:none;color:var(--amber);filter:drop-shadow(0 0 8px var(--glow));}
   /* toggles: orange when on, with a soft glow */
   .toggleTrack{background:var(--s3);}
-  .toggle input:checked ~ .toggleTrack{box-shadow:0 0 14px rgba(255,154,77,.4);}
 
   /* ---- "Vem är du?" ---- */
   .nameTitle{font-size:30px;font-weight:600;letter-spacing:-.03em;}
@@ -176,13 +175,11 @@
     to{box-shadow:inset 0 0 0 1.5px var(--amber),0 0 22px rgba(255,154,77,.35),0 0 44px 18px rgba(255,154,77,0);}}
   @keyframes ignL{from{box-shadow:0 0 0 6px rgba(255,154,77,.14),0 8px 28px var(--glow),0 0 0 0 rgba(255,154,77,.8);}
     to{box-shadow:0 0 0 6px rgba(255,154,77,.14),0 8px 28px var(--glow),0 0 48px 20px rgba(255,154,77,0);}}
-  @keyframes ignT{from{box-shadow:0 0 14px rgba(255,154,77,.4),0 0 0 0 rgba(255,154,77,.75);}to{box-shadow:0 0 14px rgba(255,154,77,.4),0 0 32px 12px rgba(255,154,77,0);}}
   @keyframes ignI{from{filter:drop-shadow(0 0 8px var(--glow)) drop-shadow(0 0 0 #FF9A4D);}to{filter:drop-shadow(0 0 8px var(--glow)) drop-shadow(0 0 22px rgba(255,154,77,0));}}
   @keyframes ignH{from{box-shadow:0 0 0 2px #090B10,0 0 0 3.5px var(--amber),0 0 16px var(--glow),0 0 0 0 rgba(255,154,77,.75);}
     to{box-shadow:0 0 0 2px #090B10,0 0 0 3.5px var(--amber),0 0 16px var(--glow),0 0 36px 14px rgba(255,154,77,0);}}
   #anBtn.ign, #measureBtn.ign, #msgBtn.ign{animation:ignF .8s ease-out;}
   #locateBtn.ign{animation:ignL .8s ease-out;}
-  .toggleTrack.ign{animation:ignT .8s ease-out;}
   .hdBtn.ign{animation:ignI .8s ease-out;}
   #hmBtn.ign svg{animation:ignH .8s ease-out;}
   /* menus grow out of their button; the rows follow one after another */

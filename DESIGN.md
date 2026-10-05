@@ -122,7 +122,7 @@ pillren är kapslar. Platt: inga skuggor på det frostade; menyer och kort över
 - **Chips:** kapslar i yta 2, valt = orange ton + orange text. **Typerna** (Markering, Abborre …): vit text med
   en färgprick, vald = artens färg som ton + text.
 - **Flikar** (Kartdata/Tumregler …, Värme/Per art …): ingen bädd, vald flik = yta 2 med vit text.
-- **Reglage:** av = yta 3, på = orange med svagt sken.
+- **Reglage:** av = yta 3, på = orange, utan sken (borttaget 2026-10-05).
 - **Fakta** (Djup, Lutning, Botten, Växter): en rad med tunna streck emellan, inga rutor.
 - **Kort i mitten** (båten, ett meddelande, tävlingslåset): solida, 20 px, mörk bakgrund bakom; namnet med › öppnar profilen.
 - **Menyer** (Meny, Kartlägen, Filter): solida, 18 px, kompakta som förut. Valt = orange text / ljusare rad,
@@ -135,7 +135,7 @@ pillren är kapslar. Platt: inga skuggor på det frostade; menyer och kort över
 
 Kort och med lite fjäder, aldrig loopande (utom GPS-ringen).
 - **Tryck:** allt som går att trycka krymper lite (93 %) och fjädrar tillbaka (0,18 s).
-- **Orange tänds:** när något slås på blossar ett orange sken ut och tonas bort (0,8 s) – bara vid ett tryck,
+- **Orange tänds:** när något slås på blossar ett orange sken ut och tonas bort (0,8 s) – bara vid ett tryck på kartknapparna (inte reglagen),
   aldrig när en vy öppnas.
 - **Menyer** växer ut ur sin knapp och raderna följer efter varandra (0,38 s, 20–30 ms mellan raderna).
   Pilen på profilbilden vänds.

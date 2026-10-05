@@ -11,13 +11,6 @@
     var el = e.target && e.target.closest ? e.target.closest('.ign') : null;
     if (el && e.animationName && e.animationName.indexOf('ign') === 0) el.classList.remove('ign');
   }, true);
-  // a toggle switched on
-  document.addEventListener('change', function(e){
-    var t = e.target;
-    if (t && t.type === 'checkbox' && t.checked && t.parentNode && t.parentNode.classList && t.parentNode.classList.contains('toggle')){
-      motionIgnite(t.parentNode.querySelector('.toggleTrack'));
-    }
-  }, true);
   // a map button / ⏻ that is on after the tap (the app's own handlers run first), and Sikte on every tap
   document.addEventListener('click', function(e){
     var b = e.target && e.target.closest ? e.target.closest('#locateBtn, #anBtn, #measureBtn, #hmBtn, #msgBtn, .hdBtn') : null;
