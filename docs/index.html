@@ -9129,9 +9129,9 @@
   }
   function sizeEff(r, b){ return [r[0] <= b[0] ? 0 : Math.min(r[0], b[1]), r[1] >= b[1] ? SIZE_NONE : Math.max(r[1], b[0])]; }   // (as the slider shows it)
   function sizeOn(r, b){ var e = b ? sizeEff(r, b) : r; return e[0] > 0 || e[1] < SIZE_NONE; }
-  function sizeTxt(r, b){
-    var e = b ? sizeEff(r, b) : r;
-    return !sizeOn(e) ? 'Alla' : (e[1] >= SIZE_NONE ? 'minst ' + e[0] : e[0] <= 0 ? 'högst ' + e[1] : e[0] + '–' + e[1]) + ' cm';
+  function sizeTxt(r, b){   // always the numbers on the slider: "85–90 cm" (the ends = the smallest / biggest fish)
+    var e = sizeEff(r, b);
+    return (e[0] || b[0]) + '–' + (e[1] >= SIZE_NONE ? b[1] : e[1]) + ' cm';
   }
   function sizeRow(r, b, key){
     if (!b) return '';
