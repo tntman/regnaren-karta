@@ -113,7 +113,6 @@
   });
 
   function showNameModal(){
-    if (splashOn()){ afterSplash(showNameModal); return; }   // (after the start film, 35-splash.js)
     selectedRosterName = null;
     otherNameMode = false;
     Array.from(nameListEl.children).forEach(function(c){ c.classList.remove('selected'); });
@@ -142,7 +141,7 @@
     showUserName();
     myUid = nameSlug(userName);
     hideNameModal();
-    splashAfterName();   // (a new phone / after Logga ut: now the start film, 35-splash.js)
+    splashPlay();   // (every new name: the start film, 35-splash.js)
     if (appStarted){
       // returning from "Logga ut" — geolocation/Firebase are already running,
       // just re-evaluate ownership of the pins already on screen under the new name
@@ -167,7 +166,6 @@
   logoutBtn.addEventListener('click', function(){
     expireOwnPosition(); // so the old name's pip disappears for everyone now, not in an hour
     try { localStorage.removeItem(USER_NAME_KEY); } catch(e){}
-    splashAfterLogout();     // (closed now and opened again: the start film)
     userName = '';
     myUid = null;
     lastPosWriteAt = 0;       // the next name gets shared right away

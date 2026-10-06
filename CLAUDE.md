@@ -155,12 +155,14 @@ Uppdatera rätt anteckning när något ändras.
   på ny plats). Testerna: låset av i testwebbläsaren (`window.__ffNoLock`, fakefb) utom med `cfg={'lock': True}` (test_lock.py).
 - **Strandlinje** (Inställningar → Kartan `#toggleShore`, på som standard, `ffmap_shore_v1`): sjöns kant som tunn vit linje på vanliga kartan,
   samma som Heatmap/Kartanalys ritar (`hmShoreLayer`, `js/68-heatmap.js`); döljs när de visas (de har sin egen).
-- **Startfilm** (`js/35-splash.js`, `tools/PLAN_SPLASH.md`): 3D-loggan 3,5 s vid första starten och när appen inte använts på > 24 h
-  (`ffmap_last_active_v1`, hela telefonen: skrivs vid start, varje minut när den syns och när den döljs – även tillbaka ur bakgrunden
-  utan omladdning). Även efter Logga ut + stängd app (`ffmap_splash_out_v1` i localStorage, sessionStorage-kopian stoppar den vid en vridnings omladdning). Skriptet i `src/head.html` sätter `html.splash` före första bilden (allt svart, kartan blinkar aldrig fram).
-  **Startbild**: loggan på #141822 direkt (html-bakgrunden, `html.boot` i head.html), appen tonar in över den (35-splash.js), med film stänger det svarta över den (`html.bootsp`); statusraden förblir #141822 även under filmen (toppen tonar, `.tint`). Prövat: svart startbild med blå tona överst – syntes som en kant. Firebase-skripten ligger sist i body (`html/99-firebase.html`) så att inget håller upp bilden;
-  iOS-startbilder `assets/launch-*.png` (`tools/launch_images.py`, ny iPhone-storlek läggs till där), Android gör sin egen av manifestet.
-  Namnrutan och platsfrågan (`startGeolocation`, 90-boot.js) väntar (`afterSplash`). Utan namn (ny telefon, efter Logga ut): "Vem är du?" först, sedan tonar det till svart och filmen (`__ffSplashName` från head.html), Hjälp efter filmen. Inställningar → Avancerat → Startfilmen "Spela" visar den igen. Testerna: fakefb sätter nyckeln = nu i varje context (opt-in `splash=True`, test_splash).
+- **Startfilm** (`js/35-splash.js`, `tools/PLAN_SPLASH.md`): 3D-loggan 3,5 s **varje gång ett namn väljs** ("Vem är du?": ny telefon,
+  efter Logga ut – även utan att appen stängts) och från Inställningar → Avancerat → Startfilmen "Spela" (`splashPlay()`): svart tonar in
+  över appen, sedan filmen. Statusraden förblir #141822 (toppen tonar, `.tint` – iOS byter inte statusradens färg i en igång hemskärmsapp).
+  Hjälp (första gången) och platsfrågan (`startGeolocation`, 90-boot.js) väntar (`afterSplash`). Ingen film efter 24 h (Filips beslut 2026-10-06).
+  **Startbild** (varje start utom vridningens omladdning): loggan på #141822 direkt (html-bakgrunden, `html.boot` i head.html), appen tonar in
+  över den. Prövat: svart startbild med blå tona överst – syntes som en kant. Firebase-skripten ligger sist i body (`html/99-firebase.html`)
+  så att inget håller upp bilden; iOS-startbilder `assets/launch-*.png` (`tools/launch_images.py`, ny iPhone-storlek läggs till där), Android
+  gör sin egen av manifestet. Testerna: fakefb stänger av båda (`__ffNoSplash`, `__ffNoBoot`; opt-in `splash=True`, test_splash).
 - **Pushnotiser**: inte gjort (kräver server/Firebase-betalplan).
 
 ## Firestore-regler (aktuella, i Firebase-konsolen)

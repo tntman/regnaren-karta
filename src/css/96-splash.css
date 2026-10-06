@@ -1,8 +1,8 @@
   /* ---------------- The start film (js/35-splash.js) ----------------
-     html.splash (set in head.html before the page is drawn) = all black over everything at once. */
+     html.splash = the film over everything (a name chosen, "Spela"). */
   #splash{display:none;}
   html.splash #splash{display:block;position:fixed;inset:0;z-index:100000;touch-action:none;}
-  html.bootsp #splash, #splash.spIn{animation:spIn .5s both;}   /* (the black closes over the start picture / the map after the name) */
+  #splash.spIn{animation:spIn .5s both;}   /* (the black closes over the app) */
   @keyframes spIn{from{opacity:0}}
   #splash > *{position:absolute;inset:0;width:100%;height:100%;}
   .spBlack{background:#000;}

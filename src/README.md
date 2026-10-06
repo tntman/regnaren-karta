@@ -61,7 +61,7 @@ specificitet.
 | `33-avatars.js` | profilbilderna (`AVATARS`, genereras av `tools/make_avatars.py` ur `tools/fiskare/`) |
 | `34-name.js` | ditt namn, profilbild på menyknappen, "Logga ut" i menyn |
 | `35-logo3d.js` | loggan som 3D-skylt på "Vem är du?", i Hjälp och Inställningar (three.js från `assets/three-r170*.js`, laddas bara där), trappar ner på äldre telefoner; `nlMakeSign()` = skylten, även startfilmens |
-| `35-splash.js` | startfilmen (3,5 s, 3D-loggan) vid första starten och efter > 24 h (`ffmap_last_active_v1`), efter Logga ut + stängd app (`ffmap_splash_out_v1`), platt logga på äldre telefoner / Reducera rörelse, tryck = hoppa över, Inställningar → Avancerat → "Spela", startbilden (`html.boot`: appen tonar in över loggan), `afterSplash()` (namnrutan väntar) – `tools/PLAN_SPLASH.md` |
+| `35-splash.js` | startfilmen (3,5 s, 3D-loggan) varje gång ett namn väljs och vid Inställningar → Avancerat → "Spela" (`splashPlay()`), platt logga på äldre telefoner / Reducera rörelse, tryck = hoppa över, `afterSplash()` (Hjälp, platsfrågan), startbilden (`html.boot`: appen tonar in över loggan) – `tools/PLAN_SPLASH.md` |
 | `36-admin.js` | admin, export (GPX/CSV), Säkerhetskopia (hela databasen till en fil och tillbaka, test_backup) |
 | `37-testmode.js` | testläget: låtsastävlingen i `config/<sjö>.test`, Admin → Testläge (tävling, fångster, testbåtar, blixtar, rensa) – `tools/NOTES_TESTLAGE.md` |
 | `38-speed-depth.js` | fart, riktningspilen, djup |

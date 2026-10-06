@@ -15,20 +15,14 @@
 <meta name="apple-mobile-web-app-title" content="FF Map">
 <!-- the status bar's colour (see above) = the map's background = the top fade: #141822 -->
 <meta name="theme-color" content="#141822">
-<!-- the start film (js/35-splash.js): first start, or > 24 h since the app was last in use -> all black from the
-     very first picture (html.splash), so the map never flashes up before it. No name yet (a new phone, after Logga
-     ut): "Vem är du?" first, the film after it (__ffSplashName) -->
-<script>try{var t=+localStorage.getItem('ffmap_last_active_v1');if(!t||Date.now()-t>864e5||localStorage.getItem('ffmap_splash_out_v1')&&!sessionStorage.getItem('ffmap_splash_out_v1')){if(localStorage.getItem('regnaren_user_name_v1'))document.documentElement.classList.add('splash');else window.__ffSplashName=1}}catch(e){}</script>
 <!-- the start picture, like a native app's: the logo on the dark blue (= the status bar) from the very first
      picture -- the html's own background, before the page's <style> and body -- then the app fades in over it
-     (html.boot, js/35-splash.js), or with the start film the black closes over it (the status bar stays blue).
-     (Tried: on black with the blue fading in at the top -- it showed as an edge.) The same
-     as iOS's launch images below (tools/launch_images.py makes them from this rule): iOS always shows that one
-     first, whether the film comes or not. Not on a rotation's reload. -->
-<script>try{var c=document.documentElement.classList;if(!window.__ffNoBoot&&!sessionStorage.getItem('ffmap_rotation_state_v1'))c.add(c.contains('splash')?'bootsp':'boot')}catch(e){}</script>
-<style>html{background:#141822;--ffLogo:url(__LOGO__)}html.splash{background:#000}
-html.boot,html.booted,html.bootsp{background:#141822 var(--ffLogo) no-repeat 50% 50%/min(46vw,240px) auto}
-html.boot body{opacity:0;background:none}html.booted body{transition:opacity .6s}html.bootsp body{background:none}</style>
+     (html.boot, js/35-splash.js). The same as iOS's launch images below (tools/launch_images.py makes them from
+     this rule). Not on a rotation's reload. (Tried: on black with the blue fading in at the top -- it showed as an edge.) -->
+<script>try{var c=document.documentElement.classList;if(!window.__ffNoBoot&&!sessionStorage.getItem('ffmap_rotation_state_v1'))c.add('boot')}catch(e){}</script>
+<style>html{background:#141822;--ffLogo:url(__LOGO__)}
+html.boot,html.booted{background:#141822 var(--ffLogo) no-repeat 50% 50%/min(46vw,240px) auto}
+html.boot body{opacity:0;background:none}html.booted body{transition:opacity .6s}</style>
 __LAUNCH__
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
