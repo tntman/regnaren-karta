@@ -2,6 +2,9 @@
 <html lang="sv">
 <head>
 <meta charset="utf-8">
+<!-- dark: the browser's own empty canvas before anything is drawn (else white -- a white blink at start); the page
+     itself keeps its look (body: light, as before -- the early <style> below) -->
+<meta name="color-scheme" content="dark">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -22,7 +25,7 @@
 <script>try{var c=document.documentElement.classList;if(!window.__ffNoBoot&&!sessionStorage.getItem('ffmap_rotation_state_v1'))c.add('boot')}catch(e){}</script>
 <style>html{background:#141822;--ffLogo:url(__LOGO__)}
 html.boot,html.booted{background:#141822 var(--ffLogo) no-repeat 50% 50%/min(46vw,240px) auto}
-html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2s}</style>
+html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2s}body{color-scheme:light}</style>
 __LAUNCH__
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">

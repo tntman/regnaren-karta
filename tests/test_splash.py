@@ -44,6 +44,8 @@ with sync_playwright() as p:
     b, pg, errs, reqs = fresh(p, help_seen=False)
     check('start: the start picture (the logo on the dark blue, as the iOS launch image) from the very first picture, never white',
           pg.evaluate('window.__spBg') == 'rgb(20, 24, 34)' and (pg.evaluate('window.__spBgImg') or '').startswith('url("data:image/svg'), pg.evaluate('window.__spBgImg'))
+    check('...and the browser own empty canvas dark before that (color-scheme), the page itself as before (body: light)',
+          pg.evaluate("document.querySelector('meta[name=color-scheme]').content === 'dark' && getComputedStyle(document.body).colorScheme === 'light'"))
     pg.wait_for_timeout(1500)
     check('...then the app fades in over it, the logo gone', pg.evaluate("""!document.documentElement.classList.contains('boot')
           && !document.documentElement.classList.contains('booted') && getComputedStyle(document.body).opacity === '1'"""))
