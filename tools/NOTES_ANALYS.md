@@ -46,6 +46,9 @@ raderas den då (`pagehide`).
   och fladdrade vid panorering utzoomat. Därför ritas de från ett mjukt fält (`anField`: rutnätet
   halveras med medelvärde tills en cell ≈ en ritad punkt, sedan 1-2-1-filter; cachat per resultat
   och nivå), avstånd till kanten = (värde − 0,5) / lutning. Små bitar (< 0,5 i fältet) visas svagt.
+  **Minne** (2026-10-07, Mälaren: rutnät 3× Regnarens, ~400 MB → iPhone stängde sidan vid zoom): fullstora nivån = maskerna
+  själva (byte, sjöns egen `A.lake`, ingen float-kopia), tom kanal = null, och ett rutnät över `AN_FIELD_MAX` (2 M celler)
+  mjukas aldrig i full storlek (finaste nivån 2 × 2 celler). Nu ~160 MB; `tests/test_lakes.py` mäter (< 260 MB).
   Linjerna aldrig smalare än en ritad punkt åt varje håll, svagare i stället (`edgeW(STEP, css)` i
   50-wind-lee.js) – annars pärlband när varannan px ritas. `tests/test_smooth.py` mäter fladdret. Upplösning `viewStep()` (50-wind-lee.js): 1 css-px när kartan står
   still, grövre medan man drar (och på stora skärmar); steget ingår i cache-nyckeln.
