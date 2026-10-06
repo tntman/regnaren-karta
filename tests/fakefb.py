@@ -45,7 +45,14 @@ TEST_PIN_JS = """(function(){
   };
 })();""" % (_PIN_HASH, TEST_PIN)
 
-from playwright.sync_api import Browser as _Browser
+from playwright.sync_api import Browser as _Browser, Page as _Page
+# TEST_PORT (run_all.ps1 sets it too): the test server's port, so two chats' tests can run at the same time --
+# the tests' own goto('http://localhost:8899/...') are sent there
+_PORT = os.environ.get('TEST_PORT', '8899')
+if _PORT != '8899' and not getattr(_Page, '_ffPort', False):
+    _orig_goto = _Page.goto
+    _Page.goto = lambda self, url, *a, **kw: _orig_goto(self, url.replace('localhost:8899/', 'localhost:%s/' % _PORT), *a, **kw)
+    _Page._ffPort = True
 if not getattr(_Browser, '_ffGuarded', False):
     _orig_new_context = _Browser.new_context
     def _guarded_new_context(self, *a, **kw):

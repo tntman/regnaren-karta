@@ -14,11 +14,13 @@ $env:PYTHONIOENCODING = 'utf-8'
 $edge = "${env:ProgramFiles(x86)}\Microsoft\Edge\Application\msedge.exe"
 if (-not $env:CHROMIUM -and (Test-Path $edge)) { $env:CHROMIUM = $edge }
 $jobs = 6; if ($env:TEST_JOBS) { $jobs = [int]$env:TEST_JOBS }
-function PortUp { try { $c = [Net.Sockets.TcpClient]::new(); $c.Connect('127.0.0.1', 8899); $c.Close(); $true } catch { $false } }
+$port = 8899; if ($env:TEST_PORT) { $port = [int]$env:TEST_PORT }   # (TEST_PORT: another chat's tests can run at the same time -- fakefb.py follows it)
+$env:TEST_PORT = "$port"
+function PortUp { try { $c = [Net.Sockets.TcpClient]::new(); $c.Connect('127.0.0.1', $port); $c.Close(); $true } catch { $false } }
 # py.exe (the launcher) starts python.exe as a child: stop the whole tree, or the server stays behind
 function StopTree($id) { & taskkill /PID $id /T /F 2>&1 | Out-Null }
-if (PortUp) { 'Port 8899 var redan upptagen (en gammal testserver?) - stang den forst'; exit 1 }
-$srv = Start-Process py -ArgumentList '-3', 'serve.py', '8899', '..\docs' `
+if (PortUp) { "Port $port var redan upptagen (en gammal testserver, eller en annan chatts tester - satt TEST_PORT) - stang den forst"; exit 1 }
+$srv = Start-Process py -ArgumentList '-3', 'serve.py', "$port", '..\docs' `
     -WindowStyle Hidden -PassThru
 $w = 0; while (-not (PortUp) -and $w -lt 100) { Start-Sleep -Milliseconds 100; $w++ }   # (up to 10 s; ~1,2 s normally)
 if (-not (PortUp)) { 'Testservern startade inte'; StopTree $srv.Id; exit 1 }

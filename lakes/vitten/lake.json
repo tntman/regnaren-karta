@@ -16,7 +16,7 @@
   "imgH": 363
  },
  "depth": {
-  "file": "depth_v1.txt",
+  "file": "depth_v2.txt",
   "w": 748,
   "h": 726,
   "step": 0.08,
@@ -24,7 +24,7 @@
   "capped": false
  },
  "bottom": {
-  "file": "bottom_v1.txt"
+  "file": "bottom_v2.txt"
  },
  "legendTicks": [
   "0 m",
@@ -32,8 +32,8 @@
   "5 m"
  ],
  "contourText": "Djupkurvor från C-MAP Genesis",
- "mapFile": "map_v1_{style}.jpg",
- "thumbFile": "thumbs_v1/{style}.jpg",
+ "mapFile": "map_v2_{style}.jpg",
+ "thumbFile": "thumbs_v2/{style}.jpg",
  "styles": [
   {
    "id": "s1",
@@ -52,12 +52,6 @@
    "name": "Sjökort",
    "desc": "Blå djupband som en papperskarta",
    "legend": "linear-gradient(to right,#dff3fb 0%,#dff3fb 20%,#c4e7f6 20%,#c4e7f6 40%,#a9dbf2 40%,#a9dbf2 60%,#8fcdec 60%,#8fcdec 100%)"
-  },
-  {
-   "id": "s5",
-   "name": "Flygfoto + linjer",
-   "desc": "Naturlig bild med vita djupkurvor",
-   "legend": null
   },
   {
    "id": "s6",
@@ -92,70 +86,44 @@
     "Mjuk",
     "",
     "Hård"
-   ]
+   ],
+   "lines": "lines_w"
   }
  ],
  "detail": {
-  "file": "tiles_v1/z{z}/{style}/{c}_{r}.jpg",
+  "file": "tiles_v2/z{z}/{style}/{c}_{r}.webp",
+  "lines": "tiles_v2/z{z}/{lines}/{c}_{r}.webp",
+  "baseMax": 17,
   "tile": 512,
+  "pad": 8,
   "levels": [
    {
     "z": 15,
     "cols": 2,
     "rows": 2,
     "have": "1100",
-    "styles": [
-     "s1",
-     "s2",
-     "s3",
-     "s5",
-     "s6",
-     "g1",
-     "v1",
-     "c1"
-    ]
+    "base": true
    },
    {
     "z": 16,
     "cols": 3,
     "rows": 3,
     "have": "011111000",
-    "styles": [
-     "s1",
-     "s2",
-     "s3",
-     "s5",
-     "s6",
-     "g1",
-     "v1",
-     "c1"
-    ]
+    "base": true
    },
    {
     "z": 17,
     "cols": 6,
     "rows": 6,
     "have": "001111001111111110011110000000000000",
-    "styles": [
-     "s1",
-     "s2",
-     "s3",
-     "s5",
-     "s6",
-     "g1",
-     "v1",
-     "c1"
-    ]
+    "base": true
    },
    {
     "z": 18,
     "cols": 12,
     "rows": 12,
     "have": "000000000000000001100110000011111110000011111100001111111100011111111000001111111000000000000000000000000000000000000000000000000000000000000000",
-    "styles": [
-     "s1",
-     "g1"
-    ]
+    "base": false
    }
   ]
  }
