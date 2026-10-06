@@ -137,7 +137,7 @@ Uppdatera rätt anteckning när något ändras.
   på) – aldrig båda, lägena stänger av varandra. Tryck = rutan.
 - **Håll skärmen tänd** (Inställningar → Båten, av som standard, `ffmap_wakelock_v1`): Wake Lock, tas igen när
   appen blir synlig. På = gul sol `#wakeBadge` under väderchipet; tryck = av + notis `#wakeNote`.
-- **Hjälp** (menyn → Hjälp; öppnas själv efter första namnvalet): "Nytt i appen" = `HELP_NEWS`
+- **Hjälp** (menyn → Hjälp; efter varje namnval visas välkomstrutan `#welcomeNote` "Välkommen till Fiskfiskarnas Kart app! Klicka här …" som öppnar den – Hjälp öppnas aldrig själv): "Nytt i appen" = `HELP_NEWS`
   (`js/30-help.js`), animeringar av `tools/help_anim.py` – allt i `tools/HJALP.md`.
 - **Ledare** (Filter → Lager `#toggleLeader`, av som standard, `js/69-leader.js`, `css/74-leader.css`): under en pågående tävling en lista under
   väderchipet (`#leadPill`, topp 5 + du) och 👑 efter ledarens namn på båtens etikett. Poäng = de 5 längsta av varje art (abborre, gädda, gös) ihop,
@@ -159,12 +159,12 @@ Uppdatera rätt anteckning när något ändras.
   samma som Heatmap/Kartanalys ritar (`hmShoreLayer`, `js/68-heatmap.js`); döljs när de visas (de har sin egen).
 - **Startfilm** (`js/35-splash.js`, `tools/PLAN_SPLASH.md`): 3D-loggan 3,5 s **varje gång ett namn väljs** ("Vem är du?": ny telefon,
   efter Logga ut – även utan att appen stängts) och från Inställningar → Avancerat → Startfilmen "Spela" (`splashPlay()`): svart tonar in
-  över appen, sedan filmen. Statusraden förblir #141822 (toppen tonar, `.tint` – iOS byter inte statusradens färg i en igång hemskärmsapp).
-  Hjälp (första gången) och platsfrågan (`startGeolocation`, 90-boot.js) väntar (`afterSplash`). Ingen film efter 24 h (Filips beslut 2026-10-06).
+  över appen, sedan filmen. Filmens "svart" är #141822 = statusraden (iOS byter inte statusradens färg i en igång hemskärmsapp) – ingen kant.
+  Välkomstrutan och platsfrågan (`startGeolocation`, 90-boot.js) väntar (`afterSplash`). Ingen film efter 24 h (Filips beslut 2026-10-06).
   **Startbild** (varje start utom vridningens omladdning): loggan på #141822 direkt (html-bakgrunden, `html.boot` i head.html), appen tonar in
-  över den. Prövat: svart startbild med blå tona överst – syntes som en kant. Firebase-skripten ligger sist i body (`html/99-firebase.html`)
+  över den (1,2 s). Prövat: svart startbild med blå tona överst – syntes som en kant. Firebase-skripten ligger sist i body (`html/99-firebase.html`)
   så att inget håller upp bilden; iOS-startbilder `assets/launch-*.png` (`tools/launch_images.py`, ny iPhone-storlek läggs till där), Android
-  gör sin egen av manifestet. Testerna: fakefb stänger av båda (`__ffNoSplash`, `__ffNoBoot`; opt-in `splash=True`, test_splash).
+  gör sin egen av manifestet. Testerna: fakefb stänger av båda (`__ffNoSplash`, `__ffNoBoot`; opt-in `splash=True`, test_splash) och välkomstrutan (`__ffNoWelcome`; `help_seen=False`).
 - **Pushnotiser**: inte gjort (kräver server/Firebase-betalplan).
 
 ## Firestore-regler (aktuella, i Firebase-konsolen)

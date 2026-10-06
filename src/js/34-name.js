@@ -142,15 +142,19 @@
     myUid = nameSlug(userName);
     hideNameModal();
     splashPlay();   // (every new name: the start film, 35-splash.js)
+    if (!window.__ffNoWelcome) afterSplash(function(){ welcomeNote.classList.add('show'); });   // (then the welcome card: the way to Hjälp)
     if (appStarted){
       // returning from "Logga ut" — geolocation/Firebase are already running,
       // just re-evaluate ownership of the pins already on screen under the new name
       renderWaypoints();
     } else {
       continueBootAfterName();
-      afterSplash(function(){ if (!helpSeen()) showHelpView(true); });   // the very first time on this phone: Hjälp, with a welcome (after the film)
     }
   });
+  // the welcome card (every new name, after the film): tap = Hjälp (with its welcome), ✕ = gone
+  var welcomeNote = document.getElementById('welcomeNote');
+  document.getElementById('welcomeNoteGo').addEventListener('click', function(){ welcomeNote.classList.remove('show'); showHelpView(true); });
+  document.getElementById('welcomeNoteClose').addEventListener('click', function(){ welcomeNote.classList.remove('show'); });
   nameInput.addEventListener('keydown', function(e){
     if (e.key === 'Enter') nameSaveBtn.click();
   });

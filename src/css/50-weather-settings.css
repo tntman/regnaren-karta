@@ -243,13 +243,14 @@
     background:rgba(28,33,44,.96);border:1px solid rgba(255,210,26,.6);border-radius:14px;padding:11px 40px 11px 14px;color:var(--offwhite);
     box-shadow:0 8px 24px rgba(0,0,0,.5);font-size:13px;line-height:1.4;transition:opacity .8s;}
   #wakeNote.show{display:block;}
-  /* "Ny version" (sw.js saved a newer page): the same card, at the top, stays until tapped or closed */
-  #updNote{position:absolute;left:14px;right:14px;top:calc(env(safe-area-inset-top,0px) + 96px);z-index:31;max-width:400px;display:none;
+  /* cards at the top that stay until tapped or closed: "Ny version" (#updNote, sw.js), the welcome (#welcomeNote) */
+  .topNote{position:absolute;left:14px;right:14px;top:calc(env(safe-area-inset-top,0px) + 96px);z-index:31;max-width:400px;display:none;
     background:rgba(28,33,44,.96);border:1px solid rgba(255,210,26,.6);border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.5);}
-  #updNote.show{display:block;}
-  #updNoteGo{display:block;width:100%;text-align:left;background:none;border:none;padding:11px 40px 11px 14px;color:var(--offwhite);font:inherit;font-size:13px;cursor:pointer;}
-  #updNoteGo b{display:block;font-size:14px;margin-bottom:2px;color:#FFD21A;}
-  #updNoteClose{position:absolute;right:6px;top:6px;width:30px;height:30px;border:none;background:none;color:var(--text-muted);font-size:16px;cursor:pointer;}
+  .topNote.show{display:block;}
+  .tnGo{display:block;width:100%;text-align:left;background:none;border:none;padding:11px 40px 11px 14px;color:var(--offwhite);font:inherit;font-size:13px;line-height:1.4;cursor:pointer;}
+  .tnGo b{display:block;font-size:14px;margin-bottom:2px;color:#FFD21A;}
+  .tnGo u{color:#FFD21A;}
+  .tnX{position:absolute;right:6px;top:6px;width:30px;height:30px;border:none;background:none;color:var(--text-muted);font-size:16px;cursor:pointer;}
   #wakeNote.fade{opacity:0;}
   #wakeNote b{display:block;font-size:14px;margin-bottom:3px;color:#FFD21A;}
   #wakeNote span b{display:inline;color:var(--offwhite);font-size:13px;}

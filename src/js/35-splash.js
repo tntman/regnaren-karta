@@ -7,7 +7,7 @@
      -- nothing keeps running. Hjälp and the location question wait for it (afterSplash). */
   var spEl = document.getElementById('splash'), spLogo = spEl.querySelector('.spLogo'), spBloom = spEl.querySelector('.spBloom');
   var spFlatImg = spEl.querySelector('.spFlat'), spApp = document.getElementById('app'), spS = {};
-  ['spBlack', 'spGlow', 'spLogo', 'spFlash', 'spVig', 'spGrain', 'spTop'].forEach(function(c){ spS[c] = spEl.querySelector('.' + c).style; });
+  ['spBlack', 'spGlow', 'spLogo', 'spFlash', 'spVig', 'spGrain'].forEach(function(c){ spS[c] = spEl.querySelector('.' + c).style; });
   var spSt = { shown: false, running: false, t: 0, mode: '' }, spRaf = 0, spGl = null, spWait = [], spSafety = 0, spLoadTimer = 0, spBlur = false;
   function splashOn(){ return document.documentElement.classList.contains('splash'); }
   function afterSplash(fn){ if (splashOn()) spWait.push(fn); else fn(); }
@@ -38,7 +38,6 @@
     spS.spBlack.opacity = p.blackA;
     spS.spVig.opacity = Math.max(p.blackA, p.logoA);
     spS.spGrain.opacity = (0.09 * p.blackA).toFixed(3);
-    spS.spTop.opacity = p.blackA;
     spS.spGrain.backgroundPosition = (Math.random() * 160 | 0) + 'px ' + (Math.random() * 160 | 0) + 'px';
     // the app under it: from blurred and darker to sharp (only on phones that manage it)
     spApp.style.filter = spBlur && p.appBlur ? 'blur(' + (14 * p.appBlur).toFixed(1) + 'px) brightness(' + (1 - 0.3 * p.appBlur).toFixed(2) + ')' : '';
@@ -98,11 +97,8 @@
     };
   }
   function spCancelLoad(){ clearTimeout(spLoadTimer); spLoadTimer = 0; }
-  // the status bar keeps its #141822 (iOS doesn't recolour it in a home-screen app, and the start picture is that
-  // blue too): the film's top fades from it into the black (.tint)
   function splashStart(){
     spSt.shown = spSt.running = true; spSt.t = 0; spSt.mode = 'load';
-    spEl.classList.add('tint');
     clearTimeout(spSafety); spSafety = setTimeout(splashDone, 9000);   // (whatever happens: never stuck behind the black)
     var flat = nlTier === 'flat' || nlReduce;
     spBlur = !flat && nlTier === 'full';
@@ -153,7 +149,7 @@
   (function(){
     var c = document.documentElement.classList, mi = document.getElementById('mapImg'), t;
     if (!c.contains('boot')) return;
-    function go(){ clearTimeout(t); requestAnimationFrame(function(){ c.remove('boot'); c.add('booted'); setTimeout(function(){ c.remove('booted'); }, 700); }); }
+    function go(){ clearTimeout(t); requestAnimationFrame(function(){ c.remove('boot'); c.add('booted'); setTimeout(function(){ c.remove('booted'); }, 1300); }); }
     t = setTimeout(go, 1000);
     if (mi.complete && mi.naturalWidth) go(); else mi.addEventListener('load', go, { once: true });
   })();
