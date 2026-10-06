@@ -166,6 +166,7 @@
   logoutBtn.addEventListener('click', function(){
     expireOwnPosition(); // so the old name's pip disappears for everyone now, not in an hour
     try { localStorage.removeItem(USER_NAME_KEY); } catch(e){}
+    splashAfterLogout();     // (closed now and opened again: the start film)
     userName = '';
     myUid = null;
     lastPosWriteAt = 0;       // the next name gets shared right away

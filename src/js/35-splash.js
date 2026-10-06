@@ -16,6 +16,8 @@
   function afterSplash(fn){ if (splashOn()) spWait.push(fn); else fn(); }   // (the name picker waits: never two WebGL at once)
   function splashAge(){ var t = 0; try { t = +localStorage.getItem(SPLASH_KEY) || 0; } catch(e){} return t ? Date.now() - t : Infinity; }
   function splashMark(){ try { localStorage.setItem(SPLASH_KEY, String(Date.now())); } catch(e){} }
+  // Logga ut, then the app closed: the film on the next start (sessionStorage: not on a rotation's reload before that)
+  function splashAfterLogout(){ try { localStorage.setItem('ffmap_splash_out_v1', '1'); sessionStorage.setItem('ffmap_splash_out_v1', '1'); } catch(e){} }
   function spTheme(c){ var m = document.querySelector('meta[name=theme-color]'); if (m) m.content = c; }   // (the status bar: black during the film)
 
   function spSeg(t, a, b){ return Math.max(0, Math.min(1, (t - a) / (b - a))); }
@@ -162,7 +164,7 @@
     showMapView();
     document.documentElement.classList.add('splash'); splashStart(false);
   });
-  if (splashOn()) splashStart(true);
+  if (splashOn()){ splashStart(true); try { localStorage.removeItem('ffmap_splash_out_v1'); } catch(e){} }
   splashMark();
   setInterval(splashTick, 60000);
   document.addEventListener('visibilitychange', splashTick);
