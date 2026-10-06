@@ -13,7 +13,7 @@ workflows:
         distribution_type: app_store
         bundle_identifier: se.fiskfiskarna.ffmap
       vars:
-        APP_STORE_APPLE_ID: 0000000000   # TODO: App Store Connect → Appar → FF Map → Appinformation → Apple-ID
+        APP_STORE_APPLE_ID: 6819667300   # App Store Connect → Appar → FF Map → Appinformation → Apple-ID
       node: 22
       xcode: latest
     triggering:

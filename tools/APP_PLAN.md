@@ -98,14 +98,14 @@ Webbversionen (GitHub Pages, `docs/`) ska fortsätta fungera från samma kod.
 9. Claude: rättar; gör en APK som gruppens Android-användare kan installera.
 
 **Fas 3 – Apple-konton (Du)**
-10. Apple Developer Program (developer.apple.com/programs, ~1 100 kr/år, 1–2 dagar).
-11. App Store Connect → ny app "FF Map", Bundle ID från Claude (t.ex. `se.fiskfiskarna.ffmap`).
+10. ✅ (2026-10-06) Apple Developer Program (developer.apple.com/programs, ~1 100 kr/år, 1–2 dagar).
+11. ✅ (2026-10-06) App Store Connect → ny app "FF Map", Bundle ID från Claude (t.ex. `se.fiskfiskarna.ffmap`).
 12. App Store Connect → Användare och åtkomst → Integrationer → API-nyckel (roll App Manager):
     spara .p8, Key ID, Issuer ID. Ge den bara till Codemagic, inte till Claude.
 
 **Fas 4 – iPhone via Codemagic (gratis nivå)**
 13. Claude: iOS-projekt, texter för "Alltid"-plats, `codemagic.yaml` (bygg → TestFlight vid push av `app`).
-    **Gjort 2026-10-01** (medan Apple-kontot var "Pending"). Kvar: appens Apple-ID-nummer in i `codemagic.yaml`
+    **Gjort 2026-10-01** (medan Apple-kontot var "Pending"). Apple-ID-numret (6819667300) inlagt i `codemagic.yaml` 2026-10-06
     (`APP_STORE_APPLE_ID`) när appen skapats i App Store Connect.
 14. Du: codemagic.io (logga in med GitHub) → lägg till repot.
 15. Du: Codemagic → Teams → Integrations → App Store Connect → ladda upp .p8 + Key ID + Issuer ID.
