@@ -94,7 +94,10 @@ Alla kommandon körs från repots rot (`E:\github\regnaren-karta`), med `py -3`.
   siffrornas gloria taggig) som alla kartlägen delar; c1 har ljusa linjer i `lines_w/`
   (`"lines": "lines_w"` på kartläget i lake.json). Baser finns till `baseMax` (= djupdatans
   zoom, 17); zoom 18 har bara kurvlager och appen lägger dem på zoom 17-basen förstorad –
-  ser likadant ut (färgerna på 18 var ändå zoom 17 förstorade). Regnaren 143 → ~35 MB.
+  ser likadant ut (färgerna på 18 var ändå zoom 17 förstorade). Regnaren 143 → 39 MB.
+  **Varje bit har 8 px kant från grannarna** (528 × 528, `pad` i lake.json, `PAD` i genesis_render.py):
+  appen visar bara insidan (`clip-path`) på exakt plats. Utan den förstorade webbläsaren varje bit för
+  sig – linjerna knyckte och färgerna hoppade där bitar möttes (syntes tydligt på zoom 18,6, 2026-10-06).
   Sjöar som inte byggts om har kvar det gamla (en JPG per bit med linjerna inbakade) –
   appen klarar båda (`DETAIL.lines` finns/saknas). Appen visar nivån = zoomen avrundad; förra nivån ligger kvar
   tills den nya laddat. Zoomindikatorn: "Zoom 15,3 lager 15".

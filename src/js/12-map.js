@@ -165,6 +165,15 @@
   }
   function placeTile(el, z, c, r){
     var size = DETAIL.tile * Math.pow(2, ZOOM - z) * S * scale;   // a piece on screen (css px)
+    if (DETAIL.pad){
+      // pieces with their neighbours' pixels all round: exact (fractional) place, only the inside shown
+      // (+ 0.5 px so there's no hairline gap) -- no stretching, so the lines meet the next piece's exactly
+      var p = DETAIL.pad * size / DETAIL.tile, px0 = originX + c * size, py0 = originY + r * size;
+      el.style.width = el.style.height = (size + 2 * p) + 'px';
+      el.style.transform = 'translate(' + (px0 - p) + 'px,' + (py0 - p) + 'px)';
+      el.style.clipPath = 'inset(' + Math.max(0, p - 0.5) + 'px)';
+      return px0 < stageW && py0 < stageH && px0 + size > 0 && py0 + size > 0;
+    }
     // whole pixels + 1 px overlap: no hairline gaps between the pieces
     var x = Math.floor(originX + c * size), y = Math.floor(originY + r * size);
     el.style.width = (Math.ceil(originX + (c + 1) * size) - x + 1) + 'px';

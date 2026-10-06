@@ -39,7 +39,7 @@ with sync_playwright() as p:
         pg.mouse.wheel(0, -400); pg.wait_for_timeout(60)
     pg.wait_for_timeout(2000)
     tiles = pg.eval_on_selector_all('#detailLayer img', 'e=>e.map(x=>[x.naturalWidth, x.classList.contains("ok")])')
-    check('no network: map + zoomed-in pieces still show', pg.eval_on_selector('#mapImg', 'e=>e.naturalWidth') > 1000 and tiles and all(t[0] == 512 and t[1] for t in tiles), tiles[:4])
+    check('no network: map + zoomed-in pieces still show', pg.eval_on_selector('#mapImg', 'e=>e.naturalWidth') > 1000 and tiles and all(t[0] in (512, 528) and t[1] for t in tiles), tiles[:4])
     ctx.set_offline(False)
     # remove
     pg.click('#menuBtn'); pg.click('#menuItemSettings'); pg.wait_for_timeout(300)

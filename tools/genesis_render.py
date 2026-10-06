@@ -35,6 +35,7 @@ from matplotlib import colors as mcolors
 Image.MAX_IMAGE_PIXELS = None
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TL = 512
+PAD = 8      # neighbour pixels round every detail piece (see pieces())
 # Bottenhårdhet (light lines): the white lines thinner (alpha ** LINE_THIN keeps the cores) and see-through
 LINE_THIN = float(os.environ.get('FF_LINE_THIN', 2.5))
 LINE_OPACITY = float(os.environ.get('FF_LINE_OPACITY', 0.55))
@@ -269,13 +270,16 @@ def main():
             have = ''.join('1' if nearw[r * TL:(r + 1) * TL, c * TL:(c + 1) * TL].any() else '0' for r in range(rows) for c in range(cols))
             level_info.append({'z': z, 'cols': cols, 'rows': rows, 'have': have, 'base': z <= DZ})
             def pieces(im, td, save):
+                # every piece carries PAD px of its neighbours all round (the app shows only the inside): the
+                # browser enlarges each piece on its own, and without real neighbour pixels at the edge the
+                # lines kinked and the colours jumped where two pieces met
                 os.makedirs(td)
-                pad = Image.new(im.mode, (cols * TL, rows * TL)); pad.paste(im, (0, 0))
+                pad = Image.new(im.mode, (cols * TL + 2 * PAD, rows * TL + 2 * PAD)); pad.paste(im, (PAD, PAD))
                 n = 0
                 for r in range(rows):
                     for c in range(cols):
                         if have[r * cols + c] == '1':
-                            save(pad.crop((c * TL, r * TL, (c + 1) * TL, (r + 1) * TL)), os.path.join(td, '%d_%d.webp' % (c, r))); n += 1
+                            save(pad.crop((c * TL, r * TL, (c + 1) * TL + 2 * PAD, (r + 1) * TL + 2 * PAD)), os.path.join(td, '%d_%d.webp' % (c, r))); n += 1
                 return n
             if not preview:
                 for kind in LDIRS:
@@ -415,7 +419,7 @@ def main():
         # base pieces up to baseMax (= the depth data's zoom); every level has its own lines; above baseMax the app
         # enlarges the baseMax base under that level's lines
         'detail': {'file': 'tiles_v%d/z{z}/{style}/{c}_{r}.webp' % V, 'lines': 'tiles_v%d/z{z}/{lines}/{c}_{r}.webp' % V,
-                   'baseMax': DZ, 'tile': TL, 'levels': level_info},
+                   'baseMax': DZ, 'tile': TL, 'pad': PAD, 'levels': level_info},
     }
     json.dump(lk, open(os.path.join(L, 'lake.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
     size = sum(os.path.getsize(os.path.join(dp, f2)) for dp, _, fs in os.walk(OUT) for f2 in fs)

@@ -28,15 +28,27 @@ with sync_playwright() as p:
     pg.wait_for_timeout(1500)
     zoom_to(pg, 16)
     t = pieces(pg)
-    base = [x for x in t if re.search(r'tiles_v5/z16/s1/\d+_\d+\.webp$', x[0])]
-    lines = [x for x in t if re.search(r'tiles_v5/z16/lines/\d+_\d+\.webp$', x[0])]
+    base = [x for x in t if re.search(r'tiles_v[56]/z16/s1/\d+_\d+\.webp$', x[0])]
+    lines = [x for x in t if re.search(r'tiles_v[56]/z16/lines/\d+_\d+\.webp$', x[0])]
     check('zoom 16: Djupfärger base pieces + zoom-16 lines on top, all loaded', base and lines and len(base) == len(lines) and
-          all(x[1] == 512 and x[2] for x in base + lines) and all(x[3] == 2 for x in base) and all(x[3] == 3 for x in lines), t[:6])
+          all(x[1] == 512 + 2 * D["pad"] and x[2] for x in base + lines) and all(x[3] == 2 for x in base) and all(x[3] == 3 for x in lines), t[:6])
     zoom_to(pg, 18)
     t = pieces(pg)
     base = [x for x in t if '/z17/s1/' in x[0]]; lines = [x for x in t if '/z18/lines/' in x[0]]
     check('zoom 18: the z17 base (enlarged) under the zoom-18 lines', base and lines and len(t) == len(base) + len(lines) and
           all(x[2] for x in t), t[:6])
+    # the pieces sit exactly (no 1 px stretch): a piece's inside ends where the next one's starts, for lines and bases
+    geo = pg.evaluate("""Array.from(document.querySelectorAll('#detailLayer img')).filter(x => x.style.zIndex >= 2).map(x => {
+        var m = /translate\\(([-\\d.e]+)px, ?([-\\d.e]+)px\\)/.exec(x.style.transform), w = parseFloat(x.style.width);
+        var cr = /(\\d+)_(\\d+)\\.webp/.exec(x.getAttribute('src')), k = +cr[1], rr = +cr[2], z = +/\\/z(\\d+)\\//.exec(x.getAttribute('src'))[1];
+        return [z, x.getAttribute('src').indexOf('/lines') > 0, k, +m[1], w, rr]; })""")
+    gaps = []
+    for a in geo:
+        for b2 in geo:
+            if a[0] == b2[0] and a[1] == b2[1] and a[5] == b2[5] and b2[2] == a[2] + 1:
+                inner = a[4] * 512 / (512 + 2 * D['pad'])            # the inside of a piece on screen
+                gaps.append(round(b2[3] - a[3] - inner, 3))
+    check('neighbouring pieces meet exactly (no stretch, no gap)', gaps and all(abs(g) < 0.01 for g in gaps), gaps[:8])
     pg.screenshot(path='shot_kartformat_z18.png')
     # a style that had no zoom 18 before (only s1/g1 did): now it has
     pg.evaluate("document.querySelector('#mapTypeBtn')")

@@ -288,7 +288,7 @@ def new_page(p, geo=None, perms=True, cfg=None, name='Testare', wakelock_stub=Fa
     pg = ctx.new_page()
     errs = []
     pg.on('pageerror', lambda e: errs.append(str(e)))
-    pg.goto('http://localhost:8899/index.html')
+    pg.goto('http://localhost:%s/index.html' % os.environ.get('TEST_PORT', '8899'))   # (TEST_PORT: so another chat's tests can run at the same time)
     pg.wait_for_timeout(500)
     if name:
         login(pg, name)

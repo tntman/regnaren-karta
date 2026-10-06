@@ -92,10 +92,11 @@
   }
  ],
  "detail": {
-  "file": "tiles_v5/z{z}/{style}/{c}_{r}.webp",
-  "lines": "tiles_v5/z{z}/{lines}/{c}_{r}.webp",
+  "file": "tiles_v6/z{z}/{style}/{c}_{r}.webp",
+  "lines": "tiles_v6/z{z}/{lines}/{c}_{r}.webp",
   "baseMax": 17,
   "tile": 512,
+  "pad": 8,
   "levels": [
    {
     "z": 15,
