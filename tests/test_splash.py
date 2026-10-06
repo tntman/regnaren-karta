@@ -9,7 +9,9 @@ def check(name, cond, info=''):
     results.append(bool(cond)); print(('PASS ' if cond else 'FAIL ') + name + ('  -- ' + str(info) if info != '' else ''))
 
 # when #app is parsed: is it already black (html.splash, and #splash before it)?
-FIRST_JS = """new MutationObserver(function(m, o){ if (document.getElementById('app')){ o.disconnect();
+FIRST_JS = """new MutationObserver(function(m, o){ var f = document.querySelector('script[src*=gstatic]');
+  if (f && !window.__spBg) window.__spBg = getComputedStyle(document.documentElement).backgroundColor;
+  if (document.getElementById('app')){ o.disconnect();
   window.__spFirst = { cls: document.documentElement.classList.contains('splash'), el: !!document.getElementById('splash') }; } })
   .observe(document, { childList: true, subtree: true });"""
 
@@ -44,6 +46,7 @@ with sync_playwright() as p:
     # 1. the first start
     b, pg, errs, reqs = fresh(p)
     first = pg.evaluate('window.__spFirst')
+    check('first start: black from before the Firebase scripts too', pg.evaluate('window.__spBg') == 'rgb(0, 0, 0)', pg.evaluate('window.__spBg'))
     check('first start: black from the very first picture (html.splash and #splash before the map is parsed), status bar black (no top fade)',
           first == {'cls': True, 'el': True} and theme(pg) == '#000' and not pg.is_visible('#splash .spTop'), (first, theme(pg)))
     pg.wait_for_function("window.__ffSplash().mode === 'film'", timeout=10000)
@@ -55,7 +58,9 @@ with sync_playwright() as p:
     pg.wait_for_timeout(300)
     check('...then "Vem är du?" (a new phone)', names_shown(pg))
     # 2. a reload within 24 h (rotation, another lake, Demo Mode): no film
-    pg.reload(); pg.wait_for_timeout(800)
+    pg.evaluate('window.__spBg = null'); pg.reload(); pg.wait_for_timeout(800)
+    check('a start without the film: the dark blue at once (before the Firebase scripts hold up the page own css), never white',
+          pg.evaluate('window.__spBg') == 'rgb(20, 24, 34)', pg.evaluate('window.__spBg'))
     check('reload within 24 h: no film', not sp(pg)['shown'] and not html_splash(pg) and names_shown(pg), sp(pg))
     # 3. + 5. last in use 25 h ago: the film; a tap skips to the end
     reload_ago(pg, 25)

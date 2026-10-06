@@ -15,6 +15,9 @@
 <meta name="apple-mobile-web-app-title" content="FF Map">
 <!-- the status bar's colour (see above) = the map's background = the top fade: #141822 -->
 <meta name="theme-color" content="#141822">
+<!-- the background before anything else: the Firebase scripts below hold up the page's own <style>, and until
+     then the page was white (black -> white -> the app on a start) -->
+<style>html{background:#141822}html.splash{background:#000}</style>
 <!-- the start film (js/35-splash.js): first start, or > 24 h since the app was last in use -> all black from the
      very first picture (html.splash), so the map never flashes up before it -->
 <script>try{var t=+localStorage.getItem('ffmap_last_active_v1');if(!t||Date.now()-t>864e5||localStorage.getItem('ffmap_splash_out_v1')&&!sessionStorage.getItem('ffmap_splash_out_v1')){document.documentElement.classList.add('splash');document.querySelector('meta[name=theme-color]').content='#000'}}catch(e){}</script>
