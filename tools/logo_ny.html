@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="sv"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nya loggan</title>
+<style>
+  body{margin:0;background:#141822;color:#e8ecf4;font:15px/1.4 system-ui,sans-serif;padding:24px 16px}
+  h1{font-size:20px;margin:0 0 4px} p{margin:0 0 20px;color:#9aa3b5}
+  .big{width:min(100%,512px);height:auto;display:block;margin:0 auto 28px}
+  .row{display:flex;align-items:flex-end;justify-content:center;gap:22px;flex-wrap:wrap;padding:22px;border-radius:16px;margin-bottom:16px}
+  .row div{text-align:center;font-size:12px;color:#9aa3b5} .row svg{display:block;margin:0 auto 6px}
+  .dark{background:#000} .light{background:#e9edf3} .light div{color:#4a5263}
+</style></head><body>
+<h1>Nya loggan</h1>
+<p>A3+ tydligt S: djupkurvor på mörkblått, loggan med svart kant, S-spår och 3D-pilen. Under: i olika storlekar på mörk och ljus bakgrund.</p>
+<div id="big"></div>
+<div class="row dark" id="dark"></div>
+<div class="row light" id="light"></div>
+<script>
+// copied from logo_forslag.html (A3+ tydligt S)
+function blob(cx, cy, r, seed, amp){
+  var d = '', n = 72;
+  for (var i = 0; i <= n; i++){
+    var t = i / n * Math.PI * 2;
+    var k = 1 + amp * (Math.sin(2*t + seed) * .55 + Math.sin(3*t + seed*1.7) * .3 + Math.sin(5*t + seed*.6) * .15);
+    d += (i ? 'L' : 'M') + (cx + Math.cos(t) * r * 1.12 * k).toFixed(1) + ',' + (cy + Math.sin(t) * r * .9 * k).toFixed(1);
+  }
+  return d + 'Z';
+}
+function rings(cx, cy, n, r0, r1, seed, amp, fn){
+  var s = '';
+  for (var i = 0; i < n; i++){ var r = r0 - (r0 - r1) * i / (n - 1); s += fn(blob(cx + i*1.5, cy - i*1.2, r, seed + i*.08, amp), i, n); }
+  return s;
+}
+var DEEP = ['#e6f6fd','#b3e0f7','#7cc5ee','#45a3e0','#2283cc','#1462ad','#0c4688','#082f63','#041a3f'];
+var DEFS = '<defs><filter id="hb" x="-10%" y="-10%" width="120%" height="130%"><feMorphology in="SourceAlpha" operator="dilate" radius="5" result="d"/><feFlood flood-color="#000"/><feComposite in2="d" operator="in" result="o"/><feGaussianBlur in="d" stdDeviation="7" result="b"/><feOffset in="b" dy="10" result="sh"/><feFlood flood-color="#000" flood-opacity=".4"/><feComposite in2="sh" operator="in" result="s"/><feMerge><feMergeNode in="s"/><feMergeNode in="o"/><feMergeNode in="SourceGraphic"/></feMerge></filter>' +
+  '<linearGradient id="hl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd84a"/><stop offset="1" stop-color="#ffb000"/></linearGradient>' +
+  '<linearGradient id="hd" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff6a00"/><stop offset="1" stop-color="#f04e00"/></linearGradient>' +
+  '<filter id="ha" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="1.2" stdDeviation=".8" flood-opacity=".5"/></filter>' +
+  '<clipPath id="rr"><rect width="512" height="512" rx="112"/></clipPath></defs>';
+// the app's arrow as a 3D pyramid: a crest P on the middle line, four faces down to the tip T, wings L/R and the notch N
+function arrow(x, y, ang, sc){
+  var d = 'M12 3.25l7 17.5-7-4.2-7 4.2z', T = '12 3.25', L = '5 20.75', R = '19 20.75', N = '12 16.55', P = '12 12.4';
+  var face = function(pts, fill){ return '<path d="M'+pts.join('L')+'z" fill="'+fill+'" stroke="'+fill+'" stroke-width=".12"/>'; };
+  return '<g transform="translate('+x+' '+y+') rotate('+ang+') scale('+sc+') translate(-12 -12)" stroke-linejoin="round" filter="url(#ha)">' +
+    '<path d="'+d+'" fill="none" stroke="#fff" stroke-width="6.4"/><path d="'+d+'" fill="none" stroke="#0c1d3d" stroke-width="3.6"/>' +
+    face([T, P, L], 'url(#hl)') + face([T, R, P], 'url(#hd)') + face([L, P, N], '#ff9608') + face([N, P, R], '#ff7c00') + '</g>';
+}
+// the arrow: where it sits; the track ends in the middle of its back (the notch N, local 12,16.55),
+// coming in straight along the arrow's direction
+var AX = 408, AY = 112, AANG = 62, ASC = 4.6;
+var ar = AANG * Math.PI / 180, dirX = Math.sin(ar), dirY = -Math.cos(ar);
+var NX = AX - dirX * 4.55 * ASC, NY = AY - dirY * 4.55 * ASC;
+var TRACK = 'M128,362 C235,430 200,300 240,260 S' + (NX - dirX*85).toFixed(1) + ',' + (NY - dirY*85).toFixed(1) + ' ' + NX.toFixed(1) + ',' + NY.toFixed(1);
+// dashes that start and end on a dash (about 13 px each)
+var tmp = document.createElementNS('http://www.w3.org/2000/svg', 'svg'), tp = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+tp.setAttribute('d', TRACK); tmp.appendChild(tp); document.body.appendChild(tmp);
+var TLEN = tp.getTotalLength(), DASH = (TLEN / (2 * Math.round((TLEN - 13) / 26) + 1)).toFixed(2); tmp.remove();
+var LOGO = DEFS + '<radialGradient id="bg" cx=".5" cy=".48" r=".72"><stop offset="0" stop-color="#1a3c72"/><stop offset=".6" stop-color="#0f2449"/><stop offset="1" stop-color="#050c1c"/></radialGradient>' +
+  '<g clip-path="url(#rr)"><rect width="512" height="512" fill="url(#bg)"/>' +
+  '<path d="'+blob(256, 266, 186, 2.1, .14)+'" fill="#000" fill-opacity=".4"/>' +
+  rings(256, 258, 9, 182, 45, 2.1, .14, function(d, i){ return '<path d="'+d+'" fill="'+DEEP[i]+'"'+(i ? ' stroke="#fff" stroke-opacity=".4" stroke-width="1.5"' : ' stroke="#fff" stroke-width="11"')+'/>'; }) +
+  '<path d="'+TRACK+'" fill="none" stroke="#ffb800" stroke-width="7" stroke-dasharray="'+DASH+' '+DASH+'" stroke-linecap="round"/>' +
+  '<circle cx="128" cy="362" r="9" fill="#ffb800" stroke="#fff" stroke-width="5"/>' +
+  arrow(AX, AY, AANG, ASC) +
+  '<g filter="url(#hb)"><image href="../docs/ff_logo.svg" x="36" y="103" width="440" height="306"/></g></g>';
+
+function svg(size, cls){ return '<svg class="'+(cls||'')+'" width="'+size+'" height="'+size+'" viewBox="0 0 512 512">'+LOGO+'</svg>'; }
+document.getElementById('big').innerHTML = svg(512, 'big');
+['dark', 'light'].forEach(function(id){
+  document.getElementById(id).innerHTML = [[180, ''], [120, ''], [60, ' · hemskärm'], [40, ''], [29, '']]
+    .map(function(s){ return '<div>' + svg(s[0]) + s[0] + ' px' + s[1] + '</div>'; }).join('');
+});
+</script>
+</body></html>

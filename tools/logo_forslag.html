@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="sv"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Loggan – förslag</title>
+<style>
+  body{margin:0;background:#141822;color:#e8ecf4;font:15px/1.4 system-ui,sans-serif;padding:24px 16px}
+  h1{font-size:20px;margin:0 0 4px} p{margin:0 0 20px;color:#9aa3b5}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:22px}
+  .c{background:#1c2130;border-radius:16px;padding:14px}
+  .c svg.big{width:100%;height:auto;display:block}
+  .row{display:flex;align-items:center;gap:10px;margin-top:10px}
+  .row svg{width:60px;height:60px} .row svg.s{width:40px;height:40px}
+  b{font-size:15px} small{display:block;color:#9aa3b5;font-size:13px}
+</style></head><body>
+<h1>Loggan – kombinationen</h1>
+<p>7:ans blå bakgrund + 1:ans sjö + 6:ans spår (gula streck) med appens orange pil. Fem varianter.</p>
+<div class="grid" id="k"></div>
+<h1 style="margin-top:40px">A3, nästa steg</h1>
+<p>Vanliga loggan med svart kant, S-formade streck, pilen med ljus och skuggsida.</p>
+<div class="grid" id="h"></div>
+<h1 style="margin-top:40px">A, i stil som Filips bild</h1>
+<p>Plan mörkblå bakgrund, mjuk sjö med vit kant, fisken som klistermärke med mörk kant och skugga, raka streck från en startpunkt till en större pil.</p>
+<div class="grid" id="f"></div>
+<h1 style="margin-top:40px">Alla 30 förslag</h1>
+<p>Fisken ligger kvar som i dag, bara bakgrunden byts. Stor bild + hemskärmsstorlek (60 och 40 px).</p>
+<div class="grid" id="g"></div>
+<script>
+// blob(): a wobbly lake outline, the same seed gives the same shape
+function blob(cx, cy, r, seed, amp){
+  var d = '', n = 72;
+  for (var i = 0; i <= n; i++){
+    var t = i / n * Math.PI * 2;
+    var k = 1 + amp * (Math.sin(2*t + seed) * .55 + Math.sin(3*t + seed*1.7) * .3 + Math.sin(5*t + seed*.6) * .15);
+    d += (i ? 'L' : 'M') + (cx + Math.cos(t) * r * 1.12 * k).toFixed(1) + ',' + (cy + Math.sin(t) * r * .9 * k).toFixed(1);
+  }
+  return d + 'Z';
+}
+function rings(cx, cy, n, r0, r1, seed, amp, fn){
+  var s = '';
+  for (var i = 0; i < n; i++){ var r = r0 - (r0 - r1) * i / (n - 1); s += fn(blob(cx + i*1.5, cy - i*1.2, r, seed + i*.08, amp), i, n); }
+  return s;
+}
+var FISH = '<image href="../docs/ff_logo.svg" x="36" y="103" width="440" height="306"/>';
+
+var V = [
+ ['Nu', 'Dagens ikon, för jämförelse.', function(){
+   var cols = ['#e53935','#fb8c00','#fdd835','#7cb342','#26a69a','#29b6f6','#1e88e5','#1565c0','#0d2a7a'];
+   return '<rect width="512" height="512" fill="#1d4027"/>' +
+     rings(256, 270, 9, 220, 70, 1.2, .16, function(d, i){ return '<path d="'+d+'" fill="'+cols[i]+'"/>'; }) +
+     '<circle cx="398" cy="124" r="20" fill="#e8a33a" stroke="#fff" stroke-width="5"/>';
+ }],
+ ['1. Djupkurvor, blå', 'Som djupkartan: ljust vid land, mörkt på djupet.', function(){
+   var cols = ['#cfe8f5','#a6d4ee','#7cbbe3','#539fd4','#3383c0','#1f67a6','#154f8a','#0d3a6c','#082a52'];
+   return '<rect width="512" height="512" fill="#2c4a2f"/>' +
+     rings(256, 262, 9, 235, 55, 2.1, .14, function(d, i){ return '<path d="'+d+'" fill="'+cols[i]+'" stroke="#fff" stroke-opacity=".35" stroke-width="1.5"/>'; });
+ }],
+ ['2. Topografi, guld', 'Tunna kurvor på midnatt – design A:s färg.', function(){
+   return '<rect width="512" height="512" fill="#141822"/>' +
+     rings(250, 262, 12, 300, 30, .7, .2, function(d, i, n){ return '<path d="'+d+'" fill="none" stroke="#e8b04b" stroke-width="'+(i%4==0?3:1.6)+'" stroke-opacity="'+(.35+.6*i/n).toFixed(2)+'"/>'; });
+ }],
+ ['3. Ekolod', 'Sonarens bågar från hörnet, grönt på svart.', function(){
+   var s = '<rect width="512" height="512" fill="#04110c"/><radialGradient id="e3" cx="0" cy="1" r="1.3"><stop offset="0" stop-color="#0d3b26"/><stop offset="1" stop-color="#04110c"/></radialGradient><rect width="512" height="512" fill="url(#e3)"/>';
+   for (var i = 1; i <= 9; i++) s += '<circle cx="0" cy="512" r="'+i*70+'" fill="none" stroke="#3dfc9a" stroke-opacity="'+(.75-i*.07).toFixed(2)+'" stroke-width="2.5"/>';
+   s += '<path d="M0,512 L512,120 A600,600 0 0 1 380,512Z" fill="#3dfc9a" fill-opacity=".10"/>';
+   return s + '<circle cx="420" cy="380" r="9" fill="#3dfc9a"/><circle cx="440" cy="120" r="6" fill="#3dfc9a" fill-opacity=".7"/>';
+ }],
+ ['4. Solnedgång', 'Kvällsfiske: sol, himmel och spegling.', function(){
+   var s = '<linearGradient id="e4" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3b1d5a"/><stop offset=".45" stop-color="#e2556b"/><stop offset=".56" stop-color="#ffb04a"/></linearGradient>' +
+     '<rect width="512" height="290" fill="url(#e4)"/><circle cx="256" cy="290" r="95" fill="#ffd36b"/><rect y="290" width="512" height="222" fill="#14284a"/>';
+   for (var i = 0; i < 8; i++){ var w = 170 - i*18; s += '<rect x="'+(256-w/2)+'" y="'+(302+i*24)+'" width="'+w+'" height="7" rx="3.5" fill="#ffc35a" fill-opacity="'+(.8-i*.08).toFixed(2)+'"/>'; }
+   return s;
+ }],
+ ['5. Vågor', 'Lager av vågor i turkos, lugnt och enkelt.', function(){
+   var cols = ['#0f4c5c','#11677a','#14839a','#1aa1b8','#43bfd1'], s = '<rect width="512" height="512" fill="#0a3340"/>';
+   for (var i = 0; i < 5; i++){ var y = 110 + i*85, d = 'M0,'+y;
+     for (var x = 0; x <= 512; x += 64) d += ' Q'+(x+32)+','+(y + (i%2 ? 26 : -26))+' '+(x+64)+','+y;
+     s += '<path d="'+d+' V512 H0Z" fill="'+cols[i]+'"/>'; }
+   return s;
+ }],
+ ['6. Karta + GPS', 'Kartrutnät, sjö, spår och din blå prick.', function(){
+   var s = '<rect width="512" height="512" fill="#141822"/>';
+   for (var i = 32; i < 512; i += 64) s += '<path d="M'+i+',0V512M0,'+i+'H512" stroke="#2a3246" stroke-width="2"/>';
+   s += '<path d="'+blob(256, 262, 200, 4.2, .2)+'" fill="#1f3c66" stroke="#4d7fc0" stroke-width="3"/>';
+   s += '<path d="M80,440 C150,380 120,300 210,300 S330,250 400,120" fill="none" stroke="#ffb547" stroke-width="5" stroke-dasharray="2 12" stroke-linecap="round"/>';
+   return s + '<circle cx="400" cy="120" r="30" fill="#3a86ff" fill-opacity=".25"/><circle cx="400" cy="120" r="14" fill="#3a86ff" stroke="#fff" stroke-width="5"/>';
+ }],
+ ['7. Kompassros', 'Stor kompass bakom fisken, N i rött.', function(){
+   var s = '<radialGradient id="e7"><stop offset="0" stop-color="#1d3f6e"/><stop offset="1" stop-color="#0b1a33"/></radialGradient><rect width="512" height="512" fill="url(#e7)"/>' +
+     '<circle cx="256" cy="256" r="200" fill="none" stroke="#c9d6ea" stroke-opacity=".5" stroke-width="3"/><circle cx="256" cy="256" r="170" fill="none" stroke="#c9d6ea" stroke-opacity=".25" stroke-width="2"/>';
+   for (var a = 0; a < 360; a += 10) s += '<path d="M256,'+(a%90?66:56)+'V80" stroke="#c9d6ea" stroke-opacity=".6" stroke-width="'+(a%90?2:4)+'" transform="rotate('+a+' 256 256)"/>';
+   for (var b = 0; b < 360; b += 45) s += '<path d="M256,'+(b%90?120:70)+' L272,256 L240,256Z" fill="'+(b ? '#c9d6ea' : '#e53935')+'" fill-opacity="'+(b ? (b%90 ? .25 : .45) : 1)+'" transform="rotate('+b+' 256 256)"/>';
+   return s;
+ }],
+ ['8. Klubbmärke', 'Rund badge med text runt om, som en tygpatch.', function(){
+   return '<rect width="512" height="512" fill="#f1e6cc"/><circle cx="256" cy="256" r="228" fill="#13294b"/><circle cx="256" cy="256" r="172" fill="#1f4f86"/>' +
+     '<circle cx="256" cy="256" r="200" fill="none" stroke="#f1e6cc" stroke-width="2" stroke-dasharray="4 8"/>' +
+     '<path id="t8" d="M256,256 m-200,0 a200,200 0 1,1 400,0 a200,200 0 1,1 -400,0" fill="none"/>' +
+     '<text font-family="Arial Black,Impact,sans-serif" font-size="25" font-weight="900" letter-spacing="5" fill="#f1e6cc"><textPath href="#t8" startOffset="2%">FISKFISKARNA ★ KARTAN ★ FISKFISKARNA ★ KARTAN ★</textPath></text>';
+ }],
+ ['9. Djupskala, ränder', 'Kartans djupfärger som diagonala band längs fisken.', function(){
+   var cols = ['#f4f1d0','#cfe9c7','#9fd6c4','#6cbcd0','#3f97cc','#2a6db5','#1f4b92','#16326b','#0e1f47'], s = '<g transform="rotate(32 256 256)">';
+   for (var i = 0; i < 9; i++) s += '<rect x="-200" y="'+(-200 + i*102)+'" width="912" height="104" fill="'+cols[i]+'"/>';
+   return s + '</g>';
+ }],
+ ['10. Natt på sjön', 'Måne, stjärnor och månljus på vattnet.', function(){
+   var s = '<linearGradient id="e10" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#05070f"/><stop offset=".6" stop-color="#1a2547"/></linearGradient><rect width="512" height="512" fill="url(#e10)"/>';
+   var st = [[60,60],[140,40],[220,90],[300,30],[470,70],[40,170],[120,120],[480,190],[330,100],[190,180]];
+   st.forEach(function(p, i){ s += '<circle cx="'+p[0]+'" cy="'+p[1]+'" r="'+(i%3?1.8:3)+'" fill="#fff" fill-opacity=".85"/>'; });
+   s += '<circle cx="390" cy="120" r="46" fill="#f5edd0"/><circle cx="408" cy="108" r="40" fill="#0b1022"/>';
+   s += '<rect y="330" width="512" height="182" fill="#0b1630"/>';
+   for (var i = 0; i < 7; i++){ var w = 90 - i*10; s += '<rect x="'+(375-w/2)+'" y="'+(342+i*22)+'" width="'+w+'" height="5" rx="2.5" fill="#f5edd0" fill-opacity="'+(.7-i*.08).toFixed(2)+'"/>'; }
+   return s;
+ }],
+ ['11. Vinterfiske', 'Ljus is med sprickor och en borrad vak.', function(){
+   return '<linearGradient id="e11" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#eef7fc"/><stop offset="1" stop-color="#a9cfe6"/></linearGradient><rect width="512" height="512" fill="url(#e11)"/>' +
+     '<path d="M0,140 L120,180 L190,120 L260,170 M120,180 L90,300 L160,390 L130,512 M260,170 L330,90 L512,60 M330,90 L400,230 L512,260 M400,230 L360,380 L430,512 M90,300 L0,330" fill="none" stroke="#fff" stroke-width="3"/>' +
+     '<path d="M0,140 L120,180 L190,120 L260,170 M120,180 L90,300 L160,390 L130,512 M260,170 L330,90 L512,60 M330,90 L400,230 L512,260 M400,230 L360,380 L430,512" fill="none" stroke="#6fa3c4" stroke-width="1.5" transform="translate(2,2)"/>' +
+     '<ellipse cx="412" cy="420" rx="52" ry="40" fill="#cfe6f3"/><ellipse cx="412" cy="424" rx="40" ry="30" fill="#0e2a45"/>';
+ }],
+ ['12. Vass', 'Vass i kanterna, blått vatten med spegling.', function(){
+   var s = '<linearGradient id="e12" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9fd3e6"/><stop offset=".5" stop-color="#2f7fa8"/><stop offset="1" stop-color="#13405e"/></linearGradient><rect width="512" height="512" fill="url(#e12)"/>';
+   [[20,512,-6],[45,512,4],[70,512,-3],[440,512,5],[465,512,-4],[492,512,3],[490,512,8]].forEach(function(r, i){
+     var h = 230 + (i*53)%120;
+     s += '<path d="M'+r[0]+','+r[1]+' Q'+(r[0]+r[2]*6)+','+(r[1]-h/2)+' '+(r[0]+r[2]*10)+','+(r[1]-h)+'" fill="none" stroke="#2f5d2a" stroke-width="7" stroke-linecap="round"/>' +
+          '<ellipse cx="'+(r[0]+r[2]*10)+'" cy="'+(r[1]-h+18)+'" rx="7" ry="22" fill="#6b4a2a"/>';
+   });
+   return s;
+ }],
+ ['13. Pixel', 'Retro 8-bitars djupkarta i rutor.', function(){
+   var cols = ['#1d4027','#cfe8f5','#7cbbe3','#3383c0','#154f8a','#082a52'], s = '';
+   for (var y = 0; y < 16; y++) for (var x = 0; x < 16; x++){
+     var dx = (x - 7.5) / 8, dy = (y - 8) / 6.5, r = Math.sqrt(dx*dx + dy*dy) + .08 * Math.sin(x*1.3 + y*.7);
+     var c = r > 1 ? 0 : 1 + Math.min(4, Math.floor((1 - r) * 5));
+     s += '<rect x="'+x*32+'" y="'+y*32+'" width="32" height="32" fill="'+cols[c]+'"/>';
+   }
+   return s;
+ }],
+ ['14. Sikte', 'Hårkors och ringar – "här nappar det".', function(){
+   var s = '<rect width="512" height="512" fill="#0f1a2c"/>';
+   [210,150,90].forEach(function(r, i){ s += '<circle cx="256" cy="256" r="'+r+'" fill="none" stroke="'+(i==1?'#ff5a4f':'#d8e2f0')+'" stroke-opacity="'+(i==1?.9:.45)+'" stroke-width="'+(i==1?5:3)+'"/>'; });
+   return s + '<path d="M256,20V492M20,256H492" stroke="#d8e2f0" stroke-opacity=".45" stroke-width="3"/>' +
+     '<path d="M30,30h50M30,30v50M482,30h-50M482,30v50M30,482h50M30,482v-50M482,482h-50M482,482v-50" stroke="#d8e2f0" stroke-width="6" fill="none"/>';
+ }],
+ ['15. Under ytan', 'Grönt undervattensljus, strålar och bubblor.', function(){
+   var s = '<linearGradient id="e15" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5fb89a"/><stop offset="1" stop-color="#062a2a"/></linearGradient><rect width="512" height="512" fill="url(#e15)"/>';
+   [[60,90],[180,70],[300,100],[420,80]].forEach(function(b){ s += '<path d="M'+b[0]+',0 L'+(b[0]+b[1])+',0 L'+(b[0]+b[1]*2.2)+',512 L'+(b[0]+b[1]*1.4)+',512Z" fill="#e8fff4" fill-opacity=".09"/>'; });
+   [[70,430,14],[95,380,9],[80,330,6],[440,200,12],[460,150,8],[450,110,5],[380,470,10]].forEach(function(b){ s += '<circle cx="'+b[0]+'" cy="'+b[1]+'" r="'+b[2]+'" fill="none" stroke="#e8fff4" stroke-opacity=".7" stroke-width="2.5"/>'; });
+   return s;
+ }],
+ ['16. Krok och lina', 'Lina från toppen ner till en krok, varm beige.', function(){
+   return '<rect width="512" height="512" fill="#efe3c8"/><circle cx="256" cy="256" r="230" fill="#e4d3ae"/>' +
+     '<path d="M410,0 V380 a34,34 0 1,1 -60,-22" fill="none" stroke="#2b2b2b" stroke-width="9" stroke-linecap="round"/>' +
+     '<path d="M350,358 l-14,-4 l10,16Z" fill="#2b2b2b"/><circle cx="410" cy="70" r="16" fill="#2b2b2b"/>';
+ }],
+ ['17. Flöte', 'Rödvitt flöte med ringar på blankt vatten.', function(){
+   var s = '<linearGradient id="e17" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1a4f7a"/><stop offset="1" stop-color="#0a2240"/></linearGradient><rect width="512" height="512" fill="url(#e17)"/>';
+   for (var i = 1; i <= 5; i++) s += '<ellipse cx="400" cy="410" rx="'+i*34+'" ry="'+i*12+'" fill="none" stroke="#bfe1ff" stroke-opacity="'+(.8-i*.13).toFixed(2)+'" stroke-width="3"/>';
+   return s + '<path d="M400,350 L412,400 L388,400Z" fill="#e53935"/><path d="M388,400 L412,400 L404,420 L396,420Z" fill="#fff"/><path d="M400,330V352" stroke="#222" stroke-width="3"/>';
+ }],
+ ['18. Serietidning', 'Gult med rasterprickar och strålar – kaxigt.', function(){
+   var s = '<rect width="512" height="512" fill="#ffd23f"/>';
+   for (var a = 0; a < 360; a += 20) s += '<path d="M256,256 L'+(256+600*Math.cos(a*Math.PI/180))+','+(256+600*Math.sin(a*Math.PI/180))+' L'+(256+600*Math.cos((a+10)*Math.PI/180))+','+(256+600*Math.sin((a+10)*Math.PI/180))+'Z" fill="#ffb300"/>';
+   for (var y = 8; y < 512; y += 22) for (var x = (y/22%2)*11; x < 512; x += 22){ var d = Math.hypot(x-256, y-256); s += '<circle cx="'+x+'" cy="'+y+'" r="'+Math.max(0, (d-120)/60).toFixed(1)+'" fill="#e53935" fill-opacity=".5"/>'; }
+   return s;
+ }],
+ ['19. Skogssjö', 'Granar runt en mörk sjö, grönt och blått.', function(){
+   var s = '<rect width="512" height="512" fill="#1f4a2c"/><path d="'+blob(256, 270, 190, 5.3, .12)+'" fill="#123a5c"/>';
+   var tree = function(x, y, h, c){ return '<path d="M'+x+','+(y-h)+' L'+(x+h*.32)+','+y+' L'+(x-h*.32)+','+y+'Z" fill="'+c+'"/>'; };
+   [[40,90,80],[100,60,70],[170,55,60],[350,50,65],[420,70,80],[480,100,70],[30,480,90],[90,505,70],[440,500,85],[490,450,70],[20,300,75],[495,300,70]].forEach(function(t, i){ s += tree(t[0], t[1], t[2], i%2 ? '#0e2c18' : '#163d22'); });
+   return s;
+ }],
+ ['20. Sjökort', 'Gammalt papper, blå sjö, rutnät och nordpil.', function(){
+   var s = '<rect width="512" height="512" fill="#efe6d2"/>';
+   for (var i = 0; i < 512; i += 64) s += '<path d="M'+i+',0V512M0,'+i+'H512" stroke="#b9a988" stroke-width="1.2"/>';
+   s += rings(256, 270, 5, 210, 80, 3.3, .15, function(d, i){ return '<path d="'+d+'" fill="'+['#cfe3ea','#b7d5e1','#9fc6d8','#87b7ce','#6fa8c5'][i]+'" stroke="#4d7f99" stroke-width="2"/>'; });
+   return s + '<path d="M440,40 L456,96 L440,86 L424,96Z" fill="#c2185b"/><text x="440" y="34" font-family="Georgia,serif" font-size="24" font-weight="700" fill="#c2185b" text-anchor="middle">N</text>';
+ }],
+ ['21. Riktig karta', 'Regnaren ur appen, kartläget satellit + djup.', function(){
+   return mapImg('s1') + '<rect width="512" height="512" fill="#000" fill-opacity=".15"/>';
+ }],
+ ['22. Riktig karta, ljus', 'Samma utsnitt i kartläget c1.', function(){
+   return mapImg('c1');
+ }],
+ ['23. Fyra kartlägen', 'Appens fyra snabblägen i var sin ruta.', function(){
+   return ['s1','s2','c1','v1'].map(function(st, i){
+     var x = (i%2)*256, y = (i>1)*256;
+     return '<svg x="'+x+'" y="'+y+'" width="256" height="256" viewBox="'+x+' '+y+' 256 256">'+mapImg(st)+'</svg>';
+   }).join('') + '<path d="M256,0V512M0,256H512" stroke="#141822" stroke-width="8"/>';
+ }],
+ ['24. Kartnål', 'Mörk karta och en stor nål – "här är vi".', function(){
+   return mapImg('s1') + '<rect width="512" height="512" fill="#141822" fill-opacity=".6"/>' +
+     '<path d="M400,40 a62,62 0 0,1 62,62 c0,50 -62,120 -62,120 c0,0 -62,-70 -62,-120 a62,62 0 0,1 62,-62Z" fill="#fff"/><circle cx="400" cy="102" r="24" fill="#141822"/>';
+ }],
+ ['25. Vikt karta', 'Papperskarta i tre veck, lite sned.', function(){
+   var s = '<rect width="512" height="512" fill="#2a3246"/><g transform="rotate(-6 256 256)"><svg x="36" y="46" width="440" height="420" viewBox="0 0 512 512" preserveAspectRatio="xMidYMid slice">'+mapImg('c1')+'</svg>';
+   s += '<path d="M182,46V466" stroke="#000" stroke-opacity=".25" stroke-width="2"/><path d="M330,46V466" stroke="#fff" stroke-opacity=".35" stroke-width="2"/>';
+   s += '<rect x="36" y="46" width="146" height="420" fill="#000" fill-opacity=".14"/><rect x="330" y="46" width="146" height="420" fill="#000" fill-opacity=".08"/></g>';
+   return s;
+ }],
+ ['26. Sjökortsram', 'Riktig karta med svartvit gradram runt kanten.', function(){
+   var s = mapImg('s2') + '<rect x="22" y="22" width="468" height="468" fill="none" stroke="#fff" stroke-width="16"/>';
+   for (var i = 22; i < 490; i += 39){ var b = (i-22)/39 % 2 ? '#fff' : '#111';
+     s += '<rect x="'+i+'" y="22" width="39" height="10" fill="'+b+'"/><rect x="'+i+'" y="480" width="39" height="10" fill="'+b+'"/><rect x="22" y="'+i+'" width="10" height="39" fill="'+b+'"/><rect x="480" y="'+i+'" width="10" height="39" fill="'+b+'"/>'; }
+   return s + '<rect x="22" y="22" width="468" height="468" fill="none" stroke="#111" stroke-width="2"/>';
+ }],
+ ['27. Fiskeplatser', 'Ritad sjö med appens markeringar: abborre, gädda, gös, hem.', function(){
+   var s = '<rect width="512" height="512" fill="#1d2a1f"/>' + rings(256, 262, 4, 235, 120, 1.8, .18, function(d, i){ return '<path d="'+d+'" fill="'+['#2c5f86','#244f74','#1c4062','#153250'][i]+'"/>'; });
+   var pin = function(x, y, c){ return '<circle cx="'+x+'" cy="'+y+'" r="17" fill="'+c+'" stroke="#fff" stroke-width="5"/>'; };
+   return s + pin(110, 360, '#f28c28') + pin(400, 150, '#2e9e4f') + pin(430, 370, '#3A86FF') + pin(150, 130, '#f28c28') +
+     '<path d="M78,452 l22,-20 l22,20 v22 h-44Z" fill="#A8693A" stroke="#fff" stroke-width="4"/>';
+ }],
+ ['28. Åk hit', 'Rutten från båten till en plats, streckad.', function(){
+   return '<rect width="512" height="512" fill="#141822"/><path d="'+blob(256, 262, 215, .9, .16)+'" fill="#1f3c66"/>' +
+     '<path d="M90,430 C160,470 260,420 300,340 S420,200 430,90" fill="none" stroke="#fff" stroke-width="7" stroke-dasharray="1 16" stroke-linecap="round"/>' +
+     '<circle cx="90" cy="430" r="14" fill="#3a86ff" stroke="#fff" stroke-width="5"/>' +
+     '<path d="M415,75 l30,30 m0,-30 l-30,30" stroke="#ffb547" stroke-width="9" stroke-linecap="round"/>';
+ }],
+ ['29. Heatmap', 'Fångsterna som glödande fläckar på mörk sjö.', function(){
+   var s = '<radialGradient id="e29"><stop offset="0" stop-color="#fff3a0"/><stop offset=".3" stop-color="#ff9a1f"/><stop offset=".65" stop-color="#e53935" stop-opacity=".6"/><stop offset="1" stop-color="#e53935" stop-opacity="0"/></radialGradient>' +
+     '<rect width="512" height="512" fill="#0d1018"/><path d="'+blob(256, 262, 215, 2.6, .17)+'" fill="#18243a" stroke="#fff" stroke-opacity=".7" stroke-width="2"/>';
+   [[120,150,90],[400,140,70],[390,390,100],[130,400,60],[260,250,60]].forEach(function(h){ s += '<circle cx="'+h[0]+'" cy="'+h[1]+'" r="'+h[2]+'" fill="url(#e29)"/>'; });
+   return s;
+ }],
+ ['30. Pappersrelief', 'Djupet som urklippta papperslager med skugga.', function(){
+   var cols = ['#e9e1c9','#cfe3ea','#a9cfe0','#7fb6d3','#5698c2','#3478ad','#1f5a92','#133f73'];
+   return '<filter id="e30"><feDropShadow dx="0" dy="6" stdDeviation="5" flood-opacity=".45"/></filter><rect width="512" height="512" fill="#3d5a3a"/>' +
+     rings(256, 262, 8, 245, 60, 4.4, .15, function(d, i){ return '<path d="'+d+'" fill="'+cols[i]+'" filter="url(#e30)"/>'; });
+ }]
+];
+// mapImg(): a crop of Regnaren's real map picture (1627 x 795) in one of the app's map styles
+function mapImg(st){ return '<image href="../docs/lakes/regnaren/map_v5_'+st+'.jpg" x="-388" y="0" width="1048" height="512" preserveAspectRatio="none"/>'; }
+
+// the combination (Filip 2026-10-06): 7's blue background, 1's lake, 6's track with the app's orange arrow (#dotArrow)
+var BG7 = '<radialGradient id="kbg"><stop offset="0" stop-color="#1d3f6e"/><stop offset="1" stop-color="#0b1a33"/></radialGradient><rect width="512" height="512" fill="url(#kbg)"/>';
+var DEEP = ['#cfe8f5','#a6d4ee','#7cbbe3','#539fd4','#3383c0','#1f67a6','#154f8a','#0d3a6c','#082a52'];
+function lake1(cx, cy, r0, r1, op){
+  return rings(cx, cy, 9, r0, r1, 2.1, .14, function(d, i){ return '<path d="'+d+'" fill="'+DEEP[i]+'"'+(op ? ' fill-opacity="'+op+'"' : '')+' stroke="#fff" stroke-opacity=".35" stroke-width="1.5"/>'; });
+}
+// arrow(): the app's own-position arrow (24 x 24, points up), angle in degrees clockwise
+function arrow(x, y, ang, sc){
+  var d = 'M12 3.25l7 17.5-7-4.2-7 4.2z';
+  return '<g transform="translate('+x+' '+y+') rotate('+ang+') scale('+sc+') translate(-12 -12)"><path d="'+d+'" fill="none" stroke="#fff" stroke-width="4.4" stroke-linejoin="round"/><path d="'+d+'" fill="#FF7A00" stroke="#1C212C" stroke-width="1.3" stroke-linejoin="round"/></g>';
+}
+// track(): 6's track – yellow-orange dashes
+function track(d){ return '<path d="'+d+'" fill="none" stroke="#ffb547" stroke-width="5" stroke-dasharray="2 12" stroke-linecap="round"/>'; }
+var K = [
+ ['A. Som 6:an', 'Sjön stor som i 1:an, spåret från nere till vänster upp till pilen i hörnet.', function(){
+   return BG7 + lake1(256, 262, 235, 55) + track('M80,440 C150,380 120,300 210,300 S330,250 400,120') + arrow(400, 112, 35, 3.2);
+ }],
+ ['B. Mindre sjö', 'Sjön mindre så att mer av den blå bakgrunden syns runt om.', function(){
+   return BG7 + lake1(256, 262, 185, 45) + track('M70,470 C120,400 90,330 190,320 S340,260 410,135') + arrow(410, 128, 30, 3.2);
+ }],
+ ['C. Längs stranden', 'Spåret längs sjöns nederkant, pilen på väg ut ur sjön.', function(){
+   return BG7 + lake1(256, 262, 225, 55) + track('M60,300 C110,420 230,470 330,430 S440,380 455,300') + arrow(458, 286, 5, 3.2);
+ }],
+ ['D. Ring runt pilen', 'Som A, med en orange ring runt pilen.', function(){
+   return BG7 + lake1(256, 262, 235, 55) +
+     track('M80,440 C150,380 120,300 210,300 S330,250 400,120') +
+     '<circle cx="400" cy="112" r="56" fill="#FF7A00" fill-opacity=".18" stroke="#FF7A00" stroke-opacity=".6" stroke-width="3"/>' + arrow(400, 112, 35, 3.2);
+ }],
+ ['E. Stor pil', 'Pilen större, sjön lite genomskinlig så att den smälter in i det blå.', function(){
+   return BG7 + lake1(256, 262, 240, 55, .85) + track('M60,470 C140,430 110,330 220,320 S350,260 380,150') + arrow(392, 108, 25, 4.6);
+ }]
+];
+function render(list, id){
+  var g = document.getElementById(id);
+  list.forEach(function(v, i){
+    var inner = '<defs><clipPath id="r'+id+i+'"><rect width="512" height="512" rx="112"/></clipPath></defs><g clip-path="url(#r'+id+i+')">' + v[2]() + (v[3] || FISH) + '</g>';
+    var svg = function(c){ return '<svg class="'+c+'" viewBox="0 0 512 512">'+inner+'</svg>'; };
+    var c = document.createElement('div'); c.className = 'c';
+    c.innerHTML = svg('big') + '<div class="row">' + svg('') + svg('s') + '<div><b>'+v[0]+'</b><small>'+v[1]+'</small></div></div>';
+    g.appendChild(c);
+  });
+}
+// F: A redone after Filip's picture (2026-10-06)
+var FDEF = '<defs><filter id="fo" x="-10%" y="-10%" width="120%" height="130%"><feMorphology in="SourceAlpha" operator="dilate" radius="5" result="d"/><feFlood flood-color="#0c1d3d"/><feComposite in2="d" operator="in" result="o"/><feGaussianBlur in="d" stdDeviation="7" result="b"/><feOffset in="b" dy="10" result="sh"/><feFlood flood-color="#000" flood-opacity=".45"/><feComposite in2="sh" operator="in" result="s"/><feMerge><feMergeNode in="s"/><feMergeNode in="o"/><feMergeNode in="SourceGraphic"/></feMerge></filter>' +
+  '<linearGradient id="fa" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd21f"/><stop offset="1" stop-color="#ff6a00"/></linearGradient>' +
+  '<radialGradient id="fl" cx=".5" cy=".52" r=".55"><stop offset="0" stop-color="#062a6e"/><stop offset=".55" stop-color="#1f6fd1"/><stop offset="1" stop-color="#9ee0fb"/></radialGradient></defs>';
+var FFISH = '<g filter="url(#fo)">' + FISH + '</g>';
+function flake(cx, cy, r, seed){
+  var s = '<path d="'+blob(cx, cy+8, r+10, seed, .08)+'" fill="#000" fill-opacity=".35"/><path d="'+blob(cx, cy, r, seed, .08)+'" fill="url(#fl)" stroke="#fff" stroke-width="11"/>';
+  for (var i = 1; i < 8; i++) s += '<path d="'+blob(cx + i*1.5, cy - i, r * (1 - i*.115), seed + i*.05, .08)+'" fill="none" stroke="#cfefff" stroke-opacity="'+(.45 - i*.04).toFixed(2)+'" stroke-width="2"/>';
+  return s;
+}
+function farrow(x, y, ang, sc){
+  var d = 'M12 3.25l7 17.5-7-4.2-7 4.2z';
+  return '<g transform="translate('+x+' '+y+') rotate('+ang+') scale('+sc+') translate(-12 -12)" stroke-linejoin="round"><path d="'+d+'" fill="none" stroke="#0c1d3d" stroke-width="5.5"/><path d="'+d+'" fill="none" stroke="#fff" stroke-width="3.2"/><path d="'+d+'" fill="url(#fa)"/></g>';
+}
+function ftrack(x1, y1, x2, y2){
+  return '<path d="M'+x1+','+y1+' L'+x2+','+y2+'" stroke="#f5c518" stroke-width="7" stroke-dasharray="13 13" stroke-linecap="round"/>' +
+    '<circle cx="'+x1+'" cy="'+y1+'" r="9" fill="#f5c518" stroke="#fff" stroke-width="5"/>';
+}
+var F = [
+ ['A1. Som bilden', 'Sjön stor, spåret rakt under fisken till pilen uppe till höger.', function(){
+   return FDEF + '<rect width="512" height="512" fill="#0f2347"/>' + flake(262, 262, 228, 2.1) + ftrack(80, 420, 392, 112) + farrow(408, 96, 45, 4.4);
+ }, FFISH],
+ ['A2. Mindre sjö', 'Mer mörkblått runt sjön, pilen lite utanför sjökanten.', function(){
+   return FDEF + '<rect width="512" height="512" fill="#0f2347"/>' + flake(258, 262, 190, 2.1) + ftrack(92, 410, 385, 122) + farrow(402, 104, 45, 4.4);
+ }, FFISH],
+ ['A3. Med djupkurvor', 'Som A1 men med 1:ans tydliga djupband i stället för mjuk tona.', function(){
+   return FDEF + '<rect width="512" height="512" fill="#0f2347"/><path d="'+blob(262, 270, 238, 2.1, .14)+'" fill="#000" fill-opacity=".35"/>' +
+     rings(262, 262, 9, 228, 55, 2.1, .14, function(d, i){ return '<path d="'+d+'" fill="'+DEEP[i]+'"'+(i ? ' stroke="#fff" stroke-opacity=".35" stroke-width="1.5"' : ' stroke="#fff" stroke-width="11"')+'/>'; }) +
+     ftrack(80, 420, 392, 112) + farrow(408, 96, 45, 4.4);
+ }, FFISH]
+];
+render(K, 'k');
+render(F, 'f');
+// H: A3 + black outline on the logo, S-shaped track, the arrow with a light and a shadow side
+var HDEF = '<defs><filter id="hb" x="-10%" y="-10%" width="120%" height="130%"><feMorphology in="SourceAlpha" operator="dilate" radius="5" result="d"/><feFlood flood-color="#000"/><feComposite in2="d" operator="in" result="o"/><feGaussianBlur in="d" stdDeviation="7" result="b"/><feOffset in="b" dy="10" result="sh"/><feFlood flood-color="#000" flood-opacity=".4"/><feComposite in2="sh" operator="in" result="s"/><feMerge><feMergeNode in="s"/><feMergeNode in="o"/><feMergeNode in="SourceGraphic"/></feMerge></filter>' +
+  '<linearGradient id="hl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd84a"/><stop offset="1" stop-color="#ffb000"/></linearGradient>' +
+  '<linearGradient id="hd" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff6a00"/><stop offset="1" stop-color="#f04e00"/></linearGradient>' +
+  '<filter id="ha" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="1.2" stdDeviation=".8" flood-opacity=".5"/></filter></defs>';
+// harrow(): the app's arrow as a 3D pyramid (Filip's picture): a crest P on the middle line, so four faces –
+// front left (light), front right (shadow) and two small back triangles down to the notch N
+function harrow(x, y, ang, sc){
+  var d = 'M12 3.25l7 17.5-7-4.2-7 4.2z', T = '12 3.25', L = '5 20.75', R = '19 20.75', N = '12 16.55', P = '12 12.4';
+  var face = function(pts, fill){ return '<path d="M'+pts.join('L')+'z" fill="'+fill+'" stroke="'+fill+'" stroke-width=".12"/>'; };
+  return '<g transform="translate('+x+' '+y+') rotate('+ang+') scale('+sc+') translate(-12 -12)" stroke-linejoin="round" filter="url(#ha)">' +
+    '<path d="'+d+'" fill="none" stroke="#fff" stroke-width="6.4"/><path d="'+d+'" fill="none" stroke="#0c1d3d" stroke-width="3.6"/>' +
+    face([T, P, L], 'url(#hl)') + face([T, R, P], 'url(#hd)') + face([L, P, N], '#ff9608') + face([N, P, R], '#ff7c00') + '</g>';
+}
+function htrack(d, x1, y1){
+  return '<path d="'+d+'" fill="none" stroke="#f5c518" stroke-width="7" stroke-dasharray="13 13" stroke-linecap="round"/>' +
+    '<circle cx="'+x1+'" cy="'+y1+'" r="9" fill="#f5c518" stroke="#fff" stroke-width="5"/>';
+}
+function hbase(){
+  return HDEF + '<rect width="512" height="512" fill="#0f2347"/><path d="'+blob(262, 270, 238, 2.1, .14)+'" fill="#000" fill-opacity=".35"/>' +
+    rings(262, 262, 9, 228, 55, 2.1, .14, function(d, i){ return '<path d="'+d+'" fill="'+DEEP[i]+'"'+(i ? ' stroke="#fff" stroke-opacity=".35" stroke-width="1.5"' : ' stroke="#fff" stroke-width="11"')+'/>'; });
+}
+var HFISH = '<g filter="url(#hb)">' + FISH + '</g>';
+var H = [
+ ['A3+ tydligt S', 'Större svängar, mer som ett riktigt båtspår.', function(){
+   return hbase() + htrack('M70,400 C210,470 200,300 240,260 S260,140 392,120', 70, 400) + harrow(408, 112, 62, 4.6);
+ }, HFISH],
+ ['A3+ mjukt S', 'Strecken svänger lugnt fram och tillbaka upp till pilen.', function(){
+   return hbase() + htrack('M80,420 C190,425 160,300 250,275 S350,175 392,118', 80, 420) + harrow(404, 100, 35, 4.6);
+ }, HFISH],
+ ['Pilen i närbild', 'Bara pilen, stor, för att se ljus- och skuggsidan.', function(){
+   return HDEF + '<rect width="512" height="512" fill="#0f2347"/>' + harrow(256, 256, 45, 15);
+ }, ' ']
+];
+render(H, 'h');
+render(V, 'g');
+</script>
+</body></html>
