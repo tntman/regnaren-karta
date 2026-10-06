@@ -389,6 +389,9 @@
     // (only a new spot gets the keyboard: an old one is tapped to look at -- tap the name to change it, Filip 2026-10-06)
   }
   kbWatch(wpSheet, 0);   // (above the phone's keyboard, 10-core.js)
+  // the keyboard's blue "Klar" (enterkeyhint="done", like Egen text's "Skicka"): done typing -- the keyboard goes down,
+  // the sheet stays (Spara saves; Filip 2026-10-06)
+  wpNameInput.addEventListener('keydown', function(e){ if (e.key === 'Enter'){ e.preventDefault(); wpNameInput.blur(); } });
   function closeSheet(){
     sheetBackdrop.classList.remove('show');
     wpSheet.classList.remove('show');

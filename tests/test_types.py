@@ -60,6 +60,9 @@ with sync_playwright() as p:
     check('Gös -> "Gös 3" (you already have Gös 2)', pg.input_value('#wpName') == 'Gös 3', pg.input_value('#wpName'))
     pg.click('#wpTypeSeg button[data-type="abborre"]'); pg.wait_for_timeout(100)
     check('Abborre -> "Abborre 1"', pg.input_value('#wpName') == 'Abborre 1', pg.input_value('#wpName'))
+    pg.fill('#wpName', 'Abborre 1 vid udden'); pg.keyboard.press('Enter'); pg.wait_for_timeout(200)
+    check('the keyboard\'s blue "Klar" (enterkeyhint done, like Egen text): the keyboard goes down, the sheet and the name stay', pg.get_attribute('#wpName', 'enterkeyhint') == 'done'
+          and pg.evaluate("document.activeElement.id") != 'wpName' and pg.is_visible('#wpSheet') and pg.input_value('#wpName') == 'Abborre 1 vid udden', pg.input_value('#wpName'))
     pg.screenshot(path='./shot_types_sheet_abborre.png')
     pg.click('#wpSave'); pg.wait_for_timeout(400)
     info = pin_info(pg)

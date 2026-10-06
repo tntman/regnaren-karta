@@ -3294,7 +3294,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   <div id="sheetBackdrop"></div>
   <div id="wpSheet">
     <div class="sheetGrab"><div class="sheetHandle"></div><button type="button" id="wpCancel" class="gripX" aria-label="Stäng">✕</button></div>
-    <input id="wpName" type="text" maxlength="40" placeholder="Namn, t.ex. Gösvik" aria-label="Namn">
+    <input id="wpName" type="text" maxlength="40" autocomplete="off" enterkeyhint="done" placeholder="Namn, t.ex. Gösvik" aria-label="Namn">
     <div id="wpMeta" class="sheetMeta"></div>
     <div id="wpData" class="wpData" aria-label="Under platsen"></div>
     <div id="wpTypeSeg" class="typeSeg" role="radiogroup" aria-label="Typ av plats">
@@ -5130,6 +5130,9 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     // (only a new spot gets the keyboard: an old one is tapped to look at -- tap the name to change it, Filip 2026-10-06)
   }
   kbWatch(wpSheet, 0);   // (above the phone's keyboard, 10-core.js)
+  // the keyboard's blue "Klar" (enterkeyhint="done", like Egen text's "Skicka"): done typing -- the keyboard goes down,
+  // the sheet stays (Spara saves; Filip 2026-10-06)
+  wpNameInput.addEventListener('keydown', function(e){ if (e.key === 'Enter'){ e.preventDefault(); wpNameInput.blur(); } });
   function closeSheet(){
     sheetBackdrop.classList.remove('show');
     wpSheet.classList.remove('show');
@@ -10612,7 +10615,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     msgOwn.classList.toggle('show', open);
     if (open){ msgOwnIn.value = ''; msgOwnCount(); msgOwnIn.focus(); } else msgOwnIn.blur();
   }
-  kbWatch(msgOwn, 10);   // (above the phone's keyboard, 10-core.js)
+  kbWatch(msgOwn, 24);   // (above the phone's keyboard, 10-core.js; 24 px: 10 was tight, Filip 2026-10-06)
   function msgOwnCount(){
     var ch = Array.from(msgOwnIn.value);
     if (ch.length > MSG_OWN_MAX){ msgOwnIn.value = ch.slice(0, MSG_OWN_MAX).join(''); ch = ch.slice(0, MSG_OWN_MAX); }

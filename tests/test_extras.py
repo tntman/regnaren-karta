@@ -151,7 +151,7 @@ with sync_playwright() as p:
       vv.dispatchEvent(new Event('resize')); setTimeout(() => { window.__kbH = h - 370; window.__kbT = 50; }, 150); }""")   # (no event for the second step)
     pg.wait_for_timeout(500)
     kb = pg.evaluate("innerHeight - 320 - document.getElementById('msgOwn').getBoundingClientRect().bottom")
-    check('...the keyboard up (late, in steps, the page scrolled): the box 10 px above it', abs(kb - 10) < 1.5, kb)
+    check('...the keyboard up (late, in steps, the page scrolled): the box 24 px above it', abs(kb - 24) < 1.5, kb)
     pg.evaluate("() => { delete visualViewport.height; delete visualViewport.offsetTop; visualViewport.dispatchEvent(new Event('resize')); }"); pg.wait_for_timeout(100)
     check('...the keyboard down: back in its place', abs(pg.evaluate("document.getElementById('msgOwn').getBoundingClientRect().bottom") - b0) < 1, b0)
     pg.keyboard.type('Vart är ni?? 😅!!!!'); pg.wait_for_timeout(200)

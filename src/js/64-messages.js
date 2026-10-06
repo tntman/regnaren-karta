@@ -18,7 +18,7 @@
     msgOwn.classList.toggle('show', open);
     if (open){ msgOwnIn.value = ''; msgOwnCount(); msgOwnIn.focus(); } else msgOwnIn.blur();
   }
-  kbWatch(msgOwn, 10);   // (above the phone's keyboard, 10-core.js)
+  kbWatch(msgOwn, 24);   // (above the phone's keyboard, 10-core.js; 24 px: 10 was tight, Filip 2026-10-06)
   function msgOwnCount(){
     var ch = Array.from(msgOwnIn.value);
     if (ch.length > MSG_OWN_MAX){ msgOwnIn.value = ch.slice(0, MSG_OWN_MAX).join(''); ch = ch.slice(0, MSG_OWN_MAX); }
