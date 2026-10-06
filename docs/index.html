@@ -1366,6 +1366,13 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity .6s
     background:rgba(28,33,44,.96);border:1px solid rgba(255,210,26,.6);border-radius:14px;padding:11px 40px 11px 14px;color:var(--offwhite);
     box-shadow:0 8px 24px rgba(0,0,0,.5);font-size:13px;line-height:1.4;transition:opacity .8s;}
   #wakeNote.show{display:block;}
+  /* "Ny version" (sw.js saved a newer page): the same card, at the top, stays until tapped or closed */
+  #updNote{position:absolute;left:14px;right:14px;top:calc(env(safe-area-inset-top,0px) + 96px);z-index:31;max-width:400px;display:none;
+    background:rgba(28,33,44,.96);border:1px solid rgba(255,210,26,.6);border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.5);}
+  #updNote.show{display:block;}
+  #updNoteGo{display:block;width:100%;text-align:left;background:none;border:none;padding:11px 40px 11px 14px;color:var(--offwhite);font:inherit;font-size:13px;cursor:pointer;}
+  #updNoteGo b{display:block;font-size:14px;margin-bottom:2px;color:#FFD21A;}
+  #updNoteClose{position:absolute;right:6px;top:6px;width:30px;height:30px;border:none;background:none;color:var(--text-muted);font-size:16px;cursor:pointer;}
   #wakeNote.fade{opacity:0;}
   #wakeNote b{display:block;font-size:14px;margin-bottom:3px;color:#FFD21A;}
   #wakeNote span b{display:inline;color:var(--offwhite);font-size:13px;}
@@ -2814,6 +2821,8 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity .6s
     <div id="hmCardNav"><button type="button" id="hmCardPrev" aria-label="Föregående">‹</button><span id="hmCardPos"></span><button type="button" id="hmCardNext" aria-label="Nästa">›</button></div>
     <div class="msgCardBtns"><button type="button" id="hmCardGo" class="a">➤ Åk hit</button><button type="button" id="hmCardLike">🔎 Liknande</button></div>
   </div>
+  <!-- a new version saved by sw.js (the start used the saved copy): tap = reload into it -->
+  <div id="updNote" role="status"><button type="button" id="updNoteGo"><b>Ny version</b><span>Tryck för att ladda om</span></button><button type="button" id="updNoteClose" aria-label="Stäng">✕</button></div>
   <div id="wakeNote" role="status"><button type="button" id="wakeNoteClose" aria-label="Stäng">✕</button>
     <b>☀ Håll skärmen tänd är avstängd</b>
     <span>Den håller telefonen vaken medan appen är öppen (drar mer batteri). Du kan slå på den igen i <b>Inställningar → Båten</b>.</span></div>
@@ -11861,6 +11870,11 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity .6s
       }).catch(function(){});
     };
     if (document.readyState === 'complete') registerSw(); else window.addEventListener('load', registerSw);
+    // sw.js started us from the saved copy and found a newer one (saved for the next start): offer it now
+    var updNote = document.getElementById('updNote');
+    navigator.serviceWorker.addEventListener('message', function(e){ if (e.data && e.data.type === 'newVersion') updNote.classList.add('show'); });
+    document.getElementById('updNoteGo').addEventListener('click', function(){ location.reload(); });
+    document.getElementById('updNoteClose').addEventListener('click', function(){ updNote.classList.remove('show'); });
   }
 })();
 </script>

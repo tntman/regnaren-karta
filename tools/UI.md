@@ -111,6 +111,7 @@ Längst ner i mitten: `#msgBtn` (snabbmeddelanden).
 - **Varning:** `#ltPill` (liten, under väderraden), `#ltAlarm` (stor röd ruta med OK).
 - **Info som försvinner själv:** `#wakeNote` – mörk ruta med gul kant, ✕ uppe till höger,
   tonar bort (`.fade`, `transition:opacity`) efter 20 s.
+- **Ny version:** `#updNote` – samma ruta, ligger kvar tills man trycker (= ladda om) eller ✕ (sw.js hittade en nyare sida).
 - **Kort toast:** `#msgToast` – liten ruta ovanför knappen, försvinner efter ~2,5 s.
 
 ## Märken

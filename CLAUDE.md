@@ -100,7 +100,9 @@ Uppdatera rätt anteckning när något ändras.
   bilderna ligger bara i `docs/lakes/<id>/`; `lakes/<id>/names.json` = OSM-namnen (`tools/osm_names.py`, steg 8 i KARTOR.md) som build.py också bäddar in. Vald sjö: localStorage `ffmap_lake_v1` (eller
   `?lake=<id>`); byte = omladdning. Sjöspecifika localStorage-nycklar via `lakeKey(gammalNyckel, namn)`
   – Regnaren behåller sina gamla nycklar. Firestore: allt märkt med `lake`, `config/<lake>` per sjö.
-- **Service worker** (`src/sw.js`): nätet först för sidan (4 s), cache för bilder. Sidan skickar
+- **Service worker** (`src/sw.js`): sidan från den sparade kopian direkt (snabb start, inget vitt), den nyaste hämtas samtidigt –
+  ändrad: sparas till nästa start och `#updNote` "Ny version – tryck för att ladda om" (`js/92-rotation.js`, test_update; Filips beslut
+  2026-10-06: en push syns alltså en start senare om man inte trycker). Allra första gången: nätet (4 s). Cache för bilder. Sidan skickar
   `precache` med sjöns startfiler. Ändras kartbilder: nytt filnamn (`map_v2_*`, `tiles_v2/`,
   `depth_v2.txt`) och höj `CACHE` i sw.js.
 - **Kartbilder = zoomnivåer som på Genesis** (KARTOR.md): kartbilden är zoom 14, högre nivåer

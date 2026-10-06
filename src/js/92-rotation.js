@@ -128,5 +128,10 @@
       }).catch(function(){});
     };
     if (document.readyState === 'complete') registerSw(); else window.addEventListener('load', registerSw);
+    // sw.js started us from the saved copy and found a newer one (saved for the next start): offer it now
+    var updNote = document.getElementById('updNote');
+    navigator.serviceWorker.addEventListener('message', function(e){ if (e.data && e.data.type === 'newVersion') updNote.classList.add('show'); });
+    document.getElementById('updNoteGo').addEventListener('click', function(){ location.reload(); });
+    document.getElementById('updNoteClose').addEventListener('click', function(){ updNote.classList.remove('show'); });
   }
 })();
