@@ -118,6 +118,12 @@ Webbversionen (GitHub Pages, `docs/`) ska fortsätta fungera från samma kod.
 18. Du: testa bakgrunds-GPS på iPhone (välj "Alltid").
 
 **Fas 5 – Gruppen**
+**Beslut 2026-10-06: extern grupp med publik länk** (fler än 5–10 personer; inga App Store Connect-konton).
+Test Information ifylld (beskrivning sv/en, kontakt, Review Notes på engelska, ingen inloggning). Gruppen
+**"Fiskfiskarna länk"**, Apples bygge 2 (= Codemagic #3) inskickat till Beta App Review 2026-10-06, publik länk skapad
+men delas först efter godkännandet. `codemagic.yaml`: `submit_to_testflight: true` + `beta_groups` → varje bygge
+går till länkgruppen; "What to Test" = `release_notes.json` (uppdatera vid nyheter). Pushas efter godkännandet.
+TestFlight-bygge går ut efter 90 dagar → nytt bygge minst var ~80:e dag (Claude påminner).
 19. Du: gruppens iPhone-användare som interna testare (max 100; deras Apple-ID läggs till i App Store Connect).
 20. Du: skicka APK:n till Android-användarna.
 21. Claude: kort instruktion till gruppen (installera, varför "Alltid"-plats).
