@@ -1,24 +1,16 @@
   /* ---------------- The start film (splash), tools/PLAN_SPLASH.md ----------------
-     3.5 s with the logo in 3D: the first start, and when the app hasn't been in use for > 24 h
-     (ffmap_last_active_v1 = when it last was, for the whole phone: written at start, every minute while
-     it's shown and when it's hidden). head.html sets html.splash before the page is drawn (all black,
-     the map never flashes up); coming back from the background after > 24 h without a reload sets it
-     here. three.js and the sign come from 35-logo3d.js (nlLib, nlMakeSign, nlTier); the clock starts
-     when it's all built. Over 1.5 s to load, or it fails -> only the black fades away (0.5 s).
-     'flat' (no WebGL) or Reduce motion -> the flat logo fades in and out (2 s, nothing spins).
-     A tap skips to the end (0.4 s). Afterwards the renderer and its canvas are gone -- nothing keeps running. */
-  var SPLASH_KEY = 'ffmap_last_active_v1', SPLASH_GAP = 24 * 3600000;
+     3.5 s with the logo in 3D, every time a name is chosen ("Vem är du?": a new phone, after Logga ut) and from
+     Inställningar -> Avancerat -> "Spela": it fades to black over the app, then the film. three.js and the sign
+     come from 35-logo3d.js (nlLib, nlMakeSign, nlTier); the clock starts when it's all built. Over 1.5 s to load,
+     or it fails -> only the black fades away (0.5 s). 'flat' (no WebGL) or Reduce motion -> the flat logo fades in
+     and out (2 s, nothing spins). A tap skips to the end (0.4 s). Afterwards the renderer and its canvas are gone
+     -- nothing keeps running. Hjälp and the location question wait for it (afterSplash). */
   var spEl = document.getElementById('splash'), spLogo = spEl.querySelector('.spLogo'), spBloom = spEl.querySelector('.spBloom');
   var spFlatImg = spEl.querySelector('.spFlat'), spApp = document.getElementById('app'), spS = {};
   ['spBlack', 'spGlow', 'spLogo', 'spFlash', 'spVig', 'spGrain', 'spTop'].forEach(function(c){ spS[c] = spEl.querySelector('.' + c).style; });
   var spSt = { shown: false, running: false, t: 0, mode: '' }, spRaf = 0, spGl = null, spWait = [], spSafety = 0, spLoadTimer = 0, spBlur = false;
   function splashOn(){ return document.documentElement.classList.contains('splash'); }
-  function afterSplash(fn){ if (splashOn()) spWait.push(fn); else fn(); }   // (the name picker waits: never two WebGL at once)
-  function splashAge(){ var t = 0; try { t = +localStorage.getItem(SPLASH_KEY) || 0; } catch(e){} return t ? Date.now() - t : Infinity; }
-  function splashMark(){ try { localStorage.setItem(SPLASH_KEY, String(Date.now())); } catch(e){} }
-  // Logga ut, then the app closed: the film on the next start (sessionStorage: not on a rotation's reload before that)
-  function splashAfterLogout(){ try { localStorage.setItem('ffmap_splash_out_v1', '1'); sessionStorage.setItem('ffmap_splash_out_v1', '1'); } catch(e){} }
-  function spTheme(c){ var m = document.querySelector('meta[name=theme-color]'); if (m) m.content = c; }   // (the status bar: black during the film)
+  function afterSplash(fn){ if (splashOn()) spWait.push(fn); else fn(); }
 
   function spSeg(t, a, b){ return Math.max(0, Math.min(1, (t - a) / (b - a))); }
   function spInOut(x){ return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; }
@@ -106,12 +98,8 @@
     };
   }
   function spCancelLoad(){ clearTimeout(spLoadTimer); spLoadTimer = 0; }
-  // atLoad: head.html made it black before the page was drawn (the status bar too). Later (Spela, back from the
-  // background) iOS keeps the status bar's colour: leave it, and fade the top from it instead (.tint)
-  function splashStart(atLoad){
+  function splashStart(){
     spSt.shown = spSt.running = true; spSt.t = 0; spSt.mode = 'load';
-    if (atLoad) spTheme('#000');
-    spEl.classList.toggle('tint', !atLoad);
     clearTimeout(spSafety); spSafety = setTimeout(splashDone, 9000);   // (whatever happens: never stuck behind the black)
     var flat = nlTier === 'flat' || nlReduce;
     spBlur = !flat && nlTier === 'full';
@@ -139,8 +127,7 @@
     spBloom.width = spBloom.height = 0;
     spFlatImg.removeAttribute('src');
     spApp.style.filter = spApp.style.transform = '';
-    document.documentElement.classList.remove('splash');
-    spTheme('#141822');   // (as in head.html)
+    document.documentElement.classList.remove('splash'); spEl.classList.remove('spIn');
     spSt.running = false; spSt.mode = '';
     var w = spWait; spWait = [];
     w.forEach(function(f){ f(); });
@@ -152,20 +139,25 @@
     spCancelLoad();
     spPlay('skip', 0.4, spFade(0.4), null);
   });
-  // in use = now; shown again after > 24 h (also back from the background without a reload)
-  function splashTick(e){
-    var vis = document.visibilityState !== 'hidden';
-    if (vis && !splashOn() && splashAge() > SPLASH_GAP){ document.documentElement.classList.add('splash'); splashStart(false); }
-    if (vis || e) splashMark();   // (every minute while it's shown, and when it's hidden)
-  }
   // Inställningar -> Avancerat -> Startfilmen: play it again (over the map, so the settings' own 3D logo isn't running too)
   document.getElementById('splashReplayBtn').addEventListener('click', function(){
     if (splashOn()) return;
     showMapView();
-    document.documentElement.classList.add('splash'); splashStart(false);
+    splashPlay();
   });
-  if (splashOn()){ splashStart(true); try { localStorage.removeItem('ffmap_splash_out_v1'); } catch(e){} }
-  splashMark();
-  setInterval(splashTick, 60000);
-  document.addEventListener('visibilitychange', splashTick);
+  // the start picture (head.html, html.boot: the logo on the dark blue, like iOS's launch image): the app fades
+  // in over it once the map is there (at most 1 s), then the logo's gone for good
+  (function(){
+    var c = document.documentElement.classList, mi = document.getElementById('mapImg'), t;
+    if (!c.contains('boot')) return;
+    function go(){ clearTimeout(t); requestAnimationFrame(function(){ c.remove('boot'); c.add('booted'); setTimeout(function(){ c.remove('booted'); }, 1300); }); }
+    t = setTimeout(go, 1000);
+    if (mi.complete && mi.naturalWidth) go(); else mi.addEventListener('load', go, { once: true });
+  })();
+  // a name chosen (34-name.js), "Spela": black over the app, then the film (not in the other tests: fakefb)
+  function splashPlay(){
+    if (splashOn() || window.__ffNoSplash) return;
+    spEl.classList.add('spIn');
+    document.documentElement.classList.add('splash'); splashStart();
+  }
   window.__ffSplash = function(){ return { shown: spSt.shown, running: spSt.running, t: spSt.t, mode: spSt.mode, gl: !!spGl }; };

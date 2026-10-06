@@ -113,7 +113,6 @@
   });
 
   function showNameModal(){
-    if (splashOn()){ afterSplash(showNameModal); return; }   // (after the start film, 35-splash.js)
     selectedRosterName = null;
     otherNameMode = false;
     Array.from(nameListEl.children).forEach(function(c){ c.classList.remove('selected'); });
@@ -142,15 +141,20 @@
     showUserName();
     myUid = nameSlug(userName);
     hideNameModal();
+    splashPlay();   // (every new name: the start film, 35-splash.js)
+    if (!window.__ffNoWelcome) afterSplash(function(){ welcomeNote.classList.add('show'); });   // (then the welcome card: the way to Hjälp)
     if (appStarted){
       // returning from "Logga ut" — geolocation/Firebase are already running,
       // just re-evaluate ownership of the pins already on screen under the new name
       renderWaypoints();
     } else {
       continueBootAfterName();
-      if (!helpSeen()) showHelpView(true);   // the very first time on this phone: Hjälp, with a welcome
     }
   });
+  // the welcome card (every new name, after the film): tap = Hjälp (with its welcome), ✕ = gone
+  var welcomeNote = document.getElementById('welcomeNote');
+  document.getElementById('welcomeNoteGo').addEventListener('click', function(){ welcomeNote.classList.remove('show'); showHelpView(true); });
+  document.getElementById('welcomeNoteClose').addEventListener('click', function(){ welcomeNote.classList.remove('show'); });
   nameInput.addEventListener('keydown', function(e){
     if (e.key === 'Enter') nameSaveBtn.click();
   });
@@ -166,7 +170,6 @@
   logoutBtn.addEventListener('click', function(){
     expireOwnPosition(); // so the old name's pip disappears for everyone now, not in an hour
     try { localStorage.removeItem(USER_NAME_KEY); } catch(e){}
-    splashAfterLogout();     // (closed now and opened again: the start film)
     userName = '';
     myUid = null;
     lastPosWriteAt = 0;       // the next name gets shared right away

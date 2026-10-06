@@ -12,9 +12,11 @@ lakes/<id>/       one folder per lake: lake.json (name, geo-reference, depth
                   and raw/ (source settings + data for tools/genesis_*.py).
                   The pictures are made by tools/genesis_render.py straight
                   into docs/lakes/<id>/.
-assets/           icons + manifest (copied as is)
+assets/           icons, manifest, iOS's launch images (copied as is)
 """
-import os, shutil, json
+import os, shutil, json, base64, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from launch_images import LAUNCH
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 def rd(*p): return open(os.path.join(ROOT, *p), encoding='utf-8').read()
 
@@ -37,6 +39,11 @@ def parts(sub, ext):
 page = ('<style>\n' + parts('css', '.css') + '</style>\n\n' + parts('html', '.html')
         + '<script>\n' + parts('js', '.js') + '</script>\n')
 head = rd('src', 'head.html')
+# the start picture's logo (inline: it's there in the very first picture) and iOS's launch images (tools/launch_images.py)
+head = head.replace('__LOGO__', 'data:image/svg+xml;base64,' + base64.b64encode(open(os.path.join(ROOT, 'assets', 'ff_logo.svg'), 'rb').read()).decode())
+head = head.replace('__LAUNCH__', chr(10).join(
+    '<link rel="apple-touch-startup-image" media="(device-width: %dpx) and (device-height: %dpx) and (-webkit-device-pixel-ratio: %d) and (orientation: portrait)" href="launch-%dx%d.png">'
+    % (w, h, r, w * r, h * r) for w, h, r, _ in LAUNCH))
 i0 = page.index('<style>'); i1 = page.index('</style>') + len('</style>')
 style, rest = page[i0:i1], page[i1:]
 rest = rest.replace('__LAKES__', json.dumps(lakes, ensure_ascii=False, separators=(',', ':')))

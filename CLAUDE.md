@@ -91,7 +91,7 @@ Uppdatera rätt anteckning när något ändras.
   translucent gör iOS 26 webbvyn en statusrad för kort – en död rand längst ner som ingen CSS
   når (WebKit-bugg 301108). `default` lägger sidan under statusraden (som `black`) men ger raden
   `theme-color`: design A:s midnatt #141822 (21c, sedan 2026-10-05; innan dess #090B10 och #08080A, ännu tidigare mörkblå #06141C) – samma
-  som kartans bakgrund (`#stage`), body, den tidiga `<style>` i head.html (före Firebase-skripten – annars vitt i början), manifestet och toppens tona i stående hemskärmsapp (`html.iosApp`,
+  som kartans bakgrund (`#stage`), body, den tidiga `<style>` i head.html (annars vitt i början), manifestet och toppens tona i stående hemskärmsapp (`html.iosApp`,
   börjar i #141822 och tonar ut). Ändrad statusrad kräver att appen läggs till på hemskärmen igen.
 - **Ordning/hoisting:** många `var` deklareras i senare js-filer. Sätt checkbox-tillstånd som
   beror på sådana variabler i `boot()` (`js/90-boot.js`, se toggleDepth/toggleTrack).
@@ -103,7 +103,8 @@ Uppdatera rätt anteckning när något ändras.
   bilderna ligger bara i `docs/lakes/<id>/`; `lakes/<id>/names.json` = OSM-namnen (`tools/osm_names.py`, steg 8 i KARTOR.md) som build.py också bäddar in. Vald sjö: localStorage `ffmap_lake_v1` (eller
   `?lake=<id>`); byte = omladdning. Sjöspecifika localStorage-nycklar via `lakeKey(gammalNyckel, namn)`
   – Regnaren behåller sina gamla nycklar. Firestore: allt märkt med `lake`, `config/<lake>` per sjö.
-- **Service worker** (`src/sw.js`): nätet först för sidan (4 s), cache för bilder. Sidan skickar
+- **Service worker** (`src/sw.js`): nätet först för sidan (4 s), cache för bilder. (Prövat 2026-10-06: sparade sidan direkt +
+  "Ny version"-ruta – tog inte bort iPhones vita blink, borttaget.) Sidan skickar
   `precache` med sjöns startfiler. Ändras kartbilder: nytt filnamn (`map_v2_*`, `tiles_v2/`,
   `depth_v2.txt`) och höj `CACHE` i sw.js.
 - **Kartbilder = zoomnivåer som på Genesis** (KARTOR.md): kartbilden är zoom 14, högre nivåer
@@ -138,7 +139,7 @@ Uppdatera rätt anteckning när något ändras.
   på) – aldrig båda, lägena stänger av varandra. Tryck = rutan.
 - **Håll skärmen tänd** (Inställningar → Båten, av som standard, `ffmap_wakelock_v1`): Wake Lock, tas igen när
   appen blir synlig. På = gul sol `#wakeBadge` under väderchipet; tryck = av + notis `#wakeNote`.
-- **Hjälp** (menyn → Hjälp; öppnas själv efter första namnvalet): "Nytt i appen" = `HELP_NEWS`
+- **Hjälp** (menyn → Hjälp; efter varje namnval visas välkomstrutan `#welcomeNote` "Välkommen till Fiskfiskarnas Kart app! Klicka här …" som öppnar den – Hjälp öppnas aldrig själv): "Nytt i appen" = `HELP_NEWS`
   (`js/30-help.js`), animeringar av `tools/help_anim.py` – allt i `tools/HJALP.md`.
 - **Ledare** (Filter → Lager `#toggleLeader`, av som standard, `js/69-leader.js`, `css/74-leader.css`): under en pågående tävling en lista under
   väderchipet (`#leadPill`, topp 5 + du) och 👑 efter ledarens namn på båtens etikett. Poäng = de 5 längsta av varje art (abborre, gädda, gös) ihop,
@@ -158,10 +159,15 @@ Uppdatera rätt anteckning när något ändras.
   på ny plats). Testerna: låset av i testwebbläsaren (`window.__ffNoLock`, fakefb) utom med `cfg={'lock': True}` (test_lock.py).
 - **Strandlinje** (Inställningar → Kartan `#toggleShore`, på som standard, `ffmap_shore_v1`): sjöns kant som tunn vit linje på vanliga kartan,
   samma som Heatmap/Kartanalys ritar (`hmShoreLayer`, `js/68-heatmap.js`); döljs när de visas (de har sin egen).
-- **Startfilm** (`js/35-splash.js`, `tools/PLAN_SPLASH.md`): 3D-loggan 3,5 s vid första starten och när appen inte använts på > 24 h
-  (`ffmap_last_active_v1`, hela telefonen: skrivs vid start, varje minut när den syns och när den döljs – även tillbaka ur bakgrunden
-  utan omladdning). Även efter Logga ut + stängd app (`ffmap_splash_out_v1` i localStorage, sessionStorage-kopian stoppar den vid en vridnings omladdning). Skriptet i `src/head.html` sätter `html.splash` före första bilden (allt svart, kartan blinkar aldrig fram).
-  Namnrutan och platsfrågan (`startGeolocation`, 90-boot.js) väntar (`afterSplash`). Inställningar → Avancerat → Startfilmen "Spela" visar den igen. Testerna: fakefb sätter nyckeln = nu i varje context (opt-in `splash=True`, test_splash).
+- **Startfilm** (`js/35-splash.js`, `tools/PLAN_SPLASH.md`): 3D-loggan 3,5 s **varje gång ett namn väljs** ("Vem är du?": ny telefon,
+  efter Logga ut – även utan att appen stängts) och från Inställningar → Avancerat → Startfilmen "Spela" (`splashPlay()`): svart tonar in
+  över appen, sedan filmen. Filmen är svart; toppen tonar från statusradens #141822 (`.spTop` – iOS byter inte statusradens färg i en igång hemskärmsapp;
+  Filip 2026-10-06: helt svart först i iPhone-appen (Capacitor), som kan styra statusraden).
+  Välkomstrutan och platsfrågan (`startGeolocation`, 90-boot.js) väntar (`afterSplash`). Ingen film efter 24 h (Filips beslut 2026-10-06).
+  **Startbild** (varje start utom vridningens omladdning): loggan på #141822 direkt (html-bakgrunden, `html.boot` i head.html), appen tonar in
+  över den (1,2 s). Prövat: svart startbild med blå tona överst – syntes som en kant. Firebase-skripten ligger sist i body (`html/99-firebase.html`)
+  så att inget håller upp bilden; iOS-startbilder `assets/launch-*.png` (`tools/launch_images.py`, ny iPhone-storlek läggs till där), Android
+  gör sin egen av manifestet. Testerna: fakefb stänger av båda (`__ffNoSplash`, `__ffNoBoot`; opt-in `splash=True`, test_splash) och välkomstrutan (`__ffNoWelcome`; `help_seen=False`).
 - **Pushnotiser**: inte gjort (kräver server/Firebase-betalplan).
 
 ## Firestore-regler (aktuella, i Firebase-konsolen)

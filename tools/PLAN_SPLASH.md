@@ -110,3 +110,8 @@ Ett tryck var som helst → hoppa direkt till upplösningen (det svarta tonas bo
 ## Beslut (Filip 2026-10-06)
 Ja på alla tre: filmen visas även vid återkomst ur bakgrunden efter > 24 h, ett tryck hoppar över, och äldre
 telefoner och Reducera rörelse får den platta versionen.
+
+## Ändrat (Filip 2026-10-06, senare)
+Filmen visas inte längre vid första starten eller efter 24 h – **bara när ett namn väljs** (ny telefon, efter Logga ut,
+varje gång) och från "Spela". Nyckeln `ffmap_last_active_v1`, head-skriptet och bakgrundskollen är borttagna. Varje start
+har i stället en startbild (loggan på #141822, samma som iOS-startbilderna) som appen tonar in över.

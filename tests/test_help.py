@@ -1,4 +1,4 @@
-# Hjälp: opens by itself (with a welcome) after the name is chosen the first time; menu ->
+# Hjälp: the welcome card after every name (its link: Hjälp with a welcome); menu ->
 # Hjälp; contents jump to the section; "Nytt i appen" (5 + "Visa äldre") with a dot on the
 # menu until read; install steps for the phone/browser (or "✓" in the home-screen app);
 # the animations are there and load; stays open (and scrolled) after a rotation reload.
@@ -29,6 +29,8 @@ def fresh(p, ua=None, standalone=False, seen=None):
     pg.on('pageerror', lambda e: errs.append(str(e)))
     pg.goto('http://localhost:8899/index.html'); pg.wait_for_timeout(500)
     fakefb.login(pg, 'Filip'); pg.wait_for_timeout(900)
+    pg.__welcome = pg.is_visible('#welcomeNote') and 'Välkommen till Fiskfiskarnas Kart app!' in pg.inner_text('#welcomeNote')
+    if seen is None: pg.click('#welcomeNoteGo'); pg.wait_for_timeout(300)   # (its link: Hjälp)
     return b, pg, errs
 
 def os_tab(pg):
@@ -37,7 +39,7 @@ def os_tab(pg):
 with sync_playwright() as p:
     # ---- first time on an iPhone in Safari
     b, pg, errs = fresh(p, UA['ios'])
-    check('first time: Hjälp opens by itself after the name, with a welcome', pg.is_visible('#helpView') and pg.is_visible('#helpWelcome') and 'Välkommen, Filip!' in pg.inner_text('#helpWelcome'), pg.inner_text('#helpWelcome') if pg.is_visible('#helpWelcome') else '')
+    check('a name chosen: the welcome card; its link: Hjälp, with a welcome', pg.__welcome and not pg.is_visible('#welcomeNote') and pg.is_visible('#helpView') and pg.is_visible('#helpWelcome') and 'Välkommen, Filip!' in pg.inner_text('#helpWelcome'), pg.inner_text('#helpWelcome') if pg.is_visible('#helpWelcome') else '')
     toc = pg.eval_on_selector_all('#helpToc a', 'e => e.map(x => x.textContent.trim())')
     check('contents: 20 sections', len(toc) == 20 and 'Blixtar' in ''.join(toc) and 'Installera appen' in ''.join(toc), toc)
     check('iPhone Safari: the Safari steps are shown, not "✓ installed"', os_tab(pg) == 'ios' and pg.is_visible('.helpSteps[data-os="ios"]') and not pg.is_visible('#helpInstalled'), os_tab(pg))
@@ -110,7 +112,12 @@ with sync_playwright() as p:
 
     # ---- someone who has read older news: the dot, until Hjälp is opened
     b, pg, errs = fresh(p, seen=3)
-    check('had read Hjälp before: it does not open by itself', not pg.is_visible('#helpView'))
+    check('Hjälp never opens by itself (the welcome card, every name)', pg.__welcome and not pg.is_visible('#helpView'))
+    check('...its title on one line, all of it shown (a narrow phone too)', all(pg.set_viewport_size({'width': w, 'height': 800}) or pg.evaluate(
+          "(b => getComputedStyle(b).whiteSpace === 'nowrap' && b.scrollWidth <= b.clientWidth && b.clientWidth > 0)(document.querySelector('#welcomeNote b'))") for w in (320, 375, 390)))
+    pg.set_viewport_size({'width': 390, 'height': 844})
+    pg.click('#welcomeNoteClose')
+    check('...✕ closes the card', not pg.is_visible('#welcomeNote'))
     check('...but new things since then: a dot on the menu button and on Hjälp', pg.is_visible('#menuBtn .newDot'))
     pg.click('#menuBtn'); pg.wait_for_timeout(200)
     check('...the Hjälp item has the dot too', pg.is_visible('#menuItemHelp .newDot'))
