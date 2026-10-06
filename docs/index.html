@@ -9480,10 +9480,9 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     ['gos', 'Gös', 'branta kanter på 4–10 m nära hård botten']
   ];
   var AN_HARD = ['Mjuk', 'Medelhård', 'Hård', 'Mycket hård'];      // Genesis' 4 levels
-  var AN_COLORS = { depth: null, steep: [255, 70, 200], tops: [255, 190, 40], veg: [90, 235, 80], hard: [240, 70, 10],
-                    wind: [255, 178, 63], similar: [255, 80, 160], abborre: [255, 210, 26], gadda: [120, 255, 120], gos: [58, 134, 255] };
-  // Kartdata and Fångster "Tänt" (Filip 2026-10-06): no colour, just the map shown through the mask ("Skala" colours the whole lake)
-  var AN_PLAIN = { depth: 1, steep: 1, tops: 1, veg: 1, hard: 1, wind: 1, combo: 1, c_abborre: 1, c_gadda: 1, c_gos: 1 };
+  // What it finds is always the map itself through a mask, the rest toned down -- no colour of its own (Filip: Kartdata
+  // 2026-10-02, Tumregler, Liknande and Fångster "Tänt" 2026-10-06). Only Fångster "Skala" colours the whole lake --
+  // another kind of view (Filip).
   // the depth scale of the sliders = the legend's (0 .. the lake's max depth, same colours)
   var AN_DMAX = parseFloat(String((LAKE.legendTicks || []).slice(-1)[0] || '').replace(',', '.')) || Math.ceil(LAKE.depth.max || 20);
   var AN_SIMF = [['d', 'Djup'], ['s', 'Lutning'], ['h', 'Botten'], ['v', 'Växter'], ['t', 'Grynna/håla']];
@@ -9740,7 +9739,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     if (m && A && anNeedsBottom(m) && !anBottom){ anLoadBottom(); if (!anBottom){ anRes = { wait: true }; anRender(); return; } }
     if (!m || !A){ anRender(); return; }
     var r = m === 'combo' ? anCombo(A) : anOne(m, A, {});
-    anRes = { M: r.empty ? null : r.M, n: r.n, labels: r.labels, list: r.list, text: r.text, note: r.note, color: m === 'combo' ? null : AN_COLORS[m], ver: anVer, G: r.G || null, pts: r.pts || null };
+    anRes = { M: r.empty ? null : r.M, n: r.n, labels: r.labels, list: r.list, text: r.text, note: r.note, ver: anVer, G: r.G || null, pts: r.pts || null };
     anRender();
   }
   // Kartdata combined: what's lit = where ALL the parts are true. The "spots" (grynnor/hålor, växter, hård
@@ -9922,7 +9921,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     if (!anView || anView.key !== key){
       var cv = anView ? anView.cv : document.createElement('canvas'), sv = anView ? anView.sv : document.createElement('canvas'), gv = anView ? anView.gv : document.createElement('canvas');
       (glow ? [cv, sv, gv] : [cv, sv]).forEach(function(c){ if (c.width !== vw || c.height !== vh){ c.width = vw; c.height = vh; } });
-      var c2 = cv.getContext('2d'), im = c2.createImageData(vw, vh), px = im.data, col = R.color;
+      var c2 = cv.getContext('2d'), im = c2.createImageData(vw, vh), px = im.data;
       var s2 = sv.getContext('2d'), sm = s2.createImageData(vw, vh), sp = sm.data;
       var g2c = glow ? gv.getContext('2d') : null, gm = glow ? g2c.createImageData(vw, vh) : null, gp = glow ? gm.data : null;   // (the lamp: grey where it's lit)
       var dimA = Math.round(255 * anSet.dim), satA = Math.round(255 * Math.min(1, anSet.dim + 0.2));
@@ -9950,23 +9949,18 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
       }
       function cl(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
       var EA = edgeW(STEP, 1.1), ES = edgeW(STEP, 0.9);     // (line widths: see edgeW)
-      var plain = !!AN_PLAIN[anSet.mode], c1col = col, c2col = anSet.mode === 'tops' ? [60, 200, 255] : [70, 200, 60], c2a = anSet.mode !== 'tops' ? 60 : 105;
       for (var y2 = 0; y2 < vh; y2++) for (var x2 = 0; x2 < vw; x2++){
         var q2 = y2 * vw + x2, k = q2 * 4;
         var d1 = sd(f1, q2, x2, y2), d2 = sd(f2, q2, x2, y2), dl = sd(fl, q2, x2, y2);
         // (a found bit smaller than a drawn point is under 0,5 in the smooth field: shown faintly, not lost)
         var k1 = Math.max(cl(0.5 + d1), 0.8 * f1[q2]), k2 = Math.max(cl(0.5 + d2), 0.8 * f2[q2]), k0 = cl(1 - k1 - k2);
-        // "over" in order: toned down, the found area(s), their white edge, the dashed shore
+        // "over" in order: toned down, ("Skala"), the white edge of what's found, the shore
         var r = 0, g = 0, b = 0, a = 0;
         function over(cr, cg, cb, ca){ ca /= 255; r = cr * ca + r * (1 - ca); g = cg * ca + g * (1 - ca); b = cb * ca + b * (1 - ca); a = ca + a * (1 - ca); }
         over(6, 14, 20, dimA * k0);
         // "Skala" (from the catches): the whole lake from unlike (blue, see-through) to most alike (red)
         var ra = 0;
         if (f3 && fl[q2] > 0.05){ var rc = hmRamp(Math.max(0, Math.min(1, f3[q2] / fl[q2]))); ra = rc[3] / 255 * Math.min(1, fl[q2] * 1.6); over(rc[0], rc[1], rc[2], 255 * ra); }
-        if (!plain){
-          if (c1col) over(c1col[0], c1col[1], c1col[2], 105 * k1);
-          over(c2col[0], c2col[1], c2col[2], c2a * k2);
-        }
         var e = Math.max(cl(1 - Math.abs(d1) / EA[0]), cl(1 - Math.abs(d2) / EA[0])) * EA[1];
         if (e > 0) over(255, 255, 255, 180 * e);        // (as thin and soft as the lee's edge)
         var es = cl(1 - Math.abs(dl) / ES[0]) * ES[1];

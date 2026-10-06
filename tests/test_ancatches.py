@@ -77,7 +77,7 @@ with sync_playwright() as p:
     for k in ['s', 'h', 'v', 'l', 't']: pg.click('#anCF button[data-cf="%s"]' % k); pg.wait_for_timeout(200)
     pg.click('#anCView button[data-cv="grad"]'); pg.wait_for_timeout(2500)
     res = pg.inner_text('#anResult')
-    check('"Skala": the whole lake from unlike to most alike (red), no "Typiskt" slider', 'Fiska där det lyser starkast' in res and not pg.query_selector('#anCCov') and pixels(pg, 'red') > 100, (res, pixels(pg, 'red')))
+    check('"Skala": the whole lake from unlike to most alike (red) -- the one view in colour, no "Likhet" slider', 'Fiska där det lyser starkast' in res and not pg.query_selector('#anCCov') and pixels(pg, 'red') > 100, (res, pixels(pg, 'red')))
     pg.screenshot(path='shot_ancatch_grad.png')
     pg.click('#anCView button[data-cv="area"]'); pg.wait_for_timeout(1500)
     # not together with the heat map

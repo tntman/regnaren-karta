@@ -22,6 +22,10 @@ def pick(pg, m, wait=1300):
     pg.click('#anCatSeg button[data-cat="%s"]' % CAT.get(m, 'map')); pg.wait_for_timeout(150)
     if m != 'similar': pg.click('#anPanel button[data-m="%s"]' % m)
     pg.wait_for_timeout(wait); return an(pg)
+def colourful(pg):   # pixels with a colour of their own (a fill) -- the mask is only the dark tone, white edges and the shore
+    return pg.evaluate("""() => { var c = document.getElementById('anLayer'); if (!c.classList.contains('on')) return 0;
+      var d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data, n = 0;
+      for (var i = 0; i < d.length; i += 4) if (d[i + 3] > 60 && Math.max(d[i], d[i + 1], d[i + 2]) - Math.min(d[i], d[i + 1], d[i + 2]) > 60) n++; return n; }""")
 def lit(pg):
     return pg.evaluate("""() => { var c = document.getElementById('anLayer'); if (!c.classList.contains('on')) return 0;
       var d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data, n = 0; for (var i = 3; i < d.length; i += 4) if (d[i] > 0) n++; return n; }""")
@@ -109,6 +113,7 @@ with sync_playwright() as p:
     a2 = an(pg); check('hard bottom: a slider for how hard, no depth slider of its own (only Djup has one)', a2['n'] < a['n'] and 'Mycket hård' in a2['text'] and not pg.query_selector('#anControls .anDual'), (a['n'], a2['n'], a2['text']))
     a = pick(pg, 'wind'); check('Vindkant: from the weather wind (6 m/s SV)', a['ready'] and a['n'] > 100 and 'SV' in a['text'], a)
     a = pick(pg, 'similar'); check('Liknande: like "Djupa hålet", a list of places', a['ready'] and a['list'] >= 1 and 'Djupa hålet' in a['text'], a)
+    check('...only a mask: the map itself where it is alike, no pink on it (the ring and the numbers stay)', colourful(pg) < 30 and pg.query_selector('.anLbl.simRef') is not None, colourful(pg))
     pg.screenshot(path='shot_an_similar.png')
     pg.click('#anListBox button[data-go="1"]'); pg.wait_for_timeout(700)
     check('"Åk hit" from the list: the lead line there (no extra card)', pg.eval_on_selector('#probe', 'e => e.classList.contains("show")') and pg.query_selector('#navCard') is None)
@@ -150,6 +155,7 @@ with sync_playwright() as p:
     pg.click('#anBtn'); pg.wait_for_timeout(300)
     for m in ('abborre', 'gadda', 'gos'):
         a = pick(pg, m); check('preset %s: combined, says it is rules of thumb (the category "Tumregler" lit; the note behind ⓘ)' % m, a['ready'] and a['n'] > 50 and pg.inner_text('#anCatSeg button.on') == 'Tumregler' and 'Tumregler' in pg.eval_on_selector('#anResult', 'e => e.textContent'), a)
+        check('...only a mask: the map itself where the rule fits, no colour on it', colourful(pg) < 30, colourful(pg))
     # Filter shows/hides it (keeps the choice)
     pg.click('#anClose'); pg.wait_for_timeout(200)
     pg.click('#visMoreBtn'); pg.wait_for_timeout(200); pg.click('label:has(#toggleAnalysis) .toggle'); pg.click('#visMoreBtn'); pg.wait_for_timeout(300)

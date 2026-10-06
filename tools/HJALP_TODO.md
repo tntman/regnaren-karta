@@ -20,6 +20,11 @@ spåren, Ledare, Kompass, Namn, Fog of war, tävlingslåset, Storlek/När, start
 
 ## Att göra
 
+- [ ] 2026-10-06 – Kartanalys färgar inte kartan: Tumregler, Liknande och Fångster "Tänt" visar bara kartan genom masken,
+  som Kartdata (bara Fångster "Skala" har kvar sin färgskala). Hjälp: Kartanalys (Kartdata-radens "den vanliga kartan syns
+  där det stämmer" gäller nu alla utom Skala) + animering `analys` (Tumregler Gös visas i blått). Nyhet: "Kartanalys färgar
+  inte kartan – det som stämmer syns som vanligt, resten tonas ner" (BÄTTRE)
+
 <!-- mall:
 - [ ] ÅÅÅÅ-MM-DD – Vad som ändrats. Hjälp: avsnitt X (text) + animering `namn`. Nyhet: "…" (NYTT/BÄTTRE/FIXAT)
 -->
