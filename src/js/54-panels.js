@@ -35,7 +35,9 @@
       var now = performance.now(), a = dd.pts[0], b = dd.pts[dd.pts.length - 1];
       var v = (b[0] - a[0]) > 10 ? (b[1] - a[1]) / (b[0] - a[0]) : 0;           // px/ms over the last ~0.1 s, + = down
       var h = el.getBoundingClientRect().height;
-      if ((v > 1.1 && dd.dy > 40) || h < 120){ close(); setTimeout(el._resetSize, 320); return; }
+      // (closed at its dragged size -- each panel gets its normal size back when it opens again; resetting it here made it
+      // jump up at the end of the slide down, Filip 2026-10-07)
+      if ((v > 1.1 && dd.dy > 40) || h < 120){ close(); return; }
       if (h >= dd.max - 2) el._resetSize();                                   // (all the way up: its normal size)
     }
     el.addEventListener('pointerup', end);
