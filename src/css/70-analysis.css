@@ -142,3 +142,14 @@
   .rsDone svg{animation:rsSpin .6s cubic-bezier(.34,1.3,.64,1);}
   @keyframes rsSpin{to{transform:rotate(-360deg);}}
   @media (prefers-reduced-motion:reduce){ .rsDone svg{animation-name:fadeIn;} }
+  /* Fiska nu (57-an-now.js): orange numbers on the map and in the list; a row = number, share, species, depth and how far */
+  .anLbl.sim.now{background:var(--amber);border-color:var(--amber);color:var(--on-acc);font-weight:800;box-shadow:0 0 12px var(--glow);}
+  .anList.now .li{cursor:pointer;padding:7px 10px;border-radius:12px;}
+  .anList.now .n{width:22px;height:22px;background:var(--amber);color:var(--on-acc);font-weight:800;font-size:12px;}
+  .anList.now .pct{font-size:17px;font-weight:800;color:#fff;min-width:46px;font-variant-numeric:tabular-nums;}
+  .anList.now .mid{display:flex;flex-direction:column;line-height:1.25;min-width:0;}
+  .anList.now .mid small{color:var(--text-muted);font-size:11.5px;}
+  .anList.now .spDot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;}
+  .spDot.abborre{background:var(--t-abborre);} .spDot.gadda{background:var(--t-gadda);} .spDot.gos{background:var(--t-gos);}
+  .anList.now button{white-space:nowrap;}
+  #anNowChips button:disabled{opacity:.45;cursor:default;}

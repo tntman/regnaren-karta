@@ -31,6 +31,11 @@ spåren, Ledare, Kompass, Namn, Fog of war, tävlingslåset, Storlek/När, start
   det tända: 70 % av gäddorna på 15 % av sjön"). Hjälp: Kartanalys (översta raden: Skala; Fångster-raden utan Tänt/Skala) +
   animering `analys` (visa Skala). Nyhet: "Kartanalys: Skala – se var det stämmer starkast, i alla lägen" (NYTT)
 
+- [ ] 2026-10-07 – Kartanalys: ny flik **Fiska nu** (till höger om Liknande) – var gruppen fått mest fisk vid den här tiden
+  (samma tid på året och dygnet), 5 platser med % på kartan och i en lista, Alla/art, "När" några timmar framåt, Åk hit. Hjälp:
+  Kartanalys (ny del Fiska nu: vad % betyder) + animering `analys` (visa Fiska nu). Nyhet: "Kartanalys: Fiska nu – fem tips på
+  var det nappat mest vid den här tiden" (NYTT)
+
 <!-- mall:
 - [ ] ÅÅÅÅ-MM-DD – Vad som ändrats. Hjälp: avsnitt X (text) + animering `namn`. Nyhet: "…" (NYTT/BÄTTRE/FIXAT)
 -->

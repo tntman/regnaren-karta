@@ -1606,6 +1606,17 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   .rsDone svg{animation:rsSpin .6s cubic-bezier(.34,1.3,.64,1);}
   @keyframes rsSpin{to{transform:rotate(-360deg);}}
   @media (prefers-reduced-motion:reduce){ .rsDone svg{animation-name:fadeIn;} }
+  /* Fiska nu (57-an-now.js): orange numbers on the map and in the list; a row = number, share, species, depth and how far */
+  .anLbl.sim.now{background:var(--amber);border-color:var(--amber);color:var(--on-acc);font-weight:800;box-shadow:0 0 12px var(--glow);}
+  .anList.now .li{cursor:pointer;padding:7px 10px;border-radius:12px;}
+  .anList.now .n{width:22px;height:22px;background:var(--amber);color:var(--on-acc);font-weight:800;font-size:12px;}
+  .anList.now .pct{font-size:17px;font-weight:800;color:#fff;min-width:46px;font-variant-numeric:tabular-nums;}
+  .anList.now .mid{display:flex;flex-direction:column;line-height:1.25;min-width:0;}
+  .anList.now .mid small{color:var(--text-muted);font-size:11.5px;}
+  .anList.now .spDot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;}
+  .spDot.abborre{background:var(--t-abborre);} .spDot.gadda{background:var(--t-gadda);} .spDot.gos{background:var(--t-gos);}
+  .anList.now button{white-space:nowrap;}
+  #anNowChips button:disabled{opacity:.45;cursor:default;}
   /* ================= Heatmap (fångster): map-style list -> a bottom panel like Kartanalys ================= */
   #shoreLayer, #hmLayer, #hmSat{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;display:none;}
   #hmSat{mix-blend-mode:saturation;}
@@ -2768,10 +2779,11 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
       <button type="button" id="anReset" class="hdBtn rsBtn" aria-label="Återställ" title="Återställ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.3-5.6"></path><path d="M4 4v4.5h4.5"></path></svg></button>
       <button type="button" id="anClear" class="hdBtn pwBtn" aria-label="Stäng av kartanalys" title="Stäng av kartanalys" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 3v8"></path><path d="M6.6 6.6a7.5 7.5 0 1 0 10.8 0"></path></svg></button></div>
     <div class="pnInfo" hidden></div>
-    <div class="anSeg" id="anCatSeg"><button type="button" data-cat="map">Kartdata</button><button type="button" data-cat="rule">Tumregler</button><button type="button" data-cat="data">Fångster</button><button type="button" data-cat="similar">Liknande</button></div>
+    <div class="anSeg" id="anCatSeg"><button type="button" data-cat="map">Kartdata</button><button type="button" data-cat="rule">Tumregler</button><button type="button" data-cat="data">Fångster</button><button type="button" data-cat="similar">Liknande</button><button type="button" data-cat="now">Fiska nu</button></div>
     <div class="anChips" id="anChips"></div>
     <div class="anChips" id="anPresets"></div>
     <div class="anChips" id="anDataChips"></div>
+    <div class="anChips" id="anNowChips"></div>
     <div id="anControls"></div>
     <div id="anListBox"></div>
   </div>
@@ -9538,7 +9550,8 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   var AN_SCALE_TXT = { depth: 'mitt i djupintervallet', steep: 'där det är brantast', tops: 'där grynnan reser sig mest och hålan är djupast',
     veg: 'där det växer tätast', hard: 'där botten är hårdast', wind: 'där vinden har längst fritt vatten in mot stranden',
     combo: 'där den svagaste delen är starkast', abborre: 'där tumregeln stämmer bäst', gadda: 'där tumregeln stämmer bäst',
-    gos: 'där tumregeln stämmer bäst', similar: 'där det är mest likt platsen' };
+    gos: 'där tumregeln stämmer bäst', similar: 'där det är mest likt platsen', n_all: 'på platsen med störst andel av fångsterna', n_abborre: 'på platsen med störst andel av fångsterna',
+    n_gadda: 'på platsen med störst andel av fångsterna', n_gos: 'på platsen med störst andel av fångsterna' };
   function anDomes(A){
     if (A.domeTop) return A;
     var N = A.N, ft = new Int32Array(N), fh = new Int32Array(N);
@@ -9593,9 +9606,10 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   var anSet = { simF: { d: 1, s: 1, h: 1, v: 1, t: 1 }, simR: 0, mode: null, lo: 4, hi: 6, slope: 10, topP: 0.6, holeP: 0.8, hmin: 3, dim: 0.72, ref: null,
                cF: { d: 1, s: 1, h: 1, v: 1, l: 1, t: 1 }, cCov: 7, size: {},   // (c* = "Från fångsterna", 57-an-catches.js)
                combo: [], near: { tops: 0, veg: 15, hard: 15, wind: 15 },     // Kartdata combined (mode 'combo'): the parts, "inom … m"
-               lamp: 0, mem: {}, scale: 0 };   // scale: "Skala" -- what's found in colour by how strongly it fits (every mode)   // lamp: the lit area 2× brighter (#anGlow); mem: each tab's own choice, [mode, combo] -- back when you go back to it
+               lamp: 0, mem: {}, scale: 0, nowH: 0 };   // nowH: Fiska nu's "När", hours ahead (57-an-now.js)
+   // scale: "Skala" -- what's found in colour by how strongly it fits (every mode)   // lamp: the lit area 2× brighter (#anGlow); mem: each tab's own choice, [mode, combo] -- back when you go back to it
   var AN_DEFAULTS = JSON.stringify(anSet);   // (for "Återställ")
-  anSet.cat = 'map';                            // the category shown: map / rule / data / similar
+  anSet.cat = 'map';                            // the category shown: map / rule / data / similar / now
   try { var sv = JSON.parse(localStorage.getItem(AN_KEY) || 'null'); if (sv) for (var k0 in sv) anSet[k0] = sv[k0]; } catch(e){}
   delete anSet.cm0; delete anSet.cm1; delete anSet.cView;   // (the first Storlek, one range for all species; Fångster's own Tänt/Skala)
   if (!rotState){ anSet.mode = null; anSet.combo = []; anSet.mem = {}; }   // a new start of the app: off, the tabs' choices too (turning the phone keeps it)
@@ -9879,6 +9893,9 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     } else if (m.indexOf('c_') === 0){                    // from the catches (data), 57-an-catches.js
       var cr = anCatchCompute(A, m.slice(2), M);
       n = cr.n; text = cr.text; note = cr.note; sv = cr.sv || null; var cPts = cr.pts, cEmpty = cr.empty;
+    } else if (m.indexOf('n_') === 0){                    // Fiska nu, 57-an-now.js
+      var nr = anNowCompute(A, m.slice(2), M);
+      n = nr.n; text = nr.text; note = nr.note; sv = nr.sv; labels = nr.labels; list = nr.list; cPts = nr.pts; cEmpty = nr.empty && !list;
     } else {                                             // presets (rules of thumb)
       var hn, e2;
       if (m === 'abborre'){
@@ -10047,21 +10064,26 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     document.getElementById('anChips').hidden = cat !== 'map';
     document.getElementById('anPresets').hidden = cat !== 'rule';
     document.getElementById('anDataChips').hidden = cat !== 'data';
+    document.getElementById('anNowChips').hidden = cat !== 'now'; anNowRow();
     document.getElementById('anReset').disabled = anIsDefault();
-    Array.prototype.forEach.call(document.querySelectorAll('#anChips button[data-m], #anPresets button[data-m], #anDataChips button[data-m]'), function(b){
+    Array.prototype.forEach.call(document.querySelectorAll('#anChips button[data-m], #anPresets button[data-m], #anDataChips button[data-m], #anNowChips button[data-m]'), function(b){
       var on = b.getAttribute('data-m') === m || (m === 'combo' && anSet.combo.indexOf(b.getAttribute('data-m')) >= 0);
       b.classList.toggle('on', on); if (b.parentNode.id === 'anChips') b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
     document.getElementById('anChips').classList.toggle('combo', m === 'combo');   // ("+ Djup", "+ Branta kanter": they work together)
     var R = anRes, res = document.getElementById('anResult'), lst = document.getElementById('anListBox');
     lst.innerHTML = '';
     if (!m) res.innerHTML = { map: 'Välj vad du vill hitta på kartan. Det som matchar lyser, resten tonas ner.', rule: 'Tumregler från vanliga fiskeråd – inte fångstdata.',
-      data: 'Var arten liknar platserna där den togs i tävlingarna.', similar: 'Välj en fiskeplats att jämföra med.' }[cat] || '';
+      data: 'Var arten liknar platserna där den togs i tävlingarna.', similar: 'Välj en fiskeplats att jämföra med.', now: 'Välj en art.' }[cat] || '';
     else if (!R) res.innerHTML = 'Djupdatan laddas…';
     else if (R.wait) res.innerHTML = 'Hämtar bottendata…';
     else {
       // (the top row: the result; its explanations are behind ⓘ; the Liknande list stays in the panel)
       res.innerHTML = R.text + (R.note ? '<span class="note">' + R.note + '</span>' : '') + (!anShow ? '<span class="pnHid"> · Dold – slå på Kartanalys i Filter</span>' : '');
-      lst.innerHTML = (R.list ? '<div class="anList">' + (R.list.length ? R.list.map(function(it){
+      lst.innerHTML = (R.list ? '<div class="anList' + (R.list[0] && R.list[0].pct != null ? ' now' : '') + '">' + (R.list.length ? R.list.map(function(it){
+          if (it.pct != null)   // (Fiska nu: the share, the species caught there, depth and how far; tap the row = the map shows it)
+            return '<div class="li" data-row="' + it.n + '"><span class="n">' + it.n + '</span><b class="pct">' + it.pct + ' %</b><span class="mid"><span>' +
+              it.sps.map(function(x){ return '<i class="spDot ' + x[0] + '"></i>' + x[1]; }).join(' ') + '</span><small>' + fmtDepth(it.dep) + ' m djupt' +
+              (it.dm != null ? ' · ' + fmtMeters(it.dm) + ' bort' : '') + '</small></span><button type="button" data-go="' + it.n + '">Åk hit ›</button></div>';
           return '<div class="li"><span class="n">' + it.n + '</span>' + fmtDepth(it.dep) + ' m · lutning ' + Math.round(it.slope) + ' %' +
             '<button type="button" data-go="' + it.n + '">' + (it.dm != null ? fmtMeters(it.dm) + ' · ' : '') + 'Åk hit ›</button></div>';
         }).join('') : '<div class="li">Inga tydliga träffar.</div>') + '</div>' : '');
@@ -10129,6 +10151,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     else if (m === 'tops') h = anRangeRow('anTopP', 'Grynnor', 0.3, 2.5, 0.1, anSet.topP, function(v){ return '≥ ' + fmtDepth(+v) + ' m'; }) +
       anRangeRow('anHoleP', 'Hålor', 0.3, 2.5, 0.1, anSet.holeP, function(v){ return '≥ ' + fmtDepth(+v) + ' m'; });
     else if (m && m.indexOf('c_') === 0) h = anCatchControls();
+    else if (m && m.indexOf('n_') === 0) h = anNowControls();
     else if (m === 'hard') h = anRangeRow('anHmin', 'Minst', 1, 4, 1, anSet.hmin, function(v){ return AN_HARD[v - 1]; });
     else if (m === 'similar'){
       var sp = anSpots();
@@ -10153,10 +10176,10 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     if (sizeInput(e, anSet)){ anDataRow(); anLater(); return; }
     var t = e.target, v = parseFloat(t.value);
     if (t.id.indexOf('anNear_') === 0){ anSet.near[t.id.slice(7)] = v; t.nextSibling.textContent = v + ' m'; anLater(); return; }   // (combined: "inom … m")
-    var map = { anSlope: 'slope', anTopP: 'topP', anHoleP: 'holeP', anHmin: 'hmin', anCCov: 'cCov' };
+    var map = { anSlope: 'slope', anTopP: 'topP', anHoleP: 'holeP', anHmin: 'hmin', anCCov: 'cCov', anNowH: 'nowH' };
     if (!map[t.id]) return;
     anSet[map[t.id]] = v;
-    t.nextSibling.textContent = t.id === 'anSlope' ? v + ' %' : t.id === 'anHmin' ? AN_HARD[v - 1] : t.id === 'anCCov' ? v * 10 + ' % av ' + anCatchPl() + 'na' : '≥ ' + fmtDepth(v) + ' m';
+    t.nextSibling.textContent = t.id === 'anNowH' ? anNowLbl(v) : t.id === 'anSlope' ? v + ' %' : t.id === 'anHmin' ? AN_HARD[v - 1] : t.id === 'anCCov' ? v * 10 + ' % av ' + anCatchPl() + 'na' : '≥ ' + fmtDepth(v) + ' m';
     anLater();
   });
   // dragging a handle of a depth range (either handle; they can't cross)
@@ -10220,22 +10243,25 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   document.getElementById('anChips').innerHTML = AN_MODES.map(function(x){ return '<button type="button" data-m="' + x[0] + '">' + x[1] + '</button>'; }).join('');
   document.getElementById('anPresets').innerHTML = AN_PRESETS.map(function(x){ return '<button type="button" data-m="' + x[0] + '">' + x[1] + '</button>'; }).join('');
   // which category a mode is in (the row on top of the panel)
-  function anCatOf(m){ return !m ? null : m === 'similar' ? 'similar' : m.indexOf('c_') === 0 ? 'data' : AN_PRESETS.some(function(x){ return x[0] === m; }) ? 'rule' : 'map'; }
+  function anCatOf(m){ return !m ? null : m === 'similar' ? 'similar' : m.indexOf('c_') === 0 ? 'data' : m.indexOf('n_') === 0 ? 'now' : AN_PRESETS.some(function(x){ return x[0] === m; }) ? 'rule' : 'map'; }
   anPanel.addEventListener('click', function(e){
     var ct = e.target.closest ? e.target.closest('#anCatSeg button[data-cat]') : null;
     if (ct){
       // another tab takes over (Filip 2026-10-06): what was on goes off, this tab's own choice comes back (anSet.mem);
-      // Liknande is one thing -- straight on
+      // Liknande is one thing -- straight on; Fiska nu too (Alla, or the species it had)
       var c = ct.getAttribute('data-cat');
-      if (c === anSet.cat && (c !== 'similar' || anSet.mode === 'similar')) return;
-      anSet.cat = c; var r = c === 'similar' ? ['similar', []] : anSet.mem[c] || [null, []];
+      if (c === anSet.cat && (c !== 'similar' || anSet.mode === 'similar') && (c !== 'now' || anCatOf(anSet.mode) === 'now')) return;
+      anSet.cat = c; var r = c === 'similar' ? ['similar', []] : anSet.mem[c] || [c === 'now' ? 'n_all' : null, []];
       anSet.combo = r[1].slice(); anApplyMode(r[0]);
       return;
     }
     var b = e.target.closest ? e.target.closest('button[data-m]') : null;
     if (b){ if (b.parentNode.id === 'anChips') anToggleMap(b.getAttribute('data-m')); else anSetMode(b.getAttribute('data-m')); return; }
     var g = e.target.closest ? e.target.closest('button[data-go]') : null;
-    if (g && anRes && anRes.list){ var it = anRes.list[+g.getAttribute('data-go') - 1]; if (it){ showAnPanel(false); startNav('Liknande #' + it.n, it.x, it.y); } }
+    if (g && anRes && anRes.list){ var it = anRes.list[+g.getAttribute('data-go') - 1]; if (it){ showAnPanel(false); startNav(it.nav || 'Liknande #' + it.n, it.x, it.y); } return; }
+    var rw = e.target.closest ? e.target.closest('.anList .li[data-row]') : null;   // (Fiska nu: the place into view above the panel)
+    if (rw && anRes && anRes.list){ var it2 = anRes.list[+rw.getAttribute('data-row') - 1], s2 = Math.max(scale, fitScale * 3), ty = Math.max(90, anPanel.getBoundingClientRect().top) / 2 + 30;
+      if (it2) animateTo(s2, stageW / 2 - it2.x * s2, ty - it2.y * s2, 500); }
   });
   anPanel.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
   sheetSwipe(anPanel, function(){ showAnPanel(false); });
@@ -10247,7 +10273,8 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   function showAnPanel(open){
     if (open && !anPanel.classList.contains('show') && anPanel._resetSize) anPanel._resetSize();
     anPanel.classList.toggle('show', open);
-    if (open){ if (typeof toggleMsgPop === 'function') toggleMsgPop(false); if (hmPanel) hmShowPanel(false); loadCatches(false); anCtlMode = '#'; if (!anRes) anCompute(); else anRender(); }
+    if (open){ if (typeof toggleMsgPop === 'function') toggleMsgPop(false); if (hmPanel) hmShowPanel(false); loadCatches(false); anCtlMode = '#';
+      if (!anRes || (anSet.mode && anSet.mode.indexOf('n_') === 0)) anCompute(); else anRender(); }   // (Fiska nu: "now" has moved on)
   }
   anBtn.addEventListener('click', function(e){ e.stopPropagation(); showAnPanel(!anPanel.classList.contains('show')); });
   anPill.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
@@ -10256,7 +10283,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   document.getElementById('anClear').addEventListener('click', function(){ anApplyMode(null); showAnPanel(false); });
   // "↺ Återställ": everything back to how it was from the start (Filip 2026-10-06) -- every tab's choice, every slider, the lamp.
   // You stay in the tab you're in (Liknande stays on: the tab is the choice). "Mörkare" is in Inställningar: kept.
-  function anStartMode(){ return anSet.cat === 'similar' ? 'similar' : null; }
+  function anStartMode(){ return anSet.cat === 'similar' ? 'similar' : anSet.cat === 'now' ? 'n_all' : null; }
   function anIsDefault(){
     var d = JSON.parse(AN_DEFAULTS); d.mode = anStartMode(); d.dim = anSet.dim;
     if (anSet.ref && anSet.ref === (anSpots()[0] || {}).id) d.ref = anSet.ref;   // (Liknande starts with the first spot)
@@ -10282,7 +10309,8 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   // it: the notes on the result + the controls' notes. Open or not is remembered on the phone (closed at first).
   var PN_INFO_KEY = 'ffmap_panel_info_v1', pnInfoOn = false;
   try { pnInfoOn = localStorage.getItem(PN_INFO_KEY) === '1'; } catch(e){}
-  var AN_INTRO = { map: 'passar kartdatan nedan', rule: 'passar tumregeln nedan', data: 'liknar platserna där gruppen fått fisk', similar: 'liknar platsen du valt' };
+  var AN_INTRO = { map: 'passar kartdatan nedan', rule: 'passar tumregeln nedan', data: 'liknar platserna där gruppen fått fisk', similar: 'liknar platsen du valt',
+    now: 'är bäst att fiska på just nu, enligt gruppens fångster' };
   function pnInfo(P){
     var box = P.querySelector('.pnInfo'), btn = P.querySelector('.pnInfoBtn'), res = P.querySelector('.pnRes'), parts = [];
     if (!box) return;
@@ -10313,7 +10341,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     e.stopPropagation();
     if (mapDraggedJustNow()) return;
     var p = anImgOfCell(+l.getAttribute('data-i'));
-    if (l.classList.contains('sim') && anRes && anRes.list){ var it = anRes.list[+l.textContent - 1]; if (it){ startNav('Liknande #' + it.n, it.x, it.y); return; } }
+    if (l.classList.contains('sim') && anRes && anRes.list){ var it = anRes.list[+l.textContent - 1]; if (it){ startNav(it.nav || 'Liknande #' + it.n, it.x, it.y); return; } }
     showAnPanel(false); setProbe({ x: p.x, y: p.y });
   });
   var toggleAnEl = document.getElementById('toggleAnalysis');
@@ -10462,6 +10490,100 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
       anRangeRow('anCCov', 'Likhet', 5, 9, 1, anSet.cCov, function(v){ return v * 10 + ' % av ' + anCatchPl() + 'na'; }, ['Mest likt', 'Mindre likt']);
   }
   function anCatchPl(){ return (AN_CSP[anSet.mode.slice(2)] || [0, 'fångster'])[1]; }   // ("70 % av gäddorna" on Likhet)
+  /* ================= Kartanalys "Fiska nu" -- where the group caught the most fish at this time =================
+     The competitions' catches in THIS lake (66-catches.js), each weighed by how close it is to now: the day of the
+     year (any year) and the time of day -- a catch a week ago at the same hour weighs a lot, one in July at dawn next
+     to nothing. Few catches near now: the window widens step by step (and says so). Catches within 60 m are one
+     place; the 5 places with the biggest share of the weighed catches, at least 150 m apart. % = that share -- not a
+     real chance (nobody logs the hours without a bite), ⓘ says so. "När": a few hours ahead (anSet.nowH). Filip 2026-10-07. */
+  var AN_NOW_SP = [['all', 'Alla'], ['abborre', 'Abborre'], ['gadda', 'Gädda'], ['gos', 'Gös']];
+  var AN_NOW_MIN = 20, AN_NOW_R = 60, AN_NOW_APART = 150;
+  // [days, hours]: how far from now a catch still weighs (gauss sigma); the first step with enough weighed catches is used
+  var AN_NOW_WIN = [[14, 2], [21, 2], [30, 3], [45, 3], [60, 4], [90, 6], [183, 12]];
+  function anNowList(sp){ return (catchData ? catchData.list : []).filter(function(c){ return (sp === 'all' || c.sp === sp) && c.px != null; }); }
+  function anNowWhen(){ return new Date(Date.now() + (anSet.nowH || 0) * 3600e3); }
+  function anDoy(d){ return Math.floor((Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) - Date.UTC(d.getFullYear(), 0, 0)) / 864e5); }
+  function anNowCompute(A, sp, M){
+    var out = { n: 0, text: '', note: '', pts: null, list: null, labels: [], sv: null, empty: true };
+    if (!catchData){ loadCatches(false); out.text = 'Hämtar fångsterna…'; return out; }
+    var cs = anNowList(sp).filter(function(c){ c._i = anCellOfImg(c.px, c.py); return A.wat[c._i]; });
+    var spName = sp === 'all' ? 'fångster' : (AN_CSP[sp] || [0, sp])[1];
+    if (cs.length < AN_NOW_MIN){
+      out.text = 'För få ' + spName + ' i ' + escHtml(LAKE.name) + ' för tips (' + cs.length + ' av minst ' + AN_NOW_MIN + ').';
+      out.note = 'Fiska nu behöver minst ' + AN_NOW_MIN + ' fångster från tävlingarna i sjön' + (sp === 'all' ? '' : ' av arten') + '. Prova <b>Alla</b>.';
+      return out;
+    }
+    var T = anNowWhen(), td = anDoy(T), th = T.getHours() + T.getMinutes() / 60, win = null, sum = 0;
+    cs.forEach(function(c){ var d = new Date(c.t), dd = Math.abs(anDoy(d) - td), dh = Math.abs(d.getHours() + d.getMinutes() / 60 - th);
+      c._dd = Math.min(dd, 365 - dd); c._dh = Math.min(dh, 24 - dh); });
+    for (var s = 0; s < AN_NOW_WIN.length; s++){
+      win = AN_NOW_WIN[s]; sum = 0;
+      cs.forEach(function(c){ c._w = Math.exp(-0.5 * (c._dd * c._dd / (win[0] * win[0]) + c._dh * c._dh / (win[1] * win[1]))); sum += c._w; });
+      if (sum >= 8) break;
+    }
+    var near = cs.filter(function(c){ return c._w >= 0.25; });
+    out.pts = near.map(function(c){ return { x: c.px, y: c.py }; });
+    // the places: the catch with the most weight within 60 m round it, its catches go; again -- at least 150 m from the others
+    var left = cs.slice(), spots = [];
+    function m(a, b){ var dx = (a.px - b.px) * WEB_METERS_PER_PX, dy = (a.py - b.py) * WEB_METERS_PER_PX; return Math.sqrt(dx * dx + dy * dy); }
+    while (spots.length < 5 && left.length){
+      var best = null, bw = 0;
+      left.forEach(function(c){
+        if (spots.some(function(p){ return m(c, p) < AN_NOW_APART; })) return;
+        var w = 0; left.forEach(function(o){ if (m(c, o) <= AN_NOW_R) w += o._w; });
+        if (w > bw){ bw = w; best = c; }
+      });
+      if (!best || bw < 0.01) break;
+      var mine = left.filter(function(o){ return m(best, o) <= AN_NOW_R; }), sx = 0, sy = 0;
+      mine.forEach(function(o){ sx += o.px * o._w; sy += o.py * o._w; });
+      var p = { px: sx / bw, py: sy / bw, w: bw, cs: mine };
+      if (!A.wat[anCellOfImg(p.px, p.py)]){ p.px = best.px; p.py = best.py; }     // (the middle of a bay's catches can be land)
+      spots.push(p);
+      left = left.filter(function(o){ return mine.indexOf(o) < 0; });
+    }
+    // lit: 60 m round each place (Skala: the biggest share strongest, fading out to the edge)
+    var R = AN_NOW_R / A.cell, W = A.W, sv = anSet.scale ? new Float32Array(A.N) : null, top = spots.length ? spots[0].w : 1;
+    spots.forEach(function(p, k){
+      var ci = anCellOfImg(p.px, p.py), cx = ci % W, cy = Math.floor(ci / W);
+      for (var y = Math.max(0, Math.floor(cy - R)); y <= Math.min(A.H - 1, Math.ceil(cy + R)); y++) for (var x = Math.max(0, Math.floor(cx - R)); x <= Math.min(W - 1, Math.ceil(cx + R)); x++){
+        var i = y * W + x, d = Math.sqrt((x - cx) * (x - cx) + (y - cy) * (y - cy)); if (d > R || !A.wat[i]) continue;
+        if (!M[i]) out.n++; M[i] = 1;
+        if (sv) sv[i] = Math.max(sv[i], p.w / top * (1 - 0.5 * d / R));
+      }
+      out.labels.push({ i: ci, cls: 'sim now', txt: String(k + 1) });
+    });
+    out.sv = sv;
+    out.list = spots.map(function(p, k){
+      var ll = imgPxToLatLon(p.px, p.py), dm = null, cnt = {};
+      if (lastOwnLatLon && lastFix && lastFix.onMap) dm = haversineKm(lastOwnLatLon.lat, lastOwnLatLon.lon, ll.lat, ll.lon) * 1000;
+      p.cs.forEach(function(c){ cnt[c.sp] = (cnt[c.sp] || 0) + 1; });
+      var sps = ['gos', 'abborre', 'gadda'].filter(function(x){ return cnt[x]; }).sort(function(a, b){ return cnt[b] - cnt[a]; }).map(function(x){ return [x, AN_CSP[x][0] + ' ' + cnt[x]]; });
+      return { n: k + 1, x: p.px, y: p.py, dep: A.sm[anCellOfImg(p.px, p.py)], dm: dm, pct: Math.max(1, Math.round(100 * p.w / sum)), sps: sps, nav: 'Fiska nu #' + (k + 1) };
+    });
+    var hh = function(h){ return 'kl ' + h; };
+    var months = {}; near.forEach(function(c){ months[new Date(c.t).getMonth()] = 1; });
+    var mo = Object.keys(months).map(Number).sort(function(a, b){ return a - b; }).map(function(x){ return HM_MON[x]; });
+    var hrs = near.map(function(c){ return new Date(c.t).getHours(); }), h0 = Math.min.apply(null, hrs), h1 = Math.max.apply(null, hrs);
+    var wide = win[0] > 30;
+    out.text = '<b>Bäst ' + (anSet.nowH ? hh(T.getHours()) : 'nu') + '</b> · ' + (sp === 'all' ? 'alla arter' : AN_CSP[sp][0].toLowerCase()) + ', ' + near.length + ' fångster nära i tid' + (wide ? ' (få – bredare)' : '');
+    out.note = '<p><b>Fiska nu</b> visar var gruppen har fått mest fisk vid <b>den här tiden</b> – samma tid på året (vilket år som helst) och på dygnet. ' +
+      'Fångster nära i tid räknas mycket, fångster långt ifrån nästan inget. Fångster inom ' + AN_NOW_R + ' m räknas som en plats.</p>' +
+      '<p><b>%</b> = hur stor del av de fångsterna som togs på platsen. Det är inte en garanti att få fisk – bara var det nappat mest förut. ' +
+      'Där ingen har fiskat finns inga fångster, och fisken kan ha flyttat.</p>' +
+      '<ul class="pnList"><li><b>Underlag:</b> ' + near.length + ' fångster' + (mo.length ? ' (' + mo.join(', ') + (hrs.length ? ', ' + hh(h0) + '–' + (h1 + 1) : '') + ')' : '') + ' av ' + cs.length + ' i sjön.' +
+      (wide ? ' Det fanns få fångster nära i tid, så den räknar med upp till ' + win[0] + ' dagar och ' + win[1] + ' timmar bort.' : '') + '</li>' +
+      '<li><b>När:</b> dra för att se tipsen för senare i dag.</li><li><b>Åk hit</b> visar vägen dit. Tryck på en rad för att se platsen på kartan.</li></ul>';
+    out.empty = !spots.length;
+    return out;
+  }
+  function anNowLbl(v){ return +v ? 'kl ' + new Date(Date.now() + v * 3600e3).getHours() : 'Nu'; }
+  function anNowControls(){ return anRangeRow('anNowH', 'När', 0, 12, 1, anSet.nowH || 0, anNowLbl); }
+  // the species buttons (Alla first), each with its number of catches here
+  function anNowRow(){
+    var row = document.getElementById('anNowChips');
+    row.innerHTML = AN_NOW_SP.map(function(x){ var n = anNowList(x[0]).length;
+      return '<button type="button" data-m="n_' + x[0] + '"' + (n ? '' : ' disabled') + '>' + x[1] + (catchData ? ' ' + n : '') + '</button>'; }).join('');
+  }
   /* ================= "Åk hit" =================
      From a spot's sheet (or a place the analysis found): the lead line is dropped there --
      it shows the depth, the distance by water, the time, and the route is drawn. */
@@ -10904,7 +11026,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   var catchHist = null, catchLive = null, catchLiveTimer = null;   // (catchHist: { at, list, comps, total })
   function catchesChanged(){ catchVer++; catchListeners.forEach(function(f){ try { f(); } catch(e){} }); }
   // Kartanalys: the "Från fångsterna" row, and a species chosen there, follow the catches as they arrive
-  catchListeners.push(function(){ if (anSet.mode && anSet.mode.indexOf('c_') === 0) anCompute(); else if (anPanel.classList.contains('show')) anRender(); });
+  catchListeners.push(function(){ if (anSet.mode && (anSet.mode.indexOf('c_') === 0 || anSet.mode.indexOf('n_') === 0)) anCompute(); else if (anPanel.classList.contains('show')) anRender(); });
 
   // --- turning anything into catches ---
   function catchNum(v){ if (typeof v === 'number') return v; var n = parseFloat(String(v == null ? '' : v).trim().replace(',', '.')); return isFinite(n) ? n : null; }

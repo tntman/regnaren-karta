@@ -67,7 +67,8 @@
   var AN_SCALE_TXT = { depth: 'mitt i djupintervallet', steep: 'där det är brantast', tops: 'där grynnan reser sig mest och hålan är djupast',
     veg: 'där det växer tätast', hard: 'där botten är hårdast', wind: 'där vinden har längst fritt vatten in mot stranden',
     combo: 'där den svagaste delen är starkast', abborre: 'där tumregeln stämmer bäst', gadda: 'där tumregeln stämmer bäst',
-    gos: 'där tumregeln stämmer bäst', similar: 'där det är mest likt platsen' };
+    gos: 'där tumregeln stämmer bäst', similar: 'där det är mest likt platsen', n_all: 'på platsen med störst andel av fångsterna', n_abborre: 'på platsen med störst andel av fångsterna',
+    n_gadda: 'på platsen med störst andel av fångsterna', n_gos: 'på platsen med störst andel av fångsterna' };
   function anDomes(A){
     if (A.domeTop) return A;
     var N = A.N, ft = new Int32Array(N), fh = new Int32Array(N);
@@ -122,9 +123,10 @@
   var anSet = { simF: { d: 1, s: 1, h: 1, v: 1, t: 1 }, simR: 0, mode: null, lo: 4, hi: 6, slope: 10, topP: 0.6, holeP: 0.8, hmin: 3, dim: 0.72, ref: null,
                cF: { d: 1, s: 1, h: 1, v: 1, l: 1, t: 1 }, cCov: 7, size: {},   // (c* = "Från fångsterna", 57-an-catches.js)
                combo: [], near: { tops: 0, veg: 15, hard: 15, wind: 15 },     // Kartdata combined (mode 'combo'): the parts, "inom … m"
-               lamp: 0, mem: {}, scale: 0 };   // scale: "Skala" -- what's found in colour by how strongly it fits (every mode)   // lamp: the lit area 2× brighter (#anGlow); mem: each tab's own choice, [mode, combo] -- back when you go back to it
+               lamp: 0, mem: {}, scale: 0, nowH: 0 };   // nowH: Fiska nu's "När", hours ahead (57-an-now.js)
+   // scale: "Skala" -- what's found in colour by how strongly it fits (every mode)   // lamp: the lit area 2× brighter (#anGlow); mem: each tab's own choice, [mode, combo] -- back when you go back to it
   var AN_DEFAULTS = JSON.stringify(anSet);   // (for "Återställ")
-  anSet.cat = 'map';                            // the category shown: map / rule / data / similar
+  anSet.cat = 'map';                            // the category shown: map / rule / data / similar / now
   try { var sv = JSON.parse(localStorage.getItem(AN_KEY) || 'null'); if (sv) for (var k0 in sv) anSet[k0] = sv[k0]; } catch(e){}
   delete anSet.cm0; delete anSet.cm1; delete anSet.cView;   // (the first Storlek, one range for all species; Fångster's own Tänt/Skala)
   if (!rotState){ anSet.mode = null; anSet.combo = []; anSet.mem = {}; }   // a new start of the app: off, the tabs' choices too (turning the phone keeps it)
@@ -408,6 +410,9 @@
     } else if (m.indexOf('c_') === 0){                    // from the catches (data), 57-an-catches.js
       var cr = anCatchCompute(A, m.slice(2), M);
       n = cr.n; text = cr.text; note = cr.note; sv = cr.sv || null; var cPts = cr.pts, cEmpty = cr.empty;
+    } else if (m.indexOf('n_') === 0){                    // Fiska nu, 57-an-now.js
+      var nr = anNowCompute(A, m.slice(2), M);
+      n = nr.n; text = nr.text; note = nr.note; sv = nr.sv; labels = nr.labels; list = nr.list; cPts = nr.pts; cEmpty = nr.empty && !list;
     } else {                                             // presets (rules of thumb)
       var hn, e2;
       if (m === 'abborre'){
@@ -576,21 +581,26 @@
     document.getElementById('anChips').hidden = cat !== 'map';
     document.getElementById('anPresets').hidden = cat !== 'rule';
     document.getElementById('anDataChips').hidden = cat !== 'data';
+    document.getElementById('anNowChips').hidden = cat !== 'now'; anNowRow();
     document.getElementById('anReset').disabled = anIsDefault();
-    Array.prototype.forEach.call(document.querySelectorAll('#anChips button[data-m], #anPresets button[data-m], #anDataChips button[data-m]'), function(b){
+    Array.prototype.forEach.call(document.querySelectorAll('#anChips button[data-m], #anPresets button[data-m], #anDataChips button[data-m], #anNowChips button[data-m]'), function(b){
       var on = b.getAttribute('data-m') === m || (m === 'combo' && anSet.combo.indexOf(b.getAttribute('data-m')) >= 0);
       b.classList.toggle('on', on); if (b.parentNode.id === 'anChips') b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
     document.getElementById('anChips').classList.toggle('combo', m === 'combo');   // ("+ Djup", "+ Branta kanter": they work together)
     var R = anRes, res = document.getElementById('anResult'), lst = document.getElementById('anListBox');
     lst.innerHTML = '';
     if (!m) res.innerHTML = { map: 'Välj vad du vill hitta på kartan. Det som matchar lyser, resten tonas ner.', rule: 'Tumregler från vanliga fiskeråd – inte fångstdata.',
-      data: 'Var arten liknar platserna där den togs i tävlingarna.', similar: 'Välj en fiskeplats att jämföra med.' }[cat] || '';
+      data: 'Var arten liknar platserna där den togs i tävlingarna.', similar: 'Välj en fiskeplats att jämföra med.', now: 'Välj en art.' }[cat] || '';
     else if (!R) res.innerHTML = 'Djupdatan laddas…';
     else if (R.wait) res.innerHTML = 'Hämtar bottendata…';
     else {
       // (the top row: the result; its explanations are behind ⓘ; the Liknande list stays in the panel)
       res.innerHTML = R.text + (R.note ? '<span class="note">' + R.note + '</span>' : '') + (!anShow ? '<span class="pnHid"> · Dold – slå på Kartanalys i Filter</span>' : '');
-      lst.innerHTML = (R.list ? '<div class="anList">' + (R.list.length ? R.list.map(function(it){
+      lst.innerHTML = (R.list ? '<div class="anList' + (R.list[0] && R.list[0].pct != null ? ' now' : '') + '">' + (R.list.length ? R.list.map(function(it){
+          if (it.pct != null)   // (Fiska nu: the share, the species caught there, depth and how far; tap the row = the map shows it)
+            return '<div class="li" data-row="' + it.n + '"><span class="n">' + it.n + '</span><b class="pct">' + it.pct + ' %</b><span class="mid"><span>' +
+              it.sps.map(function(x){ return '<i class="spDot ' + x[0] + '"></i>' + x[1]; }).join(' ') + '</span><small>' + fmtDepth(it.dep) + ' m djupt' +
+              (it.dm != null ? ' · ' + fmtMeters(it.dm) + ' bort' : '') + '</small></span><button type="button" data-go="' + it.n + '">Åk hit ›</button></div>';
           return '<div class="li"><span class="n">' + it.n + '</span>' + fmtDepth(it.dep) + ' m · lutning ' + Math.round(it.slope) + ' %' +
             '<button type="button" data-go="' + it.n + '">' + (it.dm != null ? fmtMeters(it.dm) + ' · ' : '') + 'Åk hit ›</button></div>';
         }).join('') : '<div class="li">Inga tydliga träffar.</div>') + '</div>' : '');
@@ -658,6 +668,7 @@
     else if (m === 'tops') h = anRangeRow('anTopP', 'Grynnor', 0.3, 2.5, 0.1, anSet.topP, function(v){ return '≥ ' + fmtDepth(+v) + ' m'; }) +
       anRangeRow('anHoleP', 'Hålor', 0.3, 2.5, 0.1, anSet.holeP, function(v){ return '≥ ' + fmtDepth(+v) + ' m'; });
     else if (m && m.indexOf('c_') === 0) h = anCatchControls();
+    else if (m && m.indexOf('n_') === 0) h = anNowControls();
     else if (m === 'hard') h = anRangeRow('anHmin', 'Minst', 1, 4, 1, anSet.hmin, function(v){ return AN_HARD[v - 1]; });
     else if (m === 'similar'){
       var sp = anSpots();
@@ -682,10 +693,10 @@
     if (sizeInput(e, anSet)){ anDataRow(); anLater(); return; }
     var t = e.target, v = parseFloat(t.value);
     if (t.id.indexOf('anNear_') === 0){ anSet.near[t.id.slice(7)] = v; t.nextSibling.textContent = v + ' m'; anLater(); return; }   // (combined: "inom … m")
-    var map = { anSlope: 'slope', anTopP: 'topP', anHoleP: 'holeP', anHmin: 'hmin', anCCov: 'cCov' };
+    var map = { anSlope: 'slope', anTopP: 'topP', anHoleP: 'holeP', anHmin: 'hmin', anCCov: 'cCov', anNowH: 'nowH' };
     if (!map[t.id]) return;
     anSet[map[t.id]] = v;
-    t.nextSibling.textContent = t.id === 'anSlope' ? v + ' %' : t.id === 'anHmin' ? AN_HARD[v - 1] : t.id === 'anCCov' ? v * 10 + ' % av ' + anCatchPl() + 'na' : '≥ ' + fmtDepth(v) + ' m';
+    t.nextSibling.textContent = t.id === 'anNowH' ? anNowLbl(v) : t.id === 'anSlope' ? v + ' %' : t.id === 'anHmin' ? AN_HARD[v - 1] : t.id === 'anCCov' ? v * 10 + ' % av ' + anCatchPl() + 'na' : '≥ ' + fmtDepth(v) + ' m';
     anLater();
   });
   // dragging a handle of a depth range (either handle; they can't cross)
@@ -749,22 +760,25 @@
   document.getElementById('anChips').innerHTML = AN_MODES.map(function(x){ return '<button type="button" data-m="' + x[0] + '">' + x[1] + '</button>'; }).join('');
   document.getElementById('anPresets').innerHTML = AN_PRESETS.map(function(x){ return '<button type="button" data-m="' + x[0] + '">' + x[1] + '</button>'; }).join('');
   // which category a mode is in (the row on top of the panel)
-  function anCatOf(m){ return !m ? null : m === 'similar' ? 'similar' : m.indexOf('c_') === 0 ? 'data' : AN_PRESETS.some(function(x){ return x[0] === m; }) ? 'rule' : 'map'; }
+  function anCatOf(m){ return !m ? null : m === 'similar' ? 'similar' : m.indexOf('c_') === 0 ? 'data' : m.indexOf('n_') === 0 ? 'now' : AN_PRESETS.some(function(x){ return x[0] === m; }) ? 'rule' : 'map'; }
   anPanel.addEventListener('click', function(e){
     var ct = e.target.closest ? e.target.closest('#anCatSeg button[data-cat]') : null;
     if (ct){
       // another tab takes over (Filip 2026-10-06): what was on goes off, this tab's own choice comes back (anSet.mem);
-      // Liknande is one thing -- straight on
+      // Liknande is one thing -- straight on; Fiska nu too (Alla, or the species it had)
       var c = ct.getAttribute('data-cat');
-      if (c === anSet.cat && (c !== 'similar' || anSet.mode === 'similar')) return;
-      anSet.cat = c; var r = c === 'similar' ? ['similar', []] : anSet.mem[c] || [null, []];
+      if (c === anSet.cat && (c !== 'similar' || anSet.mode === 'similar') && (c !== 'now' || anCatOf(anSet.mode) === 'now')) return;
+      anSet.cat = c; var r = c === 'similar' ? ['similar', []] : anSet.mem[c] || [c === 'now' ? 'n_all' : null, []];
       anSet.combo = r[1].slice(); anApplyMode(r[0]);
       return;
     }
     var b = e.target.closest ? e.target.closest('button[data-m]') : null;
     if (b){ if (b.parentNode.id === 'anChips') anToggleMap(b.getAttribute('data-m')); else anSetMode(b.getAttribute('data-m')); return; }
     var g = e.target.closest ? e.target.closest('button[data-go]') : null;
-    if (g && anRes && anRes.list){ var it = anRes.list[+g.getAttribute('data-go') - 1]; if (it){ showAnPanel(false); startNav('Liknande #' + it.n, it.x, it.y); } }
+    if (g && anRes && anRes.list){ var it = anRes.list[+g.getAttribute('data-go') - 1]; if (it){ showAnPanel(false); startNav(it.nav || 'Liknande #' + it.n, it.x, it.y); } return; }
+    var rw = e.target.closest ? e.target.closest('.anList .li[data-row]') : null;   // (Fiska nu: the place into view above the panel)
+    if (rw && anRes && anRes.list){ var it2 = anRes.list[+rw.getAttribute('data-row') - 1], s2 = Math.max(scale, fitScale * 3), ty = Math.max(90, anPanel.getBoundingClientRect().top) / 2 + 30;
+      if (it2) animateTo(s2, stageW / 2 - it2.x * s2, ty - it2.y * s2, 500); }
   });
   anPanel.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
   sheetSwipe(anPanel, function(){ showAnPanel(false); });
@@ -776,7 +790,8 @@
   function showAnPanel(open){
     if (open && !anPanel.classList.contains('show') && anPanel._resetSize) anPanel._resetSize();
     anPanel.classList.toggle('show', open);
-    if (open){ if (typeof toggleMsgPop === 'function') toggleMsgPop(false); if (hmPanel) hmShowPanel(false); loadCatches(false); anCtlMode = '#'; if (!anRes) anCompute(); else anRender(); }
+    if (open){ if (typeof toggleMsgPop === 'function') toggleMsgPop(false); if (hmPanel) hmShowPanel(false); loadCatches(false); anCtlMode = '#';
+      if (!anRes || (anSet.mode && anSet.mode.indexOf('n_') === 0)) anCompute(); else anRender(); }   // (Fiska nu: "now" has moved on)
   }
   anBtn.addEventListener('click', function(e){ e.stopPropagation(); showAnPanel(!anPanel.classList.contains('show')); });
   anPill.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
@@ -785,7 +800,7 @@
   document.getElementById('anClear').addEventListener('click', function(){ anApplyMode(null); showAnPanel(false); });
   // "↺ Återställ": everything back to how it was from the start (Filip 2026-10-06) -- every tab's choice, every slider, the lamp.
   // You stay in the tab you're in (Liknande stays on: the tab is the choice). "Mörkare" is in Inställningar: kept.
-  function anStartMode(){ return anSet.cat === 'similar' ? 'similar' : null; }
+  function anStartMode(){ return anSet.cat === 'similar' ? 'similar' : anSet.cat === 'now' ? 'n_all' : null; }
   function anIsDefault(){
     var d = JSON.parse(AN_DEFAULTS); d.mode = anStartMode(); d.dim = anSet.dim;
     if (anSet.ref && anSet.ref === (anSpots()[0] || {}).id) d.ref = anSet.ref;   // (Liknande starts with the first spot)
@@ -811,7 +826,8 @@
   // it: the notes on the result + the controls' notes. Open or not is remembered on the phone (closed at first).
   var PN_INFO_KEY = 'ffmap_panel_info_v1', pnInfoOn = false;
   try { pnInfoOn = localStorage.getItem(PN_INFO_KEY) === '1'; } catch(e){}
-  var AN_INTRO = { map: 'passar kartdatan nedan', rule: 'passar tumregeln nedan', data: 'liknar platserna där gruppen fått fisk', similar: 'liknar platsen du valt' };
+  var AN_INTRO = { map: 'passar kartdatan nedan', rule: 'passar tumregeln nedan', data: 'liknar platserna där gruppen fått fisk', similar: 'liknar platsen du valt',
+    now: 'är bäst att fiska på just nu, enligt gruppens fångster' };
   function pnInfo(P){
     var box = P.querySelector('.pnInfo'), btn = P.querySelector('.pnInfoBtn'), res = P.querySelector('.pnRes'), parts = [];
     if (!box) return;
@@ -842,7 +858,7 @@
     e.stopPropagation();
     if (mapDraggedJustNow()) return;
     var p = anImgOfCell(+l.getAttribute('data-i'));
-    if (l.classList.contains('sim') && anRes && anRes.list){ var it = anRes.list[+l.textContent - 1]; if (it){ startNav('Liknande #' + it.n, it.x, it.y); return; } }
+    if (l.classList.contains('sim') && anRes && anRes.list){ var it = anRes.list[+l.textContent - 1]; if (it){ startNav(it.nav || 'Liknande #' + it.n, it.x, it.y); return; } }
     showAnPanel(false); setProbe({ x: p.x, y: p.y });
   });
   var toggleAnEl = document.getElementById('toggleAnalysis');

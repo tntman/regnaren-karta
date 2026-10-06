@@ -43,7 +43,7 @@ with sync_playwright() as p:
     pg.click('#anBtn'); pg.wait_for_timeout(400)
     cats = pg.eval_on_selector_all('#anCatSeg button', 'e => e.map(x => x.textContent)')
     chips = pg.eval_on_selector_all('#anChips button', 'e => e.map(x => x.textContent)') + pg.eval_on_selector_all('#anPresets button[data-m]', 'e => e.map(x => x.textContent)')
-    check('the panel: categories on top (Kartdata / Tumregler / Fångster / Liknande), Kartdata shown', cats == ['Kartdata', 'Tumregler', 'Fångster', 'Liknande'] and pg.is_visible('#anChips') and not pg.is_visible('#anPresets'), cats)
+    check('the panel: categories on top (Kartdata / Tumregler / Fångster / Liknande / Fiska nu), Kartdata shown', cats == ['Kartdata', 'Tumregler', 'Fångster', 'Liknande', 'Fiska nu'] and pg.is_visible('#anChips') and not pg.is_visible('#anPresets'), cats)
     check('...every analysis + the rules of thumb', chips == ['Djup', 'Branta kanter', 'Grynnor & hålor', 'Växter', 'Hård botten', 'Vindkant', 'Abborre', 'Gädda', 'Gös'], chips)
     pg.click('#anCatSeg button[data-cat="rule"]'); pg.wait_for_timeout(150)
     check('...Tumregler: its three, like any other button (no orange edge)', pg.is_visible('#anPresets') and not pg.is_visible('#anChips') and

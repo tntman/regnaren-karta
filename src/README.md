@@ -78,6 +78,7 @@ specificitet.
 | `54-panels.js` | bottenpaneler (`sheetSwipe`) |
 | `56-analysis.js` | Kartanalys |
 | `57-an-catches.js` | Kartanalys "Från fångsterna (data)": per art ur tävlingarnas fångster |
+| `57-an-now.js` | Kartanalys "Fiska nu": var gruppen fått mest fisk vid den här tiden (dag på året + klockslag), 5 platser med % |
 | `58-akhit-spotdata.js` | Åk hit, vad som finns under en plats |
 | `59-names.js` | Namn (Filter → Lager): OSM-namn ur `LAKE.names`, avlusning, av som standard |
 | `60-lightning-alarm.js` | åskvarning |

@@ -100,3 +100,18 @@ Kod: `src/js/57-an-catches.js` (+ inkopplat i 56-analysis.js), test `tests/test_
   man fick fisk (inte var all fisk finns), månad(er), fångster utanför djupkartan räknas inte.
 - Inte samtidigt som heatmapen (som alla Kartanalys-lägen).
 - **ⓘ** (2026-10-05): alltid en inledningsrad överst ("Kartanalys lyser upp det i sjön som …", `AN_INTRO` per flik). Fångster: raden är kort och säger vad man ska göra ("Gädda · Fiska i det tända: 70 % av gäddorna på 15 % av sjön · Se ⓘ"; Skala: "Fiska där det lyser starkast"), högst två rader (få fångster: bara i ⓘ, antalet syns på artknappen). Andelen är det verkliga utfallet – kan bli högre än Likhet när fångster ligger på likadana platser. ⓘ har hela meningen (art + storlek, togs oftast, "Med inställningarna nedan" är x % tänd, där togs N av M gäddor (70 %), n× tätare än om fångsterna låg jämnt över sjön = andelen fångster / andelen av sjön, räknat mot HELA sjön även där ingen fiskat) + listan Fångster, "Visar platser som liknar fångstplatserna, även där ingen har fiskat än", sedan reglagen. "Tydligt/Måttligt/Svagt mönster" och raden Täthet är borttagna.
+
+## Fiska nu (2026-10-07)
+Kod: `src/js/57-an-now.js` (+ inkopplat i 56-analysis.js: fliken `now`, lägena `n_all`/`n_abborre`/`n_gadda`/`n_gos`), test `tests/test_annow.py`.
+- Femte fliken i Kartanalys, till höger om Liknande. Går på direkt med **Alla** (som Liknande); art-knappar med antal fångster (`#anNowChips`).
+- Tävlingarnas fångster i sjön (`catchData.list`), var och en vägd efter hur nära **nu** den är: dag på året (vilket år som helst)
+  och klockslag, gauss. Fönstret börjar på 14 dagar / 2 h och breddas steg för steg (`AN_NOW_WIN`, upp till 183 dagar / 12 h) tills
+  de vägda fångsterna är minst 8; breddat (> 30 dagar) står "(få – bredare)" på raden och hur långt i ⓘ.
+- **Platserna:** fångsten med mest vikt inom 60 m runt sig (`AN_NOW_R`), dess fångster tas bort, igen – minst 150 m från de andra
+  (`AN_NOW_APART`), högst 5. Platsen = viktade mitten (land → fångsten själv). **%** = platsens andel av all vikt – inte en riktig chans
+  (ingen loggar timmarna utan napp), ⓘ säger det rakt ut.
+- Under 20 fångster (`AN_NOW_MIN`, arten eller alla): en text i stället för tips.
+- Kartan: 60 m runt varje plats tänd (mask som de andra lägena); Skala = störst andel starkast. Orange nummer 1–5 (`.anLbl.sim.now`),
+  listan med nummer, %, arterna (antal), djup, avstånd, **Åk hit ›**. Tryck på en rad = kartan visar platsen ovanför rutan (rutan står kvar).
+  Fångsterna nära i tid som vita prickar.
+- **När** (`anSet.nowH`, 0–12 h framåt): tipsen för senare i dag. "Nu" räknas om varje gång rutan öppnas och när fångsterna kommer.

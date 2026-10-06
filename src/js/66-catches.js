@@ -17,7 +17,7 @@
   var catchHist = null, catchLive = null, catchLiveTimer = null;   // (catchHist: { at, list, comps, total })
   function catchesChanged(){ catchVer++; catchListeners.forEach(function(f){ try { f(); } catch(e){} }); }
   // Kartanalys: the "Från fångsterna" row, and a species chosen there, follow the catches as they arrive
-  catchListeners.push(function(){ if (anSet.mode && anSet.mode.indexOf('c_') === 0) anCompute(); else if (anPanel.classList.contains('show')) anRender(); });
+  catchListeners.push(function(){ if (anSet.mode && (anSet.mode.indexOf('c_') === 0 || anSet.mode.indexOf('n_') === 0)) anCompute(); else if (anPanel.classList.contains('show')) anRender(); });
 
   // --- turning anything into catches ---
   function catchNum(v){ if (typeof v === 'number') return v; var n = parseFloat(String(v == null ? '' : v).trim().replace(',', '.')); return isFinite(n) ? n : null; }
