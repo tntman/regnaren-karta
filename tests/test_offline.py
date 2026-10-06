@@ -15,7 +15,7 @@ with sync_playwright() as p:
     check('Settings: "Ladda ner Regnaren för offline"', pg.inner_text('#offTitle') == 'Ladda ner Regnaren för offline' and pg.inner_text('#offBtn') == 'Ladda ner', pg.inner_text('#offStatus'))
     n = pg.evaluate("(function(){ return document.getElementById('offStatus').textContent; })()")
     total = int(re.match(r'(\d+) kartbitar', n).group(1))
-    check('about 1 200 pieces (4 styles, zoom 14-18)', 900 < total < 1600, n)
+    check('about 2 000 pieces (4 styles: bases zoom 15-17 + 2 kinds of lines zoom 15-18)', 1600 < total < 2400, n)
     # start, pause after a moment
     pg.click('#offBtn'); pg.wait_for_timeout(700)
     check('downloading: progress bar + "Laddar ner… x av y"', pg.is_visible('#offBar') and pg.inner_text('#offStatus').startswith('Laddar ner'), pg.inner_text('#offStatus'))
@@ -39,7 +39,7 @@ with sync_playwright() as p:
         pg.mouse.wheel(0, -400); pg.wait_for_timeout(60)
     pg.wait_for_timeout(2000)
     tiles = pg.eval_on_selector_all('#detailLayer img', 'e=>e.map(x=>[x.naturalWidth, x.classList.contains("ok")])')
-    check('no network: map + zoomed-in pieces still show', pg.eval_on_selector('#mapImg', 'e=>e.naturalWidth') > 1000 and tiles and all(t[0] == 512 and t[1] for t in tiles), tiles[:4])
+    check('no network: map + zoomed-in pieces still show', pg.eval_on_selector('#mapImg', 'e=>e.naturalWidth') > 1000 and tiles and all(t[0] in (512, 528) and t[1] for t in tiles), tiles[:4])
     ctx.set_offline(False)
     # remove
     pg.click('#menuBtn'); pg.click('#menuItemSettings'); pg.wait_for_timeout(300)

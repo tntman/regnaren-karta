@@ -10,18 +10,18 @@
      Liknande. Not together with Kartanalys (both tone the map down). Off after a restart,
      kept through a rotation. The panel closed: a "Heatmap" pill under the weather chip. */
   var HM_KEY = lakeKey('ffmap_heatmap_v1', 'heatmap_v1');
-  var hmSet = { style: 'heat', sp: 'all', spOn: { abborre: 1, gadda: 1, gos: 1 }, comp: 'all', rad: 70, str: 50, hexM: 60, cnt: 1, big: 1, names: 0 };
+  var hmSet = { style: 'heat', sp: 'all', comp: 'all', rad: 70, str: 50, hexM: 60, cnt: 1, big: 1, names: 0, h0: 0, h1: 23, who: '', size: {} };   // (size: "Storlek" per species, sizeRow in 56-analysis.js)   // (who: only one person's catches -- from their profile, 67-profiles.js)
   var HM_DEFAULTS = JSON.stringify(hmSet);   // (for "Återställ")
   try { var hsv = JSON.parse(localStorage.getItem(HM_KEY) || 'null'); if (hsv) for (var hk in hsv) hmSet[hk] = hsv[hk]; } catch(e){}
+  delete hmSet.cm0; delete hmSet.cm1; delete hmSet.spOn;   // (the first Storlek: one range for all; Per art: its own species toggles)
   function hmSave(){ try { localStorage.setItem(HM_KEY, JSON.stringify(hmSet)); } catch(e){} }
-  var hmFitPending = false;  // (turned on by hand: show the catches if none is on screen)
   // hmOn = chosen (map-style list / its panel); hmShow = shown on the map (Filter → Lager → Heatmap, like Kartanalys)
   var HM_SHOW_KEY = 'ffmap_show_heatmap_v1', hmShow = true;
   try { hmShow = localStorage.getItem(HM_SHOW_KEY) !== '0'; } catch(e){}
   var hmOn = false, hmHeatCache = null, hmHexCells = null, hmCardList = null, hmCardI = 0, hmPendingCard = null;
   var hmCanvas = document.getElementById('hmLayer'), hmCtx = hmCanvas.getContext('2d');
   var hmSatCanvas = document.getElementById('hmSat'), hmSatCtx = hmSatCanvas.getContext('2d');
-  var hmPanel = document.getElementById('hmPanel'), hmCard = document.getElementById('hmCard'), hmPill = document.getElementById('hmPill'), toggleHmEl = document.getElementById('toggleHeatmap');
+  var hmPanel = document.getElementById('hmPanel'), hmCard = document.getElementById('hmCard'), hmPill = document.getElementById('hmPill'), toggleHmEl = document.getElementById('toggleHeatmap'), hmBtn = document.getElementById('hmBtn');
   var HM_COL = { abborre: [255, 122, 26], gadda: [53, 210, 74], gos: [58, 134, 255] };
   var HM_SP = [['abborre', 'Abborre', 'abborren'], ['gadda', 'Gädda', 'gäddan'], ['gos', 'Gös', 'gösen']];
   var HM_MON = ['jan', 'feb', 'mar', 'apr', 'maj', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
@@ -51,19 +51,26 @@
     var by = {}; hmAll().forEach(function(c){ (by[c.comp] = by[c.comp] || []).push(c); });
     return Object.keys(by).map(function(k){ return { id: k, list: by[k] }; }).sort(function(a, b){ return b.list[0].t - a.list[0].t; });
   }
-  function hmInComp(c){ return hmSet.comp === 'all' || c.comp === hmSet.comp; }
-  function hmVisible(){
+  function hmInComp(c){ return (hmSet.comp === 'all' || c.comp === hmSet.comp) && (!hmSet.who || hmSet.who.split('|').some(function(n){ return catchPlain(c.who) === catchPlain(n); })); }
+  function hmHour(c){ return new Date(c.t).getHours(); }
+  function hmHourOn(){ return hmSet.h0 > 0 || hmSet.h1 < 23; }
+
+  function hmSpOk(c){ return hmSet.sp === 'all' || c.sp === hmSet.sp; }
+  function hmSizeKey(){ return hmSet.sp; }   // (Storlek: its own range per species)
+  function hmSizeBounds(){ return sizeBounds(hmAll().filter(function(c){ return hmInComp(c) && hmSpOk(c); })); }
+  function hmVisible(anyHour){   // (anyHour: ignore the time window -- the "När" graph shows the whole day)
     return hmAll().filter(function(c){
       if (!hmInComp(c)) return false;
-      return hmSet.style === 'species' ? !!hmSet.spOn[c.sp] : (hmSet.sp === 'all' || c.sp === hmSet.sp);
+      if (!anyHour && hmHourOn() && (hmHour(c) < hmSet.h0 || hmHour(c) > hmSet.h1)) return false;
+      if (!sizeOk(sizeOf(hmSet, hmSizeKey()), c)) return false;
+      return hmSpOk(c);
     });
   }
 
   // ---- on / off, the panel, the pill ----
   function hmSetOn(on, openPanel, restoring){
-    var was = hmOn; hmOn = !!on;
+    hmOn = !!on;
     if (hmOn){
-      if (!was && !restoring) hmFitPending = true;
       if (!restoring && !hmShow) hmSetShow(true);   // (turned on by hand: shown, like choosing a Kartanalys mode)
       loadCatches(false);
       if (anSet.mode){ anSet.mode = null; anSave(); anCtlMode = '#'; anCompute(); }   // (not together with Kartanalys)
@@ -72,21 +79,7 @@
     hmShowUi();
     hmHeatCache = null;
     if (openPanel) hmShowPanel(true);
-    hmRenderPanel(); hmDraw(); hmFitIfNone();
-  }
-  // fewer than half of the catches on screen (above the panel)? Move the map so they all are
-  function hmFitIfNone(){
-    if (!hmFitPending || !hmOn || !catchData || !catchData.fresh && catchLoading) return;
-    var L = hmVisible(); if (!L.length){ if (catchData.fresh) hmFitPending = false; return; }
-    hmFitPending = false;
-    var top = 150, bot = hmPanel.classList.contains('show') ? Math.min(stageH * 0.62, hmPanel.offsetHeight || stageH * 0.5) + 20 : 200, side = 40;
-    var seen = L.filter(function(c){ var x = originX + c.px * scale, y = originY + c.py * scale; return x > 0 && x < stageW && y > top && y < stageH - bot; }).length;
-    if (seen >= L.length / 2) return;
-    var x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
-    L.forEach(function(c){ x0 = Math.min(x0, c.px); y0 = Math.min(y0, c.py); x1 = Math.max(x1, c.px); y1 = Math.max(y1, c.py); });
-    var sc = Math.min((stageW - 2 * side) / Math.max(1, x1 - x0), (stageH - top - bot) / Math.max(1, y1 - y0));
-    sc = Math.max(minScale, Math.min(maxScale, Math.min(sc, fitScale * 6)));
-    animateTo(sc, stageW / 2 - (x0 + x1) / 2 * sc, top + (stageH - top - bot) / 2 - (y0 + y1) / 2 * sc, 600);
+    hmRenderPanel(); hmDraw();
   }
   function hmShowPanel(open){
     if (open && !hmOn){ hmSetOn(true, true); return; }
@@ -105,6 +98,7 @@
     hmCanvas.classList.toggle('on', vis); hmSatCanvas.classList.toggle('on', vis);
     hmPill.hidden = !vis;                               // (the pill: something is shown on the map)
     toggleHmEl.checked = hmShow;
+    hmBtn.classList.toggle('on', vis); hmBtn.setAttribute('aria-pressed', vis ? 'true' : 'false');
   }
   function hmSetShow(show){
     hmShow = !!show; try { localStorage.setItem(HM_SHOW_KEY, hmShow ? '1' : '0'); } catch(e){}
@@ -112,6 +106,7 @@
     hmShowUi(); hmHeatCache = null; hmRenderPanel(); hmDraw();
   }
   toggleHmEl.addEventListener('change', function(){ hmSetShow(toggleHmEl.checked); });
+  hmBtn.addEventListener('click', function(){ if (hmOn) hmSetOn(false); else hmSetOn(true, true); });   // (the quick on / off next to the map button)
   hmShowUi();
   hmPill.addEventListener('click', function(e){ e.stopPropagation(); hmShowPanel(!hmPanel.classList.contains('show')); });
 
@@ -125,11 +120,14 @@
     inComp.forEach(function(c){ cnt[c.sp]++; });
     var dot = function(sp){ return '<span class="hmSpDot" style="background:rgb(' + HM_COL[sp] + ')"></span>'; };
     // (each row: its name first, then the choices -- one line, sideways if they don't fit)
-    document.getElementById('hmSp').innerHTML = '<span class="rowLbl">' + (st === 'species' ? 'Arter' : 'Art') + '</span>' + (st === 'species'
-      ? HM_SP.map(function(x){ return '<button type="button" data-spt="' + x[0] + '" class="' + (hmSet.spOn[x[0]] ? 'on' : '') + '">' + dot(x[0]) + x[1] + ' ' + cnt[x[0]] + '</button>'; }).join('')
-      : [['all', 'Alla']].concat(HM_SP).map(function(x){ return '<button type="button" data-sp="' + x[0] + '" class="' + (hmSet.sp === x[0] ? 'on' : '') + '">' + x[1] + '</button>'; }).join(''));
+    // (the same choice in every tab; Per art also shows each species' colour and count)
+    document.getElementById('hmSp').innerHTML = '<span class="rowLbl">Art</span>' + [['all', 'Alla']].concat(HM_SP).map(function(x){
+      return '<button type="button" data-sp="' + x[0] + '" class="' + (hmSet.sp === x[0] ? 'on' : '') + '">' + (st === 'species' && x[0] !== 'all' ? dot(x[0]) + x[1] + ' ' + cnt[x[0]] : x[1]) + '</button>';
+    }).join('');
     document.getElementById('hmComp').innerHTML = '<span class="rowLbl">Tävling</span><button type="button" data-comp="all" class="' + (hmSet.comp === 'all' ? 'on' : '') + '">Alla</button>' +
       comps.map(function(c){ return '<button type="button" data-comp="' + escHtml(c.id) + '" class="' + (hmSet.comp === c.id ? 'on' : '') + '">' + escHtml(hmCompName(c.id)) + ' · ' + hmDateRange(c.list) + '</button>'; }).join('');
+    var sb = hmSizeBounds(), sr = sizeOf(hmSet, hmSizeKey());
+    document.getElementById('hmSize').innerHTML = sizeRow(sr, sb, hmSizeKey());
     var rng = function(k, l, min, max, stp){ return '<div class="anRange"><label>' + l + '</label><input type="range" data-r="' + k + '" min="' + min + '" max="' + max + '" step="' + stp + '" value="' + hmSet[k] + '"><output id="hmOut_' + k + '">' + hmOutTxt(k) + '</output></div>'; };
     var tog = function(k, l){ return '<button type="button" data-t="' + k + '" class="' + (hmSet[k] ? 'on' : '') + '">' + (hmSet[k] ? '✓ ' : '') + l + '</button>'; };
     document.getElementById('hmCtl').innerHTML =
@@ -137,17 +135,63 @@
       : st === 'species' ? rng('rad', 'Radie', 20, 200, 10)
       : st === 'hex' ? '<div class="pnRow2"><div class="anSeg" aria-label="Rutans storlek">' + [30, 60, 120].map(function(m){ return '<button type="button" data-hx="' + m + '" class="' + (hmSet.hexM === m ? 'on' : '') + '">' + m + ' m</button>'; }).join('') + '</div><div class="anChips">' + tog('cnt', 'Visa antal') + '</div></div>'
       : '<div class="anChips">' + tog('big', 'Större prick = större fisk') + tog('names', 'Visa namn') + '</div>';
+    hmRenderTime();
     var res = document.getElementById('hmResult'), all = hmAll();
     if (!catchData) res.innerHTML = 'Hämtar fångster…';
-    else if (!all.length) res.innerHTML = catchErr ? 'Kunde inte hämta fångsterna (ingen anslutning?).' : 'Inga fångster i ' + escHtml(LAKE.name) + ' än.<span class="note">Admin läser in dem i Inställningar → Admin → Fångster.</span>';
+    else if (!all.length) res.innerHTML = catchErr ? 'Kunde inte hämta fångsterna (ingen anslutning?).' : 'Inga fångster i ' + escHtml(LAKE.name) + ' än.';
     else {
       var v = hmVisible(), c2 = { abborre: 0, gadda: 0, gos: 0 }; v.forEach(function(c){ c2[c.sp]++; });
-      res.innerHTML = '<b>' + v.length + ' fångster</b> i ' + escHtml(LAKE.name) + ' · ' + HM_SP.map(function(x){ return c2[x[0]] + ' ' + x[1].toLowerCase(); }).join(', ') +
+      res.innerHTML = (hmSet.who ? '<button type="button" class="hmWho" data-who="">Bara ' + escHtml(hmSet.who.split('|').join(', ')) + ' ✕</button> ' : '') + '<b>' + v.length + ' fångster</b> i ' + escHtml(LAKE.name) + (catchLiveComp() ? ' · <b class="hmLive">Live</b>' : '') + (hmHourOn() ? ' · kl ' + hmHourTxt() : '') + (sb && sizeOn(sr, sb) ? ' · ' + sizeTxt(sr, sb) : '') + ' · ' + HM_SP.map(function(x){ return c2[x[0]] + ' ' + x[1].toLowerCase(); }).join(', ') +
         '<span class="note">' + (st === 'dots' ? 'Tryck på en prick för allt om fångsten.' : st === 'hex' ? 'Tryck på en ruta för fångsterna i den.' : 'Tryck på kartan där det är färg för fångsterna där.') + '</span>' +
         (!hmShow ? '<span class="pnHid"> · Dold – slå på Heatmap i Filter</span>' : '');
     }
     pnInfo(hmPanel);
   }
+  // "När": a bar per hour of the day (catches passing species + competition); press / drag = a time window that filters the map
+  function hmHourTxt(){ return ('0' + hmSet.h0).slice(-2) + '–' + ('0' + (hmSet.h1 + 1)).slice(-2); }
+  function hmRenderTime(){
+    var el = document.getElementById('hmTime'), L = hmAll().length ? hmVisible(true) : [], n = [];
+    if (!L.length){ el.innerHTML = ''; return; }
+    var lo = 24, hi = -1, h, i; for (h = 0; h < 24; h++) n[h] = 0;
+    L.forEach(function(c){ n[hmHour(c)]++; });
+    for (h = 0; h < 24; h++) if (n[h]){ lo = Math.min(lo, h); hi = Math.max(hi, h); }
+    var mx = Math.max.apply(null, n), best = 0, bs = -1;                     // (best 3 hours in a row)
+    for (h = 0; h <= 21; h++){ var s = n[h] + n[h + 1] + n[h + 2]; if (s > bs){ bs = s; best = h; } }
+    var bars = '', hrs = '';
+    for (h = lo; h <= hi; h++){
+      var v = n[h] / mx, rgba = hmRamp(0.25 + 0.75 * v);   // (never the see-through dark end)
+      bars += '<i data-h="' + h + '" class="' + (h >= hmSet.h0 && h <= hmSet.h1 ? 'on' : '') + '" style="height:' + Math.max(4, Math.round(v * 100)) + '%;background:rgb(' + Math.round(rgba[0]) + ',' + Math.round(rgba[1]) + ',' + Math.round(rgba[2]) + ')"><b>' + n[h] + '</b></i>';
+      hrs += '<span>' + ('0' + h).slice(-2) + '</span>';
+    }
+    el.setAttribute('data-lo', lo); el.setAttribute('data-hi', hi);
+    el.innerHTML = '<div class="hmTimeHead"><span class="rowLbl">När</span><span class="hmTimeBest">Bäst kl ' + ('0' + best).slice(-2) + '–' + ('0' + (best + 3)).slice(-2) + ' · ' + Math.round(100 * bs / L.length) + ' %</span></div>' +
+      '<div class="hmBars">' + bars + '</div><div class="hmAx">' + hrs + '</div>';
+  }
+  (function(){
+    var el = document.getElementById('hmTime'), a = -1, moved = false, prev = null;
+    function hourAt(e){
+      var b = el.querySelector('.hmBars'); if (!b) return -1;
+      var r = b.getBoundingClientRect(), lo = +el.getAttribute('data-lo'), hi = +el.getAttribute('data-hi');
+      return lo + Math.max(0, Math.min(hi - lo, Math.floor((e.clientX - r.left) / r.width * (hi - lo + 1))));
+    }
+    function apply(h){ hmSet.h0 = Math.min(a, h); hmSet.h1 = Math.max(a, h); hmSave(); hmHeatCache = null; hmRenderPanel(); hmDraw(); }
+    el.addEventListener('pointerdown', function(e){
+      e.stopPropagation(); if (!el.querySelector('.hmBars')) return;
+      a = hourAt(e); moved = false; prev = [hmSet.h0, hmSet.h1];
+      try { el.setPointerCapture(e.pointerId); } catch(x){}
+      apply(a);
+    });
+    el.addEventListener('pointermove', function(e){
+      if (a < 0) return; var h = hourAt(e); if (h === (hmSet.h0 === a ? hmSet.h1 : hmSet.h0)) return;
+      moved = true; apply(h);
+    });
+    function up(){
+      if (a < 0) return;
+      if (!moved && prev[0] === a && prev[1] === a){ hmSet.h0 = 0; hmSet.h1 = 23; hmSave(); hmHeatCache = null; hmRenderPanel(); hmDraw(); }   // (the same hour again = all)
+      a = -1;
+    }
+    el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
+  })();
   function hmOutTxt(k){ return k === 'rad' ? hmSet.rad + ' m' : hmSet.str < 34 ? 'Svag' : hmSet.str < 67 ? 'Mellan' : 'Stark'; }
   hmPanel.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
   hmPanel.addEventListener('click', function(e){
@@ -155,20 +199,26 @@
     var a;
     if ((a = t.getAttribute('data-s'))) hmSet.style = a;
     else if ((a = t.getAttribute('data-sp'))) hmSet.sp = a;
-    else if ((a = t.getAttribute('data-spt'))) hmSet.spOn[a] = hmSet.spOn[a] ? 0 : 1;
     else if ((a = t.getAttribute('data-comp'))) hmSet.comp = a;
     else if ((a = t.getAttribute('data-hx'))) hmSet.hexM = +a;
+    else if (t.hasAttribute('data-who')) hmSet.who = '';
     else if ((a = t.getAttribute('data-t'))) hmSet[a] = hmSet[a] ? 0 : 1;
     else return;
     hmSave(); hmHeatCache = null; hmRenderPanel(); hmDraw();
   });
   hmPanel.addEventListener('input', function(e){
     var k = e.target.getAttribute && e.target.getAttribute('data-r'); if (!k) return;
+    if (sizeInput(e, hmSet)){
+      hmSave();
+      document.getElementById('hmReset').disabled = JSON.stringify(hmSet) === HM_DEFAULTS;
+      hmHeatCache = null; hmDraw(); return;
+    }
     hmSet[k] = +e.target.value; hmSave();
     var o = document.getElementById('hmOut_' + k); if (o) o.textContent = hmOutTxt(k);
     document.getElementById('hmReset').disabled = JSON.stringify(hmSet) === HM_DEFAULTS;   // (↺ at once, while dragging)
     hmHeatCache = null; hmDraw();
   });
+  hmPanel.addEventListener('change', function(e){ var k = e.target.getAttribute && e.target.getAttribute('data-r'); if (k === 'cm0' || k === 'cm1') hmRenderPanel(); });   // (let go: the counts and "När" follow)
   document.getElementById('hmClose').addEventListener('click', function(){ hmShowPanel(false); });
   document.getElementById('hmOff').addEventListener('click', function(){ hmSetOn(false); });
   document.getElementById('hmReset').addEventListener('click', function(){ hmSet = JSON.parse(HM_DEFAULTS); hmSave(); hmHeatCache = null; hmRenderPanel(); hmDraw(); resetDone(this); });
@@ -207,6 +257,7 @@
     return { q: rq, r: rr };
   }
   function hmDraw(){
+    shoreDraw();
     var dpr = window.devicePixelRatio || 1, W = stage.clientWidth, H = stage.clientHeight;
     [hmCanvas, hmSatCanvas].forEach(function(c){ if (c.width !== Math.round(W * dpr) || c.height !== Math.round(H * dpr)){ c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); } });
     hmCtx.setTransform(dpr, 0, 0, dpr, 0, 0); hmCtx.clearRect(0, 0, W, H);
@@ -244,7 +295,7 @@
       L.forEach(function(c){ var h = hmHexOf(c.px * mI, c.py * mI, R), k = h.q + ',' + h.r; (cells[k] = cells[k] || { q: h.q, r: h.r, list: [] }).list.push(c); });
       for (var k in cells) mx = Math.max(mx, cells[k].list.length);
       var Rpx = R / mI * scale;
-      hmCtx.textAlign = 'center'; hmCtx.textBaseline = 'middle'; hmCtx.font = '700 ' + Math.max(8, Math.min(13, Rpx * 0.75)) + 'px Calibri,"Segoe UI",sans-serif';
+      hmCtx.textAlign = 'center'; hmCtx.textBaseline = 'middle'; hmCtx.font = '700 ' + Math.max(8, Math.min(13, Rpx * 0.75)) + 'px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
       for (var k2 in cells){
         var h2 = cells[k2], cx = originX + R * Math.sqrt(3) * (h2.q + h2.r / 2) / mI * scale, cy = originY + R * 1.5 * h2.r / mI * scale;
         h2.x = cx; h2.y = cy;
@@ -255,7 +306,7 @@
         hmCtx.closePath();
         hmCtx.fillStyle = 'rgba(' + (col[0] | 0) + ',' + (col[1] | 0) + ',' + (col[2] | 0) + ',0.75)'; hmCtx.fill();
         hmCtx.lineWidth = 1; hmCtx.strokeStyle = 'rgba(255,255,255,0.55)'; hmCtx.stroke();
-        if (hmSet.cnt && Rpx >= 8){ hmCtx.fillStyle = col[0] * 0.3 + col[1] * 0.59 + col[2] * 0.11 < 140 ? '#fff' : '#0B2A3A'; hmCtx.fillText(String(h2.list.length), cx, cy + 0.5); }
+        if (hmSet.cnt && Rpx >= 8){ hmCtx.fillStyle = col[0] * 0.3 + col[1] * 0.59 + col[2] * 0.11 < 140 ? '#fff' : '#1C212C'; hmCtx.fillText(String(h2.list.length), cx, cy + 0.5); }
       }
       hmHexCells = { R: R, cells: cells, rpx: Rpx };
     } else {
@@ -263,9 +314,9 @@
         if (p.x < -20 || p.y < -20 || p.x > W + 20 || p.y > H + 20) return;
         var col = HM_COL[p.c.sp], r = hmDotR(p.c);
         hmCtx.beginPath(); hmCtx.arc(p.x, p.y, r, 0, 7); hmCtx.fillStyle = 'rgba(' + col + ',0.9)'; hmCtx.fill();
-        hmCtx.lineWidth = 1.3; hmCtx.strokeStyle = 'rgba(11,42,58,0.9)'; hmCtx.stroke();
+        hmCtx.lineWidth = 1.3; hmCtx.strokeStyle = 'rgba(28,33,44,0.9)'; hmCtx.stroke();
         if (hmSet.names && p.c.who){
-          hmCtx.font = '600 11px Calibri,"Segoe UI",sans-serif'; hmCtx.textAlign = 'left'; hmCtx.textBaseline = 'middle';
+          hmCtx.font = '600 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif'; hmCtx.textAlign = 'left'; hmCtx.textBaseline = 'middle';
           hmCtx.lineWidth = 3; hmCtx.strokeStyle = 'rgba(6,14,20,0.85)'; hmCtx.strokeText(p.c.who, p.x + r + 3, p.y);
           hmCtx.fillStyle = '#fff'; hmCtx.fillText(p.c.who, p.x + r + 3, p.y);
         }
@@ -283,7 +334,7 @@
   // to about one drawn point, the line where it crosses 0,5 -- see anField / edgeW)
   var hmShoreBox = { p: null }, hmShoreCache = null, HM_NOMASK = null;
   function hmShoreLayer(W, H){
-    var A = anBase(); if (!A) return null;
+    var A = AN || shoreBase(); if (!A) return null;
     var STEP = viewStep(W, H), key = [originX.toFixed(1), originY.toFixed(1), scale.toFixed(5), W, H, STEP].join('|');
     if (hmShoreCache && hmShoreCache.key === key) return hmShoreCache;
     if (!HM_NOMASK || HM_NOMASK.length !== A.N) HM_NOMASK = new Uint8Array(A.N);
@@ -312,6 +363,36 @@
   function hmDrawShore(W, H){
     var sh = hmShoreLayer(W, H); if (!sh) return;
     hmCtx.imageSmoothingEnabled = true; hmCtx.drawImage(sh.cv, 0, 0, sh.cv.width * sh.STEP, sh.cv.height * sh.STEP);
+  }
+  // only the lake field (anBase works out slopes, tops etc. too -- too much just for a line on the plain map)
+  var SHORE_A = null;
+  function shoreBase(){
+    if (SHORE_A) return SHORE_A;
+    var g = loadDepthGrid(); if (!g) return null;
+    var N = DEPTH_W * DEPTH_H, lake = new Uint8Array(N);
+    for (var i = 0; i < N; i++) lake[i] = g[i] !== 255 ? 1 : 0;
+    return (SHORE_A = { W: DEPTH_W, H: DEPTH_H, N: N, lake: lake });
+  }
+  // "Strandlinje" (Inställningar -> Kartan, on by default): the same line on the plain map. Not under Heatmap or
+  // Kartanalys -- they draw their own (called from hmDraw / anDraw)
+  var shoreCanvas = document.getElementById('shoreLayer'), shoreCtx = shoreCanvas.getContext('2d'), SHORE_KEY = 'ffmap_shore_v1', shoreOn = true;
+  try { shoreOn = localStorage.getItem(SHORE_KEY) !== '0'; } catch(e){}
+  var toggleShoreEl = document.getElementById('toggleShore');
+  toggleShoreEl.checked = shoreOn;
+  toggleShoreEl.addEventListener('change', function(){
+    shoreOn = toggleShoreEl.checked;
+    try { localStorage.setItem(SHORE_KEY, shoreOn ? '1' : '0'); } catch(e){}
+    shoreDraw();
+  });
+  function shoreDraw(){
+    if (!shoreCanvas) return;          // (render before this file has run)
+    var dpr = window.devicePixelRatio || 1, W = stage.clientWidth, H = stage.clientHeight;
+    var vis = shoreOn && !(hmOn && hmShow) && !(anShow && anSet.mode && anRes && anRes.M) && W >= 2 && H >= 2;
+    shoreCanvas.classList.toggle('on', vis); if (!vis) return;
+    if (shoreCanvas.width !== Math.round(W * dpr) || shoreCanvas.height !== Math.round(H * dpr)){ shoreCanvas.width = Math.round(W * dpr); shoreCanvas.height = Math.round(H * dpr); }
+    shoreCtx.setTransform(dpr, 0, 0, dpr, 0, 0); shoreCtx.clearRect(0, 0, W, H);
+    var sh = hmShoreLayer(W, H); if (!sh) return;
+    shoreCtx.imageSmoothingEnabled = true; shoreCtx.drawImage(sh.cv, 0, 0, sh.cv.width * sh.STEP, sh.cv.height * sh.STEP);
   }
   function hmDotR(c){ return hmSet.big ? Math.max(3.5, Math.min(11, 3 + c.cm / 14)) : 5.5; }
 
@@ -359,13 +440,15 @@
     document.getElementById('hmCardKick').textContent = 'FÅNGST · ' + hmCompName(c.comp).toUpperCase();
     document.getElementById('hmCardTitle').innerHTML = '<span class="hmSpDot" style="width:13px;height:13px;background:rgb(' + HM_COL[c.sp] + ')"></span>' + hmSpName(c.sp) + (c.cm ? ' ' + String(c.cm).replace('.', ',') + ' cm' : '');
     document.getElementById('hmCardData').innerHTML = [['Vem', c.who || '–'], ['När', hmWhen(c.t)], ['Djup', dep != null ? fmtDepth(dep) + ' m' : '–'], ['Plats', rank + ' av ' + same.length]]
-      .map(function(t){ return '<div class="wpTile"><i>' + t[0] + '</i><b>' + escHtml(t[1]) + '</b></div>'; }).join('');
+      .map(function(t, k){ var pf = !k && c.who; return '<div class="wpTile' + (pf ? ' pfLink" data-who="' + escHtml(pf) : '') + '"><i>' + t[0] + '</i><b>' + escHtml(t[1]) + '</b></div>'; }).join('');
+    catchImg(document.getElementById('hmCardImg'), c.img);
     document.getElementById('hmCardNote').textContent = (rank === 1 ? 'Största ' : hmOrdinal(rank) + ' största ') + hmSpName(c.sp, 2) + ' i tävlingen' +
       ' · ' + (near ? near + ' fångster till inom 50 m' : 'inga andra fångster inom 50 m');
     document.getElementById('hmCardNav').hidden = hmCardList.length < 2;
     document.getElementById('hmCardPos').textContent = (hmCardI + 1) + ' av ' + hmCardList.length + ' här';
   }
   hmCard.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
+  document.getElementById('hmCardData').addEventListener('click', function(e){ var t = e.target.closest && e.target.closest('.pfLink'); if (t) openProfile(t.getAttribute('data-who')); });
   sheetSwipe(hmCard, hmCloseCard);
   document.getElementById('hmCardClose').addEventListener('click', hmCloseCard);
   document.getElementById('hmCardPrev').addEventListener('click', function(){ if (!hmCardList) return; hmCardI = (hmCardI - 1 + hmCardList.length) % hmCardList.length; hmFillCard(); hmDraw(); });
@@ -382,7 +465,7 @@
   });
 
   catchListeners.push(function(){
-    hmHeatCache = null; hmRenderPanel(); hmDraw(); hmFitIfNone();
+    hmHeatCache = null; hmRenderPanel(); hmDraw();
     if (hmPendingCard && catchData && catchData.list.length){       // (a catch that was open before a rotation)
       var ids = hmPendingCard.ids, L = hmAll().filter(function(c){ return ids.indexOf(c.id) >= 0; });
       L.sort(function(a, b){ return ids.indexOf(a.id) - ids.indexOf(b.id); });

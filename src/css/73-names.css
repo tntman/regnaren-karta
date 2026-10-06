@@ -1,0 +1,8 @@
+  /* ================= "Namn" (Filter, Lager): place names from OpenStreetMap -- off by default ================= */
+  #osmNames{position:absolute;inset:0;z-index:11;pointer-events:none;display:none;}   /* furthest back: under track, route, spots and boats, taps go through to the map */
+  #osmNames.on{display:block;}
+  .osmN{position:absolute;left:0;top:0;white-space:nowrap;will-change:transform;opacity:var(--nOp,.5);}
+  .osmN::before{content:"";position:absolute;left:calc(var(--nDot,1.75px) / -2);top:calc(var(--nDot,1.75px) / -2);width:var(--nDot,1.75px);height:var(--nDot,1.75px);border-radius:50%;background:#fff;box-shadow:0 0 0 .4px rgba(20,24,34,.8);}
+  .osmN span{position:absolute;left:7px;top:calc((var(--nSz,12px) + 4px) / -2);font:700 var(--nSz,12px)/calc(var(--nSz,12px) + 4px) -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;color:#fff;
+    text-shadow:0 0 3px rgba(20,24,34,.95),0 0 3px rgba(20,24,34,.95),0 1px 2px rgba(20,24,34,.9);}
+  .osmN.land span{font-weight:600;color:#f4eed8;}

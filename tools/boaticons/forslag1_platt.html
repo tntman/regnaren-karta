@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="sv"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Båtikoner – förslag</title>
+<style>
+:root{--bla:#0E2532;--natt:#06141C;--dim:#E8EEF0;--vass:#8FA3AD;--barn:#E8A33D;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--natt);color:var(--dim);font:14px/1.4 Calibri,"Segoe UI",system-ui,sans-serif;padding:16px 18px 40px}
+h1{font:700 17px/1.2 Calibri,sans-serif;letter-spacing:.08em;text-transform:uppercase;margin:4px 0 4px}
+h2{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--vass);margin:26px 0 10px}
+p.sub{color:var(--vass);margin:0 0 14px;max-width:760px}
+.bar{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:14px;align-items:center;background:rgba(14,37,50,.92);backdrop-filter:blur(6px);padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);margin-bottom:6px}
+.bar label{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--vass);margin-right:4px}
+.sw{width:26px;height:26px;border-radius:50%;border:3px solid transparent;box-shadow:0 0 0 1px rgba(255,255,255,.25);cursor:pointer;padding:0}
+.sw.on{border-color:#fff}
+input[type=range]{accent-color:var(--barn);width:150px;vertical-align:middle}
+.val{color:var(--barn);font-weight:700;min-width:36px;display:inline-block}
+button.b{background:rgba(255,255,255,.08);color:var(--dim);border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:6px 12px;font:600 13px Calibri,sans-serif;cursor:pointer}
+button.b.on{background:var(--barn);color:var(--bla);border-color:var(--barn)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
+.card{background:var(--bla);border-radius:12px;border:1px solid rgba(255,255,255,.1);overflow:hidden}
+.big{height:118px;display:flex;align-items:center;justify-content:center;background-size:cover;background-position:center}
+.row{display:flex;justify-content:space-around;align-items:center;padding:6px 4px;gap:4px}
+.row>div{flex:1;height:52px;display:flex;align-items:center;justify-content:center;gap:6px;border-radius:8px;background-size:cover;background-position:center}
+.nm{padding:7px 10px 9px;font-weight:700;font-size:13.5px}
+.nm small{display:block;font-weight:400;color:var(--vass);font-size:12px}
+.dark{background:#06141C}.light{background:#EEF2F0}
+.scene{position:relative;width:100%;max-width:800px;aspect-ratio:4/3;border-radius:12px;overflow:hidden;background-size:cover;background-position:center}
+.scene .boat{position:absolute;transform:translate(-50%,-50%)}
+.scene .lbl{position:absolute;transform:translateY(-50%);font-size:10.5px;font-weight:600;color:var(--dim);background:rgba(4,12,17,.6);padding:3px 8px;border-radius:10px;white-space:nowrap}
+.scene .me{filter:drop-shadow(0 0 6px rgba(255,150,30,.9))}
+.legend{display:flex;gap:18px;flex-wrap:wrap;color:var(--vass);font-size:12.5px;margin-top:8px}
+svg{overflow:visible;display:block}
+/* ikonens delar */
+.hull{stroke:#0B2A3A;stroke-width:1.5;stroke-linejoin:round}
+.c{fill:currentColor;stroke:#0B2A3A;stroke-width:1.1;stroke-linejoin:round}
+.dk{fill:#16323F}
+.lt{fill:#fff;fill-opacity:.3}
+.sh{fill:#000;fill-opacity:.2}
+.sh2{fill:#000;fill-opacity:.36}
+.w{fill:#F4F7F8;stroke:#0B2A3A;stroke-width:.9;stroke-linejoin:round}
+.ln{fill:none;stroke:#0B2A3A;stroke-width:1.1;stroke-linecap:round;stroke-opacity:.7}
+.lnw{fill:none;stroke:#fff;stroke-width:1.3;stroke-linecap:round}
+.mot{fill:#22333B;stroke:#0B2A3A;stroke-width:1;stroke-linejoin:round}
+.wood{fill:#C9975A;stroke:#0B2A3A;stroke-width:.8}
+.oar{fill:none;stroke:#8A6236;stroke-width:1.8;stroke-linecap:round}
+.blade{fill:#C9975A;stroke:#0B2A3A;stroke-width:.8}
+.pad{fill:none;stroke:#26363E;stroke-width:1.5;stroke-linecap:round}
+.padb{fill:#F4F7F8;stroke:#0B2A3A;stroke-width:.9}
+.sail{fill:#FBFCFC;stroke:#0B2A3A;stroke-width:.9;stroke-linejoin:round}
+.glass{fill:none;stroke:#A9DCF5;stroke-width:1.7;stroke-linecap:round}
+.beak{fill:#F2A93B;stroke:#0B2A3A;stroke-width:.9;stroke-linejoin:round}
+.dome{fill:#CDEFFF;stroke:#0B2A3A;stroke-width:.9}
+.lamp{fill:#FFE27A;stroke:#0B2A3A;stroke-width:.5}
+.beam{fill:#FFE27A;fill-opacity:.75}
+.skin{fill:#E9B98A;stroke:#0B2A3A;stroke-width:.8}
+.halo *{fill:none!important;stroke:#fff!important;stroke-width:4.2!important;stroke-opacity:.95!important;stroke-linejoin:round;stroke-linecap:round}
+.shadow *{fill:#000!important;stroke:#000!important;stroke-width:1!important;fill-opacity:1!important;stroke-opacity:1!important}
+.ext .hull,.ext .c,.ext .mot{stroke-width:1.1}
+</style></head><body>
+<svg width="0" height="0" style="position:absolute"><defs>
+ <filter id="soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="1.7"/></filter>
+ <linearGradient id="hl" x1="0" y1="0" x2="1" y2="1">
+  <stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".42" stop-color="#fff" stop-opacity="0"/>
+  <stop offset=".7" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".22"/></linearGradient>
+</defs></svg>
+
+<h1>Båtikoner – förslag</h1>
+<p class="sub">12 ikoner + dagens pil, sedda rakt uppifrån med nosen uppåt (0°). Samma ritning i två stilar: <b>platt</b> (som pilen i dag: vit halo + mörk kontur) och <b>3D-känsla</b> (skugga på vattnet, mörkare sida neråt, ljus högdager uppe till vänster – ljuset står still när båten vrids). Färgen = personens färg. Stora rutan visar ritningen; raderna under visar <b>40 px och 28 px</b> mot mörk botten, ljus botten och kartan.</p>
+
+<div class="bar">
+ <span><label>Färg</label><span id="sws"></span></span>
+ <span><label>Riktning</label><input id="ang" type="range" min="0" max="359" value="0"> <span class="val" id="angv">0°</span> <button class="b" id="spin">Snurra</button></span>
+ <span><label>Karta</label><button class="b on" data-bg="s1">Djup (s1)</button> <button class="b" data-bg="v1">v1</button> <button class="b" data-bg="c1">c1</button></span>
+</div>
+
+<h2>Platt</h2><div class="grid" id="g-flat"></div>
+<h2>3D-känsla (SVG: skugga + sida + högdager)</h2><div class="grid" id="g-3d"></div>
+<h2>Så här ser det ut på kartan (36 px, verklig storlek)</h2>
+<div class="scene" id="scene"></div>
+<div class="legend"><span>Orange glöd = du själv (som i dag).</span><span>Övriga = andra i gruppen, var och en med sin ikon och färg; vänstra halvan platt, högra 3D.</span></div>
+
+<script>
+var BG={s1:'../../docs/lakes/regnaren/map_v4_s1.jpg',v1:'../../docs/lakes/regnaren/map_v4_v1.jpg',c1:'../../docs/lakes/regnaren/map_v4_c1.jpg'};
+var COLORS=['#FF7A00','#E5484D','#F5C518','#2EC4B6','#3A86FF','#9B6BFF','#FF5FA2','#F4F7F8','#6B7B83'];
+var ICONS=[
+{id:'pil',name:'Pil',sub:'som i dag',hull:'M24 6.5L38 41.5L24 33.1L10 41.5Z'},
+{id:'fiske',name:'Fiskebåt',sub:'konsol + utombordare',
+ hull:'M24 4.5C30.2 8.6 33 16 33 24.5L33 38.5Q33 41.5 30 41.5L18 41.5Q15 41.5 15 38.5L15 24.5C15 16 17.8 8.6 24 4.5Z',
+ under:'<rect class="mot" x="20.5" y="39.5" width="7" height="6.5" rx="2"/><rect class="dk" x="22.6" y="45.6" width="2.8" height="1.8" rx=".6"/>',
+ top:'<path class="lt" d="M24 8.6C28.6 12.2 30.6 17.6 30.6 24.5L30.6 37.6Q30.6 39.2 29 39.2L19 39.2Q17.4 39.2 17.4 37.6L17.4 24.5C17.4 17.6 19.4 12.2 24 8.6Z"/><path class="c" d="M24 8.6C27.2 11 28.9 14 29.6 17L18.4 17C19.1 14 20.8 11 24 8.6Z"/><path class="ln" d="M24 10.8L24 15.4"/><path class="glass" d="M20 21.3Q24 18.3 28 21.3"/><rect class="w" x="20" y="21.3" width="8" height="6.2" rx="1.8"/><circle class="dk" cx="24" cy="24.3" r="1.3"/><rect class="dk" x="19" y="31" width="10" height="3.4" rx="1.4"/>'},
+{id:'rodd',name:'Roddbåt',sub:'tofter och åror',
+ hull:'M24 4.5C30.5 9.5 33 17 33 25.5C33 32.5 31.2 38 28.5 41.5L19.5 41.5C16.8 38 15 32.5 15 25.5C15 17 17.5 9.5 24 4.5Z',
+ under:'<path class="oar" d="M16 23.5L6.5 30M32 23.5L41.5 30"/><ellipse class="blade" cx="5.6" cy="30.6" rx="1.7" ry="3.8" transform="rotate(56 5.6 30.6)"/><ellipse class="blade" cx="42.4" cy="30.6" rx="1.7" ry="3.8" transform="rotate(-56 42.4 30.6)"/>',
+ top:'<path class="lt" d="M24 8.5C29 12.6 30.8 18.6 30.8 25.5C30.8 31.5 29.4 36 27.3 39.2L20.7 39.2C18.6 36 17.2 31.5 17.2 25.5C17.2 18.6 19 12.6 24 8.5Z"/><path class="ln" d="M24 9.5L24 16"/><rect class="wood" x="17.4" y="16.2" width="13.2" height="2.8" rx=".8"/><rect class="wood" x="16.6" y="25.6" width="14.8" height="2.8" rx=".8"/><path class="wood" d="M19.6 35L28.4 35L27.3 39.2L20.7 39.2Z"/><circle class="dk" cx="16.4" cy="23.5" r="1"/><circle class="dk" cx="31.6" cy="23.5" r="1"/>'},
+{id:'kajak',name:'Kajak',sub:'paddlare + paddel',
+ hull:'M24 2.5C26.8 9 28.6 17 28.6 24C28.6 31 26.8 39 24 45.5C21.2 39 19.4 31 19.4 24C19.4 17 21.2 9 24 2.5Z',
+ top:'<path class="ln" d="M24 6L24 18.5M24 33.5L24 42"/><path class="ln" d="M22.2 11.5L25.8 13.5M25.8 11.5L22.2 13.5"/><ellipse class="dk" cx="24" cy="26" rx="3.5" ry="5.8"/><circle class="skin" cx="24" cy="25.4" r="2.5"/>',
+ over:'<path class="pad" d="M9.5 22.2L38.5 27.8"/><ellipse class="padb" cx="8.2" cy="22" rx="4" ry="1.9" transform="rotate(11 8.2 22)"/><ellipse class="padb" cx="39.8" cy="28" rx="4" ry="1.9" transform="rotate(11 39.8 28)"/>'},
+{id:'ponton',name:'Pontonbåt',sub:'soffa + bord',
+ hull:'M15 9Q15.4 5.6 17.5 5.4Q19.6 5.6 20 8.4L28 8.4Q28.4 5.6 30.5 5.4Q32.6 5.6 33 9Q35 9 35 12L35 39Q35 41.5 32.5 41.5L15.5 41.5Q13 41.5 13 39L13 12Q13 9 15.5 8.5Z',
+ under:'<rect class="mot" x="20.5" y="39.5" width="7" height="6.5" rx="2"/>',
+ top:'<rect class="lt" x="15.4" y="10.2" width="17.2" height="29" rx="2.5"/><path class="w" d="M17 14.5Q17 13 18.5 13L20.2 13L20.2 33.4L28.4 33.4L28.4 36.8L18.5 36.8Q17 36.8 17 35.3Z"/><rect class="w" x="28" y="13" width="3" height="9.5" rx="1.2"/><rect class="dk" x="27.6" y="25.4" width="3.4" height="4.6" rx="1"/><circle class="dk" cx="24" cy="23" r="2.3"/><path class="ln" d="M21 10.2L27 10.2"/>'},
+{id:'bass',name:'Bassboat',sub:'låg, snabb, stor motor',
+ hull:'M24 3.5C29.5 9.5 33.5 18 34.2 28L34.2 38.5Q34.2 42 30.7 42L17.3 42Q13.8 42 13.8 38.5L13.8 28C14.5 18 18.5 9.5 24 3.5Z',
+ under:'<rect class="mot" x="20" y="40" width="8" height="7.2" rx="2.4"/>',
+ top:'<path class="w" d="M24 7.5C26.8 11 28.6 14.5 29.6 18L27.6 18C26.8 15.2 25.6 12.6 24 10.6C22.4 12.6 21.2 15.2 20.4 18L18.4 18C19.4 14.5 21.2 11 24 7.5Z"/><path class="sh" d="M17.6 20L30.4 20L31.4 29.4L16.6 29.4Z"/><circle class="dk" cx="24" cy="23.4" r="1.8"/><rect class="w" x="27.6" y="25" width="4.2" height="3.8" rx="1"/><rect class="dk" x="17.4" y="31" width="5.6" height="5.8" rx="1.8"/><rect class="dk" x="25" y="31" width="5.6" height="5.8" rx="1.8"/>'},
+{id:'segel',name:'Segelbåt',sub:'storsegel + fock',
+ hull:'M24 3.5C30 9.5 32.2 17.5 32.2 26.5C32.2 33.5 30.8 38.6 29.2 42L18.8 42C17.2 38.6 15.8 33.5 15.8 26.5C15.8 17.5 18 9.5 24 3.5Z',
+ top:'<path class="lt" d="M24 7.5C28.7 12.5 30 19 30 26.5C30 32.5 29 36.8 27.6 39.8L20.4 39.8C19 36.8 18 32.5 18 26.5C18 19 19.3 12.5 24 7.5Z"/><path class="w" d="M20.4 18.5Q24 16 27.6 18.5L27.6 29L20.4 29Z"/><rect class="dk" x="20.2" y="31" width="7.6" height="8" rx="2"/>',
+ over:'<path class="sail" d="M24 16.2Q33.4 26 24.6 40.4L23.6 40.4Z"/><path class="ln" d="M24.6 20Q29.4 26 25.4 34"/><path class="sail" d="M24 5Q29.2 10.2 24 15.8Z"/><circle class="dk" cx="24" cy="16.2" r="1.5"/>'},
+{id:'sjobuss',name:'Sjöbuss',sub:'tak, styrhytt, rand',
+ hull:'M24 2.5C30 3.5 33 7.5 33 13.5L33 40Q33 44.5 28.5 44.5L19.5 44.5Q15 44.5 15 40L15 13.5C15 7.5 18 3.5 24 2.5Z',
+ top:'<path class="ln" d="M24 5L24 9.5"/><rect class="w" x="17.3" y="11.5" width="13.4" height="28" rx="3"/><path class="dk" d="M18.6 14Q24 10.8 29.4 14L29.4 16.6Q24 14 18.6 16.6Z"/><rect class="c" x="22.6" y="18.5" width="2.8" height="18.5" rx="1.2"/><circle class="dk" cx="20" cy="35" r="1"/><circle class="dk" cx="28" cy="35" r="1"/><circle class="dk" cx="20" cy="21" r="1"/><circle class="dk" cx="28" cy="21" r="1"/>'},
+{id:'fisk',name:'Fisk',sub:'ögon, fenor, stjärt',
+ hull:'M24 3.5C29.8 7.5 31.8 15 31 24.5C30.4 30.5 28.2 34.8 25.6 37.2L31 44.5Q24 42.4 17 44.5L22.4 37.2C19.8 34.8 17.6 30.5 17 24.5C16.2 15 18.2 7.5 24 3.5Z',
+ under:'<path class="c" d="M18 17.5Q11 19.5 10.5 25.5Q14.5 22.8 18.3 22.8Z"/><path class="sh2" d="M18 17.5Q11 19.5 10.5 25.5Q14.5 22.8 18.3 22.8Z"/><path class="c" d="M30 17.5Q37 19.5 37.5 25.5Q33.5 22.8 29.7 22.8Z"/><path class="sh2" d="M30 17.5Q37 19.5 37.5 25.5Q33.5 22.8 29.7 22.8Z"/>',
+ top:'<path class="sh" d="M24 8.5C26.4 15 26.4 27 24 35.5C21.6 27 21.6 15 24 8.5Z"/><path class="ln" d="M24 17L24 31"/><path class="ln" d="M19.4 15.6Q24 18.2 28.6 15.6"/><circle class="w" cx="20.4" cy="10.8" r="1.8"/><circle class="dk" cx="20.1" cy="10.5" r=".85"/><circle class="w" cx="27.6" cy="10.8" r="1.8"/><circle class="dk" cx="27.9" cy="10.5" r=".85"/><path class="ln" d="M24 39L24 42.6M21.4 41.4L22.6 39.4M26.6 41.4L25.4 39.4"/>'},
+{id:'anka',name:'Anka',sub:'näbb, halsring, vingar',
+ hull:'M24 5.5C27.8 5.5 30 8.3 30 11.5C30 13.6 29 15.2 27.6 16.2C31 17.6 33 21.5 33 27C33 35 29 41 24 44C19 41 15 35 15 27C15 21.5 17 17.6 20.4 16.2C19 15.2 18 13.6 18 11.5C18 8.3 20.2 5.5 24 5.5Z',
+ under:'<path class="beak" d="M21.4 8Q21.8 2 24 1.8Q26.2 2 26.6 8Z"/>',
+ top:'<circle class="sh2" cx="24" cy="11.5" r="5.3"/><path class="lnw" d="M20.4 16.4Q24 18.4 27.6 16.4"/><path class="sh" d="M18 22C17 30 19 37 23 41C21.5 33 21.5 26 22.6 20.5Z"/><path class="sh" d="M30 22C31 30 29 37 25 41C26.5 33 26.5 26 25.4 20.5Z"/><path class="lnw" d="M19.6 30Q20.4 34.5 22.4 37.5M28.4 30Q27.6 34.5 25.6 37.5" stroke-opacity=".6"/><circle class="dk" cx="21.2" cy="9.6" r=".95"/><circle class="dk" cx="26.8" cy="9.6" r=".95"/>'},
+{id:'haj',name:'Haj',sub:'ryggfena, bröstfenor',
+ hull:'M24 3C27.5 6 29 12 29 19L37 26Q37.5 28 35 27.5L28.6 25C28 31 26.5 36 25 38.5L30 45Q24 43 18 45L23 38.5C21.5 36 20 31 19.4 25L13 27.5Q10.5 28 11 26L19 19C19 12 20.5 6 24 3Z',
+ top:'<path class="lt" d="M24 4.6C25.6 6 26.3 8 26.5 10L21.5 10C21.7 8 22.4 6 24 4.6Z"/><path class="sh" d="M19.2 20.4L13 26.3L19.4 24Z"/><path class="sh" d="M28.8 20.4L35 26.3L28.6 24Z"/><path class="ln" d="M20.4 13.4L21.4 16M21.6 12.8L22.5 15.4M27.6 13.4L26.6 16M26.4 12.8L25.5 15.4"/><path class="sh2" d="M24 17L26.4 27.5Q24 26.4 21.6 27.5Z"/><path class="ln" d="M24 17L26.4 27.5Q24 26.4 21.6 27.5Z"/><circle class="dk" cx="21.4" cy="9.4" r=".95"/><circle class="dk" cx="26.6" cy="9.4" r=".95"/>'},
+{id:'ubat',name:'Ubåt',sub:'torn, roder, propeller',
+ hull:'M24 3C27.8 3 29.5 8 29.5 14L29.5 34C29.5 39.5 27 43 24 44C21 43 18.5 39.5 18.5 34L18.5 14C18.5 8 20.2 3 24 3Z',
+ under:'<path class="c" d="M18.8 11L12.5 13Q12 15.6 13.5 15.6L18.8 15Z"/><path class="c" d="M29.2 11L35.5 13Q36 15.6 34.5 15.6L29.2 15Z"/><path class="c" d="M19.6 37L14.5 41L15.5 42.6L20.8 40.5Z"/><path class="c" d="M28.4 37L33.5 41L32.5 42.6L27.2 40.5Z"/><path class="mot" d="M21.5 43.4L26.5 43.4L25.6 46.4L22.4 46.4Z"/>',
+ top:'<path class="lt" d="M24 5C26.4 5 27.4 8.5 27.4 13L20.6 13C20.6 8.5 21.6 5 24 5Z"/><path class="ln" d="M24 14L24 15M24 27.5L24 40"/><rect class="sh2" x="21.3" y="15.5" width="5.4" height="11" rx="2.7"/><rect class="ln" x="21.3" y="15.5" width="5.4" height="11" rx="2.7"/><circle class="w" cx="24" cy="18.6" r="1"/><circle class="dk" cx="24" cy="33" r="1.3"/>'},
+{id:'ufo',name:'UFO',sub:'kupol + ljus, ljuset fram',
+ hull:'M9 24A15 15 0 1 1 39 24A15 15 0 1 1 9 24Z',
+ under:'<path class="beam" d="M20.5 10L24 1.8L27.5 10Z"/>',
+ top:'<circle class="sh" cx="24" cy="24" r="11.6"/><circle class="lt" cx="24" cy="24" r="10"/><circle class="c" cx="24" cy="24" r="8.8"/><circle class="dome" cx="24" cy="24" r="6.6"/><ellipse fill="#fff" fill-opacity=".85" cx="21.8" cy="21.4" rx="2.3" ry="1.4" transform="rotate(-35 21.8 21.4)"/>'+
+  [0,45,90,135,180,225,270,315].map(function(a){var r=a*Math.PI/180,x=(24+13*Math.sin(r)).toFixed(2),y=(24-13*Math.cos(r)).toFixed(2);return a===0?'<circle fill="#fff" stroke="#0B2A3A" stroke-width=".6" cx="'+x+'" cy="'+y+'" r="1.9"/>':'<circle class="lamp" cx="'+x+'" cy="'+y+'" r="1.25"/>';}).join('')}
+];
+var uid=0;
+function rot(a,s){return '<g transform="rotate('+a+' 24 24)">'+s+'</g>';}
+function icon(ic,o){
+ var a=o.angle||0, hull='<path class="hull" fill="currentColor" d="'+ic.hull+'"/>', u=ic.under||'', t=ic.top||'', ov=ic.over||'', s='';
+ if(o.mode==='3d'){
+  var id='k'+(uid++);
+  s+='<g filter="url(#soft)" opacity=".42" class="shadow" transform="translate(2.6 3.8)">'+rot(a,u+hull)+'</g>';
+  if(ov) s+='<g filter="url(#soft)" opacity=".3" class="shadow" transform="translate(4.6 6)">'+rot(a,ov)+'</g>';
+  s+='<g class="halo"><g transform="translate(0 3.2)">'+rot(a,u+hull)+'</g>'+rot(a,u+hull)+'</g>';
+  [3.2,2.4,1.6,.8].forEach(function(d){ s+='<g class="ext" transform="translate(0 '+d+')">'+rot(a,u+hull+'<path fill="#000" fill-opacity=".42" d="'+ic.hull+'"/>')+'</g>'; });
+  s+=rot(a,u+hull+t);
+  s+='<clipPath id="'+id+'"><path transform="rotate('+a+' 24 24)" d="'+ic.hull+'"/></clipPath><rect x="0" y="0" width="48" height="48" fill="url(#hl)" clip-path="url(#'+id+')"/>';
+  if(ov) s+='<g transform="translate(0 -1.4)"><g class="halo">'+rot(a,ov)+'</g>'+rot(a,ov)+'</g>';
+ } else {
+  s+='<g class="halo">'+rot(a,u+hull)+'</g>'+rot(a,u+hull+t);
+  if(ov) s+='<g class="halo">'+rot(a,ov)+'</g>'+rot(a,ov);
+ }
+ return '<svg width="'+o.size+'" height="'+o.size+'" viewBox="0 0 48 48" style="color:'+o.color+'">'+s+'</svg>';
+}
+var st={color:COLORS[0],angle:0,bg:'s1'};
+function bgUrl(){return 'url('+BG[st.bg]+')';}
+function render(){
+ ['flat','3d'].forEach(function(m){
+  document.getElementById('g-'+m).innerHTML=ICONS.map(function(ic){
+   var o=function(sz){return {mode:m,angle:st.angle,color:st.color,size:sz};};
+   return '<div class="card"><div class="big" style="background-image:'+bgUrl()+'">'+icon(ic,o(96))+'</div>'+
+    '<div class="row"><div class="dark">'+icon(ic,o(40))+icon(ic,o(28))+'</div><div class="light">'+icon(ic,o(40))+icon(ic,o(28))+'</div><div style="background-image:'+bgUrl()+'">'+icon(ic,o(40))+icon(ic,o(28))+'</div></div>'+
+    '<div class="nm">'+ic.name+'<small>'+ic.sub+'</small></div></div>';
+  }).join('');
+ });
+ var boats=[['fiske',52,31,120,'#FF7A00','Filip',1,'3d'],['rodd',33,13,250,'#2EC4B6','Anders','','flat'],['kajak',8,90,60,'#F5C518','Lisa','','flat'],['segel',40,22,300,'#F4F7F8','Johan','','flat'],['anka',57,82,20,'#9B6BFF','Kim','','flat'],['ufo',26,96,200,'#FF5FA2','Sam','','flat'],
+  ['bass',64,38,140,'#E5484D','Erik','','3d'],['ponton',76,58,170,'#3A86FF','Maria','','3d'],['haj',70,92,280,'#6B7B83','Ola','','3d'],['ubat',95,93,30,'#F5C518','Nils','','3d'],['sjobuss',83,68,150,'#F4F7F8','Turbåten','','3d'],['fisk',90,78,215,'#3A86FF','Eva','','flat']];
+ document.getElementById('scene').style.backgroundImage=bgUrl();
+ document.getElementById('scene').innerHTML=boats.map(function(b){
+  var ic=ICONS.filter(function(i){return i.id===b[0];})[0];
+  return '<div class="boat'+(b[6]?' me':'')+'" style="left:'+b[1]+'%;top:'+b[2]+'%">'+icon(ic,{mode:b[7],angle:(b[3]+st.angle)%360,color:b[4],size:36})+'</div>'+
+   (b[6]?'':'<span class="lbl" style="left:calc('+b[1]+'% + 20px);top:'+b[2]+'%">'+b[5]+'</span>');
+ }).join('');
+}
+document.getElementById('sws').innerHTML=COLORS.map(function(c,i){return '<button class="sw'+(i?'':' on')+'" style="background:'+c+'" data-c="'+c+'"></button>';}).join(' ');
+document.getElementById('sws').onclick=function(e){var c=e.target.getAttribute('data-c');if(!c)return;st.color=c;[].forEach.call(this.children,function(b){b.classList.toggle('on',b===e.target);});render();};
+var ang=document.getElementById('ang');
+ang.oninput=function(){st.angle=+ang.value;document.getElementById('angv').textContent=ang.value+'°';render();};
+var spinT=null;
+document.getElementById('spin').onclick=function(){var b=this;if(spinT){clearInterval(spinT);spinT=null;b.classList.remove('on');return;}b.classList.add('on');spinT=setInterval(function(){ang.value=(+ang.value+6)%360;ang.oninput();},80);};
+[].forEach.call(document.querySelectorAll('[data-bg]'),function(b){b.onclick=function(){st.bg=b.getAttribute('data-bg');[].forEach.call(document.querySelectorAll('[data-bg]'),function(x){x.classList.toggle('on',x===b);});render();};});
+render();
+</script>
+</body></html>

@@ -135,12 +135,13 @@
     var on = function(id){ return el(id).checked; };
     var put = function(id, parts){ var t = parts.filter(Boolean).join(' · '); el('setSum-' + id).textContent = t.charAt(0).toUpperCase() + t.slice(1); };
     var st = document.querySelector('#mapStyleList .styleOpt.active .soName');
-    put('map', [act('wpSizeSeg') + ' storlek', st && st.textContent, 'färg ' + el('mapSatVal').textContent, 'andras ' + act('othersOpacitySeg')]);
-    put('boat', ['spår ' + el('trackOpVal').textContent, on('toggleDepth') && 'djupet', on('gpsPulseToggle') && 'ring', on('toggleWake') && 'skärmen tänd',
+    put('map', [act('wpSizeSeg') + ' storlek', st && st.textContent, 'färg ' + el('mapSatVal').textContent, 'andras ' + act('othersOpacitySeg'), 'kompass ' + el('cpLenVal').textContent + ' ' + el('cpAngVal').textContent, !on('toggleShore') && 'ingen strandlinje']);
+    put('boat', [on('toggleDepth') && 'djupet', on('gpsPulseToggle') && 'ring', on('toggleWake') && 'skärmen tänd',
       (el('cruiseInput').value || '–') + ' kn marschfart']);
     var km = act('ltAlarmSeg');
     put('warn', km === 'Av' || !km ? ['Åskvarning av'] : ['Åskvarning ' + km, on('ltAlarmSound') && 'ljud', on('ltAlarmVib') && 'vibration']);
     put('an', ['Tona ner ' + el('anDimOut').textContent]);
+    put('catch', catchSum()); catchRenderSettings();   // (66-catches.js)
     var ob = el('offBtn').textContent, os = el('offStatus').textContent;
     put('off', [ob === 'Ta bort' ? 'Nedladdad' : ob === 'Pausa' ? 'Laddar ner …' : ob === 'Fortsätt' ? 'Pausad' : /kartversion/.test(os) ? 'Ny kartversion – ladda ner igen' : 'Inte nedladdad',
       ob === 'Ladda ner' && !/kartversion/.test(os) && os.split(' · ')[1]]);
@@ -150,6 +151,7 @@
   function showSettingsView(){
     updateSpeedSettings(); // fresh speed numbers the moment it opens
     setSums();
+    document.getElementById('settingsNameSub').textContent = (isAdminUnlocked() ? 'Admin · ' : '') + LAKE.name;
     settingsView.classList.add('show');
     logView.classList.remove('show');
     menuItemMap.classList.remove('menuItem--active');

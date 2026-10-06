@@ -24,15 +24,14 @@
 
   <div id="nameBackdrop"></div>
   <div id="nameModal">
-    <div class="modalTitle">Vem är du?</div>
-    <div class="modalDesc">Välj ditt namn. Det kopplas till dig och dina fiskeplatser — loggar du in med samma namn på en annan enhet ser du dem som dina.</div>
+    <div class="nameHead"><div class="logo3d nameLogo" id="nameLogo"><div class="nlSpin"><img src="ff_logo.svg" alt="Fiskfiskarna"><i class="nlBack"></i></div></div><div class="nameTitles"><div class="nameTitle">Vem är du?</div><div class="nameSub">Tryck på dig själv</div></div></div>
     <div id="nameList" class="nameList" aria-label="Välj ditt namn"></div>
-    <div id="otherNameWrap" hidden>
-      <input id="nameInput" type="text" maxlength="24" placeholder="Skriv ditt namn" autocomplete="off">
-    </div>
-    <div id="nameError" class="modalError" hidden>Välj ditt namn i listan för att fortsätta.</div>
-    <div class="sheetRow">
-      <button id="nameSave" class="btnPrimary">Fortsätt</button>
+    <div class="nameFoot">
+      <div id="otherNameWrap" hidden>
+        <input id="nameInput" type="text" maxlength="24" placeholder="Skriv ditt namn" autocomplete="off">
+      </div>
+      <div id="nameError" class="modalError" hidden>Välj ditt namn i listan för att fortsätta.</div>
+      <button id="nameSave" type="button">Välj dig själv</button>
     </div>
   </div>
 
@@ -40,9 +39,23 @@
   <div id="boatInfoModal">
     <div class="modalTitle" id="boatInfoName">—</div>
     <div class="boatInfoNamesList" id="boatInfoNamesList"></div>
+    <div id="boatInfoCatches"></div>
     <div class="modalDesc" id="boatInfoMeta">—</div>
     <div class="sheetRow">
-      <button id="boatInfoClose" class="btnPrimary" type="button">Stäng</button>
+      <button id="boatInfoGo" class="btnPrimary" type="button">➤ Åk hit</button>
+      <button id="boatInfoClose" class="btnGhost" type="button">Stäng</button>
+    </div>
+  </div>
+
+  <div id="lockBackdrop"></div>
+  <div id="lockCard" role="dialog" aria-labelledby="lockTitle">
+    <div class="modalTitle" id="lockTitle">Kartan är låst just nu</div>
+    <div class="modalDesc">Platser kan bara läggas till, ändras och tas bort från en vecka före till en vecka efter en tävling – så hålls gruppens karta ren mellan tävlingarna.</div>
+    <div class="modalDesc" id="lockWhen"></div>
+    <div class="modalDesc"><b>Vill du prova?</b> Slå på Demo Mode: du får en låtsasposition vid sjön och en egen testdatabas, ser bara andra i Demo Mode och inget sparas på den riktiga kartan. Stängs av efter 15 min.</div>
+    <div class="sheetRow">
+      <button id="lockClose" class="btnGhost" type="button">Stäng</button>
+      <button id="lockDemo" class="btnPrimary" type="button">Öppna Demo Mode</button>
     </div>
   </div>
 </div>

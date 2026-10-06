@@ -62,8 +62,8 @@ raderas den då (`pagehide`).
   förut (`anSet.mode` = den), fler = läget `'combo'` med delarna i `anSet.combo`. Tänt = där ALLA delar stämmer
   (`anCombo`, varje del räknas av `anOne(m, A, opt)`). Fläckarna (grynnor/hålor, växter, hård botten, vindkant,
   `AN_NEAR`) räknas "inom … m" (`anSet.near`, reglage `#anNear_<del>`, 0–50 m, 0 = exakt; standard 15, grynnor 0) med
-  `anNear`. Är Djup med använder Branta kanter / Hård botten Djups intervall (`opt.noRange`, deras eget djupreglage
-  döljs). Området visar kartans egna färger (ingen egen färg), resten grått. Blir inget kvar: "Inget kvar – <del>
+  `anNear`. **Bara Djup har ett djupreglage** (Branta kanter och Hård botten räknar på hela sjön – lägg till Djup för att
+  begränsa; deras gamla `elo/ehi/hlo/hhi` är borta). Knapparna som är på får ett "+" framför namnet när fler än en är på (`#anChips.combo`). Området visar kartans egna färger, resten grått – det gäller ALLA Kartdata-lägen, även ett ensamt (`AN_PLAIN`, `anDraw`: ingen färgfyllning; hålor räknas med i samma mask; skyltarna med färgad kant, den tunna vita kanten och strandlinjen finns kvar). Tumregler, Liknande och Fångster behåller sina färger. Blir inget kvar: "Inget kvar – <del>
   tar bort det sista" + tips. ⓘ visar stegen ("Djup: 23 % → + Branta kanter: 1 % → …"). Återställ behåller delarna.
   Tumregler och Fångster blandas inte in. Dra = mindre, snärt/hela vägen = stäng (`sheetSwipe`, tools/UI.md).
 - **Liknande**: välj vad som jämförs (djup, lutning, botten, växter, grynna/håla) och område
@@ -77,14 +77,15 @@ raderas den då (`pagehide`).
   `window.__ffGeo`, `__ffAnalysis()` för tester/verktyg.
 
 ## Från fångsterna (data) – per art
+- **Storlek** (2026-10-05): min–max cm överst i rutan (samma reglage som Heatmap, `sizeRow` i `56-analysis.js`, `anSet.size[art]`, ändarna = minsta/största fisken av arten, eget spann per art). Bara fångster i spannet räknas – även antalet på artknapparna (inget minimum, 0 = grå).
 Kod: `src/js/57-an-catches.js` (+ inkopplat i 56-analysis.js), test `tests/test_ancatches.py`.
 - Egen rad i Kartanalys under tumreglerna: **Abborre n · Gädda n · Gös n** (tävlingarnas fångster i sjön,
-  66-catches.js). Under 10 fångster: grå, "för få". Bara sjön man är i.
+  66-catches.js). Inget minimum (sedan 2026-10-05, förr 10): 0 fångster = grå; under 20 = "Osäkert" i ⓘ. Bara sjön man är i.
 - För varje fångst: platsen (inom 25 m, `anSimFeatures(A, 25)`) – djup, lutning, botten, växter, från land
   (`A.shore`), grynna/håla – i steg (`anCatchBins`, cachat per sjö). Jämfört med hela sjön: hur mycket
   vanligare fångsterna var i varje steg ("lift", utjämnad +1). Varje punkt i sjön får summan av log-lift
   för värdena som är på.
-- **Tänt**: från mest lik och nedåt tills "Typiskt" av 10 fångster ryms (reglage 5–9, standard 7) – datan
+- **Tänt**: från mest lik och nedåt tills "Likhet" av 10 fångster ryms (reglage 5–9, standard 7; ändarna "Mest likt" – "Mindre likt", värdet "3 % av sjön · 70 % av gäddorna"; förr "Typiskt") – datan
   bestämmer ytan: litet tänt = tydligt mönster (< 12 % tydligt, 12–25 % måttligt, > 25 % svagt).
   **Skala**: hela sjön olikt → mest likt (`anRes.G`, 4:e kanalen i `anField`, färger som heatmapen).
 - Av/på per värde (minst ett på); prickarna ●○○–●●● = hur mycket värdet ENSAMT pekar ut arten här
@@ -92,3 +93,4 @@ Kod: `src/js/57-an-catches.js` (+ inkopplat i 56-analysis.js), test `tests/test_
 - Fångsterna ritas som små vita prickar (`anRes.pts`). Texten säger vad som sticker ut + att det visar var
   man fick fisk (inte var all fisk finns), månad(er), fångster utanför djupkartan räknas inte.
 - Inte samtidigt som heatmapen (som alla Kartanalys-lägen).
+- **ⓘ** (2026-10-05): alltid en inledningsrad överst ("Kartanalys lyser upp det i sjön som …", `AN_INTRO` per flik). Fångster: raden är kort och säger vad man ska göra ("Gädda · Fiska i det tända: 70 % av gäddorna på 15 % av sjön · Se ⓘ"; Skala: "Fiska där det lyser starkast"), högst två rader (få fångster: bara i ⓘ, antalet syns på artknappen). Andelen är det verkliga utfallet – kan bli högre än Likhet när fångster ligger på likadana platser. ⓘ har hela meningen (art + storlek, togs oftast, "Med inställningarna nedan" är x % tänd, där togs N av M gäddor (70 %), n× tätare än om fångsterna låg jämnt över sjön = andelen fångster / andelen av sjön, räknat mot HELA sjön även där ingen fiskat) + listan Fångster, "Visar platser som liknar fångstplatserna, även där ingen har fiskat än", sedan reglagen. "Tydligt/Måttligt/Svagt mönster" och raden Täthet är borttagna.

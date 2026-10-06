@@ -1,7 +1,7 @@
   /* top-right column: the visibility toggles, and the Demo Mode sign right under them */
   #topRight{
     position:absolute;right:14px;top:calc(env(safe-area-inset-top,0px) + 14px);z-index:21;
-    display:flex;flex-direction:column;align-items:stretch;gap:8px;pointer-events:none;
+    display:flex;flex-direction:column;align-items:flex-end;gap:8px;pointer-events:none;
   }
   /* quick map-style button, just left of the Filter panel: tap = next of the
      four everyday styles, hold = all styles */
@@ -13,7 +13,19 @@
   }
   #mapTypeBtn svg{width:20px;height:20px;display:block;}
   #mapTypeBtn:active{transform:scale(.93);}
-  #mapTypeToast{position:absolute;right:calc(100% + 8px);top:48px;white-space:nowrap;background:var(--navy);color:var(--amber);border:1px solid rgba(232,163,61,.5);
+  /* heatmap on / off: left of the map button; coloured map, dimmed when off */
+  #hmBtn{
+    position:absolute;right:calc(100% + 56px);top:0;width:40px;height:40px;border-radius:50%;
+    background:var(--navy-glass);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.16);
+    display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.35);
+    pointer-events:auto;cursor:pointer;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;padding:0;
+  }
+  #hmBtn svg{width:26px;height:26px;display:block;opacity:.55;}
+  #hmBtn.on{border:2px solid var(--amber);background:rgba(240,154,96,.18);}
+  #hmBtn.on svg{opacity:1;}
+  #hmBtn:active{transform:scale(.93);}
+  #visMoreBtn .visLabel{display:none;}
+  #mapTypeToast{position:absolute;right:calc(100% + 8px);top:48px;white-space:nowrap;background:var(--navy);color:var(--amber);border:1px solid rgba(240,154,96,.5);
     border-radius:14px;padding:4px 11px;font-size:12px;font-weight:700;opacity:0;transition:opacity .2s;pointer-events:none;}
   #mapTypeToast.show{opacity:1;}
   #mapTypePop{position:absolute;right:calc(100% + 8px);top:48px;width:230px;max-height:70vh;overflow-y:auto;display:none;flex-direction:column;gap:6px;padding:8px;
@@ -80,6 +92,9 @@
   .visChevronBox{width:34px;flex:0 0 auto;display:flex;justify-content:center;}
   .visChevron{width:15px;height:15px;display:block;transition:transform .2s ease;}
   .visMoreBtn[aria-expanded="true"] .visChevron{transform:rotate(180deg);}
+  /* closed: a narrow chip (icon + arrow); open: the arrow box is as wide as the toggles below so the rows line up */
+  .visMoreBtn[aria-expanded="false"] .visChevronBox{width:14px;}
+  .visMoreBtn[aria-expanded="false"]{gap:5px;}
   /* everything lives in the fold-out (closed by default); the panel itself is just the "Filter" button */
   #visMore{display:flex;flex-direction:column;gap:10px;margin-top:2px;}
   .visCol{display:flex;flex-direction:column;gap:8px;}
@@ -113,6 +128,14 @@
   }
   #menuBtn:active{transform:scale(.92);}
   #menuBtn svg{width:19px;height:19px;}
+  #menuAva{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;}
+  #menuBtn.hasAva{padding:0;border-color:rgba(255,255,255,.35);}
+  #menuChev{
+    position:absolute;right:-4px;bottom:-4px;width:17px;height:17px;border-radius:50%;
+    background:var(--navy);border:1px solid rgba(255,255,255,.35);color:var(--offwhite);
+    display:flex;align-items:center;justify-content:center;
+  }
+  #menuChev svg{width:11px;height:11px;}
 
   #menuPanel{
     position:absolute;left:14px;
@@ -125,6 +148,9 @@
     min-width:140px;
     display:none;
     flex-direction:column;gap:2px;
+    /* (many lakes + lying phone: scrolls instead of running off the screen) */
+    max-height:calc(100vh - env(safe-area-inset-top,0px) - 72px);max-height:calc(100dvh - env(safe-area-inset-top,0px) - 72px);
+    overflow-y:auto;overscroll-behavior:contain;
   }
   #menuPanel.show{display:flex;}
   .menuItem{
@@ -157,7 +183,7 @@
     flex:0 0 auto;
   }
   /* the views' titles: the app's own font, spaced (the serif is only the lake's name) */
-  #logHeader .kicker,#settingsHeader .kicker,#adminHeader .kicker,#helpHeader .kicker{font-family:Calibri,"Segoe UI",system-ui,-apple-system,sans-serif;font-size:17px;letter-spacing:.08em;}
+  #logHeader .kicker,#settingsHeader .kicker,#adminHeader .kicker,#helpHeader .kicker{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,-apple-system,sans-serif;font-size:17px;letter-spacing:.08em;}
   #logBackBtn,#settingsBackBtn{
     width:36px;height:36px;border-radius:50%;flex:0 0 auto;
     background:rgba(255,255,255,.08);border:none;color:var(--offwhite);
@@ -210,7 +236,8 @@
     animation:demoBannerBlink 3s ease-in-out infinite;
   }
   #demoBanner.show{display:block;}
-  #demoBanner{position:relative;}
+  /* own width; the negative margin keeps it out of #topRight's width, so the buttons stay next to the Filter chip */
+  #demoBanner{position:relative;width:max-content;margin-left:-300px;}
   /* the sign itself lets taps through to the map; only its cross is a button */
   #demoBannerClose{
     position:absolute;top:-7px;right:-7px;width:22px;height:22px;padding:0;border-radius:50%;
@@ -225,6 +252,8 @@
   .demoBannerSub{font-weight:600;font-size:10.5px;letter-spacing:.02em;margin-top:2px;opacity:.85;line-height:1.25;}
   .demoBannerTimer{font-weight:600;font-size:10px;margin-top:3px;opacity:.75;white-space:nowrap;}
   .demoBannerTimer:empty{display:none;}
+  .demoBannerWarn{font-weight:700;font-size:10px;margin-top:4px;line-height:1.25;padding-top:4px;border-top:1px solid rgba(20,24,34,.3);}
+  .demoBannerWarn[hidden]{display:none;}
   @keyframes demoBannerBlink{
     0%, 100% { background:var(--amber); }
     50% { background:var(--danger); }
@@ -252,7 +281,7 @@
      pill under the lake name + user name, same style as the offline badge */
   #farAway{
     display:none;align-items:flex-start;gap:6px;margin-top:5px;margin-left:-50px; /* flush with the menu button (14px from the edge) */
-    background:rgba(11,42,58,.82);border:1px solid rgba(232,163,61,.5);
+    background:rgba(28,33,44,.82);border:1px solid rgba(240,154,96,.5);
     border-radius:12px;padding:4px 10px 4px 7px;width:max-content;
     max-width:min(300px, calc(100vw - 28px));
   }
@@ -265,6 +294,7 @@
   @media (max-width:420px){
     .kicker{font-size:19px;}
     #legend{width:111px;padding:5px 7px 4px;}
+    #speedPill{width:111px;}
     #visPanel{padding:7px 9px;gap:6px;}
     .visLabel{font-size:11px;}
   }

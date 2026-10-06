@@ -35,7 +35,7 @@ with sync_playwright() as p:
     # ---- filter menu ----
     check('filter menu closed at start: only the Filter button', not pg.is_visible('#visMore') and not pg.is_visible('#toggleMine'))
     pg.click('#visMoreBtn'); pg.wait_for_timeout(200)
-    check('open: Mina/Andras/Båtar/Spår + types (no "Namn": names always shown; Djup is in Inställningar)', all(pg.is_visible('label:has(#%s)' % i) for i in ['toggleMine','toggleOthers','toggleBoats','toggleTrack']) and not pg.is_visible('label:has(#toggleNames)') and not pg.is_visible('label:has(#toggleDepth)'))
+    check('open: Mina/Andras/Båtar/Spår + types (Lager has "Namn" = map names from OSM; Djup is in Inställningar)', all(pg.is_visible('label:has(#%s)' % i) for i in ['toggleMine','toggleOthers','toggleBoats','toggleTrack']) and pg.is_visible('label:has(#toggleNames)') and not pg.is_visible('label:has(#toggleDepth)'))
     pg.screenshot(path='feat_filter_open.png')
     pg.click('label:has(#toggleBoats) .toggle'); pg.click('#visMoreBtn'); pg.wait_for_timeout(200)
     check('Båtar off -> dot on the closed Filter button', pg.is_visible('.visMoreDot'))
@@ -57,9 +57,12 @@ with sync_playwright() as p:
     check('Djup off -> depth hidden, knots still shown', not pg.is_visible('#depthVal') and pg.is_visible('#speedVal'))
     pg.click('#menuBtn'); pg.click('#menuItemSettings'); pg.wait_for_timeout(250); pg.click('label:has(#toggleDepth) .toggle'); pg.click('#settingsBackBtn'); pg.wait_for_timeout(300)
     # ---- track ----
-    lat, lon = la2, lo2
+    lat, lon = la2, lo2   # drive a way that stays on the water (Spår are only recorded there)
+    dirs = [(n, e) for n, e in ((1, 0), (-1, 0), (0, 1), (0, -1), (.7, .7), (.7, -.7), (-.7, .7), (-.7, -.7))
+            if all(pg.evaluate('a => __ffGeo.lake(a[0], a[1])', [lat + n * 10 * i / 111320.0, lon + e * 10 * i / 64000.0]) for i in range(1, 21))]
+    dN, dE = dirs[0]
     for i in range(14):
-        lat += 10 / 111320.0; ctx.set_geolocation({'latitude': lat, 'longitude': lon, 'accuracy': 5}); pg.wait_for_timeout(700)
+        lat += dN * 10 / 111320.0; lon += dE * 10 / 64000.0; ctx.set_geolocation({'latitude': lat, 'longitude': lon, 'accuracy': 5}); pg.wait_for_timeout(700)
     d = pg.get_attribute('#trackLayer .trkLine', 'd') or ''
     check('track drawn while driving', d.count('L') >= 8, d[:60])
     pg.screenshot(path='feat_track.png')
@@ -72,14 +75,11 @@ with sync_playwright() as p:
     check('track kept after reload / rotation', d2.count('L') >= 8, d2[:40])
     check('filter menu closed again after a fresh start', not pg.is_visible('#visMore'))
     pg.on('dialog', lambda dlg: dlg.accept())
-    pg.click('#menuBtn'); pg.click('#menuItemSettings'); pg.wait_for_timeout(200)
-    pg.click('#trackClearBtn'); pg.wait_for_timeout(200)
-    check('Settings "Börja om" wipes the track so far', 'L' not in (pg.get_attribute('#trackLayer .trkLine', 'd') or ''), pg.get_attribute('#trackLayer .trkLine', 'd'))
-    pg.click('#settingsBackBtn'); pg.wait_for_timeout(200)
+    check("no 'Börja om' any more: the track cannot be wiped", pg.evaluate("!document.getElementById('trackClearBtn')"))
     for i in range(5):
-        lat += 10 / 111320.0; ctx.set_geolocation({'latitude': lat, 'longitude': lon, 'accuracy': 5}); pg.wait_for_timeout(700)
+        lat += dN * 10 / 111320.0; lon += dE * 10 / 64000.0; ctx.set_geolocation({'latitude': lat, 'longitude': lon, 'accuracy': 5}); pg.wait_for_timeout(700)
     d3 = pg.get_attribute('#trackLayer .trkLine', 'd') or ''
-    check('...and keeps recording from where you are', d3.startswith('M') and d3.count('M') == 1 and d3.count('L') >= 4, d3[:60])
+    check('...and keeps recording (the line just grows)', d3.startswith('M') and d3.count('L') > d2.count('L'), (d2.count('L'), d3.count('L')))
     # ---- offline start (service worker) ----
     ok = pg.evaluate("() => navigator.serviceWorker.ready.then(r => !!r.active)")
     pg.wait_for_timeout(2500)   # let it save its copy

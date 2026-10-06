@@ -6,7 +6,7 @@
        this on.
      - Local fallback (localStorage): if Firebase isn't configured, pins
        are saved only on this device, exactly as before. --------------- */
-  var WP_KEY = 'lake_' + LAKE_ID + '_waypoints_v1';
+  var WP_KEY = testKey('lake_' + LAKE_ID + '_waypoints_v1');   // (the test mode: its own copy)
   var WP_KEY_LEGACY = 'regnaren_waypoints_v1'; // pre-multi-lake key, migrated once below
   var waypointsLayer = document.getElementById('waypoints');
   var longPressRing = document.getElementById('longPressRing');
@@ -25,7 +25,6 @@
   var USE_FIREBASE = false;
   var myUid = null;
   var fsCol = null;
-  var catchDb = null;       // (Firestore, for the heat map's catches -- set in 26-sync.js)
   var PIN_SIZE = 30;
   var PIN_TIP_OFFSET = PIN_SIZE * Math.SQRT1_2; // distance from box-center to the rotated pin's tip
 
@@ -49,7 +48,10 @@
   var usageCol = null; // Firestore 'usage' collection: each device's daily read/write counts (admin page)
   var BOAT_GRAY_MS = 15 * 60 * 1000; // a boat that hasn't updated in this long turns grey -- still shown at its last known spot, just marked as not live anymore
   var BOAT_REMOVE_MS = 60 * 60 * 1000; // a boat that hasn't updated in THIS long is finally removed entirely
-  var BOAT_CLUSTER_METERS = 30; // positions this close are treated as "the same boat"
+  // "The same boat": closer than 40 m (two phones' GPS never agree exactly) + how far the boat gets in the time
+  // between the two positions (they're sent every 20 s, not at the same moment -- 4 km/h trolling = ~20 m), max 200 m.
+  var BOAT_SAME_M = 40, BOAT_SAME_MAX_M = 200;
+  function sameBoatM(spd, dtMs){ return Math.min(BOAT_SAME_MAX_M, BOAT_SAME_M + (spd || 0) * Math.abs(dtMs || 0) / 1000); }
 
   // People sitting in the same boat show up as one pip instead of a pile of
   // overlapping dots. Simple greedy clustering: each not-yet-placed person
@@ -65,7 +67,7 @@
       list.forEach(function(other, j){
         if (i === j || used[other.uid]) return;
         var distM = haversineKm(b.lat, b.lon, other.lat, other.lon) * 1000;
-        if (distM <= BOAT_CLUSTER_METERS){
+        if (distM <= sameBoatM(Math.max(b.spd || 0, other.spd || 0), b.updatedAt - other.updatedAt)){
           used[other.uid] = true;
           members.push(other);
         }
@@ -90,7 +92,17 @@
   // General -> "Your apps" -> SDK setup and configuration). Safe to leave
   // public in this file: Firebase apps are secured by the Firestore rules
   // set in the console, not by hiding this config.
-  var FIREBASE_CONFIG = {
+  // The test mode (Demo Mode, 10-core.js) uses a Firebase project of its own: nothing it does can
+  // reach the real database. (The app's background REST write builds its address from this too.)
+  var FIREBASE_TEST_CONFIG = {
+    apiKey: "AIzaSyBTFFOHRrPrHifMx5CKAoi6YZZ5b1Hc6jQ",
+    authDomain: "ffmap-test.firebaseapp.com",
+    projectId: "ffmap-test",
+    storageBucket: "ffmap-test.firebasestorage.app",
+    messagingSenderId: "418785117763",
+    appId: "1:418785117763:web:8a5c6e70178c216814f6f6"
+  };
+  var FIREBASE_CONFIG = TEST_MODE ? FIREBASE_TEST_CONFIG : {
     apiKey: "AIzaSyDkpWsfQFxpkkNOmDJmJr7jGyBO3S7GZH4",
     authDomain: "regnaren-b8b6a.firebaseapp.com",
     projectId: "regnaren-b8b6a",
@@ -133,7 +145,7 @@
   function loadLocalWaypoints(){
     try {
       var raw = localStorage.getItem(WP_KEY);
-      if (raw === null && LAKE_ID === 'regnaren'){
+      if (raw === null && LAKE_ID === 'regnaren' && !TEST_MODE){
         // one-time migration from the old, pre-multi-lake key name
         var legacy = localStorage.getItem(WP_KEY_LEGACY);
         if (legacy !== null){

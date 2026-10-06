@@ -1,0 +1,130 @@
+{
+ "id": "vitten",
+ "name": "Östra Vitten",
+ "center": [
+  58.991,
+  15.724
+ ],
+ "source": "C-MAP Genesis Social Map (https://www.genesismaps.com/SocialMap/Index?mwID=1275694) + Bing aerial",
+ "geo": {
+  "zoom": 14,
+  "originX": 2280163,
+  "originY": 1241004,
+  "fullW": 374,
+  "metersPerPx": 4.922283895375429,
+  "imgW": 374,
+  "imgH": 363
+ },
+ "depth": {
+  "file": "depth_v2.txt",
+  "w": 748,
+  "h": 726,
+  "step": 0.08,
+  "max": 6,
+  "capped": false
+ },
+ "bottom": {
+  "file": "bottom_v2.txt"
+ },
+ "legendTicks": [
+  "0 m",
+  "2,5 m",
+  "5 m"
+ ],
+ "contourText": "Djupkurvor från C-MAP Genesis",
+ "mapFile": "map_v2_{style}.jpg",
+ "thumbFile": "thumbs_v2/{style}.jpg",
+ "styles": [
+  {
+   "id": "s1",
+   "name": "Djupfärger",
+   "desc": "Flygfoto + djupfärger med relief",
+   "legend": "linear-gradient(to right,#d62728 0%,#db3125 4.2%,#e13f21 8.3%,#e64a1e 12.5%,#ed571a 16.7%,#f16217 20.8%,#f86f13 25%,#fd7a10 29.2%,#ff880d 33.3%,#ff970a 37.5%,#ffa209 41.7%,#ffb107 45.8%,#ffbc05 50%,#ffcb03 54.2%,#ffd601 58.3%,#f3d903 62.5%,#e0d406 66.7%,#c7cd0c 70.8%,#aec611 75%,#9cc015 79.2%,#83b91a 83.3%,#70b41e 87.5%,#57ad23 91.7%,#45a727 95.8%,#2ca02c 100%)"
+  },
+  {
+   "id": "s2",
+   "name": "Förenklad",
+   "desc": "Samma djupfärger, utan skuggning",
+   "legend": "linear-gradient(to right,#d62728 0%,#db3125 4.2%,#e13f21 8.3%,#e64a1e 12.5%,#ed571a 16.7%,#f16217 20.8%,#f86f13 25%,#fd7a10 29.2%,#ff880d 33.3%,#ff970a 37.5%,#ffa209 41.7%,#ffb107 45.8%,#ffbc05 50%,#ffcb03 54.2%,#ffd601 58.3%,#f3d903 62.5%,#e0d406 66.7%,#c7cd0c 70.8%,#aec611 75%,#9cc015 79.2%,#83b91a 83.3%,#70b41e 87.5%,#57ad23 91.7%,#45a727 95.8%,#2ca02c 100%)"
+  },
+  {
+   "id": "s3",
+   "name": "Sjökort",
+   "desc": "Blå djupband som en papperskarta",
+   "legend": "linear-gradient(to right,#dff3fb 0%,#dff3fb 20%,#c4e7f6 20%,#c4e7f6 40%,#a9dbf2 40%,#a9dbf2 60%,#8fcdec 60%,#8fcdec 100%)"
+  },
+  {
+   "id": "s6",
+   "name": "Blå relief",
+   "desc": "Blå toner med skuggad bottenform",
+   "legend": "linear-gradient(to right,#cfeefa 0%,#caecf9 4.2%,#c4e9f8 8.3%,#c0e7f7 12.5%,#bae5f6 16.7%,#b5e3f5 20.8%,#afe0f4 25%,#abdef3 29.2%,#a5dbf2 33.3%,#9fd8f1 37.5%,#9ad6f0 41.7%,#94d4ef 45.8%,#90d2ee 50%,#8acfed 54.2%,#85cdec 58.3%,#7fcaeb 62.5%,#7bc8ea 66.7%,#75c6e9 70.8%,#6fc3e8 75%,#6bc0e6 79.2%,#67bce4 83.3%,#64b9e3 87.5%,#60b5e1 91.7%,#5cb2e0 95.8%,#58afde 100%)"
+  },
+  {
+   "id": "g1",
+   "name": "C-MAP original",
+   "desc": "Som på Genesis-kartan – med djupsiffror",
+   "legend": null,
+   "note": "Siffror = djup i m (liten siffra = tiondelar)"
+  },
+  {
+   "id": "v1",
+   "name": "Vegetation",
+   "desc": "Grönt där ekolodet sett växtlighet",
+   "legend": "linear-gradient(to right,#6fc3e8 0%,#6fc3e8 50%,#46dc3c 50%,#46dc3c 100%)",
+   "ticks": [
+    "Ingen",
+    "",
+    "Växtlighet"
+   ]
+  },
+  {
+   "id": "c1",
+   "name": "Bottenhårdhet",
+   "desc": "Mjuk (ljus) till hård (röd) botten, där det finns mätt",
+   "legend": "linear-gradient(to right,#fff496 0%,#ffaa00 33%,#f0460a 66%,#960028 100%)",
+   "ticks": [
+    "Mjuk",
+    "",
+    "Hård"
+   ],
+   "lines": "lines_w"
+  }
+ ],
+ "detail": {
+  "file": "tiles_v2/z{z}/{style}/{c}_{r}.webp",
+  "lines": "tiles_v2/z{z}/{lines}/{c}_{r}.webp",
+  "baseMax": 17,
+  "tile": 512,
+  "pad": 8,
+  "levels": [
+   {
+    "z": 15,
+    "cols": 2,
+    "rows": 2,
+    "have": "1100",
+    "base": true
+   },
+   {
+    "z": 16,
+    "cols": 3,
+    "rows": 3,
+    "have": "011111000",
+    "base": true
+   },
+   {
+    "z": 17,
+    "cols": 6,
+    "rows": 6,
+    "have": "001111001111111110011110000000000000",
+    "base": true
+   },
+   {
+    "z": 18,
+    "cols": 12,
+    "rows": 12,
+    "have": "000000000000000001100110000011111110000011111100001111111100011111111000001111111000000000000000000000000000000000000000000000000000000000000000",
+    "base": false
+   }
+  ]
+ }
+}

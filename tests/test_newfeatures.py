@@ -151,7 +151,7 @@ with sync_playwright() as p:
     check('the button sits just left of Filter', bb[0] < vis and vis - bb[0] < 40, (bb, vis))
     pg.mouse.move(*bb); pg.mouse.down(); pg.wait_for_timeout(700); pg.mouse.up(); pg.wait_for_timeout(400)
     opts = pg.eval_on_selector_all('#mapTypePop .styleOpt[data-style]', 'e=>e.length')
-    check('hold: all map styles to choose from (+ Heatmap last)', pg.is_visible('#mapTypePop') and opts == 8 and pg.eval_on_selector('#mapTypePop .styleOpt:last-child', 'e => e.classList.contains("hmOpt")'), opts)
+    check('hold: all map styles to choose from (+ Heatmap last)', pg.is_visible('#mapTypePop') and opts == 7 and pg.eval_on_selector('#mapTypePop .styleOpt:last-child', 'e => e.classList.contains("hmOpt")'), opts)
     pg.screenshot(path='shot_maptype_pop.png')
     pg.click('#mapTypePop .styleOpt[data-style="g1"]'); pg.wait_for_timeout(1000)
     check('...pick one', src().endswith('_g1.jpg') and not pg.is_visible('#mapTypePop'), src())

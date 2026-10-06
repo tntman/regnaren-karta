@@ -7,3 +7,4 @@ raw/
 # the app (Capacitor): generated / installed
 node_modules/
 app/www/
+.claude/settings.local.json

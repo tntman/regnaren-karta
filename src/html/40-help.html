@@ -5,14 +5,20 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
       </button>
       <div style="flex:1 1 auto;">
-        <div class="kicker">HJÄLP</div>
+        <div class="kicker">Hjälp</div>
         <div class="sub">Så använder du FF Map</div>
       </div>
+      <div class="logo3d headLogo" id="helpLogo"><div class="nlSpin"><img src="ff_logo.svg" alt="Fiskfiskarna"><i class="nlBack"></i></div></div>
     </div>
     <div id="helpBody">
       <div class="helpCard helpWelcome" id="helpWelcome">
         <h3><span>👋 Välkommen<span id="helpWelcomeName"></span>!</span></h3>
         <p>Djupkarta, GPS och gruppens fiskeplatser och båtar – i realtid. Börja gärna med att lägga till appen på hemskärmen ↓</p>
+      </div>
+      <div class="helpCard" id="helpDemo">
+        <h3><span>🧪 Demo Mode – prova utan att förstöra något</span></h3>
+        <p>Slå på <b>Demo Mode</b> när du vill testa appen, t.ex. hemma i soffan. Du får en låtsasposition vid sjön och ser bara andra som också har Demo Mode på. Inget sparas i den riktiga databasen, så fiskeplatser, båtar och meddelanden du provar med syns aldrig för de andra. Slå på och av när du vill; den stängs av själv efter 15 minuter.</p>
+        <button type="button" class="helpInstallBtn" id="helpDemoLink">Öppna Demo Mode i Inställningar</button>
       </div>
       <div class="helpSearch"><input type="search" id="helpSearch" placeholder="Sök i hjälpen, t.ex. &quot;filter djup&quot;" aria-label="Sök i hjälpen" autocomplete="off"><div id="helpResults"></div></div>
       <nav class="helpToc" id="helpToc">

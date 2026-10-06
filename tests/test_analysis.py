@@ -18,6 +18,7 @@ def pick(pg, m, wait=1300):
     # the category first (the row on top), then the choice in it (Liknande: the category is the choice).
     # Kartdata's buttons combine, so switch off what's on first (one at a time here)
     if CAT.get(m, 'map') == 'map' and pg.is_enabled('#anClear') and an(pg)['mode'] != m: pg.click('#anClear'); pg.wait_for_timeout(150)
+    if not pg.evaluate("document.getElementById('anPanel').classList.contains('show')"): pg.click('#anBtn'); pg.wait_for_timeout(300)   # (clearing closes the panel)
     pg.click('#anCatSeg button[data-cat="%s"]' % CAT.get(m, 'map')); pg.wait_for_timeout(150)
     if m != 'similar': pg.click('#anPanel button[data-m="%s"]' % m)
     pg.wait_for_timeout(wait); return an(pg)
@@ -65,7 +66,7 @@ with sync_playwright() as p:
     shore = pg.evaluate("""() => { var c = document.getElementById('anLayer'), d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data, n = 0;
       for (var i = 0; i < d.length; i += 4) if (d[i] > 235 && d[i + 1] > 235 && d[i + 2] > 235 && d[i + 3] > 90 && d[i + 3] < 170) n++; return n; }""")
     check('the lake outline: a thin solid (smooth) white line at ~50 %', shore > 150, shore)
-    a = pick(pg, 'steep'); check('Branta kanter: steep parts found', a['ready'] and a['n'] > 100, a)
+    a = pick(pg, 'steep'); check('Branta kanter: steep parts found; Lutning only, no depth slider (only Djup has one)', a['ready'] and a['n'] > 100 and pg.is_visible('#anSlope') and not pg.query_selector('#anControls .anDual'), a)
     a = pick(pg, 'tops'); check('never called "topp"; the labels are just the depth ("2,4 m")', a['labels'] and pg.evaluate("[].every.call(document.querySelectorAll('.anLbl:not(.sim):not(.simRef)'), e => /^\d+(,\d)? m$/.test(e.textContent))") and 'topp' not in pg.inner_text('#anPanel').lower())
     a = an(pg); check('Grynnor & hålor (prominence: how far they rise above the saddle): labelled on the map', a['ready'] and a['labels'] >= 4 and 'reser sig minst 0,6 m' in a['text'], a)
     def setr(i, v): pg.evaluate("([i, v]) => { var e = document.getElementById(i); e.value = v; e.dispatchEvent(new Event('input', { bubbles: true })); }", [i, v])
@@ -75,7 +76,7 @@ with sync_playwright() as p:
     pg.click('#anPanel .pnInfoBtn'); pg.wait_for_timeout(300)
     info = pg.inner_text('#anPanel .pnInfo')
     check('ⓘ: the explanation of a grynna and a håla opens under the top row (ⓘ lit)', 'Grynna' in info and 'Håla' in info and 'sadeln' in info and pg.get_attribute('#anPanel .pnInfoBtn', 'aria-pressed') == 'true', info)
-    pg.click('#anPanel .pnInfoBtn'); pg.wait_for_timeout(300)
+    pg.click('#anPanel .pnInfoBtn'); pg.wait_for_timeout(550)   # (it folds away softly first)
     check('...ⓘ again: closed', not pg.is_visible('#anPanel .pnInfo') and pg.evaluate("localStorage.getItem('ffmap_panel_info_v1')") == '0')
     setr('anTopP', 0.6); setr('anHoleP', 0.8); pg.wait_for_timeout(900)
     lbl = pg.query_selector('.anLbl')
@@ -85,7 +86,7 @@ with sync_playwright() as p:
     a = pick(pg, 'veg', 2500); check('Växter: where there is vegetation (Genesis, fetched when needed), no sliders', a['ready'] and a['n'] > 50 and not pg.query_selector('#anControls .anDual'), a)
     a = pick(pg, 'hard'); check('Hård botten', a['ready'] and a['n'] > 100, a)
     setr('anHmin', 4); pg.wait_for_timeout(700)
-    a2 = an(pg); check('hard bottom: a slider for how hard (+ a depth range)', a2['n'] < a['n'] and 'Mycket hård' in a2['text'] and pg.is_visible('#anControls .anDual'), (a['n'], a2['n'], a2['text']))
+    a2 = an(pg); check('hard bottom: a slider for how hard, no depth slider of its own (only Djup has one)', a2['n'] < a['n'] and 'Mycket hård' in a2['text'] and not pg.query_selector('#anControls .anDual'), (a['n'], a2['n'], a2['text']))
     a = pick(pg, 'wind'); check('Vindkant: from the weather wind (6 m/s SV)', a['ready'] and a['n'] > 100 and 'SV' in a['text'], a)
     a = pick(pg, 'similar'); check('Liknande: like "Djupa hålet", a list of places', a['ready'] and a['list'] >= 1 and 'Djupa hålet' in a['text'], a)
     pg.screenshot(path='shot_an_similar.png')
@@ -142,9 +143,9 @@ with sync_playwright() as p:
     check('the panel: ✕ in the grip strip; the top row (above the categories): ⓘ, ↺ Återställ, ⏻ Stäng av (greyed out with nothing on)', pg.is_visible('#anPanel .grab #anClose') and top[0] and
           top[1] == ['Förklaring', 'Återställ', 'Stäng av kartanalys'] and pg.is_disabled('#anClear'), top)
     a = pick(pg, 'gos')
-    check('...something chosen: ⏻ active, amber (something is on)', pg.is_enabled('#anClear') and pg.evaluate("getComputedStyle(document.getElementById('anClear')).color") == 'rgb(232, 163, 61)')
+    check('...something chosen: ⏻ active, amber (something is on)', pg.is_enabled('#anClear') and pg.evaluate("getComputedStyle(document.getElementById('anClear')).color") == 'rgb(240, 154, 96)')
     pg.click('#anClear'); pg.wait_for_timeout(300)
-    check('"Stäng av kartanalys": nothing chosen, nothing drawn', an(pg)['mode'] is None and lit(pg) == 0)
+    check('"Stäng av kartanalys": nothing chosen, nothing drawn; the panel closes (like Heatmap)', an(pg)['mode'] is None and lit(pg) == 0 and not pg.evaluate("document.getElementById('anPanel').classList.contains('show')"))
     # Återställ: every setting back to the start (what's on stays on)
     a = pick(pg, 'steep')
     pg.evaluate("(() => { var e = document.getElementById('anSlope'); e.value = 22; e.dispatchEvent(new Event('input', { bubbles: true })); })()"); pg.wait_for_timeout(900)
@@ -201,8 +202,9 @@ with sync_playwright() as p:
     pg.click('#anChips button[data-m="steep"]'); pg.wait_for_timeout(1500); a = an(pg)
     check('Djup + Branta kanter: combined, smaller than Djup alone, both buttons on', a['mode'] == 'combo' and 0 < a['n'] < n1 and 'Djup + Branta kanter' in a['text']
           and pg.eval_on_selector_all('#anChips button.on', 'e => e.map(x => x.dataset.m)') == ['depth', 'steep'], (n1, a))
-    check('...the map\'s own colours inside (no colour of its own), Branta without its own depth range (Djup\'s is used)',
-          pg.evaluate("document.querySelectorAll('#anControls .anDual').length") == 1 and pg.is_visible('#anSlope'))
+    check('...one depth slider (Djup\'s) + Lutning; "+" before the names of the buttons that are on',
+          pg.evaluate("document.querySelectorAll('#anControls .anDual').length") == 1 and pg.is_visible('#anSlope') and
+          pg.evaluate("getComputedStyle(document.querySelector('#anChips button.on'), '::before').content") == '"+ "')
     pg.click('#anChips button[data-m="hard"]'); pg.wait_for_timeout(2500); a2 = an(pg)
     check('+ Hård botten: smaller again, with "inom … m" (15 m)', a2['n'] <= a['n'] and pg.input_value('#anNear_hard') == '15', (a['n'], a2['n']))
     pg.click('#anPanel .pnInfoBtn'); pg.wait_for_timeout(300)
@@ -210,7 +212,8 @@ with sync_playwright() as p:
     check('ⓘ: how much each step leaves', 'Djup:' in info and '+ Branta kanter:' in info and '+ Hård botten inom 15 m:' in info and '→' in info, info)
     pg.click('#anPanel .pnInfoBtn'); pg.wait_for_timeout(200)
     pg.click('#anChips button[data-m="steep"]'); pg.click('#anChips button[data-m="hard"]'); pg.wait_for_timeout(1500)
-    check('switch the others off again: just Djup, as before', an(pg)['mode'] == 'depth' and an(pg)['n'] == n1)
+    check('switch the others off again: just Djup, as before (no "+")', an(pg)['mode'] == 'depth' and an(pg)['n'] == n1 and
+          pg.evaluate("getComputedStyle(document.querySelector('#anChips button.on'), '::before').content") in ('none', 'normal'))
     pg.click('#anClear'); pg.wait_for_timeout(300)
     # nothing left: says which part took the last bit away
     pg.evaluate("localStorage.setItem('ffmap_analysis_v1', JSON.stringify(Object.assign(JSON.parse(localStorage.getItem('ffmap_analysis_v1')), { lo: 11.5, hi: 12, near: { tops: 0, veg: 0, hard: 15, wind: 15 } })))")

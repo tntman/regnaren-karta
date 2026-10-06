@@ -18,27 +18,33 @@ specificitet.
 
 | Mapp/fil | Innehåll |
 |---|---|
-| `head.html` | `<head>`: titel, ikoner, manifest, Firebase-SDK, statusrad (iOS) |
+| `head.html` | `<head>`: titel, ikoner, manifest, Firebase-SDK, statusrad (iOS), ett litet skript som gör allt svart före första bilden när startfilmen ska visas (`html.splash`) |
 | `sw.js` | service worker (kopieras som den är) |
 | **css/** | |
 | `10-base.css` | färger (`:root`), layout, kartan, rubriken, din pil, skala/zoom |
 | `20-map-tools.css` | knopmätare, mätverktyg, lodet, rutten (+ "fågelvägen"), spår |
+| `22-track.css` | spårets linjer/stopp, Spår-menyn, Fog of war-lagret |
 | `30-controls.css` | Filter, kartlägesknapp, knappar, meny, Inställningar, GPS-rad, liggande läge |
 | `40-spots-boats.css` | platstyper (Fara, Träffpunkt, Hem …), andras platser, båtar, platsens ruta (+ faktarutorna) |
 | `50-weather-settings.css` | väder, blixtvarning/radar, kartstil, offline, admin, fart, åsklarm, håll skärmen tänd (solen, notisen) |
 | `60-help.css` | Hjälp (+ sökrutan) |
 | `70-analysis.css` | Kartanalys och Liknande |
 | `72-heatmap.css` | Heatmap: lagren, skylten under väder, bottenrutan, fångstrutan |
+| `76-profiles.css` | Profilrutan, länkade namn (`.pfLink`), "Bara Filip ✕" i heatmapen, fångstfoton, fångstvalet i snabbmeddelanden (snurrande kant i artens färg) |
+| `73-names.css` | Namn: OSM-namnen på kartan (vit prick + text) |
 | `75-messages.css` | snabbmeddelanden (knappen, valen, egen text, bubblorna, rutan) |
 | `80-panels.css` | bottenpanelerna: greppremsan, dra mindre / skrolla (Kartanalys, meddelande, plats) |
 | `85-touch.css` | stora tryckytor i bottenrutorna (blöta fingrar): chips 40, kategorirad 42, knapprader 46 px – kartans egna knappar orörda; läsbar småtext i rutorna (≥ 11 px), Inställningar som spalt på bred skärm, fokusring, "Reducera rörelse" för panelernas rörelser |
 | `90-buttons.css` | de fyra knapparna nere till höger i 2 × 2 (sist: bestämmer storlek/plats över allt ovan) |
+| `96-splash.css` | startfilmen: svart, sken, glöd, blixt, vinjett, filmbrus |
 | **html/** | |
+| `05-splash.html` | startfilmen `#splash` (först i sidan, så den finns redan i första bilden; utanför `#app`) |
 | `10-map.html` | `#app`, kartan och lagren (`#stage`, platser, båtar, bubblor, lodet, heatmap) |
 | `20-menu-settings.html` | menyknapp, meny, Logg, Inställningar, Admin, PIN |
 | `30-map-ui.html` | rubrik, väderkort, mätpanel, knappar, meddelanden, Kartanalys-panel, Heatmap-rutorna, Filter, radar |
 | `40-help.html` | Hjälp-sidan (bildstorlekarna skrivs av `tools/help_anim.py`) |
-| `50-sheets.html` | platsens ruta, namnrutan, båtinfo |
+| `50-sheets.html` | platsens ruta, namnrutan, båtinfo, tävlingslåsets ruta (`#lockCard`) |
+| `99-firebase.html` | Firebase-skripten, sist före skriptet (i `<head>` höll de upp startbilden) |
 | **js/** | |
 | `10-core.js` | start på skriptet, sjöar (`LAKES`), geo-referens, `MAX_ZOOM` |
 | `11-native.js` | bara grenen `app`: appens kod (krokarna, sparade kartbitar, bakgrunds-GPS) – `tools/APP.md` |
@@ -52,26 +58,36 @@ specificitet.
 | `26-sync.js` | dra-för-att-stänga platsens ruta, offline-rad, Firebase-räkning, `config/<lake>` |
 | `28-menu.js` | meny, byta sjö |
 | `30-help.js` | Hjälp, `HELP_NEWS` |
-| `32-demo.js` | Demo Mode |
-| `34-name.js` | ditt namn |
-| `36-admin.js` | admin, export (GPX/CSV) |
+| `32-demo.js` | Demo Mode = testläget (på/av = omladdning in i testdatabasen, `TEST_MODE` i `10-core.js`) |
+| `33-avatars.js` | profilbilderna (`AVATARS`, genereras av `tools/make_avatars.py` ur `tools/fiskare/`) |
+| `34-name.js` | ditt namn, profilbild på menyknappen, "Logga ut" i menyn |
+| `35-logo3d.js` | loggan som 3D-skylt på "Vem är du?", i Hjälp och Inställningar (three.js från `assets/three-r170*.js`, laddas bara där), trappar ner på äldre telefoner; `nlMakeSign()` = skylten, även startfilmens |
+| `35-splash.js` | startfilmen (3,5 s, 3D-loggan) varje gång ett namn väljs och vid Inställningar → Avancerat → "Spela" (`splashPlay()`), platt logga på äldre telefoner / Reducera rörelse, tryck = hoppa över, `afterSplash()` (Hjälp, platsfrågan), startbilden (`html.boot`: appen tonar in över loggan) – `tools/PLAN_SPLASH.md` |
+| `36-admin.js` | admin, export (GPX/CSV), Säkerhetskopia (hela databasen till en fil och tillbaka, test_backup) |
+| `37-testmode.js` | testläget: låtsastävlingen i `config/<sjö>.test`, Admin → Testläge (tävling, fångster, testbåtar, blixtar, rensa) – `tools/NOTES_TESTLAGE.md` |
 | `38-speed-depth.js` | fart, riktningspilen, djup |
 | `40-route.js` | rutten sjövägen, snittfart |
 | `42-measure.js` | mätverktyget |
 | `44-demo-motion.js` | demo: simulerad rörelse |
-| `46-gps-track.js` | GPS, spår, tillbaka till appen |
+| `46-gps-track.js` | GPS, spår (historik, Firestore `tracks`, stopp, ritning), tillbaka till appen |
+| `47-track-panel.js` | Spår-menyn (bottenruta från Spår-ikonen i Filter) |
+| `48-fog.js` | Fog of war (Filter → Lager) |
 | `48-weather.js` | väder (Open-Meteo) |
 | `50-wind-lee.js` | vind och lä (`viewStep`, `drawLeeView`) |
 | `52-lightning.js` | blixtar (FMI) |
+| `53-compass.js` | Kompass: kil mot dit telefonen pekar (Filter → Lager) |
 | `54-panels.js` | bottenpaneler (`sheetSwipe`) |
 | `56-analysis.js` | Kartanalys |
 | `57-an-catches.js` | Kartanalys "Från fångsterna (data)": per art ur tävlingarnas fångster |
 | `58-akhit-spotdata.js` | Åk hit, vad som finns under en plats |
+| `59-names.js` | Namn (Filter → Lager): OSM-namn ur `LAKE.names`, avlusning, av som standard |
 | `60-lightning-alarm.js` | åskvarning |
 | `62-wakelock.js` | håll skärmen tänd |
 | `64-messages.js` | snabbmeddelanden |
-| `66-catches.js` | fångsterna: format, källa (Firestore `catches/<lake>`), admins CSV-inläsning |
-| `68-heatmap.js` | Heatmap: ritning (värme, per art, rutor, prickar), bottenrutan, fångstrutan, tryck på kartan |
+| `66-catches.js` | fångsterna: format, hämtning från Fiskfiskarnas API (historik + live), kopian, Inställningar → Fångstdata; sist tävlingslåset (`mapEditAllowed()`, `showLockCard()`) |
+| `67-profiles.js` | Profiler: fiskarens ruta (`#pfCard`) ur API:ets anglers/anglerStats/dashboard/results/records, Profil i menyn, foton (`catchImg`) |
+| `69-leader.js` | Ledare (Filter → Lager, av som standard): live-ställningen under väderchipet + krona efter ledarens namn på båten (`leadCrownFor`, `24-boats.js`) |
+| `68-heatmap.js` | Heatmap: ritning (värme, per art, rutor, prickar), bottenrutan, fångstrutan, tryck på kartan; Strandlinje på vanliga kartan (`shoreDraw`, Inställningar → Kartan) |
 | `90-boot.js` | start (`boot()`) |
 | `92-rotation.js` | vridning: spara/återställ läget, service worker-registrering, slutet på skriptet |
 

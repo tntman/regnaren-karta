@@ -48,7 +48,8 @@ with sync_playwright() as p:
     pg.click('#menuBtn'); pg.click('#menuItemSettings'); pg.wait_for_timeout(200)
     pg.click('#othersOpacitySeg button[data-op="0.5"]')
     pg.click('#wpSizeSeg button[data-size="1"]')
-    pg.click('#demoModeToggle'); pg.wait_for_timeout(2500)
+    with pg.expect_navigation(timeout=8000): pg.click('#demoModeToggle')   # (a reload into the test mode: Inställningar open again)
+    pg.wait_for_timeout(2500); pg.evaluate("window.__rc = 1")
     pg.click('#adminOpenBtn'); pg.wait_for_timeout(200); pg.fill('#pinInput', fakefb.TEST_PIN); pg.press('#pinInput', 'Enter'); pg.wait_for_timeout(300)
     pg.click('#adminBackBtn'); pg.wait_for_timeout(200)
     pg.fill('#cruiseInput', '3,5')   # typed, NOT committed (still focused)
@@ -138,7 +139,7 @@ with sync_playwright() as p:
     rotate(pg, 390, 844)
     check('name picker kept "Annat namn" + typed text', pg.eval_on_selector('#nameModal', 'e=>e.classList.contains("show")') and pg.input_value('#nameInput') == 'Kalle Anka', pg.input_value('#nameInput'))
     pg.click('#nameSave'); pg.wait_for_timeout(500)
-    check('logged in as the typed name', 'Kalle Anka' in pg.inner_text('#headerUser'))
+    check('logged in as the typed name', 'Kalle Anka' in pg.inner_text('#menuItemLogout'))
     check('no page errors', not errs, errs)
     b.close()
 

@@ -19,27 +19,27 @@
     padding:12px 14px calc(env(safe-area-inset-bottom,0px) + 24px);display:flex;flex-direction:column;gap:10px;}
   .helpCard{background:var(--navy-glass);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:12px 14px;scroll-margin-top:10px;}
   .helpCard h3{margin:0;font-size:15.5px;display:flex;align-items:center;gap:9px;color:var(--offwhite);}
-  .helpCard .hIc{width:28px;height:28px;border-radius:8px;background:rgba(232,163,61,.15);display:flex;align-items:center;justify-content:center;flex:0 0 auto;font-size:15px;}
+  .helpCard .hIc{width:28px;height:28px;border-radius:8px;background:rgba(240,154,96,.15);display:flex;align-items:center;justify-content:center;flex:0 0 auto;font-size:15px;}
   .helpCard p,.helpCard li{font-size:13.5px;line-height:1.45;color:#dbe4e7;}
   .helpCard p{margin:7px 0 0;}
   .helpCard ul{margin:8px 0 0;padding-left:18px;}
   .helpCard li{margin:3px 0;}
   .hA{color:var(--amber);}
-  .helpWelcome{background:linear-gradient(135deg,rgba(232,163,61,.18),rgba(11,42,58,.7));border-color:rgba(232,163,61,.4);display:none;}
+  .helpWelcome{background:linear-gradient(135deg,rgba(240,154,96,.18),rgba(28,33,44,.7));border-color:rgba(240,154,96,.4);display:none;}
   #helpView.first .helpWelcome{display:block;}
   .helpToc{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
   .helpToc a{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:8px 9px;
     font-size:13px;display:flex;align-items:center;gap:7px;color:var(--offwhite);text-decoration:none;-webkit-tap-highlight-color:transparent;}
-  .helpToc a:active{background:rgba(232,163,61,.18);}
+  .helpToc a:active{background:rgba(240,154,96,.18);}
   .helpToc a span{font-size:14px;}
-  .helpNews{border-color:rgba(232,163,61,.45);}
+  .helpNews{border-color:rgba(240,154,96,.45);}
   .helpNewsItem{display:flex;gap:9px;margin-top:8px;font-size:13.5px;line-height:1.35;color:#dbe4e7;}
   .helpNewsItem .date{flex:0 0 44px;color:var(--text-muted);font-size:11.5px;padding-top:2px;}
   .helpNewsItem.old{display:none;}
   .helpNews.all .helpNewsItem.old{display:flex;}
   .helpNews.all .helpMore{display:none;}
   .helpTag{display:inline-block;font-size:10px;font-weight:700;padding:1px 6px;border-radius:6px;margin-right:5px;vertical-align:1px;}
-  .helpTag.new{background:#E8A33D;color:#0B2A3A;}
+  .helpTag.new{background:#F09A60;color:#1C212C;}
   .helpTag.better{background:rgba(127,212,127,.2);color:#9fe39f;}
   .helpTag.fixed{background:rgba(124,196,255,.18);color:#a9d8ff;}
   .helpMore{margin-top:8px;background:none;border:none;color:var(--amber);font:inherit;font-size:13px;padding:2px 0;cursor:pointer;}
@@ -49,13 +49,13 @@
   .helpSub{margin:12px 0 0 !important;font-size:12px !important;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted) !important;}
   .helpSeg{display:flex;gap:4px;margin-top:10px;background:rgba(255,255,255,.06);border-radius:10px;padding:3px;}
   .helpSeg button{flex:1;border:none;background:none;color:var(--text-muted);font:inherit;font-size:12px;padding:6px 2px;border-radius:8px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
-  .helpSeg button.on{background:var(--amber);color:#0B2A3A;font-weight:700;}
+  .helpSeg button.on{background:var(--amber);color:#1C212C;font-weight:700;}
   .helpSteps{display:none;}
   .helpSteps.on{display:block;}
   .helpStep{display:flex;gap:10px;align-items:flex-start;margin-top:9px;font-size:13.5px;line-height:1.4;color:#dbe4e7;}
-  .helpStep .num{width:22px;height:22px;border-radius:50%;background:rgba(232,163,61,.2);color:var(--amber);font-weight:700;display:flex;align-items:center;justify-content:center;flex:0 0 auto;font-size:12px;}
+  .helpStep .num{width:22px;height:22px;border-radius:50%;background:rgba(240,154,96,.2);color:var(--amber);font-weight:700;display:flex;align-items:center;justify-content:center;flex:0 0 auto;font-size:12px;}
   .shareIc{width:15px;height:15px;vertical-align:-2px;}
-  .helpInstallBtn{display:block;width:100%;margin-top:10px;padding:11px;border-radius:10px;border:none;background:var(--amber);color:#0B2A3A;font:inherit;font-weight:700;font-size:14.5px;cursor:pointer;}
+  .helpInstallBtn{display:block;width:100%;min-height:46px;margin-top:10px;padding:0 11px;border-radius:10px;border:none;background:var(--amber);color:#1C212C;font:inherit;font-weight:700;font-size:14px;cursor:pointer;}
   .helpOk{margin-top:9px;background:rgba(127,212,127,.12);border:1px solid rgba(127,212,127,.35);border-radius:10px;padding:8px 10px;font-size:13px;color:#bff0bf;}
   .helpWarn{margin-top:9px;font-size:12.5px;background:rgba(214,69,69,.12);border:1px solid rgba(214,69,69,.35);border-radius:8px;padding:7px 10px;color:#ffc9c9;}
   .helpVer{font-size:11.5px !important;color:var(--text-muted) !important;}
@@ -73,14 +73,14 @@
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23B7C4C9' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='M15.5 15.5 21 21'/%3E%3C/svg%3E");
     background-repeat:no-repeat;background-position:11px 50%;background-size:17px;}
   #helpSearch::placeholder{color:var(--text-muted);}
-  #helpResults{display:none;margin-top:6px;background:rgba(11,42,58,.97);border:1px solid rgba(255,255,255,.14);border-radius:12px;overflow:hidden;}
+  #helpResults{display:none;margin-top:6px;background:rgba(28,33,44,.97);border:1px solid rgba(255,255,255,.14);border-radius:12px;overflow:hidden;}
   #helpResults.show{display:block;}
   .hsRes{display:block;width:100%;text-align:left;border:none;border-bottom:1px solid rgba(255,255,255,.07);background:none;color:var(--offwhite);font:inherit;padding:8px 12px;cursor:pointer;}
   .hsRes:last-child{border-bottom:none;}
   .hsRes b{display:block;font-size:13.5px;color:var(--amber);}
   .hsRes span{display:block;font-size:12.5px;color:#dbe4e7;margin-top:1px;line-height:1.35;}
-  .hsRes mark{background:rgba(232,163,61,.35);color:#fff;border-radius:3px;padding:0 1px;}
+  .hsRes mark{background:rgba(240,154,96,.35);color:#fff;border-radius:3px;padding:0 1px;}
   .hsNone{padding:9px 12px;font-size:13px;color:var(--text-muted);}
   .helpCard li.hit{animation:helpHit 2.2s ease;}
-  @keyframes helpHit{0%,40%{background:rgba(232,163,61,.35);}100%{background:transparent;}}
+  @keyframes helpHit{0%,40%{background:rgba(240,154,96,.35);}100%{background:transparent;}}
   .helpDefs li{margin:4px 0;}

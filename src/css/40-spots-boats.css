@@ -64,14 +64,13 @@
     transform:translate(-50%,-50%) rotate(45deg);
   }
   .boatPip:active .boatDot{transform:translate(-50%,-50%) rotate(45deg) scale(.88);}
-  .boatPip--group .boatDot{width:15px;height:15px;}
   .boatPip--stale .boatDot{background:#9aa6ab;}
   .boatName{
     position:absolute;left:14px;top:0;
     transform:translateY(-50%);
     display:flex;flex-direction:column;gap:1px;
     font-size:10.5px;font-weight:600;color:var(--offwhite);
-    background:rgba(4,12,17,.6);padding:3px 8px;border-radius:10px;
+    background:rgba(4,4,6,.6);padding:3px 8px;border-radius:10px;
     white-space:normal;max-width:150px;line-height:1.4;pointer-events:none;
   }
   .boatName>span{white-space:nowrap;}
@@ -86,7 +85,7 @@
   #longPressRing.active{transform:translate(-50%,-50%) scale(1);opacity:1;}
 
   #sheetBackdrop{
-    position:fixed;inset:0;background:rgba(4,12,17,.5);z-index:29;
+    position:fixed;inset:0;background:rgba(4,4,6,.5);z-index:29;
     opacity:0;pointer-events:none;transition:opacity .25s ease;
   }
   #sheetBackdrop.show{opacity:1;pointer-events:auto;}
@@ -111,9 +110,9 @@
     font-size:16px;line-height:30px;cursor:pointer;-webkit-tap-highlight-color:transparent;color:rgba(255,255,255,.3);}
   .gripX:active{color:#fff;}
   /* holding the grip: the top edge lights up blue + a soft blue spotlight, the bar white and glowing */
-  #wpSheet.dragging, #anPanel.dragging, #msgCard.dragging, #hmPanel.dragging, #hmCard.dragging{border-top-color:#58b4ff;box-shadow:0 -10px 30px rgba(0,0,0,.45),0 -2px 14px rgba(88,180,255,.9);}
-  #wpSheet.dragging .sheetGrab, #anPanel.dragging .grab, #msgCard.dragging .grab, #hmPanel.dragging .grab, #hmCard.dragging .grab{background:radial-gradient(ellipse 60% 140% at 50% 0%,rgba(80,170,255,.45),rgba(80,170,255,0) 70%),var(--navy);}
-  #wpSheet.dragging .sheetHandle, #anPanel.dragging .grab::before, #msgCard.dragging .grab::before, #hmPanel.dragging .grab::before, #hmCard.dragging .grab::before{background:#fff;box-shadow:0 0 12px 2px #4aa3ff;}
+  #wpSheet.dragging, #anPanel.dragging, #msgCard.dragging, #hmPanel.dragging, #hmCard.dragging, #pfCard.dragging, #trkPanel.dragging{border-top-color:#58b4ff;box-shadow:0 -10px 30px rgba(0,0,0,.45),0 -2px 14px rgba(88,180,255,.9);}
+  #wpSheet.dragging .sheetGrab, #anPanel.dragging .grab, #msgCard.dragging .grab, #hmPanel.dragging .grab, #hmCard.dragging .grab, #pfCard.dragging .grab, #trkPanel.dragging .grab{background:radial-gradient(ellipse 60% 140% at 50% 0%,rgba(80,170,255,.45),rgba(80,170,255,0) 70%),var(--navy);}
+  #wpSheet.dragging .sheetHandle, #anPanel.dragging .grab::before, #msgCard.dragging .grab::before, #hmPanel.dragging .grab::before, #hmCard.dragging .grab::before, #pfCard.dragging .grab::before, #trkPanel.dragging .grab::before{background:#fff;box-shadow:0 0 12px 2px #4aa3ff;}
   /* type picker in the spot sheet */
   .typeSeg{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 12px;}
   .typeSeg[hidden]{display:none;}
@@ -152,7 +151,7 @@
   .sheetActs .del{flex:0 0 48px;margin-right:8px;background:rgba(214,69,69,.12);border:1.5px solid rgba(214,69,69,.55);color:#ff8a80;}
   .sheetActs .del svg{width:18px;height:18px;}
   #undoToast{position:absolute;left:14px;right:14px;bottom:calc(env(safe-area-inset-bottom,0px) + 150px);z-index:40;display:none;align-items:center;gap:10px;
-    max-width:460px;margin:0 auto;background:rgba(11,42,58,.97);border:1px solid rgba(255,255,255,.18);border-radius:14px;padding:6px 6px 6px 14px;
+    max-width:460px;margin:0 auto;background:rgba(28,33,44,.97);border:1px solid rgba(255,255,255,.18);border-radius:14px;padding:6px 6px 6px 14px;
     box-shadow:0 10px 30px rgba(0,0,0,.5);font-size:14px;color:var(--offwhite);}
   #undoToast.show{display:flex;animation:toastUp .22s cubic-bezier(.16,1,.3,1);}
   @keyframes toastUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:none;}}
@@ -162,13 +161,13 @@
   #undoToast svg{flex:0 0 auto;}
   #undoToast circle.run{animation:undoRun 6s linear forwards;}
   @keyframes undoRun{from{stroke-dashoffset:0;}to{stroke-dashoffset:63;}}
-  #undoBtn{flex:0 0 auto;min-height:44px;padding:0 18px;border:none;border-radius:10px;background:var(--amber);color:var(--navy);font:inherit;font-weight:800;font-size:15px;cursor:pointer;}
+  #undoBtn{flex:0 0 auto;min-height:46px;padding:0 18px;border:none;border-radius:10px;background:var(--amber);color:var(--navy);font:inherit;font-weight:700;font-size:14px;cursor:pointer;}
   .sheetActs .save{background:var(--amber);color:var(--navy);}
   .sheetActs button:active{transform:scale(.97);}
   /* the type of someone else's spot / "ADMIN": small pills at the end of the "Sparad av" line */
   .miniType, .adminTag{display:inline-block;font-size:10.5px;font-weight:700;border-radius:6px;padding:1px 7px;margin-left:6px;vertical-align:1px;color:#14181C;}
   .miniType.light{color:#fff;}
-  .adminTag{background:rgba(232,163,61,.2);color:var(--amber);letter-spacing:.06em;}
+  .adminTag{background:rgba(240,154,96,.2);color:var(--amber);letter-spacing:.06em;}
   .sheetMeta{font-size:11.5px;color:var(--text-muted);margin:-6px 0 12px;}
   #wpName:disabled{opacity:.75;}
   #wpName{
@@ -179,11 +178,13 @@
   #wpName::placeholder{color:var(--text-muted);}
   .sheetRow{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;}
   .btnGhost, .btnPrimary{
-    border:none;border-radius:10px;padding:11px 16px;font-size:14px;font-weight:600;
-    font-family:inherit;-webkit-tap-highlight-color:transparent;
+    border:none;border-radius:10px;min-height:46px;padding:0 16px;font-size:14px;font-weight:700;
+    font-family:inherit;-webkit-tap-highlight-color:transparent;cursor:pointer;
   }
-  .btnGhost{background:transparent;color:var(--text-muted);}
-  .btnGhost.danger{color:var(--danger);}
+  .btnGhost{background:rgba(255,255,255,.08);color:var(--offwhite);}   /* the other button: grey, one amber per box */
+  /* every action button gives the same feedback as the spot sheet's: a little smaller while pressed */
+  .btnGhost:active, .btnPrimary:active, .msgCardBtns button:active, #undoBtn:active, #pfLoad:active,
+  .helpInstallBtn:active, .offBtn:active, .btnLogout:active{transform:scale(.97);}
   .btnPrimary{background:var(--amber);color:var(--navy);}
 
   .btnReroll{
@@ -205,65 +206,117 @@
   .demoCoordInput::placeholder{color:var(--text-muted);}
   .demoCoordInput.invalid{border-color:var(--danger);}
 
+  /* ---- "Vem är du?": a full screen -- the logo, the members' pictures in a grid, Fortsätt at the bottom ---- */
   #nameBackdrop{
-    position:fixed;inset:0;background:rgba(4,12,17,.6);z-index:40;
-    opacity:0;pointer-events:none;transition:opacity .25s ease;
+    position:fixed;inset:0;z-index:40;opacity:0;pointer-events:none;transition:opacity .25s ease;
+    background:linear-gradient(rgba(20,24,34,.55),rgba(20,24,34,.92) 45%,#141822);
+    -webkit-backdrop-filter:blur(6px) saturate(.6);backdrop-filter:blur(6px) saturate(.6);
   }
   #nameBackdrop.show{opacity:1;pointer-events:auto;}
   #nameModal{
-    position:fixed;left:50%;top:50%;z-index:41;
-    transform:translate(-50%,-50%) scale(.94);
-    opacity:0;pointer-events:none;transition:opacity .22s ease, transform .22s ease;
-    width:min(86vw,340px);
-    background:var(--navy);border:1px solid rgba(255,255,255,.14);
-    border-radius:16px;padding:20px 20px calc(env(safe-area-inset-bottom,0px) + 18px);
-    box-shadow:0 12px 32px rgba(0,0,0,.5);
+    position:fixed;inset:0;z-index:41;display:flex;flex-direction:column;
+    width:100%;max-width:520px;margin:0 auto;opacity:0;pointer-events:none;transition:opacity .22s ease;color:var(--offwhite);
   }
-  #nameModal.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1);}
-  .modalTitle{font-weight:700;font-size:18px;color:var(--offwhite);margin-bottom:6px;}
-  .modalDesc{font-size:12.5px;color:var(--text-muted);line-height:1.4;margin-bottom:14px;}
-  #nameInput{
-    width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);
-    border-radius:10px;padding:11px 12px;color:var(--offwhite);font-size:16px;
-    font-family:inherit;margin-bottom:14px;box-sizing:border-box;
-  }
-  #nameInput::placeholder{color:var(--text-muted);}
-  .modalError{color:var(--danger);font-size:12px;margin:-8px 0 4px;}
-  #nameModal{max-height:calc(100vh - 32px);overflow-y:auto;}
+  #nameModal.show{opacity:1;pointer-events:auto;}
+  .nameHead{text-align:center;padding:calc(env(safe-area-inset-top,0px) + 22px) 16px 6px;}
+  .nameLogo{width:150px;}
+  /* the logo as a 3D sign (js/35-logo3d.js; here, in Hjälp's and Inställningar's headers): the canvas a bit
+     bigger than the picture, so a tilted sign fits */
+  .logo3d{position:relative;display:inline-block;vertical-align:top;flex:0 0 auto;transform:rotate(-5deg);filter:drop-shadow(0 6px 14px rgba(0,0,0,.5));
+    perspective:500px;touch-action:none;cursor:grab;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;}
+  .headLogo{width:64px;margin:-6px 0;filter:drop-shadow(0 3px 6px rgba(0,0,0,.45));}
+  .logo3dCanvas{position:absolute;left:-12%;top:-12%;width:124%;height:124%;}
+  .logo3d.gl .nlSpin{visibility:hidden;}
+  .nlSpin{position:relative;transform-style:preserve-3d;}
+  .nlSpin img{display:block;width:100%;-webkit-backface-visibility:hidden;backface-visibility:hidden;-webkit-user-drag:none;pointer-events:none;}
+  /* 'flat' (older phones): a red back with a sheen that slides as it turns */
+  .nlBack{position:absolute;inset:0;display:none;transform:rotateY(180deg);-webkit-backface-visibility:hidden;backface-visibility:hidden;
+    background:linear-gradient(105deg,#b81d1b 0%,#EE2A28 38%,#ff8a7a 47%,#EE2A28 56%,#a81a18 100%);background-size:300% 100%;
+    background-position:calc(var(--ry, 0) / 360 * 100%) 0;
+    -webkit-mask:url(ff_logo.svg) center/100% 100% no-repeat;mask:url(ff_logo.svg) center/100% 100% no-repeat;}
+  .logo3d.flat .nlBack{display:block;}
+  #nameModal.show .nameLogo{animation:nameDrop .45s cubic-bezier(.16,1,.3,1) both;}
+  .nameTitle{font-size:28px;font-weight:700;margin:10px 0 2px;}
+  .nameSub{font-size:14px;color:var(--text-muted);}
   .nameList{
-    display:grid;grid-template-columns:repeat(3,1fr);gap:6px;
-    max-height:min(46vh,340px);overflow-y:auto;-webkit-overflow-scrolling:touch;
-    margin:0 0 14px;padding:2px;
+    flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;display:grid;grid-template-columns:repeat(3,1fr);gap:16px 6px;
+    padding:18px 14px 110px;align-content:start;-webkit-mask-image:linear-gradient(transparent,#000 18px);mask-image:linear-gradient(transparent,#000 18px);
   }
   .nameChip{
-    min-width:0;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);
-    color:var(--offwhite);border-radius:9px;padding:10px 4px;
-    font-family:inherit;font-size:13.5px;font-weight:600;text-align:center;
-    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-    -webkit-tap-highlight-color:transparent;cursor:pointer;
+    min-width:0;border:0;background:none;color:var(--offwhite);font-family:inherit;font-size:13.5px;font-weight:600;
+    display:flex;flex-direction:column;align-items:center;gap:6px;padding:4px 0;cursor:pointer;-webkit-tap-highlight-color:transparent;
+    transition:opacity .2s,filter .2s;
   }
-  .nameChip:active{transform:scale(.96);}
-  .nameChip.selected{background:var(--amber);border-color:var(--amber);color:var(--navy);}
-  .nameChip--other{grid-column:1 / -1;border-style:dashed;color:var(--text-muted);}
-  .nameChip--other.selected{border-style:solid;}
-
-  #boatInfoBackdrop{
-    position:fixed;inset:0;background:rgba(4,12,17,.6);z-index:40;
+  .nameChip > b{font-weight:inherit;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  #nameModal.show .nameChip{animation:nameFade .3s cubic-bezier(.16,1,.3,1) both;}
+  .nameChip .ava{position:relative;width:70px;height:70px;border-radius:50%;flex:0 0 auto;display:flex;align-items:center;justify-content:center;
+    background:var(--amber);color:var(--navy);font-size:30px;font-weight:700;
+    box-shadow:0 0 0 2px rgba(255,255,255,.16),0 4px 12px rgba(0,0,0,.4);transition:box-shadow .15s,transform .15s;}
+  .nameChip .ava img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;}
+  .nameChip:active .ava{transform:scale(.94);}
+  .nameChip.selected{color:var(--amber);}
+  .nameChip.selected .ava{box-shadow:0 0 0 3px var(--amber),0 0 0 7px rgba(240,154,96,.22);}
+  .nameChip.selected:not(.nameChip--other) .ava::after{content:"✓";position:absolute;right:-3px;bottom:-3px;width:24px;height:24px;border-radius:50%;box-sizing:border-box;
+    background:var(--amber);color:var(--navy);font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid #141822;}
+  .nameList.has .nameChip:not(.selected){opacity:.42;filter:grayscale(.7);}
+  .nameChip--other{color:var(--text-muted);}
+  .nameChip--other .ava{background:none;box-shadow:none;border:2px dashed rgba(255,255,255,.3);box-sizing:border-box;font-size:34px;font-weight:400;color:var(--text-muted);}
+  #nameModal.otherMode .nameChip--other{opacity:1;filter:none;color:var(--amber);}
+  #nameModal.otherMode .nameChip--other .ava{border:3px solid var(--amber);color:var(--amber);box-shadow:none;}
+  #nameModal.otherMode .nameChip:not(.nameChip--other){opacity:.3;filter:grayscale(1);}
+  #nameModal.otherMode .nameList{padding-bottom:180px;}
+  .nameFoot{position:absolute;left:0;right:0;bottom:0;padding:28px 16px calc(env(safe-area-inset-bottom,0px) + 10px);background:linear-gradient(rgba(20,24,34,0),#141822 34%);}
+  #nameInput{
+    width:100%;height:50px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:0 14px;
+    color:var(--offwhite);font-size:16px;font-family:inherit;margin-bottom:10px;box-sizing:border-box;
+  }
+  #nameInput::placeholder{color:var(--text-muted);}
+  #nameError{margin:0 0 8px;font-size:13px;text-align:center;}
+  #nameSave{width:100%;height:54px;border:0;border-radius:12px;font-family:inherit;font-size:17px;font-weight:700;cursor:pointer;
+    background:rgba(255,255,255,.1);color:var(--text-muted);transition:background .2s,color .2s;}
+  #nameSave.on{background:var(--amber);color:var(--navy);}
+  @keyframes nameFade{from{opacity:0;transform:translateY(8px);}}
+  @keyframes nameDrop{from{opacity:0;transform:rotate(-5deg) translateY(-14px) scale(.9);}}
+  @media (orientation:landscape) and (max-height:500px){
+    .nameHead{display:flex;align-items:center;justify-content:center;gap:16px;padding-top:calc(env(safe-area-inset-top,0px) + 10px);}
+    .nameLogo{width:80px;}
+    .nameTitles{display:flex;align-items:baseline;gap:12px;}
+    .nameTitle{margin:0;}
+    .nameList{grid-template-columns:repeat(6,1fr);}
+    .nameChip .ava{width:56px;height:56px;}
+    #nameModal{max-width:none;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    #nameModal.show .nameLogo, #nameModal.show .nameChip{animation:none;}
+    .nameChip, .nameChip .ava, #nameSave{transition:none;}
+  }
+  .modalTitle{font-weight:700;font-size:18px;color:var(--offwhite);margin-bottom:6px;}
+  .modalDesc{font-size:12.5px;color:var(--text-muted);line-height:1.4;margin-bottom:14px;}
+  .modalError{color:var(--danger);font-size:12px;margin:-8px 0 4px;}
+  #boatInfoBackdrop, #lockBackdrop, #msgBackdrop{
+    position:fixed;inset:0;background:rgba(4,4,6,.6);z-index:40;
     opacity:0;pointer-events:none;transition:opacity .22s ease;
   }
-  #boatInfoBackdrop.show{opacity:1;pointer-events:auto;}
-  #boatInfoModal{
+  #boatInfoBackdrop.show, #lockBackdrop.show, #msgBackdrop.show{opacity:1;pointer-events:auto;}
+  #boatInfoModal, #lockCard, #msgCard{
     position:fixed;left:50%;top:50%;z-index:41;
     transform:translate(-50%,-50%) scale(.94);
     opacity:0;pointer-events:none;transition:opacity .22s ease, transform .22s ease;
     width:min(86vw,320px);
     background:var(--navy);border:1px solid rgba(255,255,255,.14);
-    border-radius:16px;padding:20px 20px calc(env(safe-area-inset-bottom,0px) + 18px);
+    border-radius:16px;padding:18px 18px 16px;
     box-shadow:0 12px 32px rgba(0,0,0,.5);
   }
-  #boatInfoModal.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1);}
-  #boatInfoModal .modalDesc{margin-bottom:0;}
+  #boatInfoModal.show, #lockCard.show, #msgCard.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1);}
+  #boatInfoModal .modalDesc{margin-bottom:12px;}
+  #boatInfoModal .sheetRow, #lockCard .sheetRow{flex-wrap:nowrap;}       /* the buttons share the width, not huddled to the right */
+  #boatInfoModal .sheetRow button, #lockCard .sheetRow button{flex:1;}
+  #lockCard .modalDesc b{color:var(--offwhite);}
   .boatInfoNamesList{display:flex;flex-direction:column;gap:6px;margin:2px 0 14px;}
+  #boatInfoCatches{max-height:34vh;overflow-y:auto;margin-bottom:12px;}
+  #boatInfoCatches .biWho{color:var(--offwhite);font-size:12px;margin-top:8px;}
+  #boatInfoCatches .biWho:first-child{margin-top:0;}
+  #boatInfoCatches .pfRow{padding:3px 0;font-size:13px;}
   .boatInfoNameRow{
     background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);
     border-radius:9px;padding:9px 12px;font-size:13.5px;font-weight:600;color:var(--offwhite);
@@ -281,12 +334,11 @@
     padding:11px 16px;font-size:14px;font-weight:600;font-family:inherit;
     -webkit-tap-highlight-color:transparent;
   }
-  .btnLogout:active{transform:scale(.98);}
 
   /* offline / local-only indicator, under the REGNAREN title */
   #netBadge{
     display:none;align-items:center;gap:6px;margin-top:5px;margin-left:-50px; /* flush with the menu button */
-    background:rgba(11,42,58,.82);border:1px solid rgba(214,69,69,.55);
+    background:rgba(28,33,44,.82);border:1px solid rgba(214,69,69,.55);
     border-radius:12px;padding:4px 10px 4px 8px;width:max-content;
     max-width:min(300px, calc(100vw - 28px));
   }

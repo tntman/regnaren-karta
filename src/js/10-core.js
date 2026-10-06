@@ -29,6 +29,19 @@
   // nothing already saved on anyone's phone is lost.
   function lakeKey(legacy, name){ return LAKE_ID === 'regnaren' ? legacy : 'lake_' + LAKE_ID + '_' + name; }
 
+  /* ---------- Testläge = Demo Mode (tools/NOTES_TESTLAGE.md) ----------
+     Decided once, when the page loads (switching Demo Mode reloads the page). In the test mode
+     everything shared goes to a separate Firebase project (FIREBASE_CONFIG, 14-spots.js) and the
+     phone's copies of shared data have their own keys (testKey), so test and real never mix.
+     Demo Mode switches itself off after 15 min (32-demo.js) -- an old start time = off. */
+  var DEMO_KEY = 'regnaren_demo_mode_v1', DEMO_SINCE_KEY = 'regnaren_demo_since_v1', DEMO_MAX_MS = 15 * 60 * 1000;
+  var TEST_MODE = false;
+  try {
+    TEST_MODE = localStorage.getItem(DEMO_KEY) === '1' && Date.now() - (+localStorage.getItem(DEMO_SINCE_KEY) || 0) < DEMO_MAX_MS;
+    if (!TEST_MODE && localStorage.getItem(DEMO_KEY) === '1'){ localStorage.setItem(DEMO_KEY, '0'); localStorage.removeItem(DEMO_SINCE_KEY); }
+  } catch(e){}
+  function testKey(k){ return TEST_MODE ? k + '_test' : k; }
+
   /* ---------- geo referencing --------------------------------------
      A lake's map image is a crop of a standard Web-Mercator slippy-tile
      canvas (256px tiles) at geo.zoom: the crop's top-left corner is at
@@ -68,7 +81,7 @@
   }
 
   // the lake's name wherever the page shows it
-  document.getElementById('lakeTitle').textContent = LAKE.name.toUpperCase();
+  document.getElementById('lakeTitle').textContent = LAKE.name;
   document.getElementById('mapImg').alt = 'Djupkarta över sjön ' + LAKE.name;
   document.getElementById('wxTitle').textContent = 'Väder vid ' + LAKE.name;
   document.getElementById('wxCard').setAttribute('aria-label', 'Väder vid ' + LAKE.name);

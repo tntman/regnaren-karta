@@ -37,19 +37,22 @@
     return (v || '').trim();
   }
   userName = canonicalName(userName);
-  var headerUserEl = document.getElementById('headerUser');
-  var HEADER_USER_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"></path></svg>';
+  var menuAva = document.getElementById('menuAva');
+  var menuChev = document.getElementById('menuChev');
+  var menuBurger = document.querySelector('#menuBtn > svg');
+  var menuItemLogout = document.getElementById('menuItemLogout');
   function showUserName(){
     updateAdminVisibility();
     settingsNameDisplay.textContent = userName;
-    if (userName){
-      headerUserEl.innerHTML = HEADER_USER_ICON;
-      var t = document.createElement('span');
-      t.textContent = userName;
-      headerUserEl.appendChild(t);
-    } else {
-      headerUserEl.innerHTML = '';
-    }
+    var pic = AVATARS[userName], sa = document.getElementById('settingsAva');   // (the profile card on top of Inställningar)
+    sa.textContent = pic ? '' : (userName || '?').charAt(0).toUpperCase();
+    sa.style.backgroundImage = pic ? 'url("' + pic + '")' : '';
+    menuAva.hidden = menuChev.hidden = !pic;
+    menuBurger.style.display = pic ? 'none' : '';
+    menuBtn.classList.toggle('hasAva', !!pic);
+    if (pic) menuAva.src = pic;
+    menuItemLogout.hidden = document.getElementById('menuLogoutSep').hidden = !userName;
+    document.getElementById('menuLogoutText').textContent = 'Logga ut ' + userName;
   }
   showUserName();
 
@@ -60,22 +63,33 @@
 
   var selectedRosterName = null;
   var otherNameMode = false;
+  // the members as pictures (AVATARS; none -> their first letter), "Annat namn" last; they fade in one after another
   function renderNameList(){
     nameListEl.innerHTML = '';
-    NAME_ROSTER.forEach(function(n){
+    NAME_ROSTER.forEach(function(n, i){
       var b = document.createElement('button');
       b.type = 'button';
       b.className = 'nameChip';
       b.setAttribute('data-name', n);
-      b.textContent = n;
+      b.style.animationDelay = Math.min(i, 15) * 22 + 'ms';
+      b.innerHTML = '<span class="ava">' + (AVATARS[n] ? '<img alt="" src="' + AVATARS[n] + '">' : escHtml(Array.from(n)[0] || '?').toUpperCase()) + '</span><b>' + escHtml(n) + '</b>';
       nameListEl.appendChild(b);
     });
     var other = document.createElement('button');
     other.type = 'button';
     other.className = 'nameChip nameChip--other';
     other.setAttribute('data-other', '1');
-    other.textContent = 'Annat namn…';
+    other.style.animationDelay = Math.min(NAME_ROSTER.length, 15) * 22 + 'ms';
+    other.innerHTML = '<span class="ava">+</span><b>Annat namn</b>';
     nameListEl.appendChild(other);
+  }
+  // the button says who you continue as ("Fortsätt som Filip"), amber once someone is chosen
+  function updNameBtn(){
+    var v = otherNameMode ? nameInput.value.trim() : (selectedRosterName || '');
+    nameSaveBtn.classList.toggle('on', !!v);
+    nameSaveBtn.textContent = v ? 'Fortsätt som ' + v : (otherNameMode ? 'Skriv ditt namn' : 'Välj dig själv');
+    nameListEl.classList.toggle('has', !!selectedRosterName);
+    nameModal.classList.toggle('otherMode', otherNameMode);
   }
   renderNameList();
 
@@ -88,13 +102,14 @@
       otherNameMode = true;
       selectedRosterName = null;
       otherNameWrap.hidden = false;
-      setTimeout(function(){ nameInput.focus(); }, 50);
+      setTimeout(function(){ nameInput.focus(); nameListEl.scrollTop = nameListEl.scrollHeight; }, 50);
     } else {
       otherNameMode = false;
       selectedRosterName = chip.getAttribute('data-name');
       otherNameWrap.hidden = true;
       nameInput.blur();
     }
+    updNameBtn();
   });
 
   function showNameModal(){
@@ -105,6 +120,7 @@
     otherNameWrap.hidden = true;
     nameInput.value = '';
     nameErrorEl.hidden = true;
+    updNameBtn();
     nameBackdrop.classList.add('show');
     nameModal.classList.add('show');
   }
@@ -125,25 +141,32 @@
     showUserName();
     myUid = nameSlug(userName);
     hideNameModal();
+    splashPlay();   // (every new name: the start film, 35-splash.js)
+    if (!window.__ffNoWelcome) afterSplash(function(){ welcomeNote.classList.add('show'); });   // (then the welcome card: the way to Hjälp)
     if (appStarted){
       // returning from "Logga ut" — geolocation/Firebase are already running,
       // just re-evaluate ownership of the pins already on screen under the new name
       renderWaypoints();
     } else {
       continueBootAfterName();
-      if (!helpSeen()) showHelpView(true);   // the very first time on this phone: Hjälp, with a welcome
     }
   });
+  // the welcome card (every new name, after the film): tap = Hjälp (with its welcome), ✕ = gone
+  var welcomeNote = document.getElementById('welcomeNote');
+  document.getElementById('welcomeNoteGo').addEventListener('click', function(){ welcomeNote.classList.remove('show'); showHelpView(true); });
+  document.getElementById('welcomeNoteClose').addEventListener('click', function(){ welcomeNote.classList.remove('show'); });
   nameInput.addEventListener('keydown', function(e){
     if (e.key === 'Enter') nameSaveBtn.click();
   });
   nameInput.addEventListener('input', function(){
     if (!nameErrorEl.hidden) nameErrorEl.hidden = true;
+    updNameBtn();
   });
 
   // Name is locked once set — the only way to change identity is to log out
   // and re-enter a (possibly new) name via the mandatory modal.
   var logoutBtn = document.getElementById('logoutBtn');
+  menuItemLogout.addEventListener('click', function(){ toggleMenu(false); logoutBtn.click(); });
   logoutBtn.addEventListener('click', function(){
     expireOwnPosition(); // so the old name's pip disappears for everyone now, not in an hour
     try { localStorage.removeItem(USER_NAME_KEY); } catch(e){}

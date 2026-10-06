@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="sv"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Leksaksbåtar – förslag</title>
+<style>
+:root{--bla:#0E2532;--natt:#06141C;--dim:#E8EEF0;--vass:#8FA3AD;--barn:#E8A33D;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--natt);color:var(--dim);font:14px/1.4 Calibri,"Segoe UI",system-ui,sans-serif;padding:16px 18px 40px}
+h1{font:700 17px/1.2 Calibri,sans-serif;letter-spacing:.08em;text-transform:uppercase;margin:4px 0}
+h2{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--vass);margin:26px 0 10px}
+p.sub{color:var(--vass);margin:0 0 14px;max-width:780px}
+.bar{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:14px;align-items:center;background:rgba(14,37,50,.92);backdrop-filter:blur(6px);padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);margin-bottom:6px}
+.bar label{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--vass);margin-right:4px}
+.sw{width:26px;height:26px;border-radius:50%;border:3px solid transparent;box-shadow:0 0 0 1px rgba(255,255,255,.25);cursor:pointer;padding:0}
+.sw.on{border-color:#fff}
+input[type=range]{accent-color:var(--barn);width:150px;vertical-align:middle}
+.val{color:var(--barn);font-weight:700;min-width:36px;display:inline-block}
+button.b{background:rgba(255,255,255,.08);color:var(--dim);border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:6px 12px;font:600 13px Calibri,sans-serif;cursor:pointer}
+button.b.on{background:var(--barn);color:var(--bla);border-color:var(--barn)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.card{background:var(--bla);border-radius:12px;border:1px solid rgba(255,255,255,.1);overflow:hidden}
+.big{height:150px;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 45%,#16384a,#0b2230)}
+.row{display:flex;padding:6px 4px;gap:4px}
+.row>div{flex:1;height:54px;display:flex;align-items:center;justify-content:center;gap:4px;border-radius:8px;background-size:cover;background-position:center}
+.nm{padding:7px 10px 9px;font-weight:700;font-size:13.5px}
+.nm small{display:block;font-weight:400;color:var(--vass);font-size:12px}
+.dark{background:#06141C}.light{background:#EEF2F0}
+.scene{position:relative;width:100%;max-width:800px;aspect-ratio:4/3;border-radius:12px;overflow:hidden;background-size:cover;background-position:center}
+.scene .boat{position:absolute;transform:translate(-50%,-50%)}
+.scene .lbl{position:absolute;transform:translateY(-50%);font-size:10.5px;font-weight:600;color:var(--dim);background:rgba(4,12,17,.6);padding:3px 8px;border-radius:10px;white-space:nowrap}
+svg{overflow:visible;display:block}
+.shadow *{fill:#000!important;stroke:#000!important;fill-opacity:1!important;stroke-opacity:1!important}
+</style></head><body>
+<svg width="0" height="0" style="position:absolute"><defs>
+ <filter id="soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="1.6"/></filter>
+ <linearGradient id="hl" x1="0" y1="0" x2="1" y2="1">
+  <stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/>
+  <stop offset=".7" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".25"/></linearGradient>
+ <linearGradient id="wood" x1="0" x2="1"><stop offset="0" stop-color="#7E4B27"/><stop offset=".35" stop-color="#C08048"/><stop offset=".55" stop-color="#D49B60"/><stop offset="1" stop-color="#8E572D"/></linearGradient>
+ <linearGradient id="deck" x1="0" x2="1"><stop offset="0" stop-color="#D9A56F"/><stop offset=".5" stop-color="#E9BE8A"/><stop offset="1" stop-color="#C99160"/></linearGradient>
+ <linearGradient id="teak" x1="0" x2="1"><stop offset="0" stop-color="#B98353"/><stop offset=".5" stop-color="#CF9C68"/><stop offset="1" stop-color="#AE784A"/></linearGradient>
+ <radialGradient id="cream" cx=".4" cy=".35" r=".8"><stop offset="0" stop-color="#FFFBF0"/><stop offset=".6" stop-color="#F3E6C8"/><stop offset="1" stop-color="#D9C49A"/></radialGradient>
+ <linearGradient id="black" x1="0" x2="1"><stop offset="0" stop-color="#2A2E33"/><stop offset=".5" stop-color="#454B51"/><stop offset="1" stop-color="#1F2327"/></linearGradient>
+ <linearGradient id="steel" x1="0" x2="1"><stop offset="0" stop-color="#5E6A73"/><stop offset=".45" stop-color="#AEB9C1"/><stop offset="1" stop-color="#6E7A83"/></linearGradient>
+ <radialGradient id="steelR" cx=".4" cy=".35" r=".75"><stop offset="0" stop-color="#DCE3E8"/><stop offset=".6" stop-color="#9AA6AF"/><stop offset="1" stop-color="#5F6B74"/></radialGradient>
+ <linearGradient id="iron" x1="0" x2="1"><stop offset="0" stop-color="#1E2428"/><stop offset=".5" stop-color="#4C565D"/><stop offset="1" stop-color="#1E2428"/></linearGradient>
+ <linearGradient id="white" x1="0" x2="1"><stop offset="0" stop-color="#C9D3D9"/><stop offset=".45" stop-color="#FFFFFF"/><stop offset="1" stop-color="#C2CDD3"/></linearGradient>
+ <linearGradient id="red" x1="0" x2="1"><stop offset="0" stop-color="#B8301F"/><stop offset=".45" stop-color="#F2654A"/><stop offset="1" stop-color="#B12E1E"/></linearGradient>
+ <linearGradient id="orange" x1="0" x2="1"><stop offset="0" stop-color="#D9640F"/><stop offset=".45" stop-color="#FFA24A"/><stop offset="1" stop-color="#D05C0C"/></linearGradient>
+ <radialGradient id="yellow" cx=".4" cy=".35" r=".8"><stop offset="0" stop-color="#FFF2A8"/><stop offset=".55" stop-color="#FFD43B"/><stop offset="1" stop-color="#E9A800"/></radialGradient>
+ <linearGradient id="yellowL" x1="0" x2="1"><stop offset="0" stop-color="#E2A400"/><stop offset=".45" stop-color="#FFE066"/><stop offset="1" stop-color="#DB9C00"/></linearGradient>
+ <linearGradient id="shark" x1="0" x2="1"><stop offset="0" stop-color="#55656F"/><stop offset=".45" stop-color="#A3B3BD"/><stop offset="1" stop-color="#5A6A74"/></linearGradient>
+ <radialGradient id="glass" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#F2FBFF"/><stop offset=".5" stop-color="#9DD8F5"/><stop offset="1" stop-color="#4E9CC8"/></radialGradient>
+ <linearGradient id="log" x1="0" x2="1"><stop offset="0" stop-color="#6E4021"/><stop offset=".45" stop-color="#C48A52"/><stop offset="1" stop-color="#704222"/></linearGradient>
+ <linearGradient id="grey" x1="0" x2="1"><stop offset="0" stop-color="#AEB6BB"/><stop offset=".5" stop-color="#D9DFE2"/><stop offset="1" stop-color="#A9B1B6"/></linearGradient>
+ <pattern id="stripes" patternUnits="userSpaceOnUse" width="5" height="48"><rect width="2.5" height="48" fill="#E0573F"/><rect x="2.5" width="2.5" height="48" fill="#F6EBD3"/></pattern>
+</defs></svg>
+
+<h1>Leksaksbåtar – förslag 2</h1>
+<p class="sub">Egen ritning i "thiings"-stil men sedd rakt uppifrån (nosen uppåt), så att den kan vridas med färdriktningen. Mjuka material – trä, segelduk, stål, gummi – med tjocklek, skugga på vattnet och ljus uppe till vänster som står still när båten vrids. Båtarna har sina egna färger; <b>personens färg är ringen under båten</b>. Stora rutan = ritningen, raderna = 40 och 30 px mot mörkt, ljust och kartan.</p>
+
+<div class="bar">
+ <span><label>Personens färg</label><span id="sws"></span></span>
+ <span><label>Ring</label><button class="b on" id="ringBtn">På</button></span>
+ <span><label>Riktning</label><input id="ang" type="range" min="0" max="359" value="0"> <span class="val" id="angv">0°</span> <button class="b" id="spin">Snurra</button></span>
+ <span><label>Karta</label><button class="b on" data-bg="s1">Djup</button> <button class="b" data-bg="v1">v1</button> <button class="b" data-bg="c1">c1</button></span>
+</div>
+
+<h2>13 leksaksbåtar</h2><div class="grid" id="grid"></div>
+<h2>På kartan (36 px, verklig storlek)</h2>
+<div class="scene" id="scene"></div>
+
+<script>
+var BG={s1:'../../docs/lakes/regnaren/map_v4_s1.jpg',v1:'../../docs/lakes/regnaren/map_v4_v1.jpg',c1:'../../docs/lakes/regnaren/map_v4_c1.jpg'};
+var COLORS=['#FF7A00','#E5484D','#F5C518','#2EC4B6','#3A86FF','#9B6BFF','#FF5FA2','#F4F7F8'];
+var E=' stroke="#3B2414" stroke-opacity=".45" stroke-width=".6"';
+function rep(arr,f){return arr.map(f).join('');}
+function sail(x1,x2,y,b,fill,extra){return '<path fill="'+fill+'"'+E+' d="M'+x1+' '+y+'Q24 '+b+' '+x2+' '+y+'Z"/>'+(extra||'')+'<path d="M'+(x1-1.2)+' '+y+'L'+(x2+1.2)+' '+y+'" stroke="#6E4122" stroke-width="1.3" stroke-linecap="round"/><circle cx="24" cy="'+(y-.6)+'" r="1" fill="#5A3519"/>';}
+function turret(cy,dir){return rep([22.8,24,25.2],function(x){return '<path d="M'+x+' '+cy+'L'+x+' '+(cy+dir*7.2)+'" stroke="#4A545B" stroke-width="1.05" stroke-linecap="round"/>';})+
+ '<ellipse cx="24" cy="'+cy+'" rx="3.4" ry="2.9" fill="url(#steelR)" stroke="#3C454B" stroke-width=".6"/><circle cx="24" cy="'+(cy+dir*-.6)+'" r=".8" fill="#59646B"/>';}
+var ICONS=[
+{id:'pirat',name:'Piratskepp',sub:'tre segel, kanoner, flagga',fill:'url(#wood)',
+ hull:'M24 3C30 8 33.5 15 33.5 24L33.5 38Q33.5 44 28 44.5L20 44.5Q14.5 44 14.5 38L14.5 24C14.5 15 18 8 24 3Z',
+ under:'<path d="M24 4L24 -1.2" stroke="#7A4A26" stroke-width="1.6" stroke-linecap="round"/>'+rep([18.5,24.5,30.5],function(y){return '<rect x="11.8" y="'+y+'" width="3.6" height="2.3" rx=".9" fill="url(#iron)"/><rect x="32.6" y="'+y+'" width="3.6" height="2.3" rx=".9" fill="url(#iron)"/>';}),
+ top:'<path fill="url(#deck)" d="M24 6.5C28.6 10.8 31 16.5 31 24L31 37.5Q31 41.8 27 42L21 42Q17 41.8 17 37.5L17 24C17 16.5 19.4 10.8 24 6.5Z"/>'+
+  '<path d="M20.5 12L20.5 41M24 8L24 41M27.5 12L27.5 41" stroke="#8C5A2E" stroke-opacity=".45" stroke-width=".55"/>'+
+  '<path fill="url(#wood)"'+E+' d="M24 6.5C26.6 8.8 28.4 11.5 29.5 14.5L18.5 14.5C19.6 11.5 21.4 8.8 24 6.5Z"/>'+
+  '<path fill="url(#wood)"'+E+' d="M17 35L31 35L31 38Q31 42 27 42L21 42Q17 42 17 38Z"/><path d="M18 36.6L30 36.6" stroke="#E9BE8A" stroke-opacity=".7" stroke-width=".6"/>',
+ over:sail(15.5,32.5,17.6,9.6,'url(#cream)')+sail(11,37,26.4,16.4,'url(#cream)')+sail(15,33,34.4,26.6,'url(#black)','<circle cx="24" cy="31.6" r="1.25" fill="#F3E6C8"/><path d="M22.4 32.9L25.6 32.9" stroke="#F3E6C8" stroke-width=".7"/>')+
+  '<path d="M24 44.2L24 46.2" stroke="#5A3519" stroke-width=".8"/><path fill="url(#black)" d="M24 45.4L29.6 46.2Q28.2 48 29.6 49.8L24 49Z"/><circle cx="26.3" cy="47.4" r=".8" fill="#F3E6C8"/>'},
+{id:'viking',name:'Vikingaskepp',sub:'drakhuvud, sköldar, randigt segel',fill:'url(#wood)',
+ hull:'M24 3C29 8.5 31 16 31 24C31 32 29 39.5 24 45C19 39.5 17 32 17 24C17 16 19 8.5 24 3Z',
+ under:rep([14,20,26,32],function(y){return '<path d="M17.8 '+y+'L10.6 '+(y+5)+'M30.2 '+y+'L37.4 '+(y+5)+'" stroke="#8E572D" stroke-width="1.15" stroke-linecap="round"/><ellipse cx="10.4" cy="'+(y+5.3)+'" rx=".9" ry="1.7" transform="rotate(55 10.4 '+(y+5.3)+')" fill="#B5763F"/><ellipse cx="37.6" cy="'+(y+5.3)+'" rx=".9" ry="1.7" transform="rotate(-55 37.6 '+(y+5.3)+')" fill="#B5763F"/>';}),
+ top:'<path fill="url(#deck)" d="M24 6.5C27.6 11 29 17 29 24C29 31 27.6 37 24 41.5C20.4 37 19 31 19 24C19 17 20.4 11 24 6.5Z"/><path d="M21.5 12L21.5 37M24 8L24 40M26.5 12L26.5 37" stroke="#8C5A2E" stroke-opacity=".4" stroke-width=".5"/>'+
+  rep([12,17.5,23,28.5,34],function(y,i){var f=i%2?'#EFE6D2':'#D8453A',g=i%2?'#D8453A':'#EFE6D2';return '<circle cx="18" cy="'+y+'" r="2.05" fill="'+f+'" stroke="#7E878C" stroke-width=".7"/><circle cx="18" cy="'+y+'" r=".6" fill="#9AA3A8"/><circle cx="30" cy="'+y+'" r="2.05" fill="'+g+'" stroke="#7E878C" stroke-width=".7"/><circle cx="30" cy="'+y+'" r=".6" fill="#9AA3A8"/>';}),
+ over:sail(9.5,38.5,25.6,17.5,'url(#stripes)')+
+  '<path fill="url(#wood)" stroke="#5E3818" stroke-width=".6" d="M24 5C22.3 4 21.8 1.8 23.1 .6C24.6 -.5 26.6 .6 26.1 2.4C25.9 3.4 25.1 3.9 24.9 5Z"/><circle cx="24.6" cy="1.8" r=".45" fill="#1A1A1A"/>'+
+  '<path d="M24 43.6Q27 46.6 25 48.3Q23.4 49 23.6 47.4" fill="none" stroke="#9C6234" stroke-width="1.7" stroke-linecap="round"/>'},
+{id:'slag',name:'Slagskepp',sub:'tre torn, däck i teak',fill:'url(#steel)',
+ hull:'M24 2C28.2 7 30.5 14 30.5 22L30.5 38Q30.5 45 24 45.6Q17.5 45 17.5 38L17.5 22C17.5 14 19.8 7 24 2Z',
+ top:'<path fill="url(#teak)" d="M24 5C27 9.5 28.6 15 28.6 22L28.6 38Q28.6 43 24 43.4Q19.4 43 19.4 38L19.4 22C19.4 15 21 9.5 24 5Z"/><path d="M21.5 10L21.5 42M24 6L24 43M26.5 10L26.5 42" stroke="#7A5232" stroke-opacity=".35" stroke-width=".45"/>'+
+  turret(11.2,-1)+turret(16.4,-1)+
+  '<rect x="20.4" y="20.4" width="7.2" height="11.4" rx="1.8" fill="url(#steel)" stroke="#3C454B" stroke-width=".6"/><rect x="21.4" y="21.3" width="5.2" height="2.6" rx=".8" fill="#2C3A44"/><ellipse cx="24" cy="26.4" rx="1.7" ry="1.35" fill="#2E363B"/><ellipse cx="24" cy="29.6" rx="1.5" ry="1.2" fill="#2E363B"/>'+
+  rep([[19.6,23],[28.4,23],[19.6,29],[28.4,29]],function(p){return '<circle cx="'+p[0]+'" cy="'+p[1]+'" r=".8" fill="#59646B"/>';})+turret(36.6,1)},
+{id:'fiske',name:'Fiskebåt',sub:'konsol, teakdäck, utombordare',fill:'url(#white)',
+ hull:'M24 4.5C30.2 8.6 33 16 33 24.5L33 38.5Q33 41.5 30 41.5L18 41.5Q15 41.5 15 38.5L15 24.5C15 16 17.8 8.6 24 4.5Z',
+ under:'<rect x="20.4" y="39.4" width="7.2" height="6.8" rx="2.2" fill="url(#iron)"/><rect x="22.6" y="45.6" width="2.8" height="1.9" rx=".6" fill="#2A3136"/>',
+ top:'<path fill="url(#teak)" d="M24 9C28.4 12.4 30.6 17.6 30.6 24.5L30.6 37.6Q30.6 39.2 29 39.2L19 39.2Q17.4 39.2 17.4 37.6L17.4 24.5C17.4 17.6 19.6 12.4 24 9Z"/><path d="M20.4 18L20.4 39M24 18L24 39M27.6 18L27.6 39" stroke="#7A5232" stroke-opacity=".35" stroke-width=".45"/>'+
+  '<path fill="url(#white)"'+E+' d="M24 9C27.2 11.4 28.9 14.2 29.6 17.2L18.4 17.2C19.1 14.2 20.8 11.4 24 9Z"/>'+
+  '<path d="M20 21.6Q24 18.4 28 21.6" fill="none" stroke="url(#glass)" stroke-width="1.9" stroke-linecap="round"/><rect x="20" y="21.5" width="8" height="6" rx="1.8" fill="url(#white)"'+E+'/><circle cx="24" cy="24.4" r="1.4" fill="#2C3A44"/>'+
+  '<rect x="18.8" y="31" width="10.4" height="3.8" rx="1.6" fill="url(#cream)"'+E+'/>'},
+{id:'rodd',name:'Roddbåt',sub:'trä, tofter, åror',fill:'url(#wood)',
+ hull:'M24 4.5C30.5 9.5 33 17 33 25.5C33 32.5 31.2 38 28.5 41.5L19.5 41.5C16.8 38 15 32.5 15 25.5C15 17 17.5 9.5 24 4.5Z',
+ under:'<path d="M16 23.5L6.5 30M32 23.5L41.5 30" stroke="#B5763F" stroke-width="1.6" stroke-linecap="round"/><ellipse cx="5.6" cy="30.6" rx="1.8" ry="3.9" transform="rotate(56 5.6 30.6)" fill="url(#deck)"'+E+'/><ellipse cx="42.4" cy="30.6" rx="1.8" ry="3.9" transform="rotate(-56 42.4 30.6)" fill="url(#deck)"'+E+'/>',
+ top:'<path fill="url(#deck)" d="M24 8.5C29 12.6 30.8 18.6 30.8 25.5C30.8 31.5 29.4 36 27.3 39.2L20.7 39.2C18.6 36 17.2 31.5 17.2 25.5C17.2 18.6 19 12.6 24 8.5Z"/><path d="M21 12L21 39M24 9L24 39M27 12L27 39" stroke="#8C5A2E" stroke-opacity=".4" stroke-width=".5"/>'+
+  '<rect x="17.4" y="16.2" width="13.2" height="2.9" rx=".9" fill="url(#wood)"/><rect x="16.6" y="25.6" width="14.8" height="2.9" rx=".9" fill="url(#wood)"/><path fill="url(#wood)" d="M19.6 35L28.4 35L27.3 39.2L20.7 39.2Z"/><circle cx="16.4" cy="23.5" r="1" fill="#3A4248"/><circle cx="31.6" cy="23.5" r="1" fill="#3A4248"/>'},
+{id:'kajak',name:'Kajak',sub:'paddlare med hjälm',fill:'url(#red)',
+ hull:'M24 2.5C26.8 9 28.6 17 28.6 24C28.6 31 26.8 39 24 45.5C21.2 39 19.4 31 19.4 24C19.4 17 21.2 9 24 2.5Z',
+ top:'<path d="M24 6L24 19M24 33.5L24 42" stroke="#7E1E12" stroke-opacity=".5" stroke-width=".8"/><path d="M22.2 11.5L25.8 13.5M25.8 11.5L22.2 13.5" stroke="#1E1E1E" stroke-opacity=".6" stroke-width=".6"/><ellipse cx="24" cy="26" rx="3.6" ry="5.9" fill="url(#black)"/><ellipse cx="24" cy="27.3" rx="2.9" ry="2.2" fill="#3A86FF"/><circle cx="24" cy="25.3" r="2.4" fill="url(#yellow)" stroke="#9A7100" stroke-width=".5"/>',
+ over:'<path d="M9.5 22.2L38.5 27.8" stroke="#2A2F33" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="8.2" cy="22" rx="4" ry="1.9" transform="rotate(11 8.2 22)" fill="url(#yellowL)" stroke="#9A7100" stroke-width=".6"/><ellipse cx="39.8" cy="28" rx="4" ry="1.9" transform="rotate(11 39.8 28)" fill="url(#yellowL)" stroke="#9A7100" stroke-width=".6"/>'},
+{id:'anka',name:'Badanka',sub:'gul gummianka',fill:'url(#yellow)',
+ hull:'M24 5.5C27.8 5.5 30 8.3 30 11.5C30 13.6 29 15.2 27.6 16.2C31 17.6 33 21.5 33 27C33 35 29 41 24 44C19 41 15 35 15 27C15 21.5 17 17.6 20.4 16.2C19 15.2 18 13.6 18 11.5C18 8.3 20.2 5.5 24 5.5Z',
+ under:'<path fill="url(#orange)" stroke="#A84A08" stroke-width=".6" d="M21.2 8.2Q21.4 1.6 24 1.4Q26.6 1.6 26.8 8.2Z"/><path d="M21.6 4.6Q24 5.6 26.4 4.6" fill="none" stroke="#A84A08" stroke-opacity=".6" stroke-width=".5"/>',
+ top:'<circle cx="24" cy="11.5" r="5.6" fill="url(#yellow)" stroke="#C89200" stroke-opacity=".6" stroke-width=".6"/>'+
+  '<path d="M18.6 22C17.6 30 19.6 36.5 23.2 40.5C21.8 33 21.8 26.4 22.8 21Z" fill="#E6A500" fill-opacity=".55"/><path d="M29.4 22C30.4 30 28.4 36.5 24.8 40.5C26.2 33 26.2 26.4 25.2 21Z" fill="#E6A500" fill-opacity=".55"/>'+
+  '<circle cx="21.2" cy="9.8" r="1.25" fill="#1A1A1A"/><circle cx="20.8" cy="9.4" r=".42" fill="#fff"/><circle cx="26.8" cy="9.8" r="1.25" fill="#1A1A1A"/><circle cx="26.4" cy="9.4" r=".42" fill="#fff"/><path d="M22.6 41.4L24 44.4L25.4 41.4Z" fill="#E6A500"/>'},
+{id:'segel',name:'Segelbåt',sub:'vit, teak, bukigt segel',fill:'url(#white)',
+ hull:'M24 3.5C30 9.5 32.2 17.5 32.2 26.5C32.2 33.5 30.8 38.6 29.2 42L18.8 42C17.2 38.6 15.8 33.5 15.8 26.5C15.8 17.5 18 9.5 24 3.5Z',
+ top:'<path fill="url(#teak)" d="M24 7.5C28.7 12.5 30 19 30 26.5C30 32.5 29 36.8 27.6 39.8L20.4 39.8C19 36.8 18 32.5 18 26.5C18 19 19.3 12.5 24 7.5Z"/><path d="M21.5 12L21.5 39M24 8L24 40M26.5 12L26.5 39" stroke="#7A5232" stroke-opacity=".35" stroke-width=".45"/><path fill="url(#white)"'+E+' d="M20.4 18.5Q24 16 27.6 18.5L27.6 29L20.4 29Z"/><rect x="21.6" y="20" width="4.8" height="1.6" rx=".6" fill="#2C3A44"/><rect x="20.2" y="31" width="7.6" height="8" rx="2" fill="#2C3A44"/><rect x="21" y="31.8" width="6" height="2" rx=".8" fill="url(#cream)"/>',
+ over:'<path fill="url(#cream)"'+E+' d="M24 16.2Q34.6 26 24.6 40.4L23.6 40.4Z"/><path d="M24.8 21Q30.2 27 25.6 35" fill="none" stroke="#C9B48A" stroke-width=".55"/><path d="M24.2 26L29.6 27.6M24.2 32L28.4 33.4" stroke="#C9B48A" stroke-width=".45"/><path fill="url(#cream)"'+E+' d="M24 4.6Q29.8 10 24 15.8Z"/><circle cx="24" cy="16.2" r="1.3" fill="#8E979C"/>'},
+{id:'ubat',name:'Gul ubåt',sub:'ventiler, torn, propeller',fill:'url(#yellowL)',
+ hull:'M24 3C27.8 3 29.5 8 29.5 14L29.5 34C29.5 39.5 27 43 24 44C21 43 18.5 39.5 18.5 34L18.5 14C18.5 8 20.2 3 24 3Z',
+ under:'<path fill="url(#yellowL)"'+E+' d="M18.8 11L12.5 13Q12 15.6 13.5 15.6L18.8 15Z"/><path fill="url(#yellowL)"'+E+' d="M29.2 11L35.5 13Q36 15.6 34.5 15.6L29.2 15Z"/><path fill="url(#yellowL)"'+E+' d="M19.6 37L14.5 41L15.5 42.6L20.8 40.5Z"/><path fill="url(#yellowL)"'+E+' d="M28.4 37L33.5 41L32.5 42.6L27.2 40.5Z"/><path fill="url(#iron)" d="M21 43.4L27 43.4L26 46.6L22 46.6Z"/><path d="M20.6 45L27.4 45" stroke="#2A3136" stroke-width="1.2" stroke-linecap="round"/>',
+ top:rep([7.5,32.5,37],function(y){return '<circle cx="24" cy="'+y+'" r="1.55" fill="url(#glass)" stroke="#8C6A00" stroke-width=".7"/>';})+
+  '<rect x="21.1" y="14.5" width="5.8" height="12.5" rx="2.9" fill="url(#yellowL)" stroke="#9A7100" stroke-width=".7"/><circle cx="24" cy="17.8" r="1.1" fill="url(#iron)"/><path d="M24 17.8L24 12.5" stroke="#3A4248" stroke-width=".9" stroke-linecap="round"/><circle cx="24" cy="23.6" r="1.2" fill="url(#glass)" stroke="#8C6A00" stroke-width=".5"/>'},
+{id:'ufo',name:'UFO',sub:'med liten grön pilot',fill:'url(#steelR)',
+ hull:'M9 24A15 15 0 1 1 39 24A15 15 0 1 1 9 24Z',
+ under:'<path d="M20.4 10L24 1.6L27.6 10Z" fill="#FFF3A6" fill-opacity=".8"/>',
+ top:'<circle cx="24" cy="24" r="11.5" fill="none" stroke="#5F6B74" stroke-opacity=".6" stroke-width=".8"/><circle cx="24" cy="24" r="9" fill="url(#steel)" fill-opacity=".55"/>'+
+  rep([0,45,90,135,180,225,270,315],function(a){var r=a*Math.PI/180,x=(24+13*Math.sin(r)).toFixed(2),y=(24-13*Math.cos(r)).toFixed(2);return a===0?'<circle cx="'+x+'" cy="'+y+'" r="1.9" fill="#FFFDE8" stroke="#C9A800" stroke-width=".6"/>':'<circle cx="'+x+'" cy="'+y+'" r="1.25" fill="#FFD43B" stroke="#8C6A00" stroke-width=".4"/>';})+
+  '<circle cx="24" cy="24" r="6.8" fill="url(#glass)" stroke="#3E6F8C" stroke-width=".6"/><circle cx="24" cy="24.4" r="3.2" fill="#7ED957" stroke="#3E8A2A" stroke-width=".5"/><ellipse cx="22.8" cy="23.4" rx=".75" ry="1.05" fill="#111"/><ellipse cx="25.2" cy="23.4" rx=".75" ry="1.05" fill="#111"/><ellipse cx="21.6" cy="21.2" rx="2.2" ry="1.2" transform="rotate(-35 21.6 21.2)" fill="#fff" fill-opacity=".7"/>'},
+{id:'haj',name:'Haj',sub:'ryggfena, bröstfenor',fill:'url(#shark)',
+ hull:'M24 3C27.5 6 29 12 29 19L37 26Q37.5 28 35 27.5L28.6 25C28 31 26.5 36 25 38.5L30 45Q24 43 18 45L23 38.5C21.5 36 20 31 19.4 25L13 27.5Q10.5 28 11 26L19 19C19 12 20.5 6 24 3Z',
+ top:'<path d="M19.2 20.4L13 26.3L19.4 24Z" fill="#000" fill-opacity=".18"/><path d="M28.8 20.4L35 26.3L28.6 24Z" fill="#000" fill-opacity=".18"/><path d="M20.4 13.4L21.4 16M21.6 12.8L22.5 15.4M27.6 13.4L26.6 16M26.4 12.8L25.5 15.4" stroke="#33414A" stroke-width=".6" stroke-linecap="round"/>'+
+  '<path d="M24 16.5L26.6 27.8Q24 26.6 21.4 27.8Z" fill="url(#shark)" stroke="#33414A" stroke-width=".6"/><path d="M24 16.5L24 27" stroke="#33414A" stroke-opacity=".5" stroke-width=".5"/><circle cx="21.4" cy="9.4" r="1" fill="#111"/><circle cx="26.6" cy="9.4" r="1" fill="#111"/>'},
+{id:'flotte',name:'Flotte',sub:'stockar, rep, litet segel',fill:'url(#wood)',
+ hull:'M15 11Q15 8 17.5 8L30.5 8Q33 8 33 11L33 39Q33 42 30.5 42L17.5 42Q15 42 15 39Z',
+ top:rep([16.8,20.4,24,27.6,31.2],function(x,i){var o=[0,-1.2,-1.8,-.8,.4][i];return '<rect x="'+(x-1.75)+'" y="'+(8.4+o)+'" width="3.5" height="'+(33.4-o)+'" rx="1.75" fill="url(#log)" stroke="#4A2A12" stroke-opacity=".5" stroke-width=".4"/><ellipse cx="'+x+'" cy="'+(10+o)+'" rx="1.2" ry="1" fill="#E3B987" stroke="#8C5A2E" stroke-width=".35"/>';})+
+  '<path d="M15 15L33 15M15 35.5L33 35.5" stroke="#E9D3A2" stroke-width="1.3"/><path d="M15 15.8L33 15.8M15 36.3L33 36.3" stroke="#A8865A" stroke-width=".45"/><rect x="26.6" y="30" width="4" height="4" rx="1.6" fill="url(#wood)" stroke="#4A2A12" stroke-width=".5"/>',
+ over:sail(16,32,24.5,17.6,'url(#cream)')},
+{id:'gummi',name:'Gummibåt',sub:'orange tuber, motor',fill:'url(#orange)',
+ hull:'M24 4C31 6 34 13 34 22L34 40.5Q34 43.5 31 43.5L17 43.5Q14 43.5 14 40.5L14 22C14 13 17 6 24 4Z',
+ under:'<rect x="20.4" y="41" width="7.2" height="6.4" rx="2.2" fill="url(#iron)"/>',
+ top:'<path fill="url(#grey)" d="M24 8.6C28.4 10 30 15 30 22L30 40.2L18 40.2L18 22C18 15 19.6 10 24 8.6Z"/><path d="M18 26L30 26M18 32L30 32" stroke="#8E979C" stroke-width=".5"/><path d="M14.6 18L17.4 18M30.6 18L33.4 18M14.6 30L17.4 30M30.6 30L33.4 30" stroke="#8A3E06" stroke-opacity=".6" stroke-width=".6"/>'+
+  '<path d="M16 6.4Q24 1.6 32 6.4" fill="none" stroke="#2A2F33" stroke-width=".7" stroke-dasharray="1.2 1"/><rect x="21" y="27.2" width="6" height="3.6" rx="1.2" fill="url(#iron)"/><rect x="20.2" y="34" width="7.6" height="3.4" rx="1.4" fill="url(#black)"/>'}
+];
+var uid=0;
+function rot(a,s){return '<g transform="rotate('+a+' 24 24)">'+s+'</g>';}
+function icon(ic,o){
+ var a=o.angle||0, id='k'+(uid++), u=ic.under||'', t=ic.top||'', ov=ic.over||'', s='';
+ var hull='<path fill="'+ic.fill+'" stroke="#2A1A0E" stroke-opacity=".55" stroke-width=".8" stroke-linejoin="round" d="'+ic.hull+'"/>';
+ if(o.ring) s+='<circle cx="24" cy="24" r="23" fill="'+o.color+'" fill-opacity=".13" stroke="'+o.color+'" stroke-width="1.9"/><circle cx="24" cy="24" r="24.4" fill="none" stroke="#06141C" stroke-opacity=".55" stroke-width=".9"/>';
+ s+='<g filter="url(#soft)" opacity=".5" class="shadow" transform="translate(2.4 3.6)">'+rot(a,u+hull)+'</g>';
+ if(ov) s+='<g filter="url(#soft)" opacity=".32" class="shadow" transform="translate(4.4 5.8)">'+rot(a,ov)+'</g>';
+ [3,2.2,1.4,.7].forEach(function(d){ s+='<g transform="translate(0 '+d+')">'+rot(a,u+hull+'<path fill="#000" fill-opacity=".4" d="'+ic.hull+'"/>')+'</g>'; });
+ s+=rot(a,u+hull+t);
+ s+='<clipPath id="'+id+'"><path transform="rotate('+a+' 24 24)" d="'+ic.hull+'"/></clipPath><rect x="0" y="0" width="48" height="48" fill="url(#hl)" clip-path="url(#'+id+')"/>';
+ if(ov) s+='<g transform="translate(0 -1.3)">'+rot(a,ov)+'</g>';
+ return '<svg width="'+o.size+'" height="'+o.size+'" viewBox="0 0 48 48">'+s+'</svg>';
+}
+var st={color:COLORS[0],angle:0,bg:'s1',ring:true};
+function bgUrl(){return 'url('+BG[st.bg]+')';}
+function render(){
+ uid=0;
+ document.getElementById('grid').innerHTML=ICONS.map(function(ic){
+  var o=function(sz){return {angle:st.angle,color:st.color,size:sz,ring:st.ring};};
+  return '<div class="card"><div class="big">'+icon(ic,o(112))+'</div>'+
+   '<div class="row"><div class="dark">'+icon(ic,o(40))+icon(ic,o(30))+'</div><div class="light">'+icon(ic,o(40))+icon(ic,o(30))+'</div><div style="background-image:'+bgUrl()+'">'+icon(ic,o(40))+icon(ic,o(30))+'</div></div>'+
+   '<div class="nm">'+ic.name+'<small>'+ic.sub+'</small></div></div>';
+ }).join('');
+ var boats=[['fiske',52,31,120,'#FF7A00','Filip'],['rodd',33,13,250,'#2EC4B6','Anders'],['kajak',8,90,60,'#F5C518','Lisa'],['pirat',40,22,300,'#E5484D','Johan'],['anka',57,82,20,'#9B6BFF','Kim'],['ufo',26,96,200,'#FF5FA2','Sam'],
+  ['viking',64,40,140,'#F5C518','Erik'],['slag',77,58,170,'#3A86FF','Maria'],['haj',70,92,280,'#F4F7F8','Ola'],['ubat',95,93,30,'#2EC4B6','Nils'],['segel',84,69,150,'#F4F7F8','Johanna'],['gummi',90,78,215,'#3A86FF','Eva']];
+ var sc=document.getElementById('scene'); sc.style.backgroundImage=bgUrl();
+ sc.innerHTML=boats.map(function(b){
+  var ic=ICONS.filter(function(i){return i.id===b[0];})[0];
+  return '<div class="boat" style="left:'+b[1]+'%;top:'+b[2]+'%">'+icon(ic,{angle:(b[3]+st.angle)%360,color:b[4],size:36,ring:st.ring})+'</div><span class="lbl" style="left:calc('+b[1]+'% + 22px);top:'+b[2]+'%">'+b[5]+'</span>';
+ }).join('');
+}
+var sws=document.getElementById('sws');
+sws.innerHTML=COLORS.map(function(c,i){return '<button class="sw'+(i?'':' on')+'" style="background:'+c+'" data-c="'+c+'"></button>';}).join(' ');
+sws.onclick=function(e){var c=e.target.getAttribute('data-c');if(!c)return;st.color=c;[].forEach.call(sws.children,function(b){b.classList.toggle('on',b===e.target);});render();};
+document.getElementById('ringBtn').onclick=function(){st.ring=!st.ring;this.classList.toggle('on',st.ring);this.textContent=st.ring?'På':'Av';render();};
+var ang=document.getElementById('ang');
+ang.oninput=function(){st.angle=+ang.value;document.getElementById('angv').textContent=ang.value+'°';render();};
+var spinT=null;
+document.getElementById('spin').onclick=function(){var b=this;if(spinT){clearInterval(spinT);spinT=null;b.classList.remove('on');return;}b.classList.add('on');spinT=setInterval(function(){ang.value=(+ang.value+6)%360;ang.oninput();},80);};
+[].forEach.call(document.querySelectorAll('[data-bg]'),function(b){b.onclick=function(){st.bg=b.getAttribute('data-bg');[].forEach.call(document.querySelectorAll('[data-bg]'),function(x){x.classList.toggle('on',x===b);});render();};});
+render();
+</script>
+</body></html>

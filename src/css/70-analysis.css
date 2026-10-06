@@ -4,7 +4,7 @@
   #anLayer.on{display:block;}
   #anLabels{position:absolute;inset:0;z-index:15;pointer-events:none;}
   .anLbl{position:absolute;left:0;top:0;transform:translate(-50%,-50%);pointer-events:auto;cursor:pointer;white-space:nowrap;
-    background:rgba(11,42,58,.9);border:1.5px solid #FFBE28;border-radius:11px;padding:2px 8px;font-size:11.5px;font-weight:700;color:#fff;
+    background:rgba(28,33,44,.9);border:1.5px solid #FFBE28;border-radius:11px;padding:2px 8px;font-size:11.5px;font-weight:700;color:#fff;
     box-shadow:0 2px 8px rgba(0,0,0,.5);-webkit-tap-highlight-color:transparent;}
   .anLbl.hole{border-color:#6fd6ff;}
   .anLbl.sim{border-color:#ff50a0;width:24px;height:24px;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#ff50a0;}
@@ -67,6 +67,7 @@
   .anRefRow{display:flex;gap:8px;align-items:center;margin-top:8px;}
   .anRefRow #anRefSel{margin-top:0;flex:1;min-width:0;}
   #anRefGo{flex:0 0 auto;border:1px solid rgba(255,80,160,.7);background:rgba(255,80,160,.18);color:#fff;border-radius:9px;padding:8px 12px;font:inherit;font-weight:700;font-size:13px;cursor:pointer;}
+  .anEnds{order:4;flex:1 1 100%;display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-top:-2px;}   /* (words under a slider's ends) */
   .anNote{font-size:11.5px;color:var(--text-muted);line-height:1.4;margin-top:8px;}
   .anNote b{color:#dbe4e7;} .anNote i{font-style:italic;}
   .anLbl.simRef{width:0;height:0;padding:0;border:none;background:none;box-shadow:none;pointer-events:none;}
@@ -89,12 +90,13 @@
   .hdBtn svg{width:18px;height:18px;display:block;}
   .hdBtn:active{transform:scale(.92);}
   .hdBtn:disabled{opacity:.35;cursor:default;transform:none;}
-  .hdBtn.on{border-color:var(--amber);color:var(--amber);background:rgba(232,163,61,.14);}   /* ⓘ open / ⏻ something is on */
-  .hdBtn.pwBtn:not(:disabled){border-color:var(--amber);color:var(--amber);background:rgba(232,163,61,.14);}
+  .hdBtn.on{border-color:var(--amber);color:var(--amber);background:rgba(240,154,96,.14);}   /* ⓘ open / ⏻ something is on */
+  .hdBtn.pwBtn:not(:disabled){border-color:var(--amber);color:var(--amber);background:rgba(240,154,96,.14);}
   /* ⓘ: the explanations under the top row */
   .pnInfo{margin:2px 0 4px;padding:8px 11px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);font-size:12px;line-height:1.45;color:#c9d4d8;}
   .pnInfo[hidden]{display:none;}
   .pnInfo p{margin:0;} .pnInfo p + p{margin-top:5px;}
+  .pnList{margin:0;padding-left:16px;} .pnList li + li{margin-top:3px;} .pnInfo > * + .pnList, .pnInfo > .pnList + *{margin-top:8px;}
   .pnInfo b{color:#dbe4e7;}
   #anControls .anNote{display:none;}                                    /* (behind ⓘ) */
   /* rows: one line each -- they scroll sideways instead of wrapping (a fade at the edge says there's more) */
@@ -107,17 +109,28 @@
   #anControls, #hmCtl{display:grid;grid-template-columns:1fr 1fr;column-gap:14px;}
   #anControls > *, #hmCtl > *{grid-column:1 / -1;}
   #anControls > .anRange:has(+ .anRange), #anControls > .anRange + .anRange, #hmCtl > .anRange:has(+ .anRange), #hmCtl > .anRange + .anRange{grid-column:auto;}
-  #anControls .anRange, #hmCtl .anRange{flex-wrap:wrap;row-gap:0;margin-top:8px;}
-  #anControls .anRange label, #hmCtl .anRange label{flex:1 1 auto;}
-  #anControls .anRange output, #hmCtl .anRange output{flex:0 0 auto;}
+  #anControls .anRange, #hmCtl .anRange, #hmSize .anRange{flex-wrap:wrap;row-gap:0;margin-top:8px;}
+  #anControls .anRange label, #hmCtl .anRange label, #hmSize .anRange label{flex:1 1 auto;}
+  #anControls .anRange output, #hmCtl .anRange output, #hmSize .anRange output{flex:0 0 auto;}
   #anControls .anRange input, #hmCtl .anRange input{flex:1 1 100%;order:3;height:24px;}
+  /* "Storlek" (Heatmap, Kartanalys "Från fångsterna", sizeRow in 56-analysis.js): two range inputs on top of each other, only their handles take touches; the part between them orange */
+  #hmSize .anRange{margin-top:6px;}
+  .sizeDual{position:relative;flex:1 1 100%;order:3;height:28px;}
+  .sizeDual::before{content:'';position:absolute;left:10px;right:10px;top:12px;height:4px;border-radius:2px;
+    background:linear-gradient(90deg,var(--s3) var(--a),var(--amber) var(--a),var(--amber) var(--b),var(--s3) var(--b));}
+  :is(#anControls, #hmSize) .sizeDual input{position:absolute;left:0;top:0;width:100%;height:28px;margin:0;-webkit-appearance:none;appearance:none;background:none;pointer-events:none;}
+  .sizeDual input::-webkit-slider-runnable-track{height:28px;background:none;}
+  .sizeDual input::-moz-range-track{background:none;}
+  .sizeDual input::-webkit-slider-thumb{-webkit-appearance:none;pointer-events:auto;width:20px;height:20px;margin-top:4px;border-radius:50%;background:var(--amber);box-shadow:0 1px 4px rgba(0,0,0,.5);cursor:pointer;}
+  .sizeDual input::-moz-range-thumb{pointer-events:auto;width:20px;height:20px;border:none;border-radius:50%;background:var(--amber);box-shadow:0 1px 4px rgba(0,0,0,.5);cursor:pointer;}
   .pnRow2{display:flex;gap:8px;align-items:center;}
   .pnRow2 .anSeg{flex:1 1 auto;} .pnRow2 .anChips{flex:0 0 auto;padding-right:0;-webkit-mask-image:none;mask-image:none;}
   #anPanel .anSeg, #hmPanel .anSeg{margin-top:6px;}
   #anPanel .anDual{margin-top:8px;}
   #anListBox:empty{display:none;}
-  /* "↺ Återställ" done: green with a tick for a moment, the tick turns in (resetDone) */
-  .hdBtn.rsDone, .hdBtn.rsDone:disabled{opacity:1;border-color:rgba(127,216,138,.6);color:#7fd88a;background:rgba(127,216,138,.12);}
-  .rsDone svg{animation:rsTick .45s cubic-bezier(.16,1,.3,1);}
-  @keyframes rsTick{from{transform:rotate(-270deg) scale(.5);opacity:0;}to{transform:none;opacity:1;}}
+  #anChips.combo button.on::before{content:'+ ';}       /* Kartdata combined: "+ Djup", "+ Branta kanter" -- they work together */
+  /* "↺ Återställ" done: the arrow spins round once (resetDone) */
+  .hdBtn.rsDone, .hdBtn.rsDone:disabled{opacity:1;}
+  .rsDone svg{animation:rsSpin .6s cubic-bezier(.34,1.3,.64,1);}
+  @keyframes rsSpin{to{transform:rotate(-360deg);}}
   @media (prefers-reduced-motion:reduce){ .rsDone svg{animation-name:fadeIn;} }

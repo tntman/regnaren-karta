@@ -1,8 +1,8 @@
   /* ---- weather: small chip under your name, tap for details ---- */
   #wxChip{
-    display:none;align-items:center;gap:7px;margin:5px 0 0 -50px;pointer-events:auto;
-    background:rgba(11,42,58,.82);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:4px 10px 4px 8px;
-    font:600 12px Calibri,"Segoe UI",system-ui,sans-serif;color:var(--offwhite);white-space:nowrap;
+    display:none;align-items:center;gap:7px;margin:14px 0 0 -50px;pointer-events:auto;
+    background:rgba(28,33,44,.82);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:4px 10px 4px 8px;
+    font:600 12px -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;color:var(--offwhite);white-space:nowrap;
     box-shadow:0 4px 14px rgba(0,0,0,.3);cursor:pointer;-webkit-tap-highlight-color:transparent;
   }
   #wxChip.show{display:inline-flex;}
@@ -13,7 +13,7 @@
   #wxCard{
     position:absolute;left:14px;right:14px;top:calc(env(safe-area-inset-top,0px) + 84px);z-index:30;
     max-width:460px;display:none;
-    background:rgba(11,42,58,.97);border:1px solid rgba(255,255,255,.14);border-radius:16px;padding:12px 14px 10px;
+    background:rgba(28,33,44,.97);border:1px solid rgba(255,255,255,.14);border-radius:16px;padding:12px 14px 10px;
     color:var(--offwhite);box-shadow:0 10px 30px rgba(0,0,0,.5);
   }
   #wxCard.show{display:block;}
@@ -44,7 +44,7 @@
   #ltPill{
     display:none;align-items:center;gap:9px;margin:6px 0 0 -50px;width:max-content;max-width:calc(100vw - 150px);
     background:rgba(222,128,18,.94);border-radius:14px;padding:5px 13px 5px 9px;box-shadow:0 4px 14px rgba(0,0,0,.35);
-    color:#fff;font-family:Calibri,"Segoe UI",system-ui,sans-serif;line-height:1.15;
+    color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;line-height:1.15;
   }
   #ltPill.show{display:flex;}
   #ltPill.red{background:rgba(205,38,38,.94);}
@@ -78,7 +78,7 @@
   .styleOpt .soName{font-size:14px;font-weight:700;}
   .styleOpt .soDesc{font-size:11.5px;color:var(--text-muted);margin-top:2px;}
   .styleOpt .soCheck{width:22px;height:22px;border-radius:50%;flex:0 0 auto;border:2px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;}
-  .styleOpt.active{border-color:var(--amber);background:rgba(232,163,61,.1);}
+  .styleOpt.active{border-color:var(--amber);background:rgba(240,154,96,.1);}
   .styleOpt.active .soCheck{background:var(--amber);border-color:var(--amber);}
   .styleOpt.active .soCheck::after{content:'';width:8px;height:4px;border:2.5px solid var(--navy);border-top:none;border-right:none;transform:rotate(-45deg) translate(1px,-1px);}
   .styleOpt.loading .soCheck{border-top-color:var(--amber);animation:spin .8s linear infinite;}
@@ -160,6 +160,14 @@
   .statusDot.live{background:#4cc38a;}
   .statusDot.stale{background:var(--text-muted);}
   .adminNote{font-size:11.5px;color:var(--text-muted);margin-top:8px;line-height:1.4;}
+  #adminTestCard .adminNote:empty{display:none;}
+  /* Testläge (admin): a row of small fields */
+  .testRow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px;font-size:13px;color:var(--offwhite);}
+  .testRow select, .testRow input[type=text]{flex:1 1 90px;min-width:0;height:36px;padding:0 8px;border-radius:8px;border:1px solid rgba(255,255,255,.18);
+    background:rgba(255,255,255,.06);color:var(--offwhite);font:inherit;font-size:14px;}
+  .testRow input[type=text]{flex:0 0 64px;}
+  .testRow select option{color:#000;}
+  .testRow label{display:flex;align-items:center;gap:5px;}
   .adminNote a{color:var(--amber);}
   .usageHead{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);margin-top:12px;}
   .usagePerson{display:flex;gap:8px;font-size:12.5px;color:var(--offwhite);padding:5px 0;border-top:1px solid rgba(255,255,255,.06);font-variant-numeric:tabular-nums;}
@@ -169,7 +177,7 @@
   .usageLine{font-size:13.5px;color:var(--offwhite);margin-top:8px;font-variant-numeric:tabular-nums;}
   #adminRow .btnAdmin{flex:0 0 auto;}
   #pinBackdrop{
-    position:fixed;inset:0;background:rgba(4,12,17,.6);z-index:40;
+    position:fixed;inset:0;background:rgba(4,4,6,.6);z-index:40;
     opacity:0;pointer-events:none;transition:opacity .22s ease;
   }
   #pinBackdrop.show{opacity:1;pointer-events:auto;}
@@ -215,27 +223,37 @@
   #ltAlarmOk{margin-top:12px;width:100%;min-height:48px;border:2px solid rgba(255,255,255,.85);border-radius:14px;background:none;color:#fff;font:inherit;font-weight:700;font-size:16px;cursor:pointer;}
   #ltAlarmOk:active{background:rgba(255,255,255,.18);}
   /* the all clear after a warning ("Åskan har dragit förbi"): calm, sea-chart blue with a green edge */
-  #ltAlarm.clear{background:rgba(11,42,58,.97);border-color:#7fd88a;}
+  #ltAlarm.clear{background:rgba(28,33,44,.97);border-color:#7fd88a;}
   #ltAlarm.clear b{font-size:20px;color:#7fd88a;}
   #ltAlarm.clear #ltAlarmOk{border-color:rgba(127,216,138,.7);}
   /* the warning is switched off: a pill under the weather chip, like it -- tap = Inställningar */
   #ltOffPill{display:flex;align-items:center;gap:7px;margin:6px 0 0 -50px;pointer-events:auto;width:max-content;
-    background:rgba(11,42,58,.9);border:1.5px solid #ff8a80;border-radius:12px;padding:4px 11px 4px 8px;
-    font:700 12px Calibri,"Segoe UI",system-ui,sans-serif;color:#fff;box-shadow:0 4px 14px rgba(0,0,0,.3);cursor:pointer;-webkit-tap-highlight-color:transparent;}
+    background:rgba(28,33,44,.9);border:1.5px solid #ff8a80;border-radius:12px;padding:4px 11px 4px 8px;
+    font:700 12px -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;color:#fff;box-shadow:0 4px 14px rgba(0,0,0,.3);cursor:pointer;-webkit-tap-highlight-color:transparent;}
   #ltOffPill[hidden]{display:none;}
   .ltOffIc{color:#ff8a80;}
 
-  /* ---- "Håll skärmen tänd" on: a yellow sun by your name; tap = off (+ a note) ---- */
-  #headerUserRow{display:flex;align-items:center;gap:7px;}
+  /* ---- "Håll skärmen tänd" on: a yellow sun under the weather chip; tap = off (+ a note) ---- */
   #wakeBadge{pointer-events:auto;width:17px;height:17px;padding:0;border-radius:50%;border:1.5px solid #FFD21A;background:rgba(255,210,26,.18);color:#FFD21A;
-    display:flex;align-items:center;justify-content:center;margin-top:1px;box-shadow:0 0 8px rgba(255,210,26,.5);-webkit-tap-highlight-color:transparent;cursor:pointer;}
+    display:flex;align-items:center;justify-content:center;margin:6px 0 0 -50px;box-shadow:0 0 8px rgba(255,210,26,.5);-webkit-tap-highlight-color:transparent;cursor:pointer;}
   #wakeBadge[hidden]{display:none;}
   #wakeBadge svg{width:11px;height:11px;}
   @media (orientation:landscape) and (max-height:520px){ #wakeNote{top:calc(env(safe-area-inset-top,0px) + 110px);} }
   #wakeNote{position:absolute;left:14px;right:14px;top:calc(env(safe-area-inset-top,0px) + 96px);z-index:30;max-width:400px;display:none;
-    background:rgba(11,42,58,.96);border:1px solid rgba(255,210,26,.6);border-radius:14px;padding:11px 40px 11px 14px;color:var(--offwhite);
+    background:rgba(28,33,44,.96);border:1px solid rgba(255,210,26,.6);border-radius:14px;padding:11px 40px 11px 14px;color:var(--offwhite);
     box-shadow:0 8px 24px rgba(0,0,0,.5);font-size:13px;line-height:1.4;transition:opacity .8s;}
   #wakeNote.show{display:block;}
+  /* cards at the top that stay until tapped or closed: the welcome (#welcomeNote) */
+  .topNote{position:absolute;left:14px;right:14px;top:calc(env(safe-area-inset-top,0px) + 96px);z-index:31;max-width:400px;display:none;
+    border-radius:20px;background:var(--navy-glass);-webkit-backdrop-filter:var(--frost);backdrop-filter:var(--frost);border:1px solid rgba(255,255,255,.1);}
+  .topNote.show{display:block;animation:frostIn .4s cubic-bezier(.16,1,.3,1);}   /* (frosted like the pills on the map, no shadow -- DESIGN.md) */
+  .tnGo{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:none;padding:12px 34px 12px 10px;color:var(--text-muted);font:inherit;font-size:13px;line-height:1.35;cursor:pointer;}
+  /* the title on one line (Filip 2026-10-06): smaller on narrow phones -- ~18.5 font-sizes wide in SF (17.2 in Segoe UI) */
+  .tnGo > span:last-child{min-width:0;}
+  .tnGo b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:min(14.5px, calc((100vw - 122px) / 18.5));font-weight:600;margin-bottom:2px;color:#fff;}
+  .tnIc{flex:none;width:40px;height:40px;border-radius:12px;background:var(--s2);display:grid;place-items:center;}
+  .tnIc img{width:31px;}
+  .tnX{position:absolute;right:6px;top:6px;width:30px;height:30px;border:none;background:none;color:rgba(255,255,255,.45);font-size:15px;cursor:pointer;}
   #wakeNote.fade{opacity:0;}
   #wakeNote b{display:block;font-size:14px;margin-bottom:3px;color:#FFD21A;}
   #wakeNote span b{display:inline;color:var(--offwhite);font-size:13px;}

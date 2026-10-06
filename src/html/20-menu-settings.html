@@ -2,6 +2,8 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M4 6h16M4 12h16M4 18h16"></path>
     </svg>
+    <img id="menuAva" alt="" hidden>
+    <span id="menuChev" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg></span>
     <span class="newDot"></span>
   </button>
   <div id="menuPanel">
@@ -15,6 +17,10 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"></path></svg>
       Logg
     </button>
+    <button class="menuItem" id="menuItemProfile" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"></path></svg>
+      Profil
+    </button>
     <button class="menuItem" data-view="settings" id="menuItemSettings">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
       Inställningar
@@ -24,6 +30,11 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M9.5 9.3a2.6 2.6 0 0 1 5 .9c0 1.8-2.5 2.2-2.5 3.8"></path><path d="M12 17.2h.01"></path></svg>
       Hjälp<span class="newDot"></span>
     </button>
+    <div class="menuSeparator" id="menuLogoutSep" hidden></div>
+    <button class="menuItem" id="menuItemLogout" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="m16 17 5-5-5-5M21 12H9"></path></svg>
+      <span id="menuLogoutText">Logga ut</span>
+    </button>
   </div>
 
   <div id="logView">
@@ -32,7 +43,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
       </button>
       <div id="logHeaderText">
-        <div class="kicker">LOGG</div>
+        <div class="kicker">Logg</div>
         <div class="sub">Alla sparade fiskeplatser</div>
       </div>
     </div>
@@ -45,17 +56,15 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
       </button>
       <div style="flex:1 1 auto;">
-        <div class="kicker">INSTÄLLNINGAR</div>
+        <div class="kicker">Inställningar</div>
       </div>
+      <div class="logo3d headLogo" id="settingsLogo"><div class="nlSpin"><img src="ff_logo.svg" alt="Fiskfiskarna"><i class="nlBack"></i></div></div>
     </div>
     <div id="settingsBody">
-      <div class="settingsRow" style="flex-direction:column;align-items:stretch;">
-        <div class="settingsRowText">
-          <div class="settingsRowTitle">Ditt namn</div>
-          <div class="settingsRowDesc">Namnet är kopplat till dig och dina fiskeplatser — var du än loggar in med samma namn ser du dem som är dina.</div>
-        </div>
-        <div id="settingsNameDisplay"></div>
-        <button id="logoutBtn" class="btnLogout" type="button">Logga ut (Byt namn)</button>
+      <div class="settingsRow profRow" title="Namnet är kopplat till dig och dina fiskeplatser – loggar du in med samma namn ser du dem som dina.">
+        <span class="profAva" id="settingsAva" aria-hidden="true"></span>
+        <span class="profTxt"><span id="settingsNameDisplay"></span><span class="profSub" id="settingsNameSub"></span></span>
+        <button id="logoutBtn" class="profSwap" type="button">Byt namn</button>
       </div>
       <details class="setSec" data-sec="map">
         <summary><span class="setSecText"><span class="setSecTitle">Kartan</span><span class="setSecSum" id="setSum-map"></span></span><svg class="setSecChev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></summary>
@@ -94,6 +103,53 @@
       </div>
       <div class="settingsRow" style="flex-direction:column;align-items:stretch;">
         <div class="settingsRowText">
+          <div class="settingsRowTitle">Kompassen</div>
+          <div class="settingsRowDesc">Kilen som visar vart telefonen pekar (slås på under Filter → Kompass).</div>
+        </div>
+        <label class="settingsRow" for="cpShowWedge" style="padding-left:0;padding-right:0;">
+          <div class="settingsRowText"><div class="settingsRowTitle">Kil</div></div>
+          <span class="toggle"><input type="checkbox" id="cpShowWedge" checked><span class="toggleTrack"><span class="toggleThumb"></span></span></span>
+        </label>
+        <label class="settingsRow" for="cpShowDial" style="padding-left:0;padding-right:0;">
+          <div class="settingsRowText"><div class="settingsRowTitle">Cirkel</div></div>
+          <span class="toggle"><input type="checkbox" id="cpShowDial" checked><span class="toggleTrack"><span class="toggleThumb"></span></span></span>
+        </label>
+        <div class="cpColors" id="cpColors" role="radiogroup" aria-label="Kompassens färg">
+          <button type="button" role="radio" data-c="#FFD23F" aria-label="Gul" style="background:#FFD23F"></button>
+          <button type="button" role="radio" data-c="#FF7A00" aria-label="Orange" style="background:#FF7A00"></button>
+          <button type="button" role="radio" data-c="#3A86FF" aria-label="Blå" style="background:#3A86FF"></button>
+          <button type="button" role="radio" data-c="#4FD18B" aria-label="Grön" style="background:#4FD18B"></button>
+          <button type="button" role="radio" data-c="#F2F2F2" aria-label="Vit" style="background:#F2F2F2"></button>
+        </div>
+        <div class="satRow"><span class="cpLbl">Längd</span>
+          <input type="range" class="satSlider cpSlider" id="cpLen" min="100" max="2000" step="50" value="500" aria-label="Kompasskilens längd">
+          <span class="satVal" id="cpLenVal">500 m</span></div>
+        <div class="satRow"><span class="cpLbl">Vinkel</span>
+          <input type="range" class="satSlider cpSlider" id="cpAng" min="15" max="120" step="5" value="40" aria-label="Kompasskilens vinkel">
+          <span class="satVal" id="cpAngVal">40°</span></div>
+      </div>
+      <div class="settingsRow" style="flex-direction:column;align-items:stretch;">
+        <div class="settingsRowText">
+          <div class="settingsRowTitle">Platsnamn på kartan</div>
+          <div class="settingsRowDesc">Hur namnen från OpenStreetMap ser ut (slås på under Filter → Namn).</div>
+        </div>
+        <div class="satRow"><span class="cpLbl">Storlek</span>
+          <input type="range" class="satSlider cpSlider" id="nmSize" min="9" max="20" step="1" value="12" aria-label="Namnens textstorlek">
+          <span class="satVal" id="nmSizeVal">12 px</span></div>
+        <div class="satRow"><span class="cpLbl">Synlighet</span>
+          <input type="range" class="satSlider cpSlider" id="nmOp" min="20" max="100" step="5" value="50" aria-label="Namnens synlighet">
+          <span class="satVal" id="nmOpVal">50 %</span></div>
+        <div class="satRow"><span class="cpLbl">Prick</span>
+          <input type="range" class="satSlider cpSlider" id="nmDot" min="0" max="6" step="0.25" value="1.75" aria-label="Prickens storlek">
+          <span class="satVal" id="nmDotVal">1,75 px</span></div>
+        <div class="segmented" id="nmKindSeg" role="radiogroup" aria-label="Vilka namn som visas">
+          <button type="button" data-k="all" role="radio">Alla namn</button>
+          <button type="button" data-k="w" role="radio">Bara vatten</button>
+        </div>
+        <div class="btnRowWrap"><button type="button" class="btnAdmin" id="nmReset">Återställ</button></div>
+      </div>
+      <div class="settingsRow" style="flex-direction:column;align-items:stretch;">
+        <div class="settingsRowText">
           <div class="settingsRowTitle">Andras fiskeplatser</div>
           <div class="settingsRowDesc">Hur tydligt gruppens platser syns på kartan.</div>
         </div>
@@ -102,6 +158,16 @@
           <button type="button" data-op="1" role="radio">100 %</button>
         </div>
       </div>
+      <label class="settingsRow" for="toggleShore">
+        <div class="settingsRowText">
+          <div class="settingsRowTitle">Strandlinje</div>
+          <div class="settingsRowDesc">En tunn vit linje där vattnet möter land, som i Heatmap och Kartanalys.</div>
+        </div>
+        <span class="toggle">
+          <input type="checkbox" id="toggleShore" checked>
+          <span class="toggleTrack"><span class="toggleThumb"></span></span>
+        </span>
+      </label>
         </div>
       </details>
       <details class="setSec" data-sec="boat">
@@ -140,19 +206,9 @@
       <div class="settingsRow">
         <div class="settingsRowText">
           <div class="settingsRowTitle">Spår</div>
-          <div class="settingsRowDesc">Din rutt ritas som en streckad linje på kartan (visa/dölj under Filter). "Börja om" suddar spåret hittills – det fortsätter sedan från där du är nu. Sparas bara på den här telefonen och börjar om varje morgon kl 06:00.</div>
+          <div class="settingsRowDesc">Din rutt sparas för varje sjö och finns kvar. Hur det ser ut, hur långt tillbaka du ser, stopp som ringar och en annan persons spår väljer du i spårmenyn (du kommer dit även genom att trycka på Spår-ikonen i Filter). Spår sparas inte i Demo Mode.</div>
         </div>
-        <button id="trackClearBtn" class="btnAdmin small" type="button">Börja om</button>
-      </div>
-      <div class="settingsRow" style="flex-direction:column;align-items:stretch;">
-        <div class="settingsRowText">
-          <div class="settingsRowTitle">Spårets synlighet</div>
-          <div class="settingsRowDesc">Hur tydligt spåret syns på kartan.</div>
-        </div>
-        <div class="satRow">
-          <input type="range" class="satSlider trkSlider" id="trackOpSlider" min="10" max="100" step="5" value="60" aria-label="Spårets synlighet">
-          <span class="satVal" id="trackOpVal">60 %</span>
-        </div>
+        <button id="trkOpenBtn" class="btnAdmin small" type="button">Öppna</button>
       </div>
       <div class="settingsRow" style="flex-direction:column;align-items:stretch;">
         <div class="settingsRowText">
@@ -208,6 +264,16 @@
       </div>
         </div>
       </details>
+      <details class="setSec" data-sec="catch">
+        <summary><span class="setSecText"><span class="setSecTitle">Fångstdata</span><span class="setSecSum" id="setSum-catch"></span></span><svg class="setSecChev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></summary>
+        <div class="setSecBody">
+      <div class="settingsRow" style="flex-direction:column;align-items:stretch;">
+        <div class="settingsRowDesc">Fångsterna från Fiskfiskarnas tävlingar (heatmapen och Kartanalys) – vad den här telefonen har hämtat. Historiken hämtas när den kan ha ändrats, live bara när en tävling pågår här.</div>
+        <div class="ctInfo" id="ctInfo"></div>
+        <div class="btnRowWrap"><button type="button" class="btnAdmin" id="ctFetch">Hämta nu</button></div>
+      </div>
+        </div>
+      </details>
       <details class="setSec" data-sec="off">
         <summary><span class="setSecText"><span class="setSecTitle">Offline</span><span class="setSecSum" id="setSum-off"></span></span><svg class="setSecChev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></summary>
         <div class="setSecBody">
@@ -237,7 +303,7 @@
       <label class="settingsRow" for="demoModeToggle">
         <div class="settingsRowText">
           <div class="settingsRowTitle">Demo Mode</div>
-          <div class="settingsRowDesc">Visar GPS-positionen som om du vore vid sjön, för att kunna testa appen utan att vara på plats.</div>
+          <div class="settingsRowDesc">Visar GPS-positionen som om du vore vid sjön, för att kunna testa appen utan att vara på plats. Testläge: du ser bara andra i Demo Mode, inget sparas i den riktiga databasen och riktig åskvarning är avstängd. Stängs av efter 15 min.</div>
         </div>
         <span class="toggle">
           <input type="checkbox" id="demoModeToggle">
@@ -266,6 +332,13 @@
           <span class="toggleTrack"><span class="toggleThumb"></span></span>
         </span>
       </label>
+      <div class="settingsRow">
+        <div class="settingsRowText">
+          <div class="settingsRowTitle">Startfilmen</div>
+          <div class="settingsRowDesc">Visas när du valt ditt namn.</div>
+        </div>
+        <button id="splashReplayBtn" class="btnAdmin" type="button">Spela</button>
+      </div>
         </div>
       </details>
     </div>
@@ -277,11 +350,64 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
       </button>
       <div style="flex:1 1 auto;">
-        <div class="kicker">ADMIN</div>
+        <div class="kicker">Admin</div>
         <div class="sub">Översikt över hela appen</div>
       </div>
     </div>
     <div id="adminBody">
+      <div class="adminCard" id="adminTestCard" hidden>
+        <div class="settingsRowTitle">Testläge</div>
+        <div class="adminNote" style="margin-top:4px;">För alla i Demo Mode. Egen testdatabas – inget här hamnar i den riktiga.</div>
+        <div class="adminNote" id="testInfo" style="color:var(--offwhite);"></div>
+        <div class="usageHead">Tävling</div>
+        <div class="segmented" id="testCompSeg" role="radiogroup" aria-label="Testtävlingen">
+          <button type="button" role="radio" data-v="planned">Planerad</button>
+          <button type="button" role="radio" data-v="active">Pågår</button>
+          <button type="button" role="radio" data-v="finished">Avslutad</button>
+        </div>
+        <div class="usageHead">Testbåtar</div>
+        <div class="segmented" id="testBotSeg" role="radiogroup" aria-label="Testbåtar som åker runt">
+          <button type="button" role="radio" data-v="0">Inga</button>
+          <button type="button" role="radio" data-v="3">3 båtar</button>
+          <button type="button" role="radio" data-v="5">5 båtar</button>
+        </div>
+        <div class="usageHead">Fångst</div>
+        <div class="testRow">
+          <select id="testWho" aria-label="Vem"></select>
+          <select id="testSp" aria-label="Art"><option value="abborre">Abborre</option><option value="gadda">Gädda</option><option value="gos">Gös</option></select>
+          <input id="testCm" type="text" inputmode="decimal" placeholder="cm" aria-label="Längd i cm">
+        </div>
+        <div class="testRow">
+          <select id="testWhere" aria-label="Var"><option value="boat">Vid båten</option><option value="rand">Slumpad plats</option></select>
+          <label><input type="checkbox" id="testOk" checked> Godkänd</label>
+          <label><input type="checkbox" id="testImg"> Med bild</label>
+        </div>
+        <div class="btnRowWrap">
+          <button id="testAddCatch" class="btnAdmin" type="button">Lägg in fångst</button>
+          <button id="testVoidCatch" class="btnAdmin" type="button">Annullera senaste</button>
+        </div>
+        <div style="font-size:13.5px;color:var(--offwhite);margin-top:14px;">Automatiska fångster</div>
+        <div class="segmented" id="testAutoSeg" role="radiogroup" aria-label="Automatiska fångster" style="margin-top:8px;">
+          <button type="button" role="radio" data-v="0">Av</button>
+          <button type="button" role="radio" data-v="1">Var 30:e s</button>
+        </div>
+        <div class="adminNote">Tom cm = slumpad längd. Automatiska fångster tas helst av testbåtarna, som då skickar "Senaste fisk". Testbåtar och automatiska fångster körs från din telefon medan appen är öppen.</div>
+        <div class="usageHead">Åska</div>
+        <div class="btnRowWrap" id="testStrikes">
+          <button class="btnAdmin" type="button" data-km="20">Blixt 20 km</button>
+          <button class="btnAdmin" type="button" data-km="8">Blixt 8 km</button>
+          <button class="btnAdmin" type="button" data-km="2">Blixt 2 km</button>
+        </div>
+        <div class="btnRowWrap">
+          <button id="testStorm" class="btnAdmin" type="button">Åskan närmar sig</button>
+          <button id="testLtClear" class="btnAdmin" type="button">Ta bort blixtar</button>
+        </div>
+        <div class="adminNote">Avstånd från din båt. I Demo Mode visas bara testblixtar – riktig åskvarning är avstängd.</div>
+        <div class="btnRowWrap">
+          <button id="testReset" class="btnAdmin danger" type="button">Rensa testläget</button>
+        </div>
+        <div class="adminNote" id="testStatus" style="color:var(--amber);"></div>
+      </div>
       <div class="adminCard">
         <div class="settingsRowTitle">Översikt</div>
         <div class="statGrid" id="adminStats"></div>
@@ -311,13 +437,14 @@
         <div class="adminNote">GPX går att läsa in i sjökortsplottrar (Garmin, Lowrance m.fl.), CSV öppnas i Excel. Bra som backup.</div>
       </div>
       <div class="adminCard">
-        <div class="settingsRowTitle">Fångster (heatmap)</div>
-        <div class="adminNote" style="margin-top:6px;">Läs in tävlingarnas fångster från en CSV-fil (kolumnerna timestamp, competitionId, name, species, cm, lat, lng, lake). Fångster i appens sjöar läggs till – de som redan finns hoppas över, så samma fil kan läsas in igen med nya rader.</div>
+        <div class="settingsRowTitle">Säkerhetskopia</div>
         <div class="btnRowWrap">
-          <button id="adminCatchBtn" class="btnAdmin" type="button">Läs in CSV-fil…</button>
-          <input type="file" id="adminCatchFile" accept=".csv,text/csv,text/plain" hidden>
+          <button id="adminBackupMake" class="btnAdmin" type="button">Gör en kopia</button>
+          <button id="adminBackupRestore" class="btnAdmin" type="button">Återställ från kopia</button>
+          <input id="adminBackupFile" type="file" accept=".json,application/json" hidden>
         </div>
-        <div class="adminNote" id="adminCatchStatus" style="color:var(--offwhite);" hidden></div>
+        <div class="adminNote" id="adminBackupStatus" style="color:var(--offwhite);"></div>
+        <div class="adminNote">Hela databasen i en fil: fiskeplatserna på alla sjöar, spåren och inställningarna (inte båtarna). Spara filen i Filer eller maila den till dig själv. Återställ lägger tillbaka allt som finns i filen – även platser som tagits bort sedan dess. Det som tillkommit efter kopian rörs inte.</div>
       </div>
       <div class="adminCard">
         <div class="settingsRowTitle">Båtar på kartan</div>
@@ -336,6 +463,15 @@
         <div class="adminNote" id="adminPosIntervalEst"></div>
         <div class="adminNote" id="adminPosIntervalStatus" style="color:var(--amber);" hidden></div>
         <div class="adminNote">Hur ofta en båt som rör sig skickar sin position. Gäller alla telefoner. Kortare tid = båtarna rör sig jämnare på kartan men kostar fler reads. Står man still skickas den en gång i minuten oavsett.</div>
+      </div>
+      <div class="adminCard">
+        <div class="settingsRowTitle">Tävlingslåset</div>
+        <div class="segmented" id="adminCompLockSeg" role="radiogroup" aria-label="Tävlingslåset" style="margin-top:8px;">
+          <button type="button" role="radio" data-off="0">På</button>
+          <button type="button" role="radio" data-off="1">Av för alla</button>
+        </div>
+        <div class="adminNote" id="adminCompLockStatus" style="color:var(--amber);" hidden></div>
+        <div class="adminNote">På: platser kan bara läggas, ändras och tas bort från en vecka före till en vecka efter en tävling. Av för alla: kartan är öppen för alla tills du slår på låset igen – t.ex. om Fiskfiskarnas sida strular. Gäller den här sjön. Du själv kan alltid ändra.</div>
       </div>
       <div class="adminCard">
         <div class="btnRowWrap" style="margin-top:0;">

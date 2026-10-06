@@ -37,9 +37,9 @@ with sync_playwright() as p:
     b, ctx, pg, errs = new_page(p, geo=REG, cfg=cfg, name='Filip')
     src = lambda: pg.get_attribute('#mapImg', 'src')
     lakes = pg.eval_on_selector_all('#lakeList .menuItem', 'e=>e.map(x=>x.textContent.trim())')
-    check('lake menu lists all lakes, Regnaren first', lakes == ['Regnaren', 'Sibbofjärden', 'Sjösjön', 'Vågsfjärden'], lakes)
+    check('lake menu lists all lakes, Regnaren first', lakes == ['Regnaren', 'Mälaren', 'Sibbofjärden', 'Sjösjön', 'Vågsfjärden', 'Östra Vitten'], lakes)
     pg.wait_for_function("(document.getElementById('mapImg').getAttribute('src') || '').length > 0", timeout=15000)
-    check('starts on Regnaren (as before)', src() == 'lakes/regnaren/map_v4_s1.jpg', src())
+    check('starts on Regnaren (as before)', src() == 'lakes/regnaren/map_v5_s1.jpg', src())
     check("Regnaren shows only Regnaren's spot", titles(pg) == ['Regnarplatsen'])
     check("Regnaren uses its own position interval (30 s)", pos_interval(pg) == '30/null', pos_interval(pg))
 
@@ -47,7 +47,7 @@ with sync_playwright() as p:
     ctx.set_geolocation({'latitude': VAGS[0], 'longitude': VAGS[1], 'accuracy': 5})
     pg.click('#menuBtn'); pg.click('#lakeList .menuItem[data-lake-id="vagsfjarden"]')
     pg.wait_for_load_state('load'); pg.wait_for_timeout(1500)
-    check('switching reloads with the Vågsfjärden map', src() == 'lakes/vagsfjarden/map_v3_s1.jpg' and pg.eval_on_selector('#mapImg', 'e=>e.naturalWidth') == VAGS_W, src())
+    check('switching reloads with the Vågsfjärden map', src() == 'lakes/vagsfjarden/map_v4_s1.jpg' and pg.eval_on_selector('#mapImg', 'e=>e.naturalWidth') == VAGS_W, src())
     check('name kept (no login again)', not pg.evaluate("[].some.call(document.querySelectorAll('.show'), function(e){ return /name/i.test(e.id); })"),
           pg.evaluate("[].map.call(document.querySelectorAll('.show'), function(e){ return e.id; })"))
     check("only Vågsfjärden's spot", titles(pg) == ['Vågsgrundet'])
@@ -55,14 +55,14 @@ with sync_playwright() as p:
     boats = pg.eval_on_selector_all('#boatsLayer .boatPip', 'e=>e.map(x=>x.textContent)')
     check("only the boat on Vågsfjärden (Pia), not Calle on Regnaren", any('Pia' in x for x in boats) and not any('Calle' in x for x in boats), boats)
     check('weather card named after the lake', pg.inner_text('#wxTitle') == 'Väder vid Vågsfjärden')
-    check('title = the lake', pg.inner_text('#lakeTitle') == 'VÅGSFJÄRDEN', pg.inner_text('#lakeTitle'))
+    check('title = the lake', pg.inner_text('#lakeTitle') == 'Vågsfjärden', pg.inner_text('#lakeTitle'))
     ticks = pg.eval_on_selector_all('#legendTicks span', 'e=>e.map(x=>x.textContent)')
     check("legend runs to the lake's own max depth (Vågsfjärden ~37 m -> 0 / 20 / 40 m)", ticks == ['0 m', '20 m', '40 m'], ticks)
     bar = pg.eval_on_selector('#legend .bar', 'e=>e.style.background')
     # the colours follow the fixed scale: 10 m (blue #1f4fd6) sits a quarter of the way along 0-40 m
     check('legend colours = the fixed scale for those depths (10 m blue at 25 %)', 'rgb(31, 79, 214) 25%' in bar, bar[:200])
     n_styles = pg.eval_on_selector_all('#mapStyleList .styleOpt', 'e=>e.length')
-    check('8 map styles (incl. C-MAP original, vegetation, hardness; no Natt)', n_styles == 8, n_styles)
+    check('7 map styles (incl. C-MAP original, vegetation, hardness; no Natt, no Flygfoto + linjer)', n_styles == 7, n_styles)
     w = [x for x in pg.evaluate('window.__posWrites') if x['id'] == 'filip']
     check('your position is shared tagged with the lake', w and w[-1]['lake'] == 'vagsfjarden', w[-1:] if w else w)
     pg.screenshot(path='shot_lake_vags.png')
@@ -92,23 +92,23 @@ with sync_playwright() as p:
         pg.mouse.wheel(0, -400); pg.wait_for_timeout(60)
     pg.wait_for_timeout(1500)
     tiles = pg.eval_on_selector_all('#detailLayer img', 'e=>e.map(x=>[x.getAttribute("src"), x.naturalWidth, x.classList.contains("ok")])')
-    check('zoomed in: full-resolution pieces on screen', 0 < len(tiles) <= 12 and all(re.search(r'tiles_v3/z1[5-8]/s1/', t[0]) and t[1] == 512 and t[2] for t in tiles), tiles)
+    check('zoomed in: full-resolution pieces on screen', 0 < len(tiles) <= 24 and all(re.search(r'tiles_v4/z1[5-8]/(s1|lines)/', t[0]) and t[1] == 528 and t[2] for t in tiles), tiles)
     z1 = pg.inner_text('#zoomLabel')
-    check('zoom level goes up, and the level (lines) with it, like Genesis', zf(z1) > zf(z0) + 1 and lv(z1) == min(18, rnd(zf(z1))) and all('/z%d/' % lv(z1) in t[0] for t in tiles), (z0, z1))
+    check('zoom level goes up, and the level (lines) with it, like Genesis', zf(z1) > zf(z0) + 1 and lv(z1) == min(18, rnd(zf(z1))) and all('/z%d/' % lv(z1) in t[0] for t in tiles if '/lines/' in t[0]) and any('/lines/' in t[0] for t in tiles), (z0, z1))
     pg.screenshot(path='shot_lake_detail.png')
     pg.click('#menuBtn'); pg.click('#menuItemSettings'); pg.wait_for_timeout(200)
     pg.click('#mapStyleList .styleOpt[data-style="g1"]'); pg.wait_for_timeout(1200)
     pg.click('#settingsBackBtn'); pg.wait_for_timeout(1200)
     tiles = pg.eval_on_selector_all('#detailLayer img', 'e=>e.map(x=>x.getAttribute("src"))')
-    check('another style -> its own pieces', tiles and all('/g1/' in t for t in tiles), tiles)
-    check('style choice is per lake', src() == 'lakes/vagsfjarden/map_v3_g1.jpg')
+    check('another style -> its own pieces', tiles and all('/g1/' in t or '/lines/' in t for t in tiles) and any('/g1/' in t for t in tiles), tiles)
+    check('style choice is per lake', src() == 'lakes/vagsfjarden/map_v4_g1.jpg')
 
     # ---- a reload (rotation) keeps the lake; then back to Regnaren
     pg.reload(); pg.wait_for_timeout(1500)
-    check('after a reload: still Vågsfjärden', src() == 'lakes/vagsfjarden/map_v3_g1.jpg', src())
+    check('after a reload: still Vågsfjärden', src() == 'lakes/vagsfjarden/map_v4_g1.jpg', src())
     pg.click('#menuBtn'); pg.click('#lakeList .menuItem[data-lake-id="regnaren"]')
     pg.wait_for_load_state('load'); pg.wait_for_timeout(1500)
-    check("back on Regnaren: its map, its style and its spot", src() == 'lakes/regnaren/map_v4_s1.jpg' and titles(pg) == ['Regnarplatsen'], src())
+    check("back on Regnaren: its map, its style and its spot", src() == 'lakes/regnaren/map_v5_s1.jpg' and titles(pg) == ['Regnarplatsen'], src())
     # the same max zoom on every lake: Regnaren too goes to 18,6 and uses its zoom-18 level
     pg.mouse.move(195, 422)
     for i in range(20):
@@ -122,15 +122,15 @@ with sync_playwright() as p:
     # ---- ?lake= in the address picks a lake directly
     b, ctx, pg, errs = new_page(p, geo=REG, cfg=cfg, name='Filip')
     pg.goto('http://localhost:8899/index.html?lake=vagsfjarden'); pg.wait_for_timeout(1200)
-    check('?lake=vagsfjarden opens that lake', pg.get_attribute('#mapImg', 'src') == 'lakes/vagsfjarden/map_v3_s1.jpg')
+    check('?lake=vagsfjarden opens that lake', pg.get_attribute('#mapImg', 'src') == 'lakes/vagsfjarden/map_v4_s1.jpg')
     pg.goto('http://localhost:8899/index.html?lake=nonsense'); pg.wait_for_timeout(1200)
-    check('an unknown lake falls back to the remembered one', pg.get_attribute('#mapImg', 'src') == 'lakes/vagsfjarden/map_v3_s1.jpg')
+    check('an unknown lake falls back to the remembered one', pg.get_attribute('#mapImg', 'src') == 'lakes/vagsfjarden/map_v4_s1.jpg')
     b.close()
 
     # ---- Sjösjön: opens, and the depth matches Genesis' own labels
     b, ctx, pg, errs = new_page(p, geo=SJO_POINTS[0][:2], cfg=cfg, name='Filip')
     pg.goto('http://localhost:8899/index.html?lake=sjosjon'); pg.wait_for_timeout(1500)
-    check('?lake=sjosjon opens Sjösjön', pg.get_attribute('#mapImg', 'src') == 'lakes/sjosjon/map_v1_s1.jpg' and pg.inner_text('#lakeTitle') == 'SJÖSJÖN', pg.get_attribute('#mapImg', 'src'))
+    check('?lake=sjosjon opens Sjösjön', pg.get_attribute('#mapImg', 'src') == 'lakes/sjosjon/map_v2_s1.jpg' and pg.inner_text('#lakeTitle') == 'Sjösjön', pg.get_attribute('#mapImg', 'src'))
     for la, lo, want in SJO_POINTS:
         ctx.set_geolocation({'latitude': la, 'longitude': lo, 'accuracy': 5}); pg.wait_for_timeout(1500)
         got = pg.inner_text('#depthVal')
@@ -144,7 +144,7 @@ with sync_playwright() as p:
     SIB_POINTS = [(58.777728, 17.29557, 4.0), (58.786086, 17.307876, 8.0), (58.779502, 17.311438, 10.5)]
     b, ctx, pg, errs = new_page(p, geo=SIB_POINTS[0][:2], cfg=cfg, name='Filip')
     pg.goto('http://localhost:8899/index.html?lake=sibbo'); pg.wait_for_timeout(1500)
-    check('?lake=sibbo opens Sibbofjärden', pg.get_attribute('#mapImg', 'src') == 'lakes/sibbo/map_v1_s1.jpg' and pg.inner_text('#lakeTitle') == 'SIBBOFJÄRDEN', pg.get_attribute('#mapImg', 'src'))
+    check('?lake=sibbo opens Sibbofjärden', pg.get_attribute('#mapImg', 'src') == 'lakes/sibbo/map_v2_s1.jpg' and pg.inner_text('#lakeTitle') == 'Sibbofjärden', pg.get_attribute('#mapImg', 'src'))
     for la, lo, want in SIB_POINTS:
         ctx.set_geolocation({'latitude': la, 'longitude': lo, 'accuracy': 5}); pg.wait_for_timeout(1500)
         got = pg.inner_text('#depthVal')

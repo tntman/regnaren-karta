@@ -1,25 +1,32 @@
   :root{
-    --navy:#0B2A3A;
-    --navy-glass:rgba(11,42,58,.72);
-    --deep-blue:#065A82;
-    --teal:#1C7293;
-    --amber:#E8A33D;
-    --forest:#2C5F2D;
-    --offwhite:#F4F7F8;
-    --text-muted:#B7C4C9;
+    /* design A (2026-10-05, DESIGN.md): near-black, flat, white icons, one glowing orange accent.
+       The old names stay (--navy = the surface, --amber = the accent) so the rest of the CSS follows. */
+    --navy:#1C212C;                    /* surfaces: panels, sheets, cards */
+    --navy-glass:rgba(28,33,44,.5);   /* frosted: everything that lies free on the map (with blur) */
+    --amber:#F09A60;                   /* the accent: on / chosen / most important */
+    --offwhite:#D6DAE2;
+    --text-muted:#9098A8;
     --danger:#D64545;
     --ink:#14181C;
+    --bg:#141822;                      /* the ground: pages, status bar, outside the map */
+    --s2:#262C39;                      /* raised: fields, buttons, chips inside a panel */
+    --s3:#333B4A;                      /* toggles off, slider tracks */
+    --line:rgba(170,190,230,.08);      /* hairlines: cool, a touch blue */
+    --on-acc:#1A0C02;                  /* text and icons on the accent */
+    --glow:rgba(240,154,96,.5);
+    --tint:rgba(240,154,96,.15);
+    --frost:blur(14px) saturate(1.3);
     display-name:regnaren-gps;
   }
   *{box-sizing:border-box;}
   [hidden]{display:none !important;}
   html,body{height:100%;}
   body{
-    background:#06141C;              /* (= the status bar, theme-color: no edge at the top) */
+    background:#141822;              /* (= the status bar, theme-color: no edge at the top) */
     color:var(--offwhite);
     overflow:hidden;
     overscroll-behavior:none;
-    font-family:Calibri,"Segoe UI",system-ui,-apple-system,sans-serif;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,-apple-system,sans-serif;
   }
   #app{position:fixed;inset:0;overflow:hidden;}
 
@@ -28,7 +35,7 @@
     touch-action:none;
     -webkit-user-select:none;user-select:none;
     -webkit-touch-callout:none;
-    background:#06141C;              /* outside the map picture: the same blue as the status bar */
+    background:#141822;              /* outside the map picture: the same blue as the status bar */
     cursor:grab;
   }
   #stage.dragging{cursor:grabbing;}
@@ -47,9 +54,9 @@
   #ltLayer{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;display:none;}
   #ltLayer.on{display:block;}
   /* iPhone home-screen app, upright: the fade starts in the status bar's own blue (theme-color
-     #06141C -- no edge between them) and fades out over the map */
+     #141822 -- no edge between them) and fades out over the map */
   @media (orientation:portrait){
-    html.iosApp header{background:linear-gradient(to bottom, rgb(6,20,28) 0%, rgba(6,20,28,.6) 22%, rgba(6,20,28,.3) 60%, rgba(6,20,28,0) 100%);}
+    html.iosApp header::before{background:linear-gradient(to bottom, rgb(20,24,34) 0%, rgba(20,24,34,.6) 22%, rgba(20,24,34,.3) 60%, rgba(20,24,34,0) 100%);}
   }
   #mapLoading{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:1;color:var(--text-muted);font-size:13px;pointer-events:none;display:none;}
   #mapLoading.show{display:block;}
@@ -57,13 +64,15 @@
   header{
     position:absolute;top:0;left:0;right:0;z-index:20;
     padding:calc(env(safe-area-inset-top,0px) + 24px) 18px 24px 64px;
-    background:linear-gradient(to bottom, rgba(6,20,28,.85) 0%, rgba(6,20,28,.4) 65%, rgba(6,20,28,0) 100%);
     pointer-events:none;
   }
+  /* the fade is a fixed height at the top -- it doesn't follow the pills (Ledare, Heatmap...) hanging under the weather chip */
+  header::before{content:'';position:absolute;left:0;right:0;top:0;height:calc(env(safe-area-inset-top,0px) + 100px);z-index:-1;
+    background:linear-gradient(to bottom, rgba(20,24,34,.85) 0%, rgba(20,24,34,.4) 65%, rgba(20,24,34,0) 100%);}
   #bottomFade{
     position:absolute;left:0;right:0;bottom:0;z-index:19;
     height:calc(env(safe-area-inset-bottom,0px) + 130px);
-    background:linear-gradient(to top, rgba(6,20,28,.85) 0%, rgba(6,20,28,.4) 45%, rgba(6,20,28,0) 100%);
+    background:linear-gradient(to top, rgba(20,24,34,.85) 0%, rgba(20,24,34,.4) 45%, rgba(20,24,34,0) 100%);
     pointer-events:none;
   }
   .kicker{
@@ -72,21 +81,12 @@
     text-shadow:0 1px 6px rgba(0,0,0,.5);
   }
   .sub{font-size:12.5px;color:var(--text-muted);margin-top:2px;letter-spacing:.01em;}
-  /* logged-in name, small and discreet under the lake name */
-  #headerUser{
-    display:flex;align-items:center;gap:4px;margin-top:1px;
-    font-size:11.5px;color:var(--text-muted);letter-spacing:.02em;
-    text-shadow:0 1px 4px rgba(0,0,0,.6);
-    max-width:170px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  }
-  #headerUser:empty{display:none;}
-  #headerUser svg{width:11px;height:11px;flex:0 0 auto;opacity:.85;}
 
   #marker{position:absolute;left:0;top:0;z-index:17;pointer-events:none;display:none;} /* own GPS dot: above boats and fishing spots (never blocks taps -- pointer-events:none) */
   #accRing{
     position:absolute;left:0;top:0;border-radius:50%;
-    background:radial-gradient(circle, rgba(232,163,61,.22) 0%, rgba(232,163,61,.12) 60%, rgba(232,163,61,0) 100%);
-    border:1px solid rgba(232,163,61,.45);
+    background:radial-gradient(circle, rgba(240,154,96,.22) 0%, rgba(240,154,96,.12) 60%, rgba(240,154,96,0) 100%);
+    border:1px solid rgba(240,154,96,.45);
     transform:translate(-50%,-50%);
   }
   /* your own position: just an amber arrow pointing the way you're going
@@ -96,6 +96,23 @@
     position:absolute;left:0;top:0;width:24px;height:24px;
     transform:translate(-50%,-50%);
   }
+  /* "Kompass" (Filter): a 60-degree wedge 500 m long from you, towards where the phone points
+     (js/53-compass.js sets size, place and turn) */
+  #compassWedge{position:absolute;display:none;overflow:visible;pointer-events:none;}
+  /* the dial bottom right (not a button: no tap, no fill like the buttons): N Ö S V stay put, the wedge turns.
+     Sits centred above the 2 x 2 buttons (size and place: 90-buttons.css) */
+  #compassDial{position:absolute;z-index:16;display:none;pointer-events:none;}
+  #compassDial svg{width:100%;height:100%;display:block;overflow:visible;}
+  #compassDial .cdDisc{fill:rgba(20,24,34,.5);stroke:#fff;stroke-opacity:.35;stroke-width:1.3;}
+  #compassDial .cdTxt text{fill:#fff;fill-opacity:.8;font:600 10px sans-serif;text-anchor:middle;dominant-baseline:middle;}
+  #compassDial .cdTxt text:first-child{fill:#FF5A4F;fill-opacity:1;}
+  #cdWedge path{fill-opacity:.8;}
+  .cpColors{display:flex;gap:12px;margin-top:10px;}
+  .cpColors button{width:34px;height:34px;border-radius:50%;border:3px solid transparent;box-shadow:0 0 0 1px rgba(255,255,255,.25);padding:0;cursor:pointer;}
+  .cpColors button.active{border-color:#fff;}
+  .cpLbl{flex:0 0 auto;min-width:50px;font-size:14px;color:var(--offwhite);}
+  .satSlider.cpSlider::-webkit-slider-runnable-track{background:rgba(255,255,255,.28);}
+  .satSlider.cpSlider::-moz-range-track{background:rgba(255,255,255,.28);}
   #dotCenter{display:none;}
   #dotArrow{
     position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;
@@ -104,7 +121,7 @@
     animation:gpsArrowGlow 2.4s ease-out infinite;   /* in step with the ring */
   }
   #dotArrow .arrowHalo{fill:none;stroke:#fff;stroke-width:4.4;stroke-linejoin:round;}
-  #dotArrow .arrowBody{fill:#FF7A00;stroke:#0B2A3A;stroke-width:1.3;stroke-linejoin:round;animation:gpsArrowFill 2.4s ease-out infinite;}
+  #dotArrow .arrowBody{fill:#FF7A00;stroke:#1C212C;stroke-width:1.3;stroke-linejoin:round;animation:gpsArrowFill 2.4s ease-out infinite;}
   /* one bright orange ring expanding from the arrow; the arrow lights up at the
      start of every pulse and fades back to its normal strong orange */
   #dotGlow{

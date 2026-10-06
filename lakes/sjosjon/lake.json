@@ -16,7 +16,7 @@
   "imgH": 527
  },
  "depth": {
-  "file": "depth_v1.txt",
+  "file": "depth_v2.txt",
   "w": 504,
   "h": 1054,
   "step": 0.08,
@@ -24,7 +24,7 @@
   "capped": false
  },
  "bottom": {
-  "file": "bottom_v1.txt"
+  "file": "bottom_v2.txt"
  },
  "legendTicks": [
   "0 m",
@@ -32,8 +32,8 @@
   "14 m"
  ],
  "contourText": "Djupkurvor från C-MAP Genesis",
- "mapFile": "map_v1_{style}.jpg",
- "thumbFile": "thumbs_v1/{style}.jpg",
+ "mapFile": "map_v2_{style}.jpg",
+ "thumbFile": "thumbs_v2/{style}.jpg",
  "styles": [
   {
    "id": "s1",
@@ -52,12 +52,6 @@
    "name": "Sjökort",
    "desc": "Blå djupband som en papperskarta",
    "legend": "linear-gradient(to right,#dff3fb 0%,#dff3fb 7.1%,#c4e7f6 7.1%,#c4e7f6 14.3%,#a9dbf2 14.3%,#a9dbf2 21.4%,#8fcdec 21.4%,#8fcdec 35.7%,#74bde4 35.7%,#74bde4 53.6%,#5aa9d8 53.6%,#5aa9d8 71.4%,#4796cb 71.4%,#4796cb 100%)"
-  },
-  {
-   "id": "s5",
-   "name": "Flygfoto + linjer",
-   "desc": "Naturlig bild med vita djupkurvor",
-   "legend": null
   },
   {
    "id": "s6",
@@ -92,70 +86,44 @@
     "Mjuk",
     "",
     "Hård"
-   ]
+   ],
+   "lines": "lines_w"
   }
  ],
  "detail": {
-  "file": "tiles_v1/z{z}/{style}/{c}_{r}.jpg",
+  "file": "tiles_v2/z{z}/{style}/{c}_{r}.webp",
+  "lines": "tiles_v2/z{z}/{lines}/{c}_{r}.webp",
+  "baseMax": 17,
   "tile": 512,
+  "pad": 8,
   "levels": [
    {
     "z": 15,
     "cols": 1,
     "rows": 3,
     "have": "111",
-    "styles": [
-     "s1",
-     "s2",
-     "s3",
-     "s5",
-     "s6",
-     "g1",
-     "v1",
-     "c1"
-    ]
+    "base": true
    },
    {
     "z": 16,
     "cols": 2,
     "rows": 5,
     "have": "1111111100",
-    "styles": [
-     "s1",
-     "s2",
-     "s3",
-     "s5",
-     "s6",
-     "g1",
-     "v1",
-     "c1"
-    ]
+    "base": true
    },
    {
     "z": 17,
     "cols": 4,
     "rows": 9,
     "have": "000001100111011001100110011001100000",
-    "styles": [
-     "s1",
-     "s2",
-     "s3",
-     "s5",
-     "s6",
-     "g1",
-     "v1",
-     "c1"
-    ]
+    "base": true
    },
    {
     "z": 18,
     "cols": 8,
     "rows": 17,
     "have": "0000000000000000000010000001110000011110001111100011110000111100001111000011110000111000001110000011100000111000001110000011100000000000",
-    "styles": [
-     "s1",
-     "g1"
-    ]
+    "base": false
    }
   ]
  }

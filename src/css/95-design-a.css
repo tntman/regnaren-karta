@@ -1,0 +1,282 @@
+  /* ================= Design A (2026-10-05, DESIGN.md): near-black, flat, white icons, one glowing accent =================
+     Last file: these rules shape everything above. Colours come from :root (10-base.css). Everything that lies
+     free on the map is frosted (--navy-glass + --frost); panels and pages are solid (--navy on --bg).
+     Motion: the same press everywhere, orange flares once when something is switched on (js/91-motion.js adds .ign),
+     menus grow out of their button, panel rows follow one after another, frost sharpens in. */
+
+  /* ---- the ground, type ---- */
+  body, #stage{background:var(--bg);}
+  #logView, #settingsView, #helpView, #adminView{background:var(--bg);}
+  .kicker{font-family:inherit;font-weight:600;font-size:20px;letter-spacing:-.02em;}
+  #logHeader .kicker, #settingsHeader .kicker, #adminHeader .kicker, #helpHeader .kicker{font-family:inherit;font-size:22px;font-weight:600;letter-spacing:-.02em;}
+  #logHeader, #settingsHeader{border-bottom:none;}
+  #logBackBtn, #settingsBackBtn, #helpBackBtn, #adminBackBtn{background:none;}
+  body{font-variant-numeric:tabular-nums;}
+
+  /* ---- frosted: everything that lies free on the map ---- */
+  #menuBtn, #mapTypeBtn, #hmBtn, #visPanel, #measureBtn, #anBtn, #msgBtn, #wxChip, .mapPill, #speedPill, #farAway, #netBadge, #ltOffPill, #undoToast, #msgPop button{
+    background:var(--navy-glass);-webkit-backdrop-filter:var(--frost);backdrop-filter:var(--frost);
+    border:1px solid rgba(255,255,255,.1);box-shadow:none;
+  }
+  #wxChip, .mapPill{height:28px;padding:0 11px;border-radius:999px;font-size:12.5px;font-weight:500;}
+  #wxChip{margin-top:12px;}
+  .mapPill{margin-top:6px;}
+  #leadPill{height:auto;padding:7px 12px 8px 10px;border-radius:16px;}   /* (Ledare: all five rows in the frost) */
+
+  /* ---- top left: the profile picture is the menu; a small frosted circle with the chevron cuts a notch in it ---- */
+  #menuBtn.hasAva{background:none;border:none;-webkit-backdrop-filter:none;backdrop-filter:none;overflow:visible;}
+  #menuBtn.hasAva #menuAva{-webkit-mask-image:radial-gradient(circle at 34px 34px,transparent 8px,#000 8.5px);mask-image:radial-gradient(circle at 34px 34px,transparent 8px,#000 8.5px);}
+  #menuChev{right:0;bottom:0;width:12px;height:12px;border:1px solid rgba(255,255,255,.12);background:rgba(70,70,76,.55);
+    -webkit-backdrop-filter:var(--frost);backdrop-filter:var(--frost);color:#fff;}
+  #menuChev svg{width:8px;height:8px;transition:transform .35s cubic-bezier(.34,1.45,.64,1);}
+  #app:has(#menuPanel.show) #menuChev svg{transform:rotate(180deg);}
+
+  /* ---- top right: Heatmap, Kartläge and Filter as one frosted capsule ---- */
+  #hmBtn, #mapTypeBtn{top:0;width:40px;height:40px;border-radius:0;border-right:none;}
+  #mapTypeBtn{right:100%;}
+  #hmBtn{right:calc(100% + 40px);border-radius:20px 0 0 20px;}
+  #hmBtn svg{width:20px;height:20px;opacity:.85;border-radius:50%;}
+  #hmBtn.on{border:1px solid rgba(255,255,255,.1);border-right:none;background:var(--navy-glass);}
+  #hmBtn.on svg{opacity:1;box-shadow:0 0 0 2px #141822,0 0 0 3.5px var(--amber),0 0 16px var(--glow);}
+  #mapTypeBtn{border-left:none;}                     /* (no lines between the three: one capsule) */
+  #visPanel{border-left:none;border-radius:0 20px 20px 0;padding:9px 12px 9px 8px;position:relative;z-index:3;overflow:visible;max-height:none;}
+  /* the Filter menu: its own card under the capsule (like the menu's), the capsule doesn't change */
+  #visMore{position:absolute;right:0;top:calc(100% + 8px);margin:0;padding:12px 14px;width:max-content;min-width:190px;
+    background:var(--navy);border-radius:18px;box-shadow:0 18px 50px rgba(0,0,0,.55);
+    max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 84px);overflow-y:auto;overscroll-behavior:contain;}
+  .visMoreBtn[aria-expanded="true"]{gap:5px;color:var(--amber);}
+  .visMoreBtn[aria-expanded="true"] .visChevronBox{width:14px;}
+  /* Filter's rows: just the icon on the background, no white circles */
+  .visRow .visSwatch{background:none;border:none;color:var(--text-muted);width:20px;height:20px;}
+  .visRow .visSwatch svg{width:18px;height:18px;}
+  .visRow .boatSwatchDot{width:10px;height:10px;background:none;border:1.8px solid currentColor;border-radius:1.5px;}
+  .visRow .visSwatch .hmDot{width:15px;height:15px;}
+  .visHead{text-transform:none;letter-spacing:0;font-size:11.5px;font-weight:500;}
+
+  /* ---- bottom left: scale, speed/depth (a low frosted capsule), the depth scale as a thin line ---- */
+  #speedPill{width:auto;height:30px;padding:0 12px;border-radius:999px;align-items:center;bottom:calc(env(safe-area-inset-bottom,0px) + 44px);}
+  #speedPill .spV{font-size:14px;font-weight:600;}
+  #legend{background:none;border:none;-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:none;padding:0;width:132px;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);}
+  #legend .bar{height:5px;border-radius:3px;}
+  #legend .ticks{font-size:10.5px;text-shadow:0 1px 3px rgba(0,0,0,.8);}
+  #scalebar{bottom:calc(env(safe-area-inset-bottom,0px) + 84px);}
+  #scalebar .line{height:2px;box-shadow:none;}
+  #bottomFade{opacity:.5;}
+
+  /* ---- bottom right: round frosted buttons; "on" = orange icon + ring; Sikte the one fully orange ---- */
+  #anBtn.on, #measureBtn.active, #msgBtn.open{background:var(--navy-glass);color:var(--amber);border-color:transparent;box-shadow:inset 0 0 0 1.5px var(--amber),0 0 22px rgba(240,154,96,.35);}
+  #locateBtn{color:var(--on-acc);box-shadow:0 0 0 6px rgba(240,154,96,.14),0 8px 28px var(--glow);}
+  #locateBtn.tracking{box-shadow:0 0 0 6px rgba(255,255,255,.12),0 8px 24px rgba(0,0,0,.4);}
+  #addHereBtn .addBadge{border:none;color:var(--on-acc);box-shadow:0 0 12px var(--glow);}
+  #msgPop{bottom:calc(var(--bb0) + 2 * var(--bb) + var(--bgap) + 14px);gap:8px;}
+  #msgPop button{height:42px;padding:0 16px;border-radius:999px;font-weight:600;}
+  #msgPop button:active{background:var(--amber);color:var(--on-acc);}
+  /* "Egen text" and the "Syns i 7 minuter" note: frosted, where the choices were */
+  #msgOwn, #msgToast{bottom:calc(var(--bb0) + 2 * var(--bb) + var(--bgap) + 14px);background:var(--navy-glass);-webkit-backdrop-filter:var(--frost);backdrop-filter:var(--frost);
+    border:1px solid rgba(255,255,255,.1);box-shadow:none;}
+  #msgOwn{border-radius:999px;}
+  #msgToast{border-radius:18px;padding:11px 16px;font-size:14px;}
+
+  /* ---- panels (bottom sheets): solid, 28 px corners, grey drag line and ✕ ---- */
+  /* bottom sheets: a thin light edge along the rounded top (a border -- an inset shadow ends up under the .grab) */
+  #wpSheet, #anPanel, #hmPanel, #hmCard, #pfCard, #trkPanel{border-top:1px solid rgba(255,255,255,.12);border-radius:28px 28px 0 0;}
+  #wpSheet .sheetGrab, #anPanel .grab, #hmPanel .grab, #hmCard .grab, #pfCard .grab, #trkPanel .grab{border-radius:28px 28px 0 0;}
+  .gripX{font-size:15px;color:rgba(255,255,255,.3);}
+
+  /* ---- menus and cards: solid, rounded, no frame ---- */
+  #menuPanel, #mapTypePop{background:var(--navy);border:none;border-radius:18px;box-shadow:0 18px 50px rgba(0,0,0,.55);-webkit-backdrop-filter:none;backdrop-filter:none;}
+  .menuItem{border-radius:12px;font-size:14px;}
+  .menuSeparator, .visSeparator{background:var(--line);}
+  #mapTypePop{padding:8px 6px;gap:2px;}
+  .styleOpt{border:none;border-radius:14px;}
+  .styleOpt.active{background:var(--s2);border:none;}
+  .styleOpt.active .soName, .styleOpt.active b{color:var(--amber);}
+  .styleOpt:not(.loading) .soCheck{display:none;}
+  #wxCard{background:var(--navy);border:none;border-radius:20px;box-shadow:0 18px 50px rgba(0,0,0,.55);}
+  .wxTile{background:var(--s2);border:none;border-radius:16px;}
+  .wxH{background:var(--s2);}
+  #boatInfoModal, #lockCard, #msgCard, #measurePanel{background:var(--navy);border:none;border-radius:20px;}
+  /* a name that opens the person's profile: a › after it (never underlined) */
+  #boatInfoName.pfLink::after, #msgCardWho.pfLink::after, #boatInfoCatches .biWho.pfLink::after, .wpTile.pfLink b::after{content:' ›';color:var(--text-muted);font-weight:400;}
+  .setSec, .settingsRow, .adminCard, .helpCard{background:var(--navy);border:none;border-radius:20px;}
+  .setSecBody .settingsRow{border-top:1px solid var(--line);}
+  .logItem{background:var(--navy);border-radius:0;margin-bottom:0;border-top:1px solid var(--line);}
+  .logItem:first-child{border-radius:20px 20px 0 0;border-top:none;}
+  .logItem:last-child{border-radius:0 0 20px 20px;}
+  .logItem:only-child{border-radius:20px;}
+  .helpToc a{background:var(--navy);border:none;border-radius:14px;}
+  #undoToast{border-radius:18px;}
+
+  /* ---- buttons: 14 px corners; one orange (main action) with a soft glow; Ta bort = a red icon ---- */
+  .sheetActs button, .btnGhost, .btnPrimary, .msgCardBtns button, #undoBtn, #pfLoad, .helpInstallBtn, .offBtn{border-radius:14px;}
+  .sheetActs button, .btnGhost, .msgCardBtns button, #pfLoad{background:var(--s2);}
+  .sheetActs .save, .btnPrimary, .msgCardBtns button.a, #undoBtn, .helpInstallBtn, .offBtn{color:var(--on-acc);box-shadow:0 8px 28px rgba(240,154,96,.3);}
+  .sheetActs .del{background:none;border:none;color:#FF6B63;}
+  .mpBtn{background:none;border:none;color:var(--text-muted);}
+  .mpClose{color:rgba(255,255,255,.3);}
+  .btnLogout{background:var(--s2);border:none;color:#FF6B63;border-radius:14px;}
+
+  /* ---- fields ---- */
+  #wpName, #nameInput, #helpSearch, #settingsNameDisplay, .demoCoordInput{background:var(--s2);border:1px solid transparent;border-radius:14px;}
+
+  /* ---- the spot: facts on one line with thin lines between (no tiles) ---- */
+  .wpTile{background:none;border:none;border-left:1px solid var(--line);border-radius:0;padding:0 10px;}
+  .wpData .wpTile:first-child{border-left:none;padding-left:2px;}
+  .wpTile i{text-transform:none;letter-spacing:0;font-size:12px;}
+  .wpTile b{font-size:17px;font-weight:600;margin-top:3px;}
+
+  /* ---- choices: chips in grey capsules (chosen = orange tint), tabs (chosen = a lighter tab), types with a colour dot ---- */
+  .anChips button, .trkSel{border:none;background:var(--s2);border-radius:999px;}
+  .anChips button.on, .trkSel.on{background:var(--tint);color:var(--amber);border:none;}
+  .anSeg, .helpSeg{background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:4px;gap:4px;}
+  .anSeg button.on, .helpSeg button.on{background:none;color:var(--offwhite);}
+  /* the chosen tab's background is a layer of its own, so it can glide over from the old tab (.segGlide, 91-motion.js) */
+  .anSeg, .helpSeg, .segmented{position:relative;isolation:isolate;}            /* (the glide goes under every tab's text) */
+  .anSeg button, .helpSeg button, .segmented button{position:relative;transition:color .25s;}
+  .anSeg button.on::before, .helpSeg button.on::before, .segmented button.active::before{content:'';position:absolute;top:0;bottom:0;left:0;right:0;z-index:-1;border-radius:inherit;background:var(--s2);}
+  .segGlide::before{animation:segGlide .42s cubic-bezier(.34,1.25,.64,1);}
+  @keyframes segGlide{from{left:var(--sl);right:var(--sr);}}
+  #anCatSeg button.has{box-shadow:inset 0 -2px 0 var(--amber);}
+  /* Inställningar's choices (Liten / Normal / Stor ...): the same bed and chosen tab as .anSeg */
+  .segmented{background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:4px;gap:4px;}
+  .segmented button.active{background:none;color:var(--offwhite);}
+  .typeSeg button{border:none;background:var(--s2);color:var(--offwhite);border-radius:999px;gap:8px;}
+  .typeSeg button::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--tc);flex:0 0 auto;}
+  .typeSeg button.active, .typeSeg button[data-type="fara"].active, .typeSeg button[data-type="hem"].active, .typeSeg button[data-type="gos"].active, .typeSeg button[data-type="hem"].active{
+    background:color-mix(in srgb,var(--tc) 20%,transparent);color:var(--tc);}
+  .typeSeg button:not(.active), .typeSeg button[data-type="fara"]:not(.active), .typeSeg button[data-type="hem"]:not(.active){color:var(--text-muted);font-weight:500;}   /* (not chosen: quieter, like a tab) */
+  .typeSeg button:not(.active)::before{opacity:.6;}
+  .typeSeg button[data-type="fara"].active{color:#FF6B63;}
+  .typeSeg button[data-type="hem"].active{color:#D9A06E;}
+  .typeSeg button.active::before{box-shadow:0 0 8px var(--tc);}
+  .typeSeg button.active::after{display:none;}
+  /* ⓘ ↺ ⏻ : plain icons (grey = nothing to do, orange = on) */
+  .hdBtn{border:none;background:none;}
+  .hdBtn.on, .hdBtn.pwBtn:not(:disabled){background:none;color:var(--amber);filter:drop-shadow(0 0 8px var(--glow));}
+  /* toggles: orange when on, with a soft glow */
+  .toggleTrack{background:var(--s3);}
+
+  /* ---- "Vem är du?" ---- */
+  .nameTitle{font-size:30px;font-weight:600;letter-spacing:-.03em;}
+  .nameChip .ava{box-shadow:0 0 0 1px rgba(255,255,255,.14);}
+  #nameSave{height:44px;border-radius:14px;font-size:14.5px;font-weight:600;background:var(--s2);}
+  #nameSave.on{color:var(--on-acc);box-shadow:0 8px 28px rgba(240,154,96,.3);}
+
+  /* ================= motion ================= */
+  /* the same press everywhere: a quick squeeze and a small spring back */
+  #menuBtn, #mapTypeBtn, #hmBtn, #measureBtn, #anBtn, #msgBtn, #locateBtn, #addHereBtn, .sheetActs button, .btnGhost, .btnPrimary, .msgCardBtns button,
+  #undoBtn, .anChips button, .typeSeg button, .anSeg button, .menuItem, .hdBtn, #msgPop button, .helpToc a, .styleOpt{
+    transition:transform .18s cubic-bezier(.34,1.56,.64,1),background-color .22s,color .22s,box-shadow .3s;}
+  #measureBtn:active, #anBtn:active, #locateBtn:active, #mapTypeBtn:active, #hmBtn:active, .sheetActs button:active, .btnGhost:active, .btnPrimary:active,
+  .msgCardBtns button:active, #undoBtn:active, .anChips button:active, .typeSeg button:active, #msgPop button:active, .styleOpt:active{transform:scale(.93);}
+  #msgBtn:active{transform:translateX(-50%) scale(.93);}
+  .hdBtn:active{transform:scale(.86);}
+  .toggleThumb{background:#C9CED8;transition:transform .32s cubic-bezier(.34,1.45,.64,1);}
+  /* orange flares once and fades out (js/91-motion.js adds .ign when something is switched on) */
+  @keyframes ignF{from{box-shadow:inset 0 0 0 1.5px var(--amber),0 0 22px rgba(240,154,96,.35),0 0 0 0 rgba(240,154,96,.75);}
+    to{box-shadow:inset 0 0 0 1.5px var(--amber),0 0 22px rgba(240,154,96,.35),0 0 44px 18px rgba(240,154,96,0);}}
+  @keyframes ignL{from{box-shadow:0 0 0 6px rgba(240,154,96,.14),0 8px 28px var(--glow),0 0 0 0 rgba(240,154,96,.8);}
+    to{box-shadow:0 0 0 6px rgba(240,154,96,.14),0 8px 28px var(--glow),0 0 48px 20px rgba(240,154,96,0);}}
+  @keyframes ignI{from{filter:drop-shadow(0 0 8px var(--glow)) drop-shadow(0 0 0 #F09A60);}to{filter:drop-shadow(0 0 8px var(--glow)) drop-shadow(0 0 22px rgba(240,154,96,0));}}
+  @keyframes ignH{from{box-shadow:0 0 0 2px #141822,0 0 0 3.5px var(--amber),0 0 16px var(--glow),0 0 0 0 rgba(240,154,96,.75);}
+    to{box-shadow:0 0 0 2px #141822,0 0 0 3.5px var(--amber),0 0 16px var(--glow),0 0 36px 14px rgba(240,154,96,0);}}
+  #anBtn.ign, #measureBtn.ign, #msgBtn.ign{animation:ignF .8s ease-out;}
+  #locateBtn.ign{animation:ignL .8s ease-out;}
+  .hdBtn.ign{animation:ignI .8s ease-out;}
+  #hmBtn.ign svg{animation:ignH .8s ease-out;}
+  /* menus grow out of their button; the rows follow one after another */
+  @keyframes popIn{from{opacity:0;transform:scale(.86) translateY(-10px);}to{opacity:1;transform:none;}}
+  @keyframes rowIn{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:none;}}
+  #menuPanel.show{transform-origin:20px -20px;animation:popIn .38s cubic-bezier(.16,1,.3,1);}
+  #mapTypePop.show{transform-origin:85% -20px;animation:popIn .38s cubic-bezier(.16,1,.3,1);}
+  #visMore:not([hidden]){transform-origin:90% 0;animation:popIn .38s cubic-bezier(.16,1,.3,1);}
+  #menuPanel.show > *, #lakeList > *, #mapTypePop.show > *, #visMore:not([hidden]) .visCol > *{animation:rowIn .32s cubic-bezier(.16,1,.3,1) both;}
+  #menuPanel.show > :nth-child(2), #lakeList > :nth-child(2), #mapTypePop.show > :nth-child(2), #visMore .visCol > :nth-child(2){animation-delay:.03s;}
+  #menuPanel.show > :nth-child(3), #lakeList > :nth-child(3), #mapTypePop.show > :nth-child(3), #visMore .visCol > :nth-child(3){animation-delay:.055s;}
+  #menuPanel.show > :nth-child(4), #lakeList > :nth-child(4), #mapTypePop.show > :nth-child(4), #visMore .visCol > :nth-child(4){animation-delay:.08s;}
+  #menuPanel.show > :nth-child(5), #mapTypePop.show > :nth-child(5), #visMore .visCol > :nth-child(5){animation-delay:.1s;}
+  #menuPanel.show > :nth-child(6), #mapTypePop.show > :nth-child(6), #visMore .visCol > :nth-child(6){animation-delay:.12s;}
+  #menuPanel.show > :nth-child(7), #mapTypePop.show > :nth-child(7), #visMore .visCol > :nth-child(7){animation-delay:.14s;}
+  #menuPanel.show > :nth-child(n+8), #mapTypePop.show > :nth-child(n+8), #visMore .visCol > :nth-child(n+8){animation-delay:.16s;}
+  /* frost sharpens in as a frosted thing appears; the message choices pop up one by one */
+  /* (the same for the boxes centred with translateX(-50%) -- frostIn would drop it and slide them in from the side) */
+  @keyframes frostInC{from{opacity:0;transform:translateX(-50%) translateY(16px) scale(.85);-webkit-backdrop-filter:blur(0);backdrop-filter:blur(0);}}
+  @keyframes frostIn{from{opacity:0;transform:translateY(16px) scale(.85);-webkit-backdrop-filter:blur(0);backdrop-filter:blur(0);}}
+  #msgPop.show button{animation:frostIn .4s cubic-bezier(.34,1.35,.64,1) both;}
+  #msgPop.show button:nth-child(2){animation-delay:.035s;} #msgPop.show button:nth-child(3){animation-delay:.07s;}
+  #msgPop.show button:nth-child(4){animation-delay:.105s;} #msgPop.show button:nth-child(5){animation-delay:.14s;} #msgPop.show button:nth-child(n+6){animation-delay:.175s;}
+  #undoToast.show{animation:frostIn .4s cubic-bezier(.16,1,.3,1);}
+  /* panels: slide up; the content follows row by row */
+  @keyframes rowUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+  #wpSheet, #anPanel, #hmPanel{transition-duration:.42s;transition-timing-function:cubic-bezier(.16,1,.3,1);}
+  #wpSheet.show > :not(.sheetGrab), #anPanel.show > :not(.grab), #hmPanel.show > :not(.grab){animation:rowUp .45s cubic-bezier(.16,1,.3,1) both;animation-delay:.11s;}
+  #wpSheet.show > :nth-child(3), #anPanel.show > :nth-child(3), #hmPanel.show > :nth-child(3){animation-delay:.15s;}
+  #wpSheet.show > :nth-child(4), #anPanel.show > :nth-child(4), #hmPanel.show > :nth-child(4){animation-delay:.19s;}
+  #wpSheet.show > :nth-child(5), #anPanel.show > :nth-child(5), #hmPanel.show > :nth-child(5){animation-delay:.23s;}
+  #wpSheet.show > :nth-child(n+6), #anPanel.show > :nth-child(n+6), #hmPanel.show > :nth-child(n+6){animation-delay:.27s;}
+  /* a chosen chip / type pops a little */
+  @keyframes chipPop{45%{transform:scale(1.07);}}
+  .anChips button.on, .typeSeg button.active{animation:chipPop .32s cubic-bezier(.34,1.6,.64,1);}
+  /* boat card and the lock card pop in with a little spring */
+  #boatInfoModal, #lockCard, #msgCard{transition:opacity .2s ease,transform .42s cubic-bezier(.34,1.45,.64,1);transform:translate(-50%,-50%) scale(.88);}
+
+  @media (prefers-reduced-motion:reduce){
+    #menuPanel.show, #mapTypePop.show, #visMore:not([hidden]), #menuPanel.show > *, #lakeList > *, #mapTypePop.show > *, #visMore .visCol > *, #msgPop.show button, #undoToast.show,
+    #wpSheet.show > *, #anPanel.show > *, #hmPanel.show > *, .anChips button.on, .typeSeg button.active, .ign, .ign svg{animation:fadeIn .15s ease both !important;}
+    #menuChev svg{transition:none;}
+    .segGlide::before{animation:none;}
+  }
+
+  /* ---- fixes after the first look (2026-10-05) ---- */
+  /* coloured sliders: the colours past the thumb dimmed (--f = where the thumb is, 0..1: satFill(), 91-motion.js) */
+  .satSlider:not(.cpSlider)::-webkit-slider-runnable-track{background-image:linear-gradient(90deg,transparent calc(12px + (100% - 24px) * var(--f,1)),rgba(28,33,44,.75) 0),
+    linear-gradient(to right,#7b8084,#2f7fe0 55%,#19c9c3 75%,#f5c518 88%,#ef3b2d);}
+  .satSlider.trkSlider::-webkit-slider-runnable-track{background-image:linear-gradient(90deg,transparent calc(12px + (100% - 24px) * var(--f,1)),rgba(28,33,44,.75) 0),
+    linear-gradient(to right,rgba(240,154,96,.15),#F09A60);}
+  /* #app never scrolls (an off-screen panel getting focus or a tap mid-slide used to scroll it -- js/91-motion.js holds it too) */
+  #app{overflow:clip;}
+  /* small headings: sentence case, like the rest of A */
+  .wxHead span, .anSub, .rowLbl, .ctHead, .pfH, .usageHead, .helpSub{text-transform:none !important;letter-spacing:0 !important;font-weight:500;font-size:12.5px !important;}
+  .wxHead span:first-child{font-size:15.5px !important;font-weight:600;color:var(--offwhite) !important;}
+  /* Heatmap: no Få–Många scale (Filip: you get it anyway) */
+  #hmLegend{display:none;}
+  /* map styles: only the chosen one is lighter */
+  .styleOpt{background:none;}
+  .styleOpt.active{background:var(--s2);}
+
+  /* ---- second look (2026-10-05) ---- */
+  /* top right: ONE frosted capsule under all three (no seams in the blur) -- the buttons themselves are clear */
+  #topRight::before{content:'';position:absolute;top:0;right:0;width:calc(100% + 80px);height:40px;box-sizing:border-box;border-radius:20px;
+    background:var(--navy-glass);-webkit-backdrop-filter:var(--frost);backdrop-filter:var(--frost);border:1px solid rgba(255,255,255,.1);pointer-events:none;}
+  #hmBtn, #hmBtn.on, #mapTypeBtn, #visPanel{background:none;-webkit-backdrop-filter:none;backdrop-filter:none;border-color:transparent;}
+  /* Inställningar: a profile card on top (picture, name, Admin · lake, "Byt namn") */
+  .profRow{min-height:64px;padding:10px 16px;}
+  .profAva{width:40px;height:40px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;background:var(--tint) center/cover no-repeat;color:var(--amber);font-weight:600;font-size:16px;}
+  .profTxt{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;}
+  #settingsNameDisplay{width:auto;margin:0;padding:0;background:none;border:none;border-radius:0;font-size:15.5px;font-weight:600;color:var(--offwhite);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .profSub{font-size:13px;color:var(--text-muted);margin-top:2px;}
+  .profSwap{flex:0 0 auto;background:none;border:none;padding:10px 0 10px 10px;color:var(--amber);font:inherit;font-size:14.5px;font-weight:500;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+  .profSwap:active{opacity:.6;}
+  /* frost wakes up: the signs under the weather, the message note and box, "far away" */
+  .mapPill:not([hidden]), #ltOffPill:not([hidden]), #farAway.show{animation:frostIn .4s cubic-bezier(.16,1,.3,1);}
+  #msgOwn.show{animation:frostInC .4s cubic-bezier(.16,1,.3,1);}
+  #msgToast.show{animation:frostInC .4s cubic-bezier(.16,1,.3,1);}
+  /* the other panels slide up with their rows following, like the spot's */
+  #trkPanel, #pfCard, #hmCard{transition-duration:.42s;transition-timing-function:cubic-bezier(.16,1,.3,1);}
+  #trkPanel.show > :not(.grab), #pfCard.show > :not(.grab), #hmCard.show > :not(.grab){animation:rowUp .45s cubic-bezier(.16,1,.3,1) both;animation-delay:.11s;}
+  #trkPanel.show > :nth-child(3), #pfCard.show > :nth-child(3), #hmCard.show > :nth-child(3){animation-delay:.15s;}
+  #trkPanel.show > :nth-child(n+4), #pfCard.show > :nth-child(n+4), #hmCard.show > :nth-child(n+4){animation-delay:.19s;}
+  /* the heatmap / Kartanalys fade in on the map */
+  @keyframes layerIn{from{opacity:0;}}
+  #hmLayer.on, #hmSat.on, #anLayer.on{animation:layerIn .6s ease;}
+  /* a slider's knob grows a little while held */
+  .satSlider::-webkit-slider-thumb{transition:transform .15s;}
+  .satSlider:active::-webkit-slider-thumb{transform:scale(1.15);}
+  @media (prefers-reduced-motion:reduce){
+    .mapPill:not([hidden]), #ltOffPill:not([hidden]), #farAway.show, #msgOwn.show, #msgToast.show, #trkPanel.show > *, #pfCard.show > *, #hmCard.show > *{animation:fadeIn .15s ease both !important;}
+  }
+
+  /* ---- colours "midnatt + aprikos" (2026-10-05, the canvas' Kontrast page, variant 21): a thin light edge on top of the
+     panels and the chosen tab, so they read as lying above ---- */
+  .setSec, #settingsBody > .settingsRow, #visMore, #hmPanel, #anPanel, #wpSheet, #menuPanel{box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 18px 50px rgba(0,0,0,.4);}
+  .anSeg button.on::before, .helpSeg button.on::before, .segmented button.active::before{box-shadow:inset 0 1px 0 rgba(255,255,255,.08);}

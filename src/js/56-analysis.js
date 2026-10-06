@@ -20,6 +20,7 @@
   var AN_COLORS = { depth: null, steep: [255, 70, 200], tops: [255, 190, 40], veg: [90, 235, 80], hard: [240, 70, 10],
                     wind: [255, 178, 63], similar: [255, 80, 160], abborre: [255, 210, 26], gadda: [120, 255, 120], gos: [58, 134, 255],
                     c_abborre: [255, 122, 26], c_gadda: [53, 210, 74], c_gos: [58, 134, 255] };   // (c_ = from the catches: the species' colours)
+  var AN_PLAIN = { depth: 1, steep: 1, tops: 1, veg: 1, hard: 1, wind: 1, combo: 1 };   // Kartdata: no colour, just the map shown through the mask
   // the depth scale of the sliders = the legend's (0 .. the lake's max depth, same colours)
   var AN_DMAX = parseFloat(String((LAKE.legendTicks || []).slice(-1)[0] || '').replace(',', '.')) || Math.ceil(LAKE.depth.max || 20);
   var AN_SIMF = [['d', 'Djup'], ['s', 'Lutning'], ['h', 'Botten'], ['v', 'Växter'], ['t', 'Grynna/håla']];
@@ -61,12 +62,53 @@
     A.domeTop = anDome(ft, A.W, A.H, 300); A.domeHole = anDome(fh, A.W, A.H, 300);
     return A;
   }
-  var anSet = { simF: { d: 1, s: 1, h: 1, v: 1, t: 1 }, simR: 0, mode: null, lo: 4, hi: 6, slope: 10, elo: 0, ehi: AN_DMAX, topP: 0.6, holeP: 0.8, hmin: 3, hlo: 0, hhi: AN_DMAX, dim: 0.72, ref: null,
-               cF: { d: 1, s: 1, h: 1, v: 1, l: 1, t: 1 }, cCov: 7, cView: 'area',   // (c* = "Från fångsterna", 57-an-catches.js)
+  // "Storlek" (Heatmap and Kartanalys' "Från fångsterna"): min-max cm on one slider with two handles. The slider's ends are the
+  // smallest / biggest fish in the data shown (rounded to 5 cm); a handle at its end = no limit that way. Its own range per species:
+  // set.size[key] = [lo, hi] (0 / SIZE_NONE = no limit), no entry = all.
+  var SIZE_NONE = 999;
+  function sizeOf(set, key){ return (set.size && set.size[key]) || [0, SIZE_NONE]; }
+  function sizeOk(r, c){ return (r[0] <= 0 || c.cm >= r[0]) && (r[1] >= SIZE_NONE || c.cm <= r[1]); }
+  function sizeBounds(list){
+    var cm = list.map(function(c){ return c.cm; }).filter(function(v){ return v > 0; });
+    if (!cm.length) return null;
+    var lo = Math.floor(Math.min.apply(null, cm) / 5) * 5, hi = Math.ceil(Math.max.apply(null, cm) / 5) * 5;
+    return [lo, Math.max(hi, lo + 5)];
+  }
+  function sizeEff(r, b){ return [r[0] <= b[0] ? 0 : Math.min(r[0], b[1]), r[1] >= b[1] ? SIZE_NONE : Math.max(r[1], b[0])]; }   // (as the slider shows it)
+  function sizeOn(r, b){ var e = b ? sizeEff(r, b) : r; return e[0] > 0 || e[1] < SIZE_NONE; }
+  function sizeTxt(r, b){   // always the numbers on the slider: "85–90 cm" (the ends = the smallest / biggest fish)
+    var e = sizeEff(r, b);
+    return (e[0] || b[0]) + '–' + (e[1] >= SIZE_NONE ? b[1] : e[1]) + ' cm';
+  }
+  function sizeRow(r, b, key){
+    if (!b) return '';
+    var e = sizeEff(r, b), v = [e[0] || b[0], e[1] >= SIZE_NONE ? b[1] : e[1]];
+    var pc = function(x){ return (100 * (x - b[0]) / (b[1] - b[0])) + '%'; };
+    return '<div class="anRange"><label>Storlek</label><div class="sizeDual" data-k="' + key + '" data-lo="' + b[0] + '" data-hi="' + b[1] + '" style="--a:' + pc(v[0]) + ';--b:' + pc(v[1]) + '">' +
+      [0, 1].map(function(i){ return '<input type="range" data-r="cm' + i + '" min="' + b[0] + '" max="' + b[1] + '" step="5" value="' + v[i] + '" aria-label="' + (i ? 'Största längd' : 'Minsta längd') + '">'; }).join('') +
+      '</div><output>' + sizeTxt(r, b) + '</output></div>';
+  }
+  function sizeInput(e, set){   // a handle moved: true if it was one of these (the two never pass each other)
+    var t = e.target, k = t.getAttribute && t.getAttribute('data-r');
+    if (k !== 'cm0' && k !== 'cm1') return false;
+    var d = t.parentNode, b = [+d.getAttribute('data-lo'), +d.getAttribute('data-hi')], ins = d.querySelectorAll('input');
+    var a = +ins[0].value, z = +ins[1].value;
+    if (a > z){ if (k === 'cm0') a = z; else z = a; }
+    ins[0].value = a; ins[1].value = z;
+    var r = [a <= b[0] ? 0 : a, z >= b[1] ? SIZE_NONE : z], key = d.getAttribute('data-k');
+    set.size = set.size || {};
+    if (sizeOn(r)) set.size[key] = r; else delete set.size[key];
+    d.style.setProperty('--a', (100 * (a - b[0]) / (b[1] - b[0])) + '%'); d.style.setProperty('--b', (100 * (z - b[0]) / (b[1] - b[0])) + '%');
+    d.nextSibling.textContent = sizeTxt(r, b);
+    return true;
+  }
+  var anSet = { simF: { d: 1, s: 1, h: 1, v: 1, t: 1 }, simR: 0, mode: null, lo: 4, hi: 6, slope: 10, topP: 0.6, holeP: 0.8, hmin: 3, dim: 0.72, ref: null,
+               cF: { d: 1, s: 1, h: 1, v: 1, l: 1, t: 1 }, cCov: 7, cView: 'area', size: {},   // (c* = "Från fångsterna", 57-an-catches.js)
                combo: [], near: { tops: 0, veg: 15, hard: 15, wind: 15 } };   // Kartdata combined (mode 'combo'): the parts, "inom … m"
   var AN_DEFAULTS = JSON.stringify(anSet);   // (for "Återställ")
   anSet.cat = 'map';                            // the category shown: map / rule / data / similar
   try { var sv = JSON.parse(localStorage.getItem(AN_KEY) || 'null'); if (sv) for (var k0 in sv) anSet[k0] = sv[k0]; } catch(e){}
+  delete anSet.cm0; delete anSet.cm1;   // (the first Storlek, one range for all species)
   if (!rotState) anSet.mode = null;          // a new start of the app: off (turning the phone keeps it)
   var anShow = true;
   try { anShow = localStorage.getItem(SHOW_AN_KEY) !== '0'; } catch(e){}
@@ -237,15 +279,15 @@
     anRender();
   }
   // Kartdata combined: what's lit = where ALL the parts are true. The "spots" (grynnor/hålor, växter, hård
-  // botten, vindkant) count within "inom … m" of them; with Djup in it, Branta kanter / Hård botten use Djup's
-  // range instead of their own. The lit area shows the map's own colours (like Djup).
+  // botten, vindkant) count within "inom … m" of them. Only Djup has a depth range (Branta kanter / Hård botten
+  // are the whole lake -- add Djup to narrow them). The lit area shows the map's own colours (like Djup).
   var AN_NEAR = { tops: 1, veg: 1, hard: 1, wind: 1 };
   function anName(k){ return (AN_MODES.filter(function(x){ return x[0] === k; })[0] || [k, k])[1]; }
   function anCombo(A){
-    var parts = anSet.combo, hasD = parts.indexOf('depth') >= 0, N = A.N, M = new Uint8Array(N), i, n = 0, labels = [], steps = [], zero = null;
+    var parts = anSet.combo, N = A.N, M = new Uint8Array(N), i, n = 0, labels = [], steps = [], zero = null;
     for (i = 0; i < N; i++) if (A.wat[i]) M[i] = 1;
     for (var p = 0; p < parts.length; p++){
-      var k = parts[p], r = anOne(k, A, { noRange: hasD && k !== 'depth' }), mk = r.M, d = anSet.near[k] || 0;
+      var k = parts[p], r = anOne(k, A), mk = r.M, d = anSet.near[k] || 0;
       if (r.empty || !mk) return { M: null, n: 0, labels: [], text: r.text, note: r.note, empty: true };   // (e.g. no wind yet)
       if (AN_NEAR[k] && d > 0){ var b = new Uint8Array(N); for (i = 0; i < N; i++) b[i] = mk[i] ? 1 : 0; mk = anNear(b, A.W, A.H, Math.max(1, Math.round(d / A.cell))); }
       n = 0; for (i = 0; i < N; i++){ if (M[i] && !mk[i]) M[i] = 0; if (M[i]) n++; }
@@ -259,16 +301,16 @@
     return { M: M, n: n, labels: labels, text: text, note: steps.join(' → '), empty: false };
   }
   // one filter (or a rule of thumb / the catches / Liknande) -> a mask (1 = main colour, 2 = second colour),
-  // labels and a result text. opt.noRange: Branta kanter / Hård botten without their own depth range.
-  function anOne(m, A, opt){
+  // labels and a result text.
+  function anOne(m, A){
     var N = A.N, M = new Uint8Array(N), i, n = 0, labels = [], list = null, text = '', note = '';
     var wat = A.wat, dep = A.dep;
     if (m === 'depth'){
       for (i = 0; i < N; i++) if (wat[i] && dep[i] >= anSet.lo && dep[i] <= anSet.hi){ M[i] = 1; n++; }
       text = '<b>' + fmtDepth(anSet.lo) + '–' + fmtDepth(anSet.hi) + ' m</b> · ' + anPct(n) + ' av sjön';   // (as the mock-up)
     } else if (m === 'steep'){
-      for (i = 0; i < N; i++) if (wat[i] && A.slope[i] >= anSet.slope && (opt.noRange || dep[i] >= anSet.elo && dep[i] <= anSet.ehi)){ M[i] = 1; n++; }
-      text = 'Lutning över <b>' + anSet.slope + ' %</b> på ' + fmtDepth(anSet.elo) + '–' + fmtDepth(anSet.ehi) + ' m · ' + anPct(n) + ' av sjön';
+      for (i = 0; i < N; i++) if (wat[i] && A.slope[i] >= anSet.slope){ M[i] = 1; n++; }
+      text = 'Lutning över <b>' + anSet.slope + ' %</b> · ' + anPct(n) + ' av sjön';
     } else if (m === 'tops'){
       anDomes(A);
       // the "caps" of the tops (and the bottoms of the holes), then only those that rise (sink)
@@ -291,8 +333,8 @@
       note = 'Där ekolodet sett växtlighet (Genesis). Kanten mot öppet vatten är ofta bäst.';
     } else if (m === 'hard'){
       var meas = 0;
-      for (i = 0; i < N; i++){ var hv = anBottom[i] & 7; if (hv) meas++; if (hv >= anSet.hmin && wat[i] && (opt.noRange || dep[i] >= anSet.hlo && dep[i] <= anSet.hhi)){ M[i] = 1; n++; } }
-      text = n ? '<b>' + AN_HARD[anSet.hmin - 1] + '</b> botten eller hårdare, ' + fmtDepth(anSet.hlo) + '–' + fmtDepth(anSet.hhi) + ' m · ' + anPct(n) + ' av sjön' : 'Ingen sådan botten mätt här.';
+      for (i = 0; i < N; i++){ var hv = anBottom[i] & 7; if (hv) meas++; if (hv >= anSet.hmin && wat[i]){ M[i] = 1; n++; } }
+      text = n ? '<b>' + AN_HARD[anSet.hmin - 1] + '</b> botten eller hårdare · ' + anPct(n) + ' av sjön' : 'Ingen sådan botten mätt här.';
       note = 'Bara där ekolodet mätt hårdhet (' + anPct(meas) + ' av sjön).';
     } else if (m === 'wind'){
       var we = anWindEdge(A);
@@ -399,6 +441,7 @@
   }
   // draw: toned down outside, lit (+ a light edge) inside; per screen point like the lee
   function anDraw(){
+    shoreDraw();                              // (Strandlinje on the plain map, 68-heatmap.js: off while this shows)
     var dpr = window.devicePixelRatio || 1, W = stage.clientWidth, H = stage.clientHeight;
     var on = anShow && anSet.mode && anRes && anRes.M;
     anCanvas.classList.toggle('on', !!on); anSatCanvas.classList.toggle('on', !!on);
@@ -440,7 +483,7 @@
       }
       function cl(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
       var EA = edgeW(STEP, 1.1), ES = edgeW(STEP, 0.9);     // (line widths: see edgeW)
-      var c1col = col, c2col = anSet.mode === 'tops' ? [60, 200, 255] : [70, 200, 60], c2a = anSet.mode !== 'tops' ? 60 : 105;
+      var plain = !!AN_PLAIN[anSet.mode], c1col = col, c2col = anSet.mode === 'tops' ? [60, 200, 255] : [70, 200, 60], c2a = anSet.mode !== 'tops' ? 60 : 105;
       for (var y2 = 0; y2 < vh; y2++) for (var x2 = 0; x2 < vw; x2++){
         var q2 = y2 * vw + x2, k = q2 * 4;
         var d1 = sd(f1, q2, x2, y2), d2 = sd(f2, q2, x2, y2), dl = sd(fl, q2, x2, y2);
@@ -453,8 +496,10 @@
         // "Skala" (from the catches): the whole lake from unlike (blue, see-through) to most alike (red)
         var ra = 0;
         if (f3 && fl[q2] > 0.05){ var rc = hmRamp(Math.max(0, Math.min(1, f3[q2] / fl[q2]))); ra = rc[3] / 255 * Math.min(1, fl[q2] * 1.6); over(rc[0], rc[1], rc[2], 255 * ra); }
-        if (c1col) over(c1col[0], c1col[1], c1col[2], 105 * k1);
-        over(c2col[0], c2col[1], c2col[2], c2a * k2);
+        if (!plain){
+          if (c1col) over(c1col[0], c1col[1], c1col[2], 105 * k1);
+          over(c2col[0], c2col[1], c2col[2], c2a * k2);
+        }
         var e = Math.max(cl(1 - Math.abs(d1) / EA[0]), cl(1 - Math.abs(d2) / EA[0])) * EA[1];
         if (e > 0) over(255, 255, 255, 180 * e);        // (as thin and soft as the lee's edge)
         var es = cl(1 - Math.abs(dl) / ES[0]) * ES[1];
@@ -471,7 +516,7 @@
     // from the catches: the catches it's worked out from, small white dots
     if (R.pts) R.pts.forEach(function(p){
       var x = originX + p.x * scale, y = originY + p.y * scale; if (x < -5 || y < -5 || x > W + 5 || y > H + 5) return;
-      anCtx.beginPath(); anCtx.arc(x, y, 2.6, 0, 7); anCtx.fillStyle = '#fff'; anCtx.fill(); anCtx.lineWidth = 1; anCtx.strokeStyle = 'rgba(11,42,58,.9)'; anCtx.stroke();
+      anCtx.beginPath(); anCtx.arc(x, y, 2.6, 0, 7); anCtx.fillStyle = '#fff'; anCtx.fill(); anCtx.lineWidth = 1; anCtx.strokeStyle = 'rgba(28,33,44,.9)'; anCtx.stroke();
     });
     // labels (tops/holes, similar places)
     Array.prototype.forEach.call(anLabelsEl.children, function(el){
@@ -495,6 +540,7 @@
     Array.prototype.forEach.call(document.querySelectorAll('#anChips button[data-m], #anPresets button[data-m], #anDataChips button[data-m]'), function(b){
       var on = b.getAttribute('data-m') === m || (m === 'combo' && anSet.combo.indexOf(b.getAttribute('data-m')) >= 0);
       b.classList.toggle('on', on); if (b.parentNode.id === 'anChips') b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+    document.getElementById('anChips').classList.toggle('combo', m === 'combo');   // ("+ Djup", "+ Branta kanter": they work together)
     var R = anRes, res = document.getElementById('anResult'), lst = document.getElementById('anListBox');
     lst.innerHTML = '';
     if (!m) res.innerHTML = { map: 'Välj vad du vill hitta på kartan. Det som matchar lyser, resten tonas ner.', rule: 'Tumregler från vanliga fiskeråd – inte fångstdata.',
@@ -517,17 +563,18 @@
     anView = null; anDraw();
   }
   // a slider with one handle: label, the bar, the value
-  // "Från fångsterna (data)": a button per species with its number of catches here (< 10: can't be chosen)
+  // "Från fångsterna (data)": a button per species with its number of catches here (none: can't be chosen)
   function anDataRow(){
     var row = document.getElementById('anDataChips'), L = catchData ? catchData.list : [];
     if (!L.length){ row.innerHTML = '<span class="anNote" style="margin-top:2px">' + (catchData ? 'Inga fångster från tävlingarna i ' + escHtml(LAKE.name) + ' än.' : 'Hämtar fångsterna…') + '</span>'; return; }
     row.innerHTML = [['abborre', 'Abborre'], ['gadda', 'Gädda'], ['gos', 'Gös']].map(function(x){
-      var n = L.filter(function(c){ return c.sp === x[0]; }).length;
-      return '<button type="button" data-m="c_' + x[0] + '"' + (n < AN_CMIN ? ' disabled' : '') + '>' + x[1] + ' ' + n + (n < AN_CMIN ? ' · för få' : '') + '</button>';
+      var n = L.filter(function(c){ return c.sp === x[0] && sizeOk(sizeOf(anSet, x[0]), c); }).length;
+      return '<button type="button" data-m="c_' + x[0] + '"' + (n < AN_CMIN ? ' disabled' : '') + '>' + x[1] + ' ' + n + '</button>';
     }).join('');
   }
-  function anRangeRow(id, label, min, max, step, val, fmt){
-    return '<div class="anRange"><label for="' + id + '">' + label + '</label><input type="range" id="' + id + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + val + '"><output>' + fmt(val) + '</output></div>';
+  function anRangeRow(id, label, min, max, step, val, fmt, ends){   // (ends: words under the two ends, e.g. ['Mest likt', 'Mindre likt'])
+    return '<div class="anRange"><label for="' + id + '">' + label + '</label><input type="range" id="' + id + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + val + '"><output>' + fmt(val) + '</output>' +
+      (ends ? '<div class="anEnds"><span>' + ends[0] + '</span><span>' + ends[1] + '</span></div>' : '') + '</div>';
   }
   // a depth range: one bar in the depth colours (like the legend) with two handles
   function anDualRow(key){
@@ -536,7 +583,7 @@
     return '<div class="anDual" data-k="' + key + '"><div class="anTrack" style="background:' + ((MAP_STYLES[0] && MAP_STYLES[0].legend) || '#2a86c9') + '"></div>' +
       '<div class="anSel"></div><div class="anKnob" data-h="0"></div><div class="anKnob" data-h="1"></div></div><div class="anTicks">' + ticks.join('') + '</div>';
   }
-  var AN_DUAL = { depth: ['lo', 'hi'], steep: ['elo', 'ehi'], hard: ['hlo', 'hhi'] };
+  var AN_DUAL = { depth: ['lo', 'hi'] };         // (only Djup has a depth range)
   function anDualPlace(){
     Array.prototype.forEach.call(document.querySelectorAll('#anControls .anDual'), function(d){
       var k = AN_DUAL[d.getAttribute('data-k')], a = anSet[k[0]] / AN_DMAX * 100, z = anSet[k[1]] / AN_DMAX * 100;
@@ -550,22 +597,21 @@
     var want = m + (m === 'similar' ? anSpots().length : m === 'combo' ? anSet.combo.join(',') : '');
     if (anCtlMode === want){ anDualPlace(); return; }            // (don't rebuild while dragging)
     anCtlMode = want;
-    var hasD = m === 'combo' && anSet.combo.indexOf('depth') >= 0;
     el.innerHTML = m === 'combo'
-      ? anSet.combo.map(function(k){ return anCtlFor(k, { noRange: hasD && k !== 'depth' }) +     // each part's own controls, + "inom … m" for the spots
+      ? anSet.combo.map(function(k){ return anCtlFor(k) +     // each part's own controls, + "inom … m" for the spots
           (AN_NEAR[k] ? anRangeRow('anNear_' + k, anName(k) + ' · inom', 0, 50, 5, anSet.near[k] || 0, function(v){ return v + ' m'; }) : ''); }).join('')
-      : anCtlFor(m, {});
+      : anCtlFor(m);
     if (m && m.indexOf('c_') === 0) anCatchDots();
     anDualPlace();
   }
-  function anCtlFor(m, opt){
+  function anCtlFor(m){
     var h = '';
     if (m === 'depth') h = anDualRow('depth');
-    else if (m === 'steep') h = anRangeRow('anSlope', 'Lutning', 4, 30, 1, anSet.slope, function(v){ return v + ' %'; }) + (opt.noRange ? '' : anDualRow('steep'));
+    else if (m === 'steep') h = anRangeRow('anSlope', 'Lutning', 4, 30, 1, anSet.slope, function(v){ return v + ' %'; });
     else if (m === 'tops') h = anRangeRow('anTopP', 'Grynnor', 0.3, 2.5, 0.1, anSet.topP, function(v){ return '≥ ' + fmtDepth(+v) + ' m'; }) +
       anRangeRow('anHoleP', 'Hålor', 0.3, 2.5, 0.1, anSet.holeP, function(v){ return '≥ ' + fmtDepth(+v) + ' m'; });
     else if (m && m.indexOf('c_') === 0) h = anCatchControls();
-    else if (m === 'hard') h = anRangeRow('anHmin', 'Minst', 1, 4, 1, anSet.hmin, function(v){ return AN_HARD[v - 1]; }) + (opt.noRange ? '' : anDualRow('hard'));
+    else if (m === 'hard') h = anRangeRow('anHmin', 'Minst', 1, 4, 1, anSet.hmin, function(v){ return AN_HARD[v - 1]; });
     else if (m === 'similar'){
       var sp = anSpots();
       h = sp.length ? '<div class="anRefRow"><select id="anRefSel" aria-label="Plats att jämföra med">' + sp.map(function(w){
@@ -586,12 +632,13 @@
   var anTimer = null;
   function anLater(){ anSave(); clearTimeout(anTimer); anTimer = setTimeout(anCompute, 60); }
   document.getElementById('anControls').addEventListener('input', function(e){
+    if (sizeInput(e, anSet)){ anDataRow(); anLater(); return; }
     var t = e.target, v = parseFloat(t.value);
     if (t.id.indexOf('anNear_') === 0){ anSet.near[t.id.slice(7)] = v; t.nextSibling.textContent = v + ' m'; anLater(); return; }   // (combined: "inom … m")
     var map = { anSlope: 'slope', anTopP: 'topP', anHoleP: 'holeP', anHmin: 'hmin', anCCov: 'cCov' };
     if (!map[t.id]) return;
     anSet[map[t.id]] = v;
-    t.nextSibling.textContent = t.id === 'anSlope' ? v + ' %' : t.id === 'anHmin' ? AN_HARD[v - 1] : t.id === 'anCCov' ? v + ' av 10' : '≥ ' + fmtDepth(v) + ' m';
+    t.nextSibling.textContent = t.id === 'anSlope' ? v + ' %' : t.id === 'anHmin' ? AN_HARD[v - 1] : t.id === 'anCCov' ? v * 10 + ' % av ' + anCatchPl() + 'na' : '≥ ' + fmtDepth(v) + ' m';
     anLater();
   });
   // dragging a handle of a depth range (either handle; they can't cross)
@@ -640,6 +687,7 @@
   function anToggleMap(k){
     var L = anMapList(), j = L.indexOf(k);
     if (j >= 0) L.splice(j, 1); else L.push(k);
+    L.sort(function(a, b){ return AN_MODES.map(function(x){ return x[0]; }).indexOf(a) - AN_MODES.map(function(x){ return x[0]; }).indexOf(b); });   // (the buttons' order: the sliders don't jump around)
     anSet.combo = L.length > 1 ? L : [];
     anApplyMode(L.length > 1 ? 'combo' : L[0] || null);
   }
@@ -682,7 +730,7 @@
   anPill.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
   anPill.addEventListener('click', function(e){ e.stopPropagation(); showAnPanel(!anPanel.classList.contains('show')); });
   document.getElementById('anClose').addEventListener('click', function(){ showAnPanel(false); });
-  document.getElementById('anClear').addEventListener('click', function(){ anSet.mode = null; anSet.combo = []; anSave(); anCtlMode = '#'; anCompute(); });
+  document.getElementById('anClear').addEventListener('click', function(){ anSet.mode = null; anSet.combo = []; anSave(); anCtlMode = '#'; anCompute(); showAnPanel(false); });
   // "Återställ": every setting in the panel back to how it was from the start (what's shown stays; "Mörkare" is in Inställningar)
   // (what is shown -- mode, the combined parts -- and "Mörkare" stay)
   function anKeep(k){ return k === 'mode' || k === 'combo' || k === 'dim'; }
@@ -692,35 +740,39 @@
     anExtraRef = null; anSave(); anCtlMode = '#'; anCompute();
     resetDone(this);
   });
-  // "↺ Återställ" (Kartanalys, Heatmap) says it's done: green with a tick for a moment (it turns in),
-  // then the usual grey ↺ (nothing left to reset)
-  var RS_TICK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>';
+  // "↺ Återställ" (Kartanalys, Heatmap, Namn) says it's done: the arrow spins round once, then the usual grey ↺
+  // (nothing left to reset)
   function resetDone(btn){
-    if (!btn._rsIc) btn._rsIc = btn.innerHTML;
     clearTimeout(btn._rsT); btn.classList.remove('rsDone'); void btn.offsetWidth;
-    btn.classList.add('rsDone'); btn.innerHTML = RS_TICK; btn.setAttribute('aria-label', 'Återställt');
-    btn._rsT = setTimeout(function(){ btn.classList.remove('rsDone'); btn.innerHTML = btn._rsIc; btn.setAttribute('aria-label', 'Återställ'); }, 1600);
+    btn.classList.add('rsDone'); btn.setAttribute('aria-label', 'Återställt');
+    btn._rsT = setTimeout(function(){ btn.classList.remove('rsDone'); btn.setAttribute('aria-label', 'Återställ'); }, 700);
   }
   // ⓘ in the top row (Kartanalys, Heatmap): the explanations -- kept out of the panel itself -- in a box under
   // it: the notes on the result + the controls' notes. Open or not is remembered on the phone (closed at first).
   var PN_INFO_KEY = 'ffmap_panel_info_v1', pnInfoOn = false;
   try { pnInfoOn = localStorage.getItem(PN_INFO_KEY) === '1'; } catch(e){}
+  var AN_INTRO = { map: 'passar kartdatan nedan', rule: 'passar tumregeln nedan', data: 'liknar platserna där gruppen fått fisk', similar: 'liknar platsen du valt' };
   function pnInfo(P){
     var box = P.querySelector('.pnInfo'), btn = P.querySelector('.pnInfoBtn'), res = P.querySelector('.pnRes'), parts = [];
     if (!box) return;
     if (pnInfoOn){
-      if (res && res.scrollHeight > res.clientHeight + 2){ var c = res.cloneNode(true); Array.prototype.forEach.call(c.querySelectorAll('.note'), function(n){ n.remove(); }); parts.push(c.innerHTML); }
+      if (res && res.scrollHeight > res.clientHeight + 2 && !res.querySelector('.note .pnList')){ var c = res.cloneNode(true); Array.prototype.forEach.call(c.querySelectorAll('.note'), function(n){ n.remove(); }); parts.push(c.innerHTML); }   // (cut off: all of it here -- unless the list says it all)
       Array.prototype.forEach.call(P.querySelectorAll('.pnRes .note, #anControls .anNote'), function(n){ if (n.textContent.trim()) parts.push(n.innerHTML); });
-      box.innerHTML = parts.length ? parts.map(function(t){ return '<p>' + t + '</p>'; }).join('') : '<p>Ingen förklaring till det här.</p>';
+      if (P === anPanel) parts.unshift('<b>Kartanalys</b> lyser upp det i sjön som ' + (AN_INTRO[anSet.cat] || 'passar inställningarna nedan') + '.');   // (always one line on top: what it does)
+      box.innerHTML = parts.length ? parts.map(function(t){ return /^\s*<(ul|p)\b/.test(t) ? t : '<p>' + t + '</p>'; }).join('') : '<p>Ingen förklaring till det här.</p>';   // (a list as it is)
     }
     box.hidden = !pnInfoOn;
     btn.classList.toggle('on', pnInfoOn); btn.setAttribute('aria-pressed', pnInfoOn ? 'true' : 'false');
   }
+  function btn0(b){ Array.prototype.forEach.call(document.querySelectorAll('.pnInfoBtn'), function(x){ x.classList.remove('on'); x.setAttribute('aria-pressed', 'false'); }); }
   Array.prototype.forEach.call(document.querySelectorAll('.pnInfoBtn'), function(b){
     b.addEventListener('click', function(e){
       e.stopPropagation(); pnInfoOn = !pnInfoOn;
       try { localStorage.setItem(PN_INFO_KEY, pnInfoOn ? '1' : '0'); } catch(err){}
-      pnInfo(anPanel); pnInfo(hmPanel);
+      var P = b.closest('#anPanel, #hmPanel'), box = P && P.querySelector('.pnInfo'), h0 = box && !box.hidden ? box.offsetHeight : 0;
+      if (!box){ pnInfo(anPanel); pnInfo(hmPanel); }
+      else if (pnInfoOn){ pnInfo(anPanel); pnInfo(hmPanel); motionHeight(box, 0, box.offsetHeight); }   // (it unfolds softly, 91-motion.js)
+      else { btn0(b); motionHeight(box, h0, 0, function(){ pnInfo(anPanel); pnInfo(hmPanel); }); }
     });
   });
   anLabelsEl.addEventListener('pointerdown', function(e){ e.stopPropagation(); if (e.target.closest && e.target.closest('.anLbl')) mapPointerDown(e, true); });

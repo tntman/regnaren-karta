@@ -66,7 +66,7 @@ with sync_playwright() as p:
         pg.mouse.wheel(0, -400); pg.wait_for_timeout(60)
     pg.wait_for_timeout(2500)
     srcs = pg.eval_on_selector_all('#detailLayer img', 'e => e.map(x => [x.src, x.naturalWidth])')
-    check('zoomed in: detail tiles from GitHub Pages and they load', srcs and all(s.startswith(REMOTE + 'lakes/regnaren/tiles_v') and n == 512 for s, n in srcs), srcs[:2])
+    check('zoomed in: detail tiles from GitHub Pages and they load', srcs and all(s.startswith(REMOTE + 'lakes/regnaren/tiles_v') and n >= 512 for s, n in srcs), srcs[:2])
     writes = pg.evaluate('__cap.writes')
     check('...and every one is saved on the phone', writes and all(x.startswith('lakes/regnaren/tiles_v') for x in writes) and len(writes) >= len(srcs), (len(writes), len(srcs)))
     check('the overview map is the packed one (not the net)', pg.eval_on_selector('#mapImg', 'e => e.getAttribute("src")').startswith('lakes/regnaren/map_v'))

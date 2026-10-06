@@ -25,6 +25,8 @@
       st.an = anPanel.classList.contains('show');
       if (hmOn) st.hm = { panel: hmPanel.classList.contains('show'), card: hmCardList && hmCard.classList.contains('show') ? { ids: hmCardList.map(function(c){ return c.id; }), i: hmCardI } : null };
       if (helpView.classList.contains('show')) st.help = helpLastPlace || helpPlace();
+      st.trk = trkPanel.classList.contains('show');
+      if (pfCard.classList.contains('show')) st.pf = pfName;
       st.wx = wxCard.classList.contains('show');
       st.probe = probe;
       if (editingId && wpSheet.classList.contains('show')){
@@ -49,6 +51,7 @@
                  : (r.nameModal.sel ? nameListEl.querySelector('.nameChip[data-name="' + String(r.nameModal.sel).replace(/"/g, '') + '"]') : null);
         if (chip) chip.click();
         if (r.nameModal.other) nameInput.value = r.nameModal.text || '';
+        updNameBtn();
         nameListEl.scrollTop = r.nameModal.scroll || 0;
         return; // nothing else is open before you've picked a name
       }
@@ -70,7 +73,9 @@
       if (r.wx) setWxOpen(true);
       if (r.probe && typeof r.probe.x === 'number'){ setProbe(r.probe); probeEl.classList.remove('drop'); }
       if (r.an) showAnPanel(true);
-      if (r.hm){ hmSetOn(true, r.hm.panel, true); if (r.hm.card) hmPendingCard = r.hm.card; }
+      if (r.trk) trkShowPanel(true);
+      if (r.pf) openProfile(r.pf);
+      if (r.hm){ if (r.hm.card) hmPendingCard = r.hm.card; hmSetOn(true, r.hm.panel, true); }   // (the card first: the copy may be there at once)
       if (r.sheet && r.sheet.id){
         pendingSheetRestore = { s: r.sheet, until: Date.now() + 10000 };
         tryRestoreSheet();
@@ -118,7 +123,7 @@
       navigator.serviceWorker.register('sw.js').catch(function(){});
       // keep this lake's start files on the phone (default map + chosen style + depth)
       navigator.serviceWorker.ready.then(function(reg){
-        var urls = [mapFile(DEFAULT_STYLE), mapFile(mapStyle), LAKE_DIR + LAKE.depth.file];
+        var urls = [mapFile(DEFAULT_STYLE), mapFile(mapStyle), LAKE_DIR + LAKE.depth.file, 'ff_logo.svg', 'three-r170.min.js', 'three-r170-svg.js', 'three-r170-room.js'];   // (the logo and its 3D: the name picker after Logga ut, offline too)
         if (reg.active) reg.active.postMessage({ type: 'precache', urls: urls });
       }).catch(function(){});
     };

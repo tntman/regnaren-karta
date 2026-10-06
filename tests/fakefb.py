@@ -20,6 +20,12 @@ def block_real_firebase(ctx):
     # lightning (FMI): never the real service -- a test that needs strikes routes it
     # itself (a later route wins)
     ctx.route('**/opendata.fmi.fi/**', lambda r: r.abort())
+    # weather (Open-Meteo): never the real one either -- the page fetches it at load, BEFORE a test can route
+    # it, and a late real answer was saved over the test's own weather (Vindkant/test_wind flaky). A test
+    # that needs weather routes it itself (a later route wins)
+    ctx.route('**/api.open-meteo.com/**', lambda r: r.abort())
+    # Fiskfiskarnas API (the heat map's catches): never the real one -- new_page serves a fake (FakeApi)
+    ctx.route('**/fiskfiskarna.se/**', lambda r: r.abort())
     return ctx
 # The real admin code is never written in the tests. Instead the test browser
 # treats TEST_PIN as correct: SHA-256 of it is answered with the hash that is in
@@ -39,18 +45,31 @@ TEST_PIN_JS = """(function(){
   };
 })();""" % (_PIN_HASH, TEST_PIN)
 
-from playwright.sync_api import Browser as _Browser
+from playwright.sync_api import Browser as _Browser, Page as _Page
+# TEST_PORT (run_all.ps1 sets it too): the test server's port, so two chats' tests can run at the same time --
+# the tests' own goto('http://localhost:8899/...') are sent there
+_PORT = os.environ.get('TEST_PORT', '8899')
+if _PORT != '8899' and not getattr(_Page, '_ffPort', False):
+    _orig_goto = _Page.goto
+    _Page.goto = lambda self, url, *a, **kw: _orig_goto(self, url.replace('localhost:8899/', 'localhost:%s/' % _PORT), *a, **kw)
+    _Page._ffPort = True
 if not getattr(_Browser, '_ffGuarded', False):
     _orig_new_context = _Browser.new_context
     def _guarded_new_context(self, *a, **kw):
         kw.setdefault('service_workers', 'block')
         help_seen = kw.pop('help_seen', True)
+        splash = kw.pop('splash', False)
+        lock = kw.pop('lock', False)
         ctx = block_real_firebase(_orig_new_context(self, *a, **kw))
         ctx.add_init_script(TEST_PIN_JS)
-        if help_seen:   # Hjälp opens by itself the first time -- tests start as if it's been read (test_help: help_seen=False)
-            ctx.add_init_script("try { if (!localStorage.getItem('ffmap_help_seen_v1')) localStorage.setItem('ffmap_help_seen_v1', '999'); } catch(e){}")
+        if not lock:    # the competition lock (66-catches.js) is off in the tests -- test_lock: new_page(cfg={'lock': True})
+            ctx.add_init_script("window.__ffNoLock = true;")
+        if help_seen:   # Hjälp's news read, and no welcome card after a name -- (test_help, test_splash: help_seen=False)
+            ctx.add_init_script("try { if (!localStorage.getItem('ffmap_help_seen_v1')) localStorage.setItem('ffmap_help_seen_v1', '999'); } catch(e){} window.__ffNoWelcome = true;")
+        if not splash:   # the start film (35-splash.js, 3.5 s, every time a name is chosen) and the start picture: not in the tests (test_splash: splash=True)
+            ctx.add_init_script("window.__ffNoSplash = true; window.__ffNoBoot = true;")
         # Inställningar in sections: the tests start with them all open (test_extras checks closing / opening)
-        ctx.add_init_script("try { if (!localStorage.getItem('ffmap_settings_open_v1')) localStorage.setItem('ffmap_settings_open_v1', '[\"map\", \"boat\", \"warn\", \"an\", \"off\", \"adv\"]'); } catch(e){}")
+        ctx.add_init_script("try { if (!localStorage.getItem('ffmap_settings_open_v1')) localStorage.setItem('ffmap_settings_open_v1', '[\"map\", \"boat\", \"warn\", \"an\", \"catch\", \"off\", \"adv\"]'); } catch(e){}")
         return ctx
     _Browser.new_context = _guarded_new_context
     _Browser._ffGuarded = True
@@ -67,7 +86,7 @@ FAKE_FIREBASE_JS = r"""
   var posDocs = {};
   (cfg.positions || []).forEach(function(p){
     posDocs[p.uid] = { lat:p.lat, lon:p.lon, name:p.name, uid:p.uid, lake:p.lake||'regnaren', device:p.device, updatedAt: ts(now - (p.ageMin||0)*60000) };
-    if (p.msg){ posDocs[p.uid].msg = p.msg; posDocs[p.uid].msgAt = now - (p.msgAgeMin||0)*60000; }   // (a quick message)
+    if (p.msg){ posDocs[p.uid].msg = p.msg; posDocs[p.uid].msgAt = now - (p.msgAgeMin||0)*60000; posDocs[p.uid].msgSp = p.msgSp; posDocs[p.uid].msgImg = p.msgImg; }   // (a quick message; a catch: species, photo)
   });
   var wpDocs = {};
   (cfg.waypoints || []).forEach(function(w, i){
@@ -82,11 +101,11 @@ FAKE_FIREBASE_JS = r"""
   }
   function fireWp(){ wpListeners.forEach(function(cb){ cb(snapOf(wpDocs)); }); }
   function firePos(){ posListeners.forEach(function(cb){ cb(snapOf(posDocs)); }); }
-  window.__fireWp = fireWp;
+  window.__fireWp = fireWp; window.__posDocs = posDocs; window.__firePos = firePos;
   window.__setFromCache = function(v){ window.__fromCache = v; fireWp(); };
   window.__addPos = function(p){
     posDocs[p.uid] = { lat:p.lat, lon:p.lon, name:p.name, uid:p.uid, lake:p.lake||'regnaren', device:p.device, updatedAt: ts(Date.now() - (p.ageMin||0)*60000) };
-    if (p.msg){ posDocs[p.uid].msg = p.msg; posDocs[p.uid].msgAt = Date.now() - (p.msgAgeMin||0)*60000; }
+    if (p.msg){ posDocs[p.uid].msg = p.msg; posDocs[p.uid].msgAt = Date.now() - (p.msgAgeMin||0)*60000; posDocs[p.uid].msgSp = p.msgSp; posDocs[p.uid].msgImg = p.msgImg; }
     firePos();
   };
   function listen(list, docs, a, b){
@@ -115,13 +134,15 @@ FAKE_FIREBASE_JS = r"""
     get: function(){ return Promise.resolve(snapOf(posDocs)); },
     doc: function(id){
       return { set: function(d){
-        window.__posWrites.push({ t: Date.now(), id: id, lat: d.lat, lon: d.lon, device: d.device, lake: d.lake, msg: d.msg, msgAt: d.msgAt,
+        window.__posWrites.push({ t: Date.now(), id: id, lat: d.lat, lon: d.lon, device: d.device, lake: d.lake, msg: d.msg, msgAt: d.msgAt, msgSp: d.msgSp, msgImg: d.msgImg,
           updatedAtMs: (d.updatedAt && d.updatedAt.__epoch) ? d.updatedAt.ms : null });
         var merged = Object.assign({}, posDocs[id] || {}, d);
         merged.updatedAt = (d.updatedAt && d.updatedAt.__epoch) ? ts(d.updatedAt.ms) : ts(Date.now());
         posDocs[id] = merged; firePos(); return Promise.resolve();
       }, update: function(d){
         window.__posUpdates = (window.__posUpdates || []); window.__posUpdates.push({ id: id, updatedAtMs: (d.updatedAt && d.updatedAt.__epoch) ? d.updatedAt.ms : null });
+        // (also kept over a reload -- Demo Mode on/off reloads right after expiring your boat; with the project it went to)
+        try { var L = JSON.parse(sessionStorage.getItem('__fbUpdates') || '[]'); L.push({ id: id, project: window.__fbProject, found: !!posDocs[id], updatedAtMs: (d.updatedAt && d.updatedAt.__epoch) ? d.updatedAt.ms : null }); sessionStorage.setItem('__fbUpdates', JSON.stringify(L)); } catch(e){}
         if (!posDocs[id]){ var e = new Error('not-found'); e.code = 'not-found'; return Promise.reject(e); }
         var m = Object.assign({}, posDocs[id], d);
         m.updatedAt = (d.updatedAt && d.updatedAt.__epoch) ? ts(d.updatedAt.ms) : ts(Date.now());
@@ -146,7 +167,7 @@ FAKE_FIREBASE_JS = r"""
   var cfgListeners = [];
   function cfgSnap(){ var d = window.__cfgDoc; return { exists: !!d, data: function(){ return d; }, metadata: { fromCache: false } }; }
   window.__setCfg = function(d){ window.__cfgDoc = d; cfgListeners.forEach(function(l){ l.cb(cfgSnap()); }); };
-  var configCol = { doc: function(id){
+  var configCol = { get: function(){ var d = {}; if (window.__cfgDoc) d['regnaren'] = window.__cfgDoc; return Promise.resolve(snapOf(d)); }, doc: function(id){
     // cfg.configByLake = { regnaren: {...}, ... }: a different config/<lake> per lake
     if (cfg.configByLake && !window.__cfgPicked){ window.__cfgPicked = true; window.__cfgDoc = cfg.configByLake[id] ? JSON.parse(JSON.stringify(cfg.configByLake[id])) : null; }
     return {
@@ -158,18 +179,58 @@ FAKE_FIREBASE_JS = r"""
     set: function(d){
       window.__cfgSets.push(JSON.parse(JSON.stringify(Object.assign({}, d, { updatedAt: null }))));
       if (window.__cfgDenied){ var e = new Error('denied'); e.code = 'permission-denied'; return Promise.reject(e); }
-      window.__setCfg(Object.assign({}, window.__cfgDoc || {}, { posIntervalS: d.posIntervalS })); return Promise.resolve();
+      var nd = Object.assign({}, window.__cfgDoc || {}, { posIntervalS: d.posIntervalS });
+      if (d.lockOff !== undefined) nd.lockOff = d.lockOff;   // (the competition lock off for everyone, admin)
+      if (d.test !== undefined) nd.test = JSON.parse(JSON.stringify(d.test));   // (the test mode's competition, 37-testmode.js)
+      window.__setCfg(nd); return Promise.resolve();
     } }; } };
-  // catches/<lake> (the heat map's catches): cfg.catches = { regnaren: { rows: '<json>', n: 88 }, ... }
-  window.__catchDocs = JSON.parse(JSON.stringify(cfg.catches || {})); window.__catchSets = []; window.__catchGets = 0;
-  var catchesCol = { doc: function(id){ return {
-    get: function(){ window.__catchGets++; var d = window.__catchDocs[id]; return Promise.resolve({ exists: !!d, data: function(){ return d; }, metadata: { fromCache: false } }); },
-    set: function(d){ window.__catchSets.push({ id: id, n: d.n }); window.__catchDocs[id] = JSON.parse(JSON.stringify(Object.assign({}, d, { updatedAt: null }))); return Promise.resolve(); }
-  }; } };
+  // tracks (the Spår, one doc per person + lake + day): cfg.tracks = { '<docId>': {lake, uid, name, day, pts, st, n, lakeDay, ownKey}, ... }
+  window.__trackDocs = JSON.parse(JSON.stringify(cfg.tracks || {})); window.__trackSets = []; window.__trackGets = [];
+  function tracksQuery(conds){ return {
+    where: function(f, op, v){ return tracksQuery(conds.concat([[f, op, v]])); },
+    get: function(){
+      window.__trackGets.push(conds.map(function(c){ return c.join(' '); }).join(' & '));
+      var hits = {};
+      Object.keys(window.__trackDocs).forEach(function(id){
+        var d = window.__trackDocs[id], ok = true;
+        conds.forEach(function(c){ var x = d[c[0]]; ok = ok && (c[1] === '>=' ? x >= c[2] : c[1] === '<=' ? x <= c[2] : x === c[2]); });
+        if (ok) hits[id] = d;
+      });
+      return Promise.resolve(snapOf(hits));
+    } }; }
+  var tracksCol = {
+    where: function(f, op, v){ return tracksQuery([[f, op, v]]); },
+    get: function(){ return tracksQuery([]).get(); },
+    doc: function(id){ return { set: function(d){
+      window.__trackSets.push({ id: id, t: Date.now(), n: d.n, day: d.day, pts: d.pts, st: d.st, lakeDay: d.lakeDay, ownKey: d.ownKey, uid: d.uid, lake: d.lake });
+      window.__trackDocs[id] = JSON.parse(JSON.stringify(Object.assign({}, d, { updatedAt: null }))); return Promise.resolve();
+    } }; }
+  };
+  // trackusers/<lake> (who has tracks on the lake): cfg.trackusers = { regnaren: { users: { calle: {u:'calle', n:'Calle'} } } }
+  window.__trackUsersDocs = JSON.parse(JSON.stringify(cfg.trackusers || {})); window.__trackUserGets = 0; window.__trackUserSets = [];
+  var trackUsersCol = { get: function(){ return Promise.resolve(snapOf(window.__trackUsersDocs)); }, doc: function(id){ return {
+    get: function(){ window.__trackUserGets++; var d = window.__trackUsersDocs[id]; return Promise.resolve({ exists: !!d, data: function(){ return d; }, metadata: { fromCache: false } }); },
+    set: function(d, opt){
+      window.__trackUserSets.push(JSON.parse(JSON.stringify(d)));
+      var cur = window.__trackUsersDocs[id] || { users: {} }; cur.users = Object.assign({}, cur.users, d.users || {}); window.__trackUsersDocs[id] = cur; return Promise.resolve();
+    } }; } };
   var fake = {
-    initializeApp: function(){ return {}; },
+    // the project it was started with (the test mode = Demo Mode has its own, 14-spots.js): another project
+    // = another database -> it starts empty (cfg.testDb = what's in it, like the rest of cfg)
+    initializeApp: function(c){
+      window.__fbProject = c && c.projectId;
+      if (window.__fbProject !== 'regnaren-b8b6a'){
+        var t = cfg.testDb || {};
+        Object.keys(posDocs).forEach(function(k){ delete posDocs[k]; });
+        Object.keys(wpDocs).forEach(function(k){ delete wpDocs[k]; });
+        (t.positions || []).forEach(function(p){ posDocs[p.uid] = { lat:p.lat, lon:p.lon, name:p.name, uid:p.uid, lake:p.lake||'regnaren', updatedAt: ts(Date.now() - (p.ageMin||0)*60000) }; });
+        (t.waypoints || []).forEach(function(w, i){ wpDocs['t'+i] = { lat:w.lat, lon:w.lon, name:w.name, uid:w.uid, by:w.by||w.uid, lake:w.lake||'regnaren', type:w.type, createdAt: ts(Date.now() - 3600000) }; });
+        window.__cfgDoc = t.config ? JSON.parse(JSON.stringify(t.config)) : null;
+      }
+      return {};
+    },
     auth: function(){ return { signInAnonymously: function(){ return Promise.resolve(); }, onAuthStateChanged: function(cb){ cb({ uid:'anon' }); } }; },
-    firestore: function(){ return { collection: function(n){ return n === 'positions' ? posCol : (n === 'usage' ? usageCol : (n === 'config' ? configCol : (n === 'catches' ? catchesCol : wpCol))); }, enablePersistence: function(){ return Promise.resolve(); } }; }
+    firestore: function(){ return { collection: function(n){ return n === 'positions' ? posCol : (n === 'usage' ? usageCol : (n === 'config' ? configCol : (n === 'tracks' ? tracksCol : (n === 'trackusers' ? trackUsersCol : wpCol)))); }, enablePersistence: function(){ return Promise.resolve(); } }; }
   };
   fake.firestore.FieldValue = { serverTimestamp: function(){ return {}; } };
   fake.firestore.Timestamp = { fromMillis: function(ms){ return { __epoch: true, ms: ms }; } };
@@ -179,7 +240,33 @@ FAKE_FIREBASE_JS = r"""
 })();
 """
 
-def new_page(p, geo=None, perms=True, cfg=None, name='Testare', wakelock_stub=False, sw=False, help_seen=True):
+# Fiskfiskarnas API, made up: ctx.api (tests change it while they run).
+#   heatmap = dashboard.php's heatmap rows, competitions = its competitions,
+#   live = { competitionId: bootstrap catches }, down = True -> every call fails; hits = the URLs asked for.
+#   anglers/anglerStats/dashboard/results/records = the profiles (dashboard.php), as the real API has them.
+class FakeApi:
+    def __init__(self, cfg):
+        self.heatmap = list(cfg.get('heatmap', [])); self.competitions = list(cfg.get('competitions', []))
+        self.live = dict(cfg.get('live', {})); self.down = False; self.hits = []
+        self.prof = {k: cfg.get(k, []) for k in ('anglers', 'anglerStats', 'dashboard', 'results', 'records')}
+    def n(self, what): return len([u for u in self.hits if what in u])
+    def handle(self, route):
+        import json
+        url = route.request.url; self.hits.append(url)
+        if self.down: return route.abort()
+        if 'dashboard.php' in url: body = dict(self.prof, heatmap=self.heatmap, competitions=self.competitions)
+        elif 'action=bootstrap' in url:
+            cid = __import__('urllib.parse').parse.unquote(url.split('competitionId=')[1].split('&')[0])
+            body = {'ok': cid in self.live, 'catches': self.live.get(cid, []), 'participants': []} if cid in self.live else {'ok': False, 'error': 'okänd tävling'}
+        else: return route.abort()
+        route.fulfill(status=200, content_type='application/json', headers={'Access-Control-Allow-Origin': '*'}, body=json.dumps(body))
+def api_row(t_ms, comp, who, sp, cm, lat, lon, lake='Regnaren'):
+    # one row like dashboard.php's heatmap (and bootstrap's catches)
+    import datetime
+    ts = datetime.datetime.utcfromtimestamp(t_ms / 1000.0).strftime('%Y-%m-%dT%H:%M:%S.') + '%03dZ' % (t_ms % 1000)
+    return {'timestamp': ts, 'competitionId': comp, 'name': who, 'species': {'gadda': 'Gadda', 'abborre': 'Abborre', 'gos': 'Gos'}.get(sp, sp), 'cm': cm, 'lat': lat, 'lng': lon, 'lake': lake}
+
+def new_page(p, geo=None, perms=True, cfg=None, name='Testare', wakelock_stub=False, sw=False, help_seen=True, splash=False):
     import json
     b = p.chromium.launch(**__import__('fakefb').LAUNCH)
     kw = dict(viewport={'width':390,'height':844}, has_touch=True, is_mobile=True,
@@ -189,6 +276,8 @@ def new_page(p, geo=None, perms=True, cfg=None, name='Testare', wakelock_stub=Fa
     if perms:
         kw['permissions'] = ['geolocation']
     kw['help_seen'] = help_seen
+    kw['splash'] = splash
+    kw['lock'] = bool((cfg or {}).get('lock'))
     ctx = b.new_context(**kw)
     ctx.add_init_script('window.__fakeCfg = ' + json.dumps(cfg or {}) + ';')
     if wakelock_stub:
@@ -201,10 +290,12 @@ def new_page(p, geo=None, perms=True, cfg=None, name='Testare', wakelock_stub=Fa
           } }, configurable: true });
         """)
     ctx.add_init_script(FAKE_FIREBASE_JS)
+    ctx.api = FakeApi((cfg or {}).get('api', {}))
+    ctx.route('**/fiskfiskarna.se/**', ctx.api.handle)   # (a later route wins over the block above)
     pg = ctx.new_page()
     errs = []
     pg.on('pageerror', lambda e: errs.append(str(e)))
-    pg.goto('http://localhost:8899/index.html')
+    pg.goto('http://localhost:%s/index.html' % os.environ.get('TEST_PORT', '8899'))   # (TEST_PORT: so another chat's tests can run at the same time)
     pg.wait_for_timeout(500)
     if name:
         login(pg, name)

@@ -1,0 +1,161 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Piratskeppet från 3D-bilden (3 master, kanoner, akterdäck), ritat rakt uppifrån, nosen uppåt -->
+  <defs>
+    <linearGradient id="hull" x1="0" x2="1">
+      <stop offset="0" stop-color="#6e3f1a"/><stop offset=".25" stop-color="#a86a33"/><stop offset=".5" stop-color="#c98c4c"/><stop offset=".75" stop-color="#a86a33"/><stop offset="1" stop-color="#6e3f1a"/>
+    </linearGradient>
+    <linearGradient id="deck" x1="0" x2="1">
+      <stop offset="0" stop-color="#9c6532"/><stop offset=".5" stop-color="#d4a065"/><stop offset="1" stop-color="#9c6532"/>
+    </linearGradient>
+    <linearGradient id="qdeck" x1="0" x2="1">
+      <stop offset="0" stop-color="#a8703a"/><stop offset=".5" stop-color="#dcac72"/><stop offset="1" stop-color="#a8703a"/>
+    </linearGradient>
+    <linearGradient id="sail" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f6ecd2"/><stop offset=".6" stop-color="#e6d6ad"/><stop offset="1" stop-color="#cdb98a"/>
+    </linearGradient>
+    <linearGradient id="black" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a3a3a"/><stop offset="1" stop-color="#151515"/>
+    </linearGradient>
+    <linearGradient id="spar" x1="0" x2="1">
+      <stop offset="0" stop-color="#6a3f1c"/><stop offset=".45" stop-color="#c58845"/><stop offset="1" stop-color="#5a3416"/>
+    </linearGradient>
+    <linearGradient id="sparH" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#c58845"/><stop offset=".5" stop-color="#8a5326"/><stop offset="1" stop-color="#5a3416"/>
+    </linearGradient>
+    <radialGradient id="top" cx=".4" cy=".35">
+      <stop offset="0" stop-color="#e0a766"/><stop offset="1" stop-color="#6a3f1c"/>
+    </radialGradient>
+    <linearGradient id="iron" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#6b6f73"/><stop offset=".45" stop-color="#3a3d40"/><stop offset="1" stop-color="#1c1d1f"/>
+    </linearGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="10"/></filter>
+    <filter id="grain" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency=".9 .03" numOctaves="2" seed="4"/>
+      <feColorMatrix values="0 0 0 0 .25  0 0 0 0 .13  0 0 0 0 .04  0 0 0 .55 0"/>
+    </filter>
+    <filter id="cloth" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency=".05 .4" numOctaves="2" seed="7"/>
+      <feColorMatrix values="0 0 0 0 .45  0 0 0 0 .38  0 0 0 0 .22  0 0 0 .35 0"/>
+    </filter>
+
+    <path id="hullP" d="M512 150 C420 215 352 380 342 560 C334 730 350 880 392 950 Q512 985 632 950 C674 880 690 730 682 560 C672 380 604 215 512 150 Z"/>
+    <path id="deckP" d="M512 200 C440 258 386 400 378 565 C372 720 386 860 418 918 Q512 944 606 918 C638 860 652 720 646 565 C638 400 584 258 512 200 Z"/>
+    <path id="qdP" d="M382 770 Q512 748 642 770 C644 840 634 885 610 915 Q512 940 414 915 C390 885 380 840 382 770 Z"/>
+    <clipPath id="deckClip"><use href="#deckP"/></clipPath>
+    <clipPath id="qdClip"><use href="#qdP"/></clipPath>
+
+    <!-- kanon som pekar åt vänster (speglas för höger sida) -->
+    <g id="cannon">
+      <rect x="-46" y="-13" width="58" height="26" rx="8" fill="url(#iron)" stroke="#0e0e0f" stroke-width="4"/>
+      <rect x="-54" y="-16" width="14" height="32" rx="6" fill="url(#iron)" stroke="#0e0e0f" stroke-width="4"/>
+      <ellipse cx="-55" cy="0" rx="4" ry="9" fill="#050505"/>
+    </g>
+    <!-- dödskalle med korslagda ben, mitt i (0,0), ca 80 bred -->
+    <g id="skull">
+      <g stroke="#f1ece0" stroke-width="11" stroke-linecap="round">
+        <path d="M-36 4L36 40M-36 40L36 4"/>
+      </g>
+      <g fill="#f1ece0">
+        <circle cx="-38" cy="1" r="8"/><circle cx="-38" cy="43" r="8"/><circle cx="38" cy="1" r="8"/><circle cx="38" cy="43" r="8"/>
+        <circle cx="0" cy="-12" r="27"/><rect x="-15" y="4" width="30" height="20" rx="5"/>
+      </g>
+      <g fill="#1d1d1d">
+        <ellipse cx="-10" cy="-12" rx="7.5" ry="8.5"/><ellipse cx="10" cy="-12" rx="7.5" ry="8.5"/>
+        <path d="M0 -1l-4 7h8z"/><path d="M-7 15v9M0 15v9M7 15v9" stroke="#1d1d1d" stroke-width="3"/>
+      </g>
+    </g>
+  </defs>
+
+  <!-- skugga under skrovet -->
+  <use href="#hullP" fill="#000" opacity=".5" filter="url(#soft)" transform="translate(14 22)"/>
+
+  <!-- bogspröt (under skrovet så det sticker ut framåt) -->
+  <rect x="499" y="40" width="26" height="200" rx="13" fill="url(#spar)" stroke="#3e220c" stroke-width="6"/>
+  <path d="M512 52L452 230M512 52L572 230" stroke="#e9d9ae" stroke-width="4" fill="none" opacity=".85"/>
+
+  <!-- kanoner: 5 per sida -->
+  <g>
+    <use href="#cannon" x="352" y="470"/><use href="#cannon" x="345" y="550"/><use href="#cannon" x="343" y="630"/>
+    <use href="#cannon" x="345" y="710"/><use href="#cannon" x="352" y="790"/>
+    <g transform="translate(1024 0) scale(-1 1)">
+      <use href="#cannon" x="352" y="470"/><use href="#cannon" x="345" y="550"/><use href="#cannon" x="343" y="630"/>
+      <use href="#cannon" x="345" y="710"/><use href="#cannon" x="352" y="790"/>
+    </g>
+  </g>
+
+  <!-- skrov + reling -->
+  <use href="#hullP" fill="url(#hull)" stroke="#3e220c" stroke-width="10" stroke-linejoin="round"/>
+  <use href="#hullP" fill="none" stroke="#f0bb7c" stroke-width="4" opacity=".35" transform="translate(512 560) scale(.975) translate(-512 -560)"/>
+
+  <!-- däck med plankor -->
+  <use href="#deckP" fill="url(#deck)" stroke="#4a2a10" stroke-width="7"/>
+  <g clip-path="url(#deckClip)">
+    <rect x="300" y="150" width="424" height="820" filter="url(#grain)" opacity=".5"/>
+    <g stroke="#6e4620" stroke-width="3" opacity=".75">
+      <path d="M408 150V980M434 150V980M460 150V980M486 150V980M512 150V980M538 150V980M564 150V980M590 150V980M616 150V980"/>
+      <path d="M408 330H434M460 420H486M538 380H564M590 470H616M434 610H460M486 690H512M564 650H590M408 520H434"/>
+    </g>
+    <!-- inre skugga längs relingen -->
+    <use href="#deckP" fill="none" stroke="#2a1606" stroke-width="30" opacity=".35" filter="url(#soft)"/>
+  </g>
+
+  <!-- luckor på däck -->
+  <rect x="478" y="650" width="68" height="60" rx="6" fill="#7a4a22" stroke="#3e220c" stroke-width="5"/>
+  <path d="M490 650V710M512 650V710M534 650V710" stroke="#4a2a10" stroke-width="3"/>
+
+  <!-- upphöjt akterdäck -->
+  <use href="#qdP" fill="#000" opacity=".45" filter="url(#soft)" transform="translate(0 -10)"/>
+  <use href="#qdP" fill="url(#qdeck)" stroke="#4a2a10" stroke-width="7"/>
+  <g clip-path="url(#qdClip)">
+    <rect x="370" y="740" width="290" height="210" filter="url(#grain)" opacity=".45"/>
+    <path d="M434 740V950M460 740V950M486 740V950M512 740V950M538 740V950M564 740V950M590 740V950" stroke="#6e4620" stroke-width="3" opacity=".7"/>
+  </g>
+  <path d="M382 770 Q512 748 642 770" fill="none" stroke="#f0bb7c" stroke-width="5" opacity=".6"/>
+  <!-- rodret/ratten -->
+  <circle cx="512" cy="880" r="22" fill="none" stroke="#5a3416" stroke-width="7"/>
+  <path d="M512 850V910M482 880H542M491 859L533 901M533 859L491 901" stroke="#5a3416" stroke-width="5"/>
+
+  <!-- vant (rep från masterna ut till relingen) -->
+  <g stroke="#ecdcb0" stroke-width="4" fill="none" opacity=".85" stroke-linecap="round">
+    <path d="M512 337L382 430M512 337L642 430M512 560L362 600M512 560L662 600M512 810L392 840M512 810L632 840"/>
+  </g>
+
+  <!-- skuggor från seglen på däck -->
+  <g fill="#000" opacity=".35" filter="url(#soft)">
+    <path d="M330 350 Q512 330 694 350 L704 445 Q512 470 320 445 Z" transform="translate(16 26)"/>
+    <path d="M300 520 Q512 495 724 520 L734 640 Q512 670 290 640 Z" transform="translate(16 26)"/>
+    <path d="M512 760 L560 900 L520 900 Z" transform="translate(16 26)"/>
+  </g>
+
+  <!-- MESAN: latinsegel snett längs mitten -->
+  <path d="M512 742 Q585 800 572 900 L524 905 Z" fill="url(#sail)" stroke="#9e8a58" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M500 735 L585 915" stroke="url(#sparH)" stroke-width="14" stroke-linecap="round"/>
+  <circle cx="512" cy="810" r="15" fill="url(#top)" stroke="#3e220c" stroke-width="5"/>
+
+  <!-- FÖRMAST: svart segel med dödskalle -->
+  <path d="M332 344 Q512 326 692 344 L704 440 Q512 470 320 440 Z" fill="url(#black)" stroke="#000" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M332 344 Q512 326 692 344 L704 440 Q512 470 320 440 Z" filter="url(#cloth)" opacity=".5"/>
+  <path d="M420 342V450M604 342V450" stroke="#000" stroke-width="3" opacity=".5"/>
+  <use href="#skull" transform="translate(512 398) scale(.8)"/>
+  <rect x="318" y="324" width="388" height="26" rx="13" fill="url(#sparH)" stroke="#3e220c" stroke-width="5"/>
+  <circle cx="512" cy="337" r="20" fill="url(#top)" stroke="#3e220c" stroke-width="6"/>
+
+  <!-- STORMAST: stort undersegel + mindre märssegel framför -->
+  <path d="M302 516 Q512 492 722 516 L736 636 Q512 668 288 636 Z" fill="url(#sail)" stroke="#9e8a58" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M302 516 Q512 492 722 516 L736 636 Q512 668 288 636 Z" filter="url(#cloth)" opacity=".7"/>
+  <path d="M390 508V648M460 503V656M564 503V656M634 508V648" stroke="#b6a272" stroke-width="3" opacity=".8"/>
+  <rect x="288" y="496" width="448" height="28" rx="14" fill="url(#sparH)" stroke="#3e220c" stroke-width="5"/>
+  <!-- märssegel (högre upp → lite framåt och smalare, egen skugga) -->
+  <path d="M372 478 Q512 462 652 478 L662 560 Q512 584 362 560 Z" fill="#000" opacity=".35" filter="url(#soft)" transform="translate(12 20)"/>
+  <path d="M372 478 Q512 462 652 478 L662 560 Q512 584 362 560 Z" fill="url(#sail)" stroke="#9e8a58" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M372 478 Q512 462 652 478 L662 560 Q512 584 362 560 Z" filter="url(#cloth)" opacity=".7"/>
+  <path d="M440 472V570M584 472V570" stroke="#b6a272" stroke-width="3" opacity=".8"/>
+  <rect x="360" y="460" width="304" height="24" rx="12" fill="url(#sparH)" stroke="#3e220c" stroke-width="5"/>
+  <circle cx="512" cy="540" r="22" fill="url(#top)" stroke="#3e220c" stroke-width="6"/>
+
+  <!-- piratflagga i stortoppen, fladdrar akterut -->
+  <path d="M520 548 Q560 565 548 610 Q590 640 576 690 Q540 670 520 680 Z" fill="#000" opacity=".35" filter="url(#soft)" transform="translate(12 18)"/>
+  <path d="M500 548 Q560 560 552 605 Q600 632 586 690 Q545 668 500 680 Z" fill="url(#black)" stroke="#000" stroke-width="4" stroke-linejoin="round"/>
+  <use href="#skull" transform="translate(548 628) scale(.42) rotate(15)"/>
+  <circle cx="512" cy="540" r="10" fill="#c58845" stroke="#3e220c" stroke-width="4"/>
+</svg>

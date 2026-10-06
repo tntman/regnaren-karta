@@ -10,7 +10,7 @@ def check(name, cond, info=''):
     results.append(bool(cond)); print(('PASS ' if cond else 'FAIL ') + name + ('  -- ' + str(info) if info != '' else ''))
 B3 = (58.887269, 15.772629); B1 = (58.887421, 15.775569); B4 = (58.88651, 15.777774)
 cfg = {'waypoints': [{'lat': B4[0], 'lon': B4[1], 'name': 'Djupa hålet', 'uid': 'filip', 'by': 'Filip', 'type': 'abborre'}],
-       'positions': [{'uid': 'kalle', 'name': 'Calle', 'lat': B1[0], 'lon': B1[1], 'ageMin': 0, 'msg': 'Hugg! 🎣', 'msgAgeMin': 2},
+       'positions': [{'uid': 'kalle', 'name': 'Calle', 'lat': B1[0], 'lon': B1[1], 'ageMin': 0, 'msg': 'Hugg! 🎣', 'msgAgeMin': 4},
                      {'uid': 'pia', 'name': 'Pia', 'lat': B1[0] + 0.001, 'lon': B1[1], 'ageMin': 0, 'msg': 'Kommer 🚤', 'msgAgeMin': 20}]}
 
 # (from test_lightning: made-up FMI answers)
@@ -48,7 +48,9 @@ def page_with(p, strikes):
 
 with sync_playwright() as p:
     b, ctx, pg, errs = new_page(p, geo=B3, cfg=cfg, name='Filip', wakelock_stub=True)
-    pg.wait_for_timeout(1500)
+    wx0 = _tw.wx_json()   # (the weather chip is measured below; fakefb blocks the real weather)
+    ctx.route('**/api.open-meteo.com/**', lambda r: r.fulfill(status=200, content_type='application/json', body=json.dumps(wx0), headers={'Access-Control-Allow-Origin': '*'}))
+    pg.reload(); pg.wait_for_timeout(1500)
     # ---- Åk hit
     pg.evaluate("n => { var id = Object.keys(window.__wpDocs).filter(k => window.__wpDocs[k].name === n)[0]; document.querySelector('#waypoints [data-id=\"' + id + '\"]').click(); }", 'Djupa hålet')
     pg.wait_for_timeout(400)
@@ -86,7 +88,8 @@ with sync_playwright() as p:
     pg.click('label:has(#toggleWake) .toggle'); pg.wait_for_timeout(300)
     check('on: the screen is kept on', pg.evaluate('window.__wakeReqs') == 1 and pg.evaluate('window.__ffWake()')['held'])
     pg.click('#settingsBackBtn'); pg.wait_for_timeout(300)
-    check('...and a yellow sun by your name', pg.is_visible('#wakeBadge'))
+    check('...and a yellow sun under the weather chip', pg.is_visible('#wakeBadge') and pg.evaluate("document.getElementById('wakeBadge').getBoundingClientRect().top >= document.getElementById('wxChip').getBoundingClientRect().bottom"))
+    check('...weather chip clear of the menu button', pg.evaluate("document.getElementById('wxChip').getBoundingClientRect().top - document.getElementById('menuChev').getBoundingClientRect().bottom >= 3"))
     pg.click('#wakeBadge'); pg.wait_for_timeout(300)
     check('tap the sun: off, and a note saying what it was and where to turn it on', not pg.evaluate('window.__ffWake()')['held'] and not pg.is_visible('#wakeBadge') and pg.is_visible('#wakeNote') and 'Inställningar' in pg.inner_text('#wakeNote'))
     check('...Inställningar shows it off', not pg.is_checked('#toggleWake'))
@@ -104,14 +107,15 @@ with sync_playwright() as p:
     w = [x for x in pg.evaluate('window.__posWrites') if x.get('msg')]
     check('sent with your position (for everyone)', w and w[-1]['msg'] == 'Åker in 🏠' and w[-1]['lat'] and not pg.is_visible('#msgPop'), w)
     check('your bubble at your boat', any(m['k'] == 'me' and 'Åker in' in m['t'] for m in pg.evaluate('window.__ffMsgs()')))
+    check('sent: the note "Syns i 7 minuter"', pg.is_visible('#msgToast') and 'Syns i 7 minuter' in pg.inner_text('#msgToast'))
     pg.screenshot(path='shot_msgs.png')
-    check('a new message: the rainbow edge (first 5 min), round the tail too', pg.evaluate("(() => { var bb = document.querySelector('.mLine.mine').closest('.msgBub'), r = bb.querySelector('.msgRb'); return !!r && r.offsetHeight > bb.offsetHeight + 5; })()"))
+    check('a bubble: a thin black 1 px border, no rainbow edge, a small one (font 12 px)', pg.evaluate("(() => { var bb = document.querySelector('.mLine.mine').closest('.msgBub'), cs = getComputedStyle(bb); return !bb.querySelector('.msgRb') && cs.borderTopWidth === '1px' && cs.borderTopColor === 'rgb(0, 0, 0)' && cs.fontSize === '12px'; })()"))
     op = [[m['k'], m['o']] for m in pg.evaluate('window.__ffMsgs()')]
-    check("they fade with age: Calle's (2 min) less than yours (new)", dict(op).get('me', 0) > [v for k, v in op if k != 'me'][0], op)
-    check("Calle's (2 min old) also has the rainbow edge", pg.evaluate("!!document.querySelector('.mLine:not(.mine)').closest('.msgBub').querySelector('.msgRb')"))
+    check("they fade with age: Calle's (4 min) less than yours (new)", dict(op).get('me', 0) > [v for k, v in op if k != 'me'][0], op)
+    check('the name after the text, in a smaller print, no turning', pg.evaluate("(() => { var l = document.querySelector('.mLine:not(.mine)'), n = l.querySelector('small'); return !l.querySelector('.mWin') && n.textContent === 'Calle' && parseFloat(getComputedStyle(n).fontSize) < parseFloat(getComputedStyle(l).fontSize); })()"))
     pg.evaluate("document.querySelector('.mLine:not(.mine)').click()"); pg.wait_for_timeout(500)
     card = pg.inner_text('#msgCard')
-    check("tap Calle's: a panel with when it was written and when it goes", pg.eval_on_selector('#msgCard', 'e => e.classList.contains("show")') and 'CALLE' in card and 'Hugg!' in card and 'Skrivet' in card and '2 min sedan' in card and 'Försvinner om 13 min' in card, card)
+    check("tap Calle's: a panel with when it was written and when it goes", pg.eval_on_selector('#msgCard', 'e => e.classList.contains("show")') and 'Calle' in card and 'Hugg!' in card and 'Skrivet' in card and '4 min sedan' in card and 'Försvinner om 3 min' in card, card)
     pg.click('#msgCardGo'); pg.wait_for_timeout(700)
     check('"Åk hit": the lead line on Calle\'s boat', pg.eval_on_selector('#probe', 'e => e.classList.contains("show")') and not pg.eval_on_selector('#msgCard', 'e => e.classList.contains("show")'))
     pg.evaluate("document.querySelector('.mLine:not(.mine)').click()"); pg.wait_for_timeout(700)
@@ -135,7 +139,10 @@ with sync_playwright() as p:
     pg.wait_for_timeout(1500)
     pg.click('#msgBtn'); pg.wait_for_timeout(200)
     check('"Egen text": the rainbow words with the pen after them', pg.eval_on_selector('#msgOwnBtn', 'e => e.firstElementChild.className === "rbText" && e.lastElementChild.tagName.toLowerCase() === "svg"'))
-    pg.click('#msgOwnBtn'); pg.wait_for_timeout(300)
+    pg.click('#msgOwnBtn'); pg.wait_for_timeout(80)
+    c = pg.evaluate("(() => { const r = document.getElementById('msgOwn').getBoundingClientRect(); return [r.x + r.width / 2, innerWidth / 2]; })()")
+    check('...it comes in centred (not sliding in from the side)', abs(c[0] - c[1]) < 4, c)
+    pg.wait_for_timeout(220)
     check('...tap it: the small box, ready to type (focused), the choices gone', pg.is_visible('#msgOwn') and pg.evaluate("document.activeElement.id") == 'msgOwnIn' and not pg.is_visible('#msgPop') and pg.inner_text('#msgOwnN') == '0/15')
     pg.keyboard.type('Vart är ni?? 😅!!!!'); pg.wait_for_timeout(200)
     v = pg.input_value('#msgOwnIn')
@@ -157,7 +164,7 @@ with sync_playwright() as p:
 
     # several messages from the same boat: ONE bubble, a row per person, newest first
     cfg3 = {'waypoints': cfg['waypoints'], 'positions': [
-        {'uid': 'kalle', 'name': 'Calle', 'lat': B1[0], 'lon': B1[1], 'ageMin': 0, 'msg': 'Kommer 🚤', 'msgAgeMin': 9},
+        {'uid': 'kalle', 'name': 'Calle', 'lat': B1[0], 'lon': B1[1], 'ageMin': 0, 'msg': 'Kommer 🚤', 'msgAgeMin': 6},
         {'uid': 'pia', 'name': 'Pia', 'lat': B1[0] + 0.00005, 'lon': B1[1], 'ageMin': 0, 'msg': 'Fisk!!! 🎣', 'msgAgeMin': 1},
         {'uid': 'olle', 'name': 'Olle', 'lat': B1[0], 'lon': B1[1] + 0.00008, 'ageMin': 0, 'msg': 'Mat? 🍔', 'msgAgeMin': 4}]}
     b, ctx, pg, errs = new_page(p, geo=B3, cfg=cfg3, name='Filip')
@@ -166,11 +173,11 @@ with sync_playwright() as p:
     check('three in the same boat: one shared bubble', pg.evaluate("document.querySelectorAll('.msgBub').length") == 1 and len(ms) == 3 and len(set(m['bubble'] for m in ms)) == 1, ms)
     check('...one row per person, newest first (Pia, Olle, Calle)', [m['t'].split('🎣')[0] for m in ms][0].startswith('Fisk') and 'Pia' in ms[0]['t'] and 'Olle' in ms[1]['t'] and 'Calle' in ms[2]['t'], ms)
     check('...older rows fainter', ms[0]['o'] > ms[1]['o'] > ms[2]['o'], [m['o'] for m in ms])
-    check('...the rainbow edge round the whole bubble (one is new)', pg.evaluate("!!document.querySelector('.msgBub.multi .msgRb')"))
+    check('...custom text is the rainbow, a ready-made one plain', pg.evaluate("document.querySelectorAll('.msgBub.multi .mT').length") == 3 and not pg.evaluate("!!document.querySelector('.msgBub.multi .msgRb')"))
     pg.screenshot(path='shot_msgs_group.png')
     pg.evaluate("[].filter.call(document.querySelectorAll('.mLine'), e => e.textContent.indexOf('Olle') >= 0)[0].click()"); pg.wait_for_timeout(500)
     card = pg.inner_text('#msgCard')
-    check("tap Olle's row: his message's panel", 'OLLE' in card and 'Mat?' in card, card)
+    check("tap Olle's row: his message's panel", 'Olle' in card and 'Mat?' in card, card)
     pg.click('#msgCardClose'); pg.wait_for_timeout(400)
     # a finger that starts on a spot still pans the map; a plain tap opens it
     s0 = pg.evaluate('window.__ffGeo.screenOf(%f, %f)' % B4)
@@ -240,12 +247,12 @@ with sync_playwright() as p:
     check('...the map controls unchanged (menu 40 px)', pg.evaluate("document.getElementById('menuBtn').getBoundingClientRect().height") == 40)
     check('no page errors', not errs, errs)
     b.close()
-    # DESIGN.md's rules: amber only for what's chosen, the serif only on the lake's name, Fara readable, the spot's sheet a column on its side
+    # DESIGN.md's rules: orange only for what's chosen, one sans font, types as white text + colour dot, the spot's sheet a column on its side
     b, ctx, pg, errs = new_page(p, geo=B3, cfg=cfg, name='Filip'); pg.wait_for_timeout(1500)
     pg.evaluate("document.querySelector('#waypoints .wpPin--abborre').click()"); pg.wait_for_timeout(600)
     st = pg.evaluate("""(() => ({ dist: getComputedStyle(document.querySelector('.sheetDistance')).color,
       fara: getComputedStyle(document.querySelector('.typeSeg button[data-type=fara]')).color }))()""")
-    check("the distance in a spot's sheet is not amber; Fara's text readable (lighter red)", st['dist'] == 'rgb(244, 247, 248)' and st['fara'] == 'rgb(255, 107, 99)', st)
+    check("the distance in a spot's sheet is not orange; a type not chosen: grey text (quiet, like a tab; its colour is the dot, design A)", st['dist'] == 'rgb(214, 218, 226)' and st['fara'] == 'rgb(144, 152, 168)', st)
     pg.set_viewport_size({'width': 844, 'height': 390}); pg.wait_for_timeout(500)
     r = pg.evaluate("(() => { var r = document.getElementById('wpSheet').getBoundingClientRect(); return [Math.round(r.width), Math.round(r.right)]; })()")
     check("on its side: the spot's sheet a 420 px column on the right (the map beside it)", r == [420, 844], r)
@@ -253,7 +260,7 @@ with sync_playwright() as p:
     pg.click('#menuBtn'); pg.click('#menuItemSettings'); pg.wait_for_timeout(400)
     fonts = pg.evaluate("""(() => [getComputedStyle(document.querySelector('#settingsHeader .kicker')).fontFamily, getComputedStyle(document.getElementById('lakeTitle')).fontFamily,
       getComputedStyle(document.getElementById('settingsNameDisplay')).color])()""")
-    check("view titles in the app's font, the serif only on the lake's name; the name field not amber", 'Calibri' in fonts[0] and 'Cambria' in fonts[1] and fonts[2] == 'rgb(244, 247, 248)', fonts)
+    check("design A: view titles and the lake's name in the app's own font (no serif); the name field not orange", '-apple-system' in fonts[0] and 'Cambria' not in fonts[1] and fonts[2] == 'rgb(214, 218, 226)', fonts)
     check('no page errors', not errs, errs)
     b.close()
     # Inställningar in sections: closed = the title and a line of what's chosen; which are open is remembered
@@ -261,14 +268,17 @@ with sync_playwright() as p:
     pg.evaluate("localStorage.setItem('ffmap_settings_open_v1', '[]')"); pg.reload(); pg.wait_for_timeout(1500)
     pg.click('#menuBtn'); pg.click('#menuItemSettings'); pg.wait_for_timeout(300)
     secs = pg.eval_on_selector_all('.setSec', 'e => e.map(x => x.querySelector(".setSecTitle").textContent + (x.open ? "+" : ""))')
-    check('Inställningar: the name on top, then Kartan, Båten, Varningar, Kartanalys, Offline, Avancerat -- all closed', secs == ['Kartan', 'Båten', 'Varningar', 'Kartanalys', 'Offline', 'Avancerat']
+    check('Inställningar: the name on top, then Kartan, Båten, Varningar, Kartanalys, Fångstdata, Offline, Avancerat -- all closed', secs == ['Kartan', 'Båten', 'Varningar', 'Kartanalys', 'Fångstdata', 'Offline', 'Avancerat']
           and pg.is_visible('#settingsNameDisplay') and not pg.is_visible('#wpSizeSeg'), secs)
     sums = pg.eval_on_selector_all('.setSecSum', 'e => e.map(x => x.textContent)')
-    check('...each with a line of what is chosen', 'storlek' in sums[0] and 'färg 80 %' in sums[0] and sums[1].startswith('Spår 60 %') and 'kn marschfart' in sums[1] and sums[2] == 'Åskvarning 10 km · ljud · vibration'
-          and sums[3].startswith('Tona ner') and sums[4].startswith('Inte nedladdad') and sums[5].startswith('Demo Mode av'), sums)
+    check('...each with a line of what is chosen', 'storlek' in sums[0] and 'färg 80 %' in sums[0] and sums[1].startswith('Djupet') and 'kn marschfart' in sums[1] and sums[2] == 'Åskvarning 10 km · ljud · vibration'
+          and sums[3].startswith('Tona ner') and 'fångster' in sums[4] and sums[5].startswith('Inte nedladdad') and sums[6].startswith('Demo Mode av'), sums)
     pg.click('.setSec[data-sec="map"] summary'); pg.wait_for_timeout(200)
     check('tap Kartan: open, its settings shown', pg.is_visible('#wpSizeSeg') and pg.is_visible('#mapStyleList') and not pg.is_visible('#setSum-map'))
-    pg.click('#wpSizeSeg button[data-size="1"]'); pg.click('.setSec[data-sec="map"] summary'); pg.wait_for_timeout(200)
+    pg.click('#wpSizeSeg button[data-size="1"]'); pg.wait_for_timeout(50)
+    g = pg.eval_on_selector('#wpSizeSeg button.active', 'e => [e.dataset.size, e.classList.contains("segGlide"), parseFloat(e.style.getPropertyValue("--sl"))]')
+    check("Inställningar's choices glide like the tabs (Normal -> Stor: starts one choice to the left)", g[0] == '1' and g[1] and g[2] < -20, g)
+    pg.click('.setSec[data-sec="map"] summary'); pg.wait_for_timeout(200)
     check('...closed again: the line says the new size', pg.inner_text('#setSum-map').startswith('Stor storlek'), pg.inner_text('#setSum-map'))
     pg.click('.setSec[data-sec="boat"] summary'); pg.wait_for_timeout(200)
     pg.reload(); pg.wait_for_timeout(1500); pg.click('#menuBtn'); pg.click('#menuItemSettings'); pg.wait_for_timeout(300)
@@ -276,7 +286,7 @@ with sync_playwright() as p:
     wd = pg.evaluate("[document.querySelector('.setSec').getBoundingClientRect().width, document.getElementById('settingsBody').clientWidth]")
     check('wide screen: Inställningar a centred column (at most 600 px)', wd[0] <= 600 and wd[1] > 900, wd)
     pg.set_viewport_size({'width': 390, 'height': 844}); pg.wait_for_timeout(300)
-    check('after a reload (rotation): Båten still open, the rest closed', pg.eval_on_selector_all('.setSec', 'e => e.map(x => x.open)') == [False, True, False, False, False, False])
+    check('after a reload (rotation): Båten still open, the rest closed', pg.eval_on_selector_all('.setSec', 'e => e.map(x => x.open)') == [False, True, False, False, False, False, False])
     check('no page errors', not errs, errs)
     b.close()
     # a new spot "lands": the pin drops and a ring spreads exactly at its tip (where the spot is)

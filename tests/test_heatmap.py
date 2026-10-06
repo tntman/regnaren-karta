@@ -1,8 +1,8 @@
 # Heatmap (fångster): "Heatmap" last in the map-style list -> a bottom panel (like Kartanalys):
 # Värme / Per art / Rutor / Prickar, species + competition filters, the map toned down; a tap on
 # a catch opens it (who, when, depth, place; ‹ ›; Åk hit, Liknande); "Heatmap" pill under the
-# weather chip; not together with Kartanalys; kept through a rotation, off after a restart;
-# the admin reads catches from a CSV file into Firestore catches/<lake> (no duplicates).
+# weather chip; not together with Kartanalys; kept through a rotation, off after a restart.
+# (The catches come from Fiskfiskarnas API -- made up by fakefb; the fetching: test_catchapi.py.)
 from playwright.sync_api import sync_playwright
 import fakefb, json, math
 from fakefb import new_page
@@ -20,8 +20,11 @@ for i in range(5):    # gädda at B1
     ROWS.append([ms(26, 11, i), 'regnaren1', ['Erika', 'Magnus', 'Henrik', 'Sunbaum', 'Filip'][i], 'gadda', [74, 70, 75, 69, 52][i], B1[0] + i * 0.00003, B1[1]])
 ROWS.append([ms(25, 14, 0), 'regnaren1', 'Pia', 'gos', 60, B5[0], B5[1]])
 ROWS.append([ms(20, 10, 0), 'fiskfiskOpen', 'Olle', 'gadda', 90, B5[0] + 0.0003, B5[1] + 0.0004])
-CATCHES = {'regnaren': {'rows': json.dumps(ROWS), 'n': len(ROWS)}}
+CATCHES = {'heatmap': [fakefb.api_row(*r) for r in ROWS]}
 
+def size(pg, root, a, b):   # "Storlek": move the two handles (min, max cm)
+    pg.evaluate("""([r, a, b]) => [['cm1', b], ['cm0', a], ['cm1', b]].forEach(([k, v]) => { var e = document.querySelector(r + ' input[data-r=' + k + ']'); e.value = v;
+      e.dispatchEvent(new Event('input', { bubbles: true })); e.dispatchEvent(new Event('change', { bubbles: true })); })""", [root, a, b])
 def heat(pg): return pg.evaluate('window.__ffHeat()')
 def open_heat(pg):
     bb = pg.locator('#mapTypeBtn').bounding_box()
@@ -32,24 +35,20 @@ def coloured(pg):
       for (var i = 0; i < d.length; i += 4) if (d[i + 3] > 150 && (d[i] > 150 || d[i + 1] > 150)) n++; return n; }""")
 
 with sync_playwright() as p:
-    b, ctx, pg, errs = new_page(p, geo=B3, cfg={'catches': CATCHES}, name='Filip')
+    b, ctx, pg, errs = new_page(p, geo=B3, cfg={'api': CATCHES}, name='Filip')
     pg.wait_for_timeout(1500)
     # ---- the map-style list: Heatmap last ----
     bb = pg.locator('#mapTypeBtn').bounding_box()
     pg.mouse.move(bb['x'] + 20, bb['y'] + 20); pg.mouse.down(); pg.wait_for_timeout(700); pg.mouse.up(); pg.wait_for_timeout(300)
     opts = pg.eval_on_selector_all('#mapTypePop .styleOpt', 'e => e.map(x => x.textContent)')
     check('hold the map-style button: "Heatmap" last in the list, "opens a menu"', opts and 'Heatmap' in opts[-1] and 'meny' in opts[-1], opts[-2:])
-    check('...no catches fetched before it is used', pg.evaluate('window.__catchGets') == 0)
+    check('...the catches fetched once at the start (no copy on the phone yet)', ctx.api.n('dashboard') == 1, ctx.api.hits)
     pg.click('#mapTypePop .hmOpt'); pg.wait_for_timeout(1000)
     h = heat(pg)
     check('tap it: the heat map is on, its panel open, the map style unchanged', h['on'] and h['panel'] and not pg.is_visible('#mapTypePop'), h)
-    check('...the catches fetched once (1 read)', pg.evaluate('window.__catchGets') == 1 and h['n'] == len(ROWS), (pg.evaluate('window.__catchGets'), h['n']))
+    check('...all of them shown, not fetched again (the copy is fresh)', ctx.api.n('dashboard') == 1 and h['n'] == len(ROWS), (ctx.api.hits, h['n']))
     check('...the map toned down + greyed like Kartanalys', pg.is_visible('#hmLayer') and pg.evaluate("getComputedStyle(document.getElementById('hmSat')).mixBlendMode") == 'saturation')
     check('...Värme: coloured heat on the map', coloured(pg) > 200, coloured(pg))
-    pg.wait_for_timeout(700)
-    top = pg.evaluate("document.getElementById('hmPanel').getBoundingClientRect().top")
-    ys = [pg.evaluate('(id) => window.__ffHeatScreen(id)', '%d|%s|%s|%s' % (r[0], r[2], r[3], r[4]))[1] for r in ROWS]
-    check('...the catches were hidden behind the panel: the map moved so they show above it', all(120 < y < top for y in ys), (top, [round(y) for y in ys][:6]))
     res = pg.inner_text('#hmResult')
     check('the panel: 19 catches, 12 abborre, 6 gädda, 1 gös', '19 fångster' in res and '12 abborre' in res and '6 gädda' in res and '1 gös' in res, res)
     comps = pg.eval_on_selector_all('#hmComp button', 'e => e.map(x => x.textContent)')
@@ -69,9 +68,23 @@ with sync_playwright() as p:
     check('settings changed: ↺ Återställ next to ⏻ Stäng av heatmap in the top row', pg.is_enabled('#hmReset') and pg.get_attribute('#hmReset', 'aria-label') == 'Återställ' and pg.get_attribute('#hmOff', 'aria-label') == 'Stäng av heatmap')
     pg.click('#hmReset'); pg.wait_for_timeout(300)
     check('..."Återställ": back to the start (radius 70 m), still on; then greyed out', pg.inner_text('#hmOut_rad') == '70 m' and heat(pg)['on'] and pg.is_disabled('#hmReset'), pg.inner_text('#hmOut_rad'))
-    check('...and it says so: green with a tick for a moment', pg.get_attribute('#hmReset', 'aria-label') == 'Återställt' and pg.eval_on_selector('#hmReset', 'e => e.classList.contains("rsDone")'))
+    check('...and it says so: the ↺ spins round once', pg.get_attribute('#hmReset', 'aria-label') == 'Återställt' and pg.eval_on_selector('#hmReset', 'e => e.classList.contains("rsDone")'))
     pg.wait_for_timeout(1600)
     check('...then the usual grey ↺', pg.get_attribute('#hmReset', 'aria-label') == 'Återställ' and not pg.eval_on_selector('#hmReset', 'e => e.classList.contains("rsDone")'))
+    # ---- "När": a bar per hour, press / drag = a time window filtering the map ----
+    nbar = pg.eval_on_selector_all('#hmTime .hmBars i', 'e => e.length')
+    check('"När": a bar per hour of the day with catches + "Bäst kl"', nbar >= 2 and pg.is_visible('#hmTime') and 'Bäst kl' in pg.inner_text('#hmTime'), nbar)
+    n_all = heat(pg)['n']
+    hrs = pg.evaluate("(() => { var r = %s; return r.filter(x => x[1] !== 'fiskfiskOpen').map(x => new Date(x[0]).getHours()); })()" % json.dumps([[r[0], r[1]] for r in ROWS]))
+    h0 = min(hrs); n0 = sum(1 for h in hrs if h == h0)
+    bb2 = pg.locator('#hmTime .hmBars').bounding_box(); lo = int(pg.get_attribute('#hmTime', 'data-lo')); hi = int(pg.get_attribute('#hmTime', 'data-hi'))
+    pg.mouse.click(bb2['x'] + bb2['width'] * ((h0 - lo) + 0.5) / (hi - lo + 1), bb2['y'] + bb2['height'] - 4); pg.wait_for_timeout(300)
+    check('press the first hour: only the catches from then on the map; ↺ can be pressed', heat(pg)['n'] == n0 and n0 < n_all and pg.is_enabled('#hmReset') and ('kl %02d–%02d' % (h0, h0 + 1)) in pg.inner_text('#hmResult'), (heat(pg)['n'], n0, n_all))
+    pg.mouse.click(bb2['x'] + bb2['width'] * ((h0 - lo) + 0.5) / (hi - lo + 1), bb2['y'] + bb2['height'] - 4); pg.wait_for_timeout(300)
+    check('...press the same hour again: all hours', heat(pg)['n'] == n_all, heat(pg)['n'])
+    pg.mouse.move(bb2['x'] + 3, bb2['y'] + 40); pg.mouse.down(); pg.mouse.move(bb2['x'] + bb2['width'] - 3, bb2['y'] + 40, steps=8); pg.mouse.up(); pg.wait_for_timeout(300)
+    check('drag over all bars: everything again, window still set to the whole day', heat(pg)['n'] == n_all, heat(pg)['n'])
+    pg.click('#hmReset'); pg.wait_for_timeout(1800)
     check('the "Heatmap" pill under the weather chip', pg.is_visible('#hmPill') and pg.inner_text('#hmPill').strip() == 'Heatmap' and
           pg.evaluate("document.getElementById('hmPill').getBoundingClientRect().top > document.getElementById('wxChip').getBoundingClientRect().bottom - 1"))
     pg.screenshot(path='shot_heat_heat.png')
@@ -80,14 +93,33 @@ with sync_playwright() as p:
     check('Art: Gädda -> 6 catches', heat(pg)['n'] == 6 and '6 fångster' in pg.inner_text('#hmResult'), heat(pg)['n'])
     pg.click('#hmComp button[data-comp="regnaren1"]'); pg.wait_for_timeout(300)
     check('...+ Tävling: Regnaren 1 -> 5', heat(pg)['n'] == 5, heat(pg)['n'])
-    pg.click('#hmSp button[data-sp="all"]'); pg.click('#hmComp button[data-comp="all"]'); pg.wait_for_timeout(300)
+    pg.click('#hmComp button[data-comp="all"]'); size(pg, '#hmSize', 70, 80); pg.wait_for_timeout(300)
+    check('Storlek 70–80 cm (Gädda): 3 catches, said in the result line', heat(pg)['n'] == 3 and '70–80 cm' in pg.inner_text('#hmResult') and pg.inner_text('#hmSize output') == '70–80 cm', pg.inner_text('#hmResult'))
+    lim = lambda: pg.evaluate("[+document.querySelector('#hmSize input').min, +document.querySelector('#hmSize input').max]")
+    check('...the slider runs from the smallest to the biggest gädda shown (52-90 cm -> 50-90)', lim() == [50, 90], lim())
+    pg.click('#hmSp button[data-sp="abborre"]'); pg.wait_for_timeout(300)
+    check('Abborre: its own range (all of it) and its own ends (30-41 cm -> 30-45)', pg.inner_text('#hmSize output') == '30–45 cm' and lim() == [30, 45] and heat(pg)['n'] == 12, (pg.inner_text('#hmSize output'), lim()))
+    pg.click('#hmSp button[data-sp="gadda"]'); pg.wait_for_timeout(300)
+    check('...back to Gädda: still 70–80 cm', pg.inner_text('#hmSize output') == '70–80 cm' and heat(pg)['n'] == 3)
+    size(pg, '#hmSize', 85, 130); pg.wait_for_timeout(300)
+    check('...the right handle at the end (no upper limit): "85–90 cm" (the biggest written out) -> the 90 cm one', heat(pg)['n'] == 1 and pg.inner_text('#hmSize output') == '85–90 cm', heat(pg)['n'])
+    size(pg, '#hmSize', 100, 20); pg.wait_for_timeout(300)
+    v = pg.evaluate("[+document.querySelector('#hmSize input[data-r=cm0]').value, +document.querySelector('#hmSize input[data-r=cm1]').value]")
+    check('...the handles never pass each other', v[0] <= v[1], v)
+    size(pg, '#hmSize', 0, 130); pg.wait_for_timeout(300)
+    check('...back to all of it', pg.inner_text('#hmSize output') == '50–90 cm' and heat(pg)['n'] == 6)
+    pg.click('#hmSp button[data-sp="all"]'); pg.wait_for_timeout(300)
     # ---- Per art ----
     pg.click('#hmStyleSeg button[data-s="species"]'); pg.wait_for_timeout(400)
+    g = pg.eval_on_selector('#hmStyleSeg button.on', 'e => [e.dataset.s, e.classList.contains("segGlide"), parseFloat(e.style.getPropertyValue("--sl"))]')
+    check('the chosen tab glides over from the old one (Värme -> Per art: starts one tab to the left)', g[0] == 'species' and g[1] and g[2] < -20, g)
     chips = pg.eval_on_selector_all('#hmSp button', 'e => e.map(x => x.textContent)')
-    check('Per art: a colour per species, toggles with counts', chips == ['Abborre 12', 'Gädda 6', 'Gös 1'] and coloured(pg) > 100, chips)
-    pg.click('#hmSp button[data-spt="abborre"]'); pg.wait_for_timeout(300)
-    check('...abborre off -> 7', heat(pg)['n'] == 7, heat(pg)['n'])
-    pg.click('#hmSp button[data-spt="abborre"]'); pg.wait_for_timeout(200)
+    check('Per art: Art as in the other tabs (Alla first), each species with its colour and count', chips == ['Alla', 'Abborre 12', 'Gädda 6', 'Gös 1'] and pg.inner_text('#hmSp button.on') == 'Alla' and coloured(pg) > 100, chips)
+    pg.click('#hmSp button[data-sp="gadda"]'); pg.wait_for_timeout(300)
+    check('...Gädda -> 6, and it stays chosen in the other tabs', heat(pg)['n'] == 6, heat(pg)['n'])
+    pg.click('#hmStyleSeg button[data-s="heat"]'); pg.wait_for_timeout(300)
+    check('...(Värme: still Gädda)', pg.inner_text('#hmSp button.on') == 'Gädda')
+    pg.click('#hmSp button[data-sp="all"]'); pg.click('#hmStyleSeg button[data-s="species"]'); pg.wait_for_timeout(300)
     pg.screenshot(path='shot_heat_species.png')
     # ---- Rutor ----
     pg.click('#hmStyleSeg button[data-s="hex"]'); pg.wait_for_timeout(400)
@@ -155,6 +187,14 @@ with sync_playwright() as p:
     check('...its panel says so', 'Dold – slå på Heatmap i Filter' in pg.inner_text('#hmResult'))
     pg.click('#hmOff'); pg.wait_for_timeout(300); open_heat(pg)
     check('turned on by hand again: shown (like choosing a Kartanalys mode), the Filter switch follows', heat(pg)['on'] and heat(pg)['show'] and pg.is_checked('#toggleHeatmap') and pg.is_visible('#hmPill'))
+    # the quick button left of the map button: on / off, and the map stays where it is
+    pg.click('#hmClose'); pg.wait_for_timeout(300); pg.click('#hmBtn'); pg.wait_for_timeout(300)
+    check('shortcut button: heat map off, button not lit', not heat(pg)['on'] and pg.get_attribute('#hmBtn', 'aria-pressed') == 'false')
+    tf = pg.evaluate("getComputedStyle(document.getElementById('world')).transform")
+    pg.click('#hmBtn'); pg.wait_for_timeout(1200)
+    check('shortcut button: on, lit, panel open, left of the map button (one capsule, design A), map not moved', heat(pg)['on'] and heat(pg)['panel'] and pg.get_attribute('#hmBtn', 'aria-pressed') == 'true'
+          and pg.evaluate("document.getElementById('hmBtn').getBoundingClientRect().right <= document.getElementById('mapTypeBtn').getBoundingClientRect().left + 0.5")
+          and pg.evaluate("getComputedStyle(document.getElementById('world')).transform") == tf)
     legend = pg.evaluate("getComputedStyle(document.querySelector('#hmPill .hmDot')).backgroundImage")
     check('"glöd" scale: violet -> warm white (not the depth colours)', 'rgb(255, 245, 200)' in legend and 'rgb(0, 220, 230)' not in legend, legend)
     # Liknande from a catch
@@ -167,7 +207,7 @@ with sync_playwright() as p:
     b.close()
 
     # ---- rotation keeps it, a restart turns it off ----
-    b, ctx, pg, errs = new_page(p, geo=B3, cfg={'catches': CATCHES}, name='Filip')
+    b, ctx, pg, errs = new_page(p, geo=B3, cfg={'api': CATCHES}, name='Filip')
     ctx.add_init_script("Object.defineProperty(navigator, 'standalone', { value: true, configurable: true });")
     pg.reload(); pg.wait_for_timeout(1500)
     open_heat(pg)
@@ -185,35 +225,7 @@ with sync_playwright() as p:
     # ---- no catches yet ----
     b, ctx, pg, errs = new_page(p, geo=B3, cfg={}, name='Filip')
     pg.wait_for_timeout(1200); open_heat(pg)
-    pg.click('#hmPanel .pnInfoBtn'); pg.wait_for_timeout(300)
-    check('no catches for the lake: says so, and (ⓘ) where the admin reads them in', 'Inga fångster' in pg.inner_text('#hmResult') and 'Admin' in pg.inner_text('#hmPanel .pnInfo'), pg.inner_text('#hmResult'))
+    check('no catches for the lake: says so', 'Inga fångster' in pg.inner_text('#hmResult'), pg.inner_text('#hmResult'))
     b.close()
 
-    # ---- the admin reads a CSV file in ----
-    CSV = ('timestamp,competitionId,name,species,cm,lat,lng,lake,,\n'
-           '2026-09-26T09:00:00.000Z,regnaren1,Henrik,Abborre,33,"58,886510","15,777774",Regnaren,,// kommentar\n'
-           '2026-09-26T09:05:00.000Z,regnaren1,Filip,Gadda,71,58.887421,15.775569,Regnaren,,\n'
-           '2026-09-26T09:06:00.000Z,regnaren1,Filip,Gädda,40,,,Regnaren,,\n'
-           '2026-05-22T09:00:00.000Z,vagsfjarden4,Camilla,Gos,55,62.92,18.27,Vågsfjärden,,\n'
-           '2026-03-28T13:32:32.019Z,malarenOpen,Stisse,Gadda,96,59.452845,17.549482,Mälaren,,\n'
-           '2026-09-27T10:07:52.901Z,regnaren1,Filip,Gadda,63,58.99150217888783,15.72027356365297,Östra Vitten,,\n')
-    b, ctx, pg, errs = new_page(p, geo=B3, cfg={}, name='Filip')
-    pg.wait_for_timeout(1200)
-    pg.click('#menuBtn'); pg.click('#menuItemSettings'); pg.wait_for_timeout(200)
-    pg.click('#adminOpenBtn'); pg.wait_for_timeout(200); pg.fill('#pinInput', fakefb.TEST_PIN); pg.press('#pinInput', 'Enter'); pg.wait_for_timeout(500)
-    check('Admin: "Fångster (heatmap)" with a CSV button', pg.is_visible('#adminCatchBtn') and 'Fångster' in pg.inner_text('#adminBody'))
-    pg.set_input_files('#adminCatchFile', files=[{'name': 'fangster.csv', 'mimeType': 'text/csv', 'buffer': CSV.encode('utf-8')}]); pg.wait_for_timeout(1200)
-    st = pg.inner_text('#adminCatchStatus')
-    docs = pg.evaluate('window.__catchDocs')
-    check('read in: Regnaren 2 new, Vågsfjärden 1 new; skipped: 2 in other lakes, 1 without position', 'Regnaren: 2 nya' in st and 'Vågsfjärden: 1 nya' in st and '2 i sjöar som inte finns' in st and '1 utan position' in st, st)
-    rr = json.loads(docs['regnaren']['rows'])
-    check('...stored in catches/regnaren (comma decimals read right, "Gadda" -> gadda)', len(rr) == 2 and abs(rr[0][5] - 58.88651) < 1e-6 and rr[1][3] == 'gadda', rr)
-    pg.set_input_files('#adminCatchFile', files=[{'name': 'fangster.csv', 'mimeType': 'text/csv', 'buffer': CSV.encode('utf-8')}]); pg.wait_for_timeout(1200)
-    st = pg.inner_text('#adminCatchStatus')
-    check('the same file again: nothing new, nothing written twice', 'inga nya' in st and len(pg.evaluate('window.__catchSets')) == 2, (st, pg.evaluate('window.__catchSets')))
-    pg.click('#adminBackBtn'); pg.click('#settingsBackBtn'); pg.wait_for_timeout(300)
-    open_heat(pg)
-    check('...and the heat map shows them (2 in Regnaren)', heat(pg)['n'] == 2, heat(pg))
-    check('no page errors', not errs, errs)
-    b.close()
 print('\n%d/%d passed' % (sum(results), len(results)))

@@ -23,7 +23,7 @@
           // for boats far enough away to plausibly be someone else's.
           if (!lastOwnLatLon) return true;
           var distM = haversineKm(lastOwnLatLon.lat, lastOwnLatLon.lon, b.lat, b.lon) * 1000;
-          return distM > BOAT_CLUSTER_METERS;
+          return distM > sameBoatM(b.spd, now - b.updatedAt);   // (your own dot is now)
         });
       // Group live positions only with other live ones, and old (grey) ones
       // only with other old ones -- otherwise a boat passing a spot where
@@ -61,13 +61,13 @@
         el.classList.toggle('boatPip--group', c.names.length > 1);
         el.classList.toggle('boatPip--stale', (now - c.updatedAt) > BOAT_GRAY_MS);
         var nameEl = el.querySelector('.boatName');
-        var namesKey = c.names.join('\n');
+        var namesKey = c.names.map(function(n){ return n + leadCrownFor(n); }).join('\n');
         if (nameEl.getAttribute('data-names') !== namesKey){ // only touch the DOM when the names actually changed
           nameEl.setAttribute('data-names', namesKey);
           nameEl.innerHTML = '';
           c.names.forEach(function(n){
             var row = document.createElement('span');
-            row.textContent = shortBoatName(n);
+            row.textContent = shortBoatName(n) + leadCrownFor(n);
             nameEl.appendChild(row);
           });
         }
@@ -96,24 +96,25 @@
   var boatInfoModal = document.getElementById('boatInfoModal');
   var boatInfoNameEl = document.getElementById('boatInfoName');
   var boatInfoNamesListEl = document.getElementById('boatInfoNamesList');
+  var boatInfoCatchesEl = document.getElementById('boatInfoCatches');
   var boatInfoMetaEl = document.getElementById('boatInfoMeta');
   var boatInfoCloseBtn = document.getElementById('boatInfoClose');
+  var boatInfoCur = null;
+  document.getElementById('boatInfoGo').addEventListener('click', function(){   // the lead line on that boat (58-akhit-spotdata.js)
+    var c = boatInfoCur; hideBoatInfo(); if (!c) return;
+    var p = latLonToImgPx(c.lat, c.lon); startNav((c.names || [c.name]).join(' + '), p.x, p.y);
+  });
   function showBoatInfo(cluster){
+    boatInfoCur = cluster;
     var names = cluster.names || [cluster.name || 'Okänd'];
-    boatInfoNamesListEl.innerHTML = '';
-    if (names.length === 1){
-      boatInfoNameEl.textContent = names[0];
-      boatInfoNamesListEl.style.display = 'none';
-    } else {
-      boatInfoNameEl.textContent = 'Samma båt';
-      names.forEach(function(n){
-        var row = document.createElement('div');
-        row.className = 'boatInfoNameRow';
-        row.textContent = n;
-        boatInfoNamesListEl.appendChild(row);
-      });
-      boatInfoNamesListEl.style.display = 'flex';
-    }
+    var live = catchLive && catchLiveComp() && catchLive.comp === catchLiveComp().id ? catchLive.all || [] : [];   // (only the competition going on, all of it -- as Ledare)
+    var group = names.length > 1;                       // several in the boat: no title, each name is the heading over their own catches
+    boatInfoNameEl.hidden = group; boatInfoNamesListEl.style.display = 'none'; boatInfoNameEl.classList.add('pfLink');
+    boatInfoNameEl.textContent = names[0];
+    boatInfoCatchesEl.innerHTML = (group && live.length ? pfCompHead(catchLive.comp) : '') + names.map(function(n){   // ("Fångster i tävlingen X": once)
+      var r = pfCatchRows(n, group ? 4 : 8, live, !group);   // (67-profiles.js)
+      return group ? '<div class="pfH biWho pfLink" data-who="' + escHtml(n) + '">' + escHtml(n) + '</div>' + (r || '<div class="pfRow"><span><small>Inga fångster</small></span></div>') : r;
+    }).join('');
     boatInfoMetaEl.textContent = 'Uppdaterad ' + timeAgo(cluster.updatedAt);
     boatInfoBackdrop.classList.add('show');
     boatInfoModal.classList.add('show');
@@ -122,6 +123,8 @@
     boatInfoBackdrop.classList.remove('show');
     boatInfoModal.classList.remove('show');
   }
+  boatInfoCatchesEl.addEventListener('click', function(e){ var h = e.target.closest ? e.target.closest('.biWho') : null; if (h) openProfile(h.getAttribute('data-who')); });   // (a name: their profile)
+  boatInfoNameEl.addEventListener('click', function(){ if (boatInfoCur) openProfile(boatInfoNameEl.textContent); });   // (the name: their profile)
   boatInfoCloseBtn.addEventListener('click', hideBoatInfo);
   boatInfoBackdrop.addEventListener('click', hideBoatInfo);
 
@@ -137,11 +140,15 @@
       var updatedMs = (d.updatedAt && d.updatedAt.toMillis) ? d.updatedAt.toMillis() : now;
       raw.push({ docId: doc.id, uid: d.uid || doc.id, name: d.name || '', lat: d.lat, lon: d.lon, updatedAt: updatedMs });
       if (d.uid === myUid){               // that's you -- your own big GPS dot already shows it
-        if (d.msg && d.msgAt && (!ownMsg || d.msgAt >= ownMsg.at)) ownMsg = { text: d.msg, at: d.msgAt };   // (your quick message, after a reload)
+        if (d.msg && d.msgAt && (!ownMsg || d.msgAt >= ownMsg.at)) ownMsg = { text: d.msg, at: d.msgAt, sp: d.msgSp, img: d.msgImg };   // (your quick message, after a reload)
         else if (!d.msg && ownMsg && d.msgAt === 0) ownMsg = null;
         return;
       }
-      fresh[doc.id] = { lat: d.lat, lon: d.lon, name: d.name || '', uid: d.uid, updatedAt: updatedMs, msg: d.msg || null, msgAt: d.msgAt || 0 };
+      // their speed (m/s) from their previous position -- for "the same boat" (sameBoatM); max 15 m/s = 54 km/h
+      var pv = boatPositions[doc.id], spd = pv ? pv.spd || 0 : 0, dt = pv ? (updatedMs - pv.updatedAt) / 1000 : 0;
+      if (dt >= 5 && dt <= 300) spd = Math.min(15, haversineKm(pv.lat, pv.lon, d.lat, d.lon) * 1000 / dt);
+      else if (dt > 300) spd = 0;
+      fresh[doc.id] = { lat: d.lat, lon: d.lon, name: d.name || '', uid: d.uid, updatedAt: updatedMs, spd: spd, msg: d.msg || null, msgAt: d.msgAt || 0, msgSp: d.msgSp || null, msgImg: d.msgImg || null };
     });
     boatPositions = fresh;
     allPositions = raw;
@@ -170,7 +177,7 @@
   // last known value is remembered on the phone for offline starts.
   var POS_INTERVAL_CHOICES = [10, 20, 30, 60];
   var POS_INTERVAL_DEFAULT_S = 20;
-  var POS_INTERVAL_KEY = lakeKey('ffmap_pos_interval_s_v1', 'pos_interval_s_v1'); // (per lake, like config/<lake>)
+  var POS_INTERVAL_KEY = testKey(lakeKey('ffmap_pos_interval_s_v1', 'pos_interval_s_v1')); // (per lake, like config/<lake>)
   var posIntervalS = POS_INTERVAL_DEFAULT_S;
   try {
     var savedPi = parseInt(localStorage.getItem(POS_INTERVAL_KEY), 10);
@@ -215,17 +222,17 @@
   // Mark your shared position as long gone (e.g. on logout), so it disappears
   // for everyone right away instead of lingering as a ghost pip for an hour.
   // (Setting an ancient timestamp rather than deleting the doc, so the
-  // existing Firestore rules don't need changing.)
+  // existing Firestore rules don't need changing.) -> a promise: done (Demo Mode waits for it, 32-demo.js)
   function expireOwnPosition(){
-    if (!USE_FIREBASE || !posCol || !myUid) return;
-    if (!firebase.firestore.Timestamp) return;
+    if (!USE_FIREBASE || !posCol || !myUid) return Promise.resolve();
+    if (!firebase.firestore.Timestamp) return Promise.resolve();
     addUsage('w', 1);
     try {
       // update() rather than set(merge): never creates an empty stub doc for
       // a name that never shared a position
-      posCol.doc(posDocId(myUid)).update({ updatedAt: firebase.firestore.Timestamp.fromMillis(0) })
+      return posCol.doc(posDocId(myUid)).update({ updatedAt: firebase.firestore.Timestamp.fromMillis(0) })
         .catch(function(){ /* no doc for this name -- nothing to expire */ });
-    } catch(e){}
+    } catch(e){ return Promise.resolve(); }
   }
 
   // A GPS fix only arrives from watchPosition when the device's location
@@ -279,6 +286,7 @@
   }
 
   function placeWaypointAtScreen(sx, sy){
+    if (!mapEditAllowed()){ showLockCard(); return; }   // (the competition lock, 66-catches.js)
     var imgX = (sx - originX) / scale, imgY = (sy - originY) / scale;
     var ll = imgPxToLatLon(imgX, imgY);
     var name = nextWaypointName('mark'); // new spots start as a Markering
@@ -346,6 +354,7 @@
   wpTypeSeg.addEventListener('click', function(e){
     var b = e.target.closest ? e.target.closest('button[data-type]') : null;
     if (!b || b.disabled || !editingId) return;
+    if (!editingIsNew && !mapEditAllowed()){ showLockCard(); return; }
     editingType = b.getAttribute('data-type');
     showEditingType();
     refreshSheetMeta(); // ("Syns för alla i 1 h" for a Träffpunkt)
@@ -421,6 +430,7 @@
     if (hiddenTypes[editingType]) setTypeHidden(editingType, false); // don't let the spot you just saved vanish
     var cur = waypoints.filter(function(w){ return w.id === editingId; })[0];
     if (cur && wpType(cur) === editingType && (!v || v === cur.name)){ closeSheet(); return; } // nothing changed
+    if (!editingIsNew && !mapEditAllowed()){ showLockCard(); return; }   // (a new spot: already made while it was open)
     if (v) upd.name = v;           // an emptied name keeps the old one
     // Träffpunkt: an hour from now (a new one, or a spot turned into one); only
     // one per person -- your previous one goes. Turned into something else: stays.
@@ -452,6 +462,7 @@
   function flushDelete(){ if (!undoPending) return; var id = undoPending.id; undoPending = null; clearTimeout(undoT); undoToast.classList.remove('show'); deleteWaypointById(id); }
   wpDeleteBtn.addEventListener('click', function(){
     if (!editingId) return;
+    if (!editingIsNew && !mapEditAllowed()){ showLockCard(); return; }
     flushDelete();                                           // (an earlier one still waiting: delete it now)
     var wp = waypoints.filter(function(w){ return w.id === editingId; })[0];
     undoPending = { id: editingId };

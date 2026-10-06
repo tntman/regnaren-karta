@@ -64,7 +64,7 @@
   window.addEventListener('offline', updateNetBadge);
 
   // Has this phone already got a full copy of the spots from the server?
-  var WP_SYNCED_KEY = 'lake_' + LAKE_ID + '_wp_synced_v1';
+  var WP_SYNCED_KEY = testKey('lake_' + LAKE_ID + '_wp_synced_v1');
   function waypointsSyncedBefore(){
     try { return localStorage.getItem(WP_SYNCED_KEY) === '1'; } catch(e){ return false; }
   }
@@ -77,7 +77,7 @@
      quota day follows US Pacific time (resets 09:00 Swedish time), so the
      counters do too. Listener: the first answer from the server counts the
      whole result, later answers only the documents that changed. */
-  var USAGE_KEY = 'ffmap_usage_v1';
+  var USAGE_KEY = testKey('ffmap_usage_v1');
   function quotaDay(){
     try { return new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Los_Angeles' }); }
     catch(e){ return new Date().toDateString(); }
@@ -145,6 +145,7 @@
     if (document.visibilityState === 'hidden') reportUsage(true);
   });
 
+  var tracksCol = null, trackUsersCol = null;
   function initSharedWaypoints(cb){
     if (!FIREBASE_CONFIG.apiKey || FIREBASE_CONFIG.apiKey.indexOf('DIN_') === 0 || typeof firebase === 'undefined'){
       cb(false); return;
@@ -154,10 +155,13 @@
       var auth = firebase.auth();
       var fsdb = firebase.firestore();
       try { fsdb.enablePersistence({ synchronizeTabs:true }).catch(function(){}); } catch(e){}
-      catchDb = fsdb;                         // (the heat map's catches: 66-catches.js)
       fsCol = fsdb.collection('waypoints');
       posCol = fsdb.collection('positions');
       usageCol = fsdb.collection('usage');
+      // (the Spår: 46-gps-track.js; trackusers = who has tracks on which lake -- the drop-down in the Spår panel).
+      // Never in the test mode: your real track would be uploaded to the test project, marked as done and lost.
+      tracksCol = TEST_MODE ? null : fsdb.collection('tracks');
+      trackUsersCol = TEST_MODE ? null : fsdb.collection('trackusers');
       var started = false;
       auth.onAuthStateChanged(function(user){
         if (!user || started) return;
@@ -234,6 +238,8 @@
       try { localStorage.setItem(POS_INTERVAL_KEY, String(v)); } catch(e){} // (for offline starts)
     }
     renderPosIntervalAdmin();
+    if (d || !fromCache){ compLockOff = !!(d && d.lockOff); renderCompLockAdmin(); }
+    if (TEST_MODE) testApply(d ? d.test : null);   // (the test mode's made-up competition, 37-testmode.js)
   }
   function setSharedPosInterval(v){
     if (POS_INTERVAL_CHOICES.indexOf(v) === -1) return;
@@ -278,4 +284,27 @@
     if (b) setSharedPosInterval(parseInt(b.getAttribute('data-s'), 10));
   });
   renderPosIntervalAdmin();
+
+  /* ---- the competition lock off for everyone on this lake (admin; config/<lake>.lockOff, mapEditAllowed() in 66-catches.js) ---- */
+  var compLockOff = false, compLockMsg = '';
+  function setCompLockOff(off){
+    if (!USE_FIREBASE || !cfgDoc){ compLockMsg = 'Ingen anslutning till databasen – försök igen.'; renderCompLockAdmin(); return; }
+    compLockMsg = 'Sparar…'; renderCompLockAdmin();
+    addUsage('w', 1);   // (posIntervalS along: the config rule wants it in every write; the snapshot shows the change)
+    cfgDoc.set({ posIntervalS: posIntervalS, lockOff: off, updatedBy: userName || '', updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true })
+      .then(function(){ compLockMsg = 'Sparat – gäller alla telefoner.'; renderCompLockAdmin(); },
+            function(err){ compLockMsg = 'Kunde inte spara (' + ((err && err.code) || 'fel') + ').'; renderCompLockAdmin(); });
+  }
+  function renderCompLockAdmin(){
+    Array.from(document.getElementById('adminCompLockSeg').children).forEach(function(b){
+      var on = (b.getAttribute('data-off') === '1') === compLockOff;
+      b.classList.toggle('active', on); b.setAttribute('aria-checked', on ? 'true' : 'false');
+    });
+    var st = document.getElementById('adminCompLockStatus'); st.textContent = compLockMsg; st.hidden = !compLockMsg;
+  }
+  document.getElementById('adminCompLockSeg').addEventListener('click', function(e){
+    var b = e.target.closest ? e.target.closest('button[data-off]') : null;
+    if (b) setCompLockOff(b.getAttribute('data-off') === '1');
+  });
+  renderCompLockAdmin();
 
