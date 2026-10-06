@@ -76,6 +76,13 @@ with sync_playwright() as p:
     s = sp(pg)
     check('back after 25 h without a reload: the film (black at once)', s['running'] and html_splash(pg) and pg.is_visible('#splash'), s)
     check('...and over again, nothing left', done(pg, 12000) and not sp(pg)['gl'] and not html_splash(pg), sp(pg))
+    # Inställningar -> Avancerat -> Startfilmen "Spela": again, over the map
+    fakefb.login(pg, 'Filip'); pg.wait_for_timeout(600)
+    pg.click('#menuBtn'); pg.click('#menuItemSettings'); pg.wait_for_timeout(400)
+    pg.click('#splashReplayBtn'); pg.wait_for_timeout(100)
+    check('Inställningar -> Avancerat -> Startfilmen "Spela": the film again, Inställningar closed (its 3D logo stops)',
+          sp(pg)['running'] and html_splash(pg) and not pg.evaluate("document.getElementById('settingsView').classList.contains('show')"), sp(pg))
+    check('...over again, back on the map', done(pg, 12000) and not html_splash(pg) and not sp(pg)['gl'], sp(pg))
     check('no errors', not errs, errs)
     b.close()
 

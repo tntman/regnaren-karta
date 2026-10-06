@@ -158,7 +158,7 @@ Uppdatera rätt anteckning när något ändras.
 - **Startfilm** (`js/35-splash.js`, `tools/PLAN_SPLASH.md`): 3D-loggan 3,5 s vid första starten och när appen inte använts på > 24 h
   (`ffmap_last_active_v1`, hela telefonen: skrivs vid start, varje minut när den syns och när den döljs – även tillbaka ur bakgrunden
   utan omladdning). Skriptet i `src/head.html` sätter `html.splash` före första bilden (allt svart, kartan blinkar aldrig fram).
-  Namnrutan väntar (`afterSplash`). Testerna: fakefb sätter nyckeln = nu i varje context (opt-in `splash=True`, test_splash).
+  Namnrutan väntar (`afterSplash`). Inställningar → Avancerat → Startfilmen "Spela" visar den igen. Testerna: fakefb sätter nyckeln = nu i varje context (opt-in `splash=True`, test_splash).
 - **Pushnotiser**: inte gjort (kräver server/Firebase-betalplan).
 
 ## Firestore-regler (aktuella, i Firebase-konsolen)

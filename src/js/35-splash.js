@@ -152,6 +152,12 @@
     if (vis && !splashOn() && splashAge() > SPLASH_GAP){ document.documentElement.classList.add('splash'); splashStart(); }
     if (vis || e) splashMark();   // (every minute while it's shown, and when it's hidden)
   }
+  // Inställningar -> Avancerat -> Startfilmen: play it again (over the map, so the settings' own 3D logo isn't running too)
+  document.getElementById('splashReplayBtn').addEventListener('click', function(){
+    if (splashOn()) return;
+    showMapView();
+    document.documentElement.classList.add('splash'); splashStart();
+  });
   if (splashOn()) splashStart();
   splashMark();
   setInterval(splashTick, 60000);
