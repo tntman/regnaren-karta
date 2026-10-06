@@ -245,12 +245,13 @@
   #wakeNote.show{display:block;}
   /* cards at the top that stay until tapped or closed: the welcome (#welcomeNote) */
   .topNote{position:absolute;left:14px;right:14px;top:calc(env(safe-area-inset-top,0px) + 96px);z-index:31;max-width:400px;display:none;
-    background:rgba(28,33,44,.96);border:1px solid rgba(255,210,26,.6);border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.5);}
-  .topNote.show{display:block;}
-  .tnGo{display:block;width:100%;text-align:left;background:none;border:none;padding:11px 40px 11px 14px;color:var(--offwhite);font:inherit;font-size:13px;line-height:1.4;cursor:pointer;}
-  .tnGo b{display:block;font-size:14px;margin-bottom:2px;color:#FFD21A;}
-  .tnGo u{color:#FFD21A;}
-  .tnX{position:absolute;right:6px;top:6px;width:30px;height:30px;border:none;background:none;color:var(--text-muted);font-size:16px;cursor:pointer;}
+    border-radius:20px;background:var(--navy-glass);-webkit-backdrop-filter:var(--frost);backdrop-filter:var(--frost);border:1px solid rgba(255,255,255,.1);}
+  .topNote.show{display:block;animation:frostIn .4s cubic-bezier(.16,1,.3,1);}   /* (frosted like the pills on the map, no shadow -- DESIGN.md) */
+  .tnGo{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:none;border:none;padding:12px 40px 12px 12px;color:var(--text-muted);font:inherit;font-size:13px;line-height:1.35;cursor:pointer;}
+  .tnGo b{display:block;font-size:14.5px;font-weight:600;margin-bottom:2px;color:#fff;}
+  .tnIc{flex:none;width:44px;height:44px;border-radius:12px;background:var(--s2);display:grid;place-items:center;}
+  .tnIc img{width:34px;}
+  .tnX{position:absolute;right:6px;top:6px;width:30px;height:30px;border:none;background:none;color:rgba(255,255,255,.45);font-size:15px;cursor:pointer;}
   #wakeNote.fade{opacity:0;}
   #wakeNote b{display:block;font-size:14px;margin-bottom:3px;color:#FFD21A;}
   #wakeNote span b{display:inline;color:var(--offwhite);font-size:13px;}

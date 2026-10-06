@@ -111,7 +111,8 @@ Längst ner i mitten: `#msgBtn` (snabbmeddelanden).
 - **Varning:** `#ltPill` (liten, under väderraden), `#ltAlarm` (stor röd ruta med OK).
 - **Info som försvinner själv:** `#wakeNote` – mörk ruta med gul kant, ✕ uppe till höger,
   tonar bort (`.fade`, `transition:opacity`) efter 20 s.
-- **Kort som ligger kvar** (`.topNote`, `.tnGo` = hela rutan är knappen, `.tnX` = ✕): `#welcomeNote` välkomsten efter varje namnval (tryck = Hjälp).
+- **Kort som ligger kvar** (`.topNote`, `.tnGo` = hela rutan är knappen, `.tnX` = ✕): `#welcomeNote` välkomsten efter varje namnval (tryck = Hjälp). Frostad (som skyltarna), 20 px, loggan i en ruta (`.tnIc`),
+  vit rubrik + grå text, inga understrykningar.
 - **Kort toast:** `#msgToast` – liten ruta ovanför knappen, försvinner efter ~2,5 s.
 
 ## Märken
