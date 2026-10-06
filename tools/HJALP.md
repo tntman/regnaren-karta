@@ -1,8 +1,8 @@
 # Hjälp-sidan – så görs och uppdateras den
 
 Hjälp är en sida i appen (menyn → **Hjälp**) som visar alla funktioner med en kort
-animering per avsnitt, plus "Nytt i appen". Den öppnas av sig själv, med en
-välkomsthälsning, direkt efter att man valt namn första gången på en telefon.
+animering per avsnitt, plus "Nytt i appen". Den öppnas aldrig av sig själv: efter varje namnval kommer
+välkomstrutan `#welcomeNote` ("Välkommen till Fiskfiskarnas Kart app!") som leder hit, med en välkomsthälsning.
 
 Läs detta innan du ändrar Hjälp, lägger till en funktion i appen eller spelar in
 animeringarna igen.
@@ -30,27 +30,30 @@ animeringarna igen.
 |---|---|---|
 | Nytt i appen (`help-nytt`) | – | – |
 | Installera appen (`help-installera`) | `installera` | `s_installera` (ritad Safari) |
+| Kom igång (`help-start`): Vem är du?, startfilmen, välkomstrutan, menyn | – (bara text) | – |
 | Kartan (`help-kartan`) | `kartan` | `s_kartan` |
 | Kartlägen (`help-kartlagen`) | `kartlagen` | `s_kartlagen` |
 | Din position (`help-position`) | `position` | `s_position` |
-| Lodet (`help-lodet`) | `lodet` | `s_lodet` |
+| Lodet (`help-lodet`) | `lodet` (+ tryck på lodets ruta = markering) | `s_lodet` |
 | Fiskeplatser och markeringar (`help-platser`) | `platser` (lägg till), `andra` (ändra/ta bort) | `s_platser`, `s_andra` |
 | Fara & Träffpunkt (`help-fara`) | `fara` | `s_fara` |
-| Båtarna (`help-batar`) | `batar` | `s_batar` |
+| Båtarna och profilerna (`help-batar`) | `batar` | `s_batar` |
+| Tävlingarna (`help-tavling`): tävlingslåset, live, Ledare, senaste fisk, Demo Mode | – (bara text) | – |
 | Mätverktyget (`help-mat`) | `mat` | `s_mat` |
 | Väder, vind & lä (`help-vader`) | `vader` | `s_vader` |
 | Blixtar (`help-blixtar`) | `blixtar` | `s_blixtar` |
-| Kartanalys (`help-analys`) | `analys` (djup, grynnor, tumregel, Fångster) | `s_analys` |
-| Heatmap (`help-heatmap`) | `heatmap` (kartlägeslistan → Heatmap, fyra stilar, tryck på en fångst) | `s_heatmap` (låtsasfångster `catch_rows()`, bara på vattnet: `water_catches()`) |
+| Kartanalys (`help-analys`) | `analys` (Djup + dra, 💡, + Branta kanter, Tumregler tar över, Fångster, tillbaka till Kartdata) | `s_analys` |
+| Heatmap (`help-heatmap`) | `heatmap` (knappen överst, fyra stilar, När, tryck på en fångst) | `s_heatmap` (låtsasfångster `catch_rows()` via fakefb:s Fiskfiskarna-API, bara på vattnet: `water_catches()`) |
 | Åk hit (`help-akhit`) | `akhit` | `s_akhit` |
 | Snabbmeddelanden (`help-meddelanden`) | `meddelanden` (skicka + Calle och Pia i samma båt = en bubbla → tryck på Calles rad → rutan → Åk hit) | `s_meddelanden` |
 | Filter (`help-filter`) | `filter` | `s_filter` |
-| Loggen & spår (`help-logg`) | `logg` | `s_logg` |
+| Spåren och loggen (`help-logg`) | `logg` (Filter → Spår-ikonen = spårmenyn, sedan Logg) | `s_logg` |
 | Inställningar (`help-installningar`) – även Håll skärmen tänd | `installningar` (avsnitten; som "Calle" – Filip har Admin-raden) | `s_installningar` |
 | Tips & felsökning (`help-tips`) | – (bara text) | – |
 | Om appen (`help-om`) | – (källor + version) | – |
 
-Admin och Demo Mode står medvetet INTE i Hjälp (bara Filip använder dem).
+Admin står medvetet INTE i Hjälp (bara Filip). Demo Mode står med sedan 2026-10-04 (rutan överst, Tävlingarna,
+Inställningar) – det är dit tävlingslåset skickar folk.
 
 ---
 
@@ -75,7 +78,7 @@ Filip väljer det (påminn honom när listan har ≥ 5 rader eller är > 1 vecka
    korta punkter. `<b class="hA">…</b>` = orange (det man ska göra, t.ex. "Tryck").
    Flera animeringar i ett avsnitt: rubrik över varje med `<p class="helpSub">…</p>`.
 2. Lägg till en länk i innehållsförteckningen `#helpToc`: `<a href="#help-…"><span>EMOJI</span>Titel</a>`.
-   (Håll antalet jämnt – två kolumner, nu 20. test_help räknar länkarna och animeringarna (19): uppdatera siffrorna.)
+   (Håll antalet jämnt – två kolumner, nu 22. test_help räknar länkarna och animeringarna (19): uppdatera siffrorna.)
 3. Animering: `<div class="helpAnim"><img loading="lazy" src="help/NAMN.webp" alt="…"></div>`
    och en scen i `tools/help_anim.py` (se nedan). Verktyget skriver in `width`/`height`.
 4. Uppdatera tabellen i avsnitt 2 här, och antalet animeringar i test_help.
@@ -138,9 +141,9 @@ särskilt att inget hamnat på land och att inget ligger i vägen.
 
 ## 5. Beteende att känna till
 
-- **Öppnas själv** bara efter första namnvalet på en telefon (`helpSeen() === 0`).
-  Testerna startar med Hjälp "läst" (fakefb sätter `ffmap_help_seen_v1`), utom
-  test_help som använder `help_seen=False`.
+- **Öppnas aldrig själv** (sedan 2026-10-06): välkomstrutan efter varje namnval leder hit (`showHelpView(true)` = med
+  hälsningen). Testerna startar med Hjälp "läst" och utan välkomstruta (fakefb sätter `ffmap_help_seen_v1` och
+  `__ffNoWelcome`), utom test_help och test_splash som använder `help_seen=False`.
 - **Installera-avsnittet** väljer flik efter webbläsare: iPhone Safari, iPhone Chrome
   (`CriOS`), Android (knappen **Installera** via `beforeinstallprompt` om Chrome erbjuder
   det). I hemskärmsappen (`navigator.standalone` / `display-mode: standalone`) visas bara

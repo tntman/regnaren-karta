@@ -41,7 +41,7 @@ with sync_playwright() as p:
     b, pg, errs = fresh(p, UA['ios'])
     check('a name chosen: the welcome card; its link: Hjälp, with a welcome', pg.__welcome and not pg.is_visible('#welcomeNote') and pg.is_visible('#helpView') and pg.is_visible('#helpWelcome') and 'Välkommen, Filip!' in pg.inner_text('#helpWelcome'), pg.inner_text('#helpWelcome') if pg.is_visible('#helpWelcome') else '')
     toc = pg.eval_on_selector_all('#helpToc a', 'e => e.map(x => x.textContent.trim())')
-    check('contents: 20 sections', len(toc) == 20 and 'Blixtar' in ''.join(toc) and 'Installera appen' in ''.join(toc), toc)
+    check('contents: 22 sections', len(toc) == 22 and 'Blixtar' in ''.join(toc) and 'Installera appen' in ''.join(toc), toc)
     check('iPhone Safari: the Safari steps are shown, not "✓ installed"', os_tab(pg) == 'ios' and pg.is_visible('.helpSteps[data-os="ios"]') and not pg.is_visible('#helpInstalled'), os_tab(pg))
     news = pg.eval_on_selector_all('#helpNewsList .helpNewsItem', 'e => e.filter(x => x.offsetParent).length')
     check('Nytt i appen: 5 shown, the rest behind "Visa äldre"', news == 5 and pg.is_visible('#helpNewsMore'), news)

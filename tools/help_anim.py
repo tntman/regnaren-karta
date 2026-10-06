@@ -124,8 +124,10 @@ def open_app(p, geo=ME, spots=SPOTS, boats=BOATS, wind=(3.2, 225), fmi=None, nam
     ctx = b.new_context(viewport={'width': 390, 'height': 844}, device_scale_factor=2, has_touch=True, is_mobile=True,
                         geolocation={'latitude': geo[0], 'longitude': geo[1], 'accuracy': 6}, permissions=['geolocation'])
     cfg = {'waypoints': spots, 'positions': boats}
-    if catches: cfg['catches'] = {'regnaren': {'rows': json.dumps(catches), 'n': len(catches)}}
     ctx.add_init_script('window.__fakeCfg = ' + json.dumps(cfg) + ';')
+    # the competitions' catches: Fiskfiskarnas API, made up (fakefb)
+    ctx.api = fakefb.FakeApi({'heatmap': [fakefb.api_row(*r) for r in catches]} if catches else {})
+    ctx.route('**/fiskfiskarna.se/**', ctx.api.handle)
     # Inställningar as a new user sees it: every section closed (the tests open them all -- fakefb)
     ctx.add_init_script("try { localStorage.setItem('ffmap_settings_open_v1', '[]'); } catch(e){}")
     ctx.add_init_script(FINGER_JS)
@@ -233,13 +235,15 @@ def s_position(p):
     rec.save('position'); b.close()
 
 def s_lodet(p):
+    """tap the map = the lead line (depth, by water, time); the boat moves; tap its box = a marker right there"""
     b, ctx, pg = open_app(p)
-    bring(pg, mix(ME, P['E1'], 0.5), (195, 470))
-    rec = Rec(pg, Y(120, 720)); rec.hold(700)
+    bring(pg, mix(ME, P['E1'], 0.5), (195, 430))
+    rec = Rec(pg, Y(120, 844)); rec.hold(700)
     check_water(pg, P['E1'])
     x, y = scr(pg, P['E1']); tap(pg, rec, x, y, after=2600)
     sail(pg, ctx, rec, ME, P['B1'], metres_max=60); rec.hold(1200)
-    x, y = scr(pg, P['E1']); tap(pg, rec, x, y, after=1200)
+    tap_el(pg, rec, '#probe .pbTag', after=1500)                   # its box: a marker there (the sheet)
+    tap_el(pg, rec, '#wpSave', after=1800)
     rec.save('lodet'); b.close()
 
 def s_platser(p):
@@ -367,11 +371,23 @@ def s_filter(p):
     rec.save('filter'); b.close()
 
 def s_logg(p):
+    """the track: Filter -> Spår's icon = the track menu (colour, how far back); then Logg -> a spot -> there on the map"""
     b, ctx, pg = open_app(p)
-    rec = Rec(pg); rec.hold(500)
+    zoom_at(pg, ME, 2, (150, 470))
+    a = ME
+    for k in range(1, 13):                                         # (not recorded: a bit of today's track behind the boat)
+        ll = mix(ME, P['B1'], k / 12.0); check_water(pg, ll)
+        ctx.set_geolocation({'latitude': ll[0], 'longitude': ll[1], 'accuracy': 5}); pg.wait_for_timeout(450)
+    rec = Rec(pg); rec.hold(600)
+    tap_el(pg, rec, '#visMoreBtn', after=700)
+    tap_el(pg, rec, '.visSwatch--track', after=1400)                # Spår's icon: the track menu
+    tap_el(pg, rec, '#trkColors button[data-c="#FFD23F"]', after=1000)
+    tap_el(pg, rec, '#trkDash button[data-d="0"]', after=1000)
+    tap_el(pg, rec, '#trkRange button[data-r="7"]', after=1000)
+    tap_el(pg, rec, '#trkClose', after=900)
     tap_el(pg, rec, '#menuBtn', after=700)
     tap_el(pg, rec, '#menuItemLog', after=1400)
-    tap_el(pg, rec, '.logItem:has-text("Gösgropen")', after=2600)
+    tap_el(pg, rec, '.logItem:has-text("Gösgropen")', after=2400)
     rec.save('logg'); b.close()
 
 def s_installningar(p):
@@ -390,7 +406,8 @@ def s_installningar(p):
     rec.save('installningar'); b.close()
 
 def s_analys(p):
-    """Kartanalys: depth range (drag), tops & holes (tap a label -> lead line), a preset, from the catches"""
+    """Kartanalys: Djup (drag a handle, the lamp), + Branta kanter (together), another tab takes over (Tumregler:
+    Gös, Fångster), back to Kartdata (its choice again), the pill"""
     b, ctx, pg = open_app(p, catches=water_catches(p))
     bring(pg, P['B1'], (195, 300))
     rec = Rec(pg); rec.hold(500)
@@ -403,29 +420,32 @@ def s_analys(p):
     for i in range(1, 9):
         pg.mouse.move(k[0] + (r[0] + r[1] * 9 / dmax - k[0]) * i / 8, k[1]); rec.hold(110)
     pg.mouse.up(); rec.hold(900)
-    tap_el(pg, rec, '#anPanel button[data-m="tops"]', after=1400)
-    lbl = pg.evaluate("""() => { var best = null; document.querySelectorAll('.anLbl').forEach(function(l){ var r = l.getBoundingClientRect();
-        if (r.top > 110 && r.bottom < 480 && r.left > 10 && r.right < 380 && !best) best = [r.left + r.width / 2, r.top + r.height / 2]; }); return best; }""")
-    if lbl: tap(pg, rec, lbl[0], lbl[1], after=1500)
-    tap_el(pg, rec, '#anBtn', after=600)
-    tap_el(pg, rec, '#anCatSeg button[data-cat="rule"]', after=500)
+    tap_el(pg, rec, '#anLamp', after=1600)                             # 💡 the lit part twice as bright
+    tap_el(pg, rec, '#anLamp', after=700)
+    tap_el(pg, rec, '#anPanel button[data-m="steep"]', after=1600)     # + Branta kanter: where both are true
+    tap_el(pg, rec, '#anCatSeg button[data-cat="rule"]', after=800)    # another tab takes over: Kartdata off
     tap_el(pg, rec, '#anPanel button[data-m="gos"]', after=1800)
-    tap_el(pg, rec, '#anCatSeg button[data-cat="data"]', after=500)   # Fångster: where abborre was caught
+    tap_el(pg, rec, '#anCatSeg button[data-cat="data"]', after=600)    # Fångster: where abborre was caught
     tap_el(pg, rec, '#anDataChips button:not([disabled])', after=2400)
+    tap_el(pg, rec, '#anCatSeg button[data-cat="map"]', after=1700)    # back: Djup + Branta kanter again
     tap_el(pg, rec, '#anClose', after=1500)                            # the "Kartanalys" pill under the weather
     rec.save('analys'); b.close()
 
 def s_heatmap(p):
-    """Heatmap: hold the map-style button -> Heatmap; the four styles; tap a catch -> its card"""
+    """Heatmap: its button at the top; the four styles; När (tap the best hour, then again = all); tap a catch -> its card"""
     rows = water_catches(p)
     b, ctx, pg = open_app(p, catches=rows)
     bring(pg, P['B1'], (195, 330))
     rec = Rec(pg); rec.hold(500)
-    bb = pg.locator('#mapTypeBtn').bounding_box()
-    press(pg, rec, bb['x'] + 20, bb['y'] + 20, ms=900, after=900)
-    tap_el(pg, rec, '#mapTypePop .hmOpt', after=2200)                  # Värme
+    tap_el(pg, rec, '#hmBtn', after=2200)                              # Värme
     for s in ('species', 'hex', 'dots'):
         tap_el(pg, rec, '#hmStyleSeg button[data-s="%s"]' % s, after=1700)
+    tap_el(pg, rec, '#hmStyleSeg button[data-s="heat"]', after=900)
+    pg.evaluate("document.querySelector('#hmTime').scrollIntoView({ block: 'end' })"); rec.hold(500)
+    best = pg.evaluate("""() => { var b = null; document.querySelectorAll('#hmTime .hmBars i').forEach(function(i){
+        if (!b || i.offsetHeight > b.offsetHeight) b = i; }); var r = b.getBoundingClientRect(); return [r.left + r.width / 2, r.bottom - 6]; }""")
+    tap(pg, rec, best[0], best[1], after=1900)                          # När: only the catches in that hour
+    tap(pg, rec, best[0], best[1], after=1000)                          # the same again: all
     tap_el(pg, rec, '#hmClose', after=700)
     big = max((r for r in rows if r[3] == 'gadda'), key=lambda r: r[4])
     xy = pg.evaluate('(id) => window.__ffHeatScreen(id)', '%d|%s|%s|%s' % (big[0], big[2], big[3], big[4]))

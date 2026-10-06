@@ -11,8 +11,8 @@
   #safari{background:#fff;}
   .sbar{height:47px;display:flex;justify-content:space-between;align-items:center;padding:0 28px;font:600 15px "Segoe UI";}
   #safari .sbar{color:#000;background:#fff;}
-  #page{position:absolute;top:47px;left:0;right:0;bottom:98px;background:#0B2A3A url(../docs/lakes/regnaren/map_v4_s1.jpg) 40% 50%/auto 140%;}
-  #page .t{position:absolute;left:18px;top:18px;color:#fff;font:700 22px Cambria,Georgia,serif;text-shadow:0 1px 6px rgba(0,0,0,.6);}
+  #page{position:absolute;top:47px;left:0;right:0;bottom:98px;background:#141822 url(../docs/lakes/regnaren/map_v5_s1.jpg) 76% 62%/auto 140%;   /* (the south basin) */}
+  #page .t{position:absolute;left:18px;top:18px;color:#fff;font:600 22px -apple-system,"Segoe UI",sans-serif;text-shadow:0 1px 6px rgba(0,0,0,.6);}   /* (the app's design A) */
   .tb{position:absolute;left:0;right:0;bottom:0;height:98px;background:#f7f7f8;border-top:1px solid #ddd;}
   .url{margin:8px 14px 0;height:40px;border-radius:12px;background:#e9e9ec;display:flex;align-items:center;justify-content:center;font-size:15px;color:#222;}
   .icons{display:flex;justify-content:space-around;margin-top:8px;color:#0a7aff;}
@@ -47,15 +47,15 @@
   .app img{width:64px;height:64px;border-radius:15px;}
   #newApp{transform:scale(0);transition:transform .45s cubic-bezier(.3,1.6,.5,1);}
   body.s6 #newApp{transform:scale(1);}
-  body.s7 #newApp img{box-shadow:0 0 0 4px rgba(232,163,61,.8),0 0 24px rgba(232,163,61,.8);}
-  .cap{position:absolute;left:14px;right:14px;top:62px;background:rgba(11,42,58,.94);color:#fff;border:1px solid rgba(232,163,61,.6);border-radius:14px;padding:10px 14px;font:600 16px Calibri,"Segoe UI",sans-serif;text-align:center;opacity:0;transition:opacity .3s;z-index:5;}
+  body.s7 #newApp img{box-shadow:0 0 0 4px rgba(240,154,96,.85),0 0 24px rgba(240,154,96,.8);}
+  .cap{position:absolute;left:14px;right:14px;top:62px;background:rgba(28,33,44,.94);color:#fff;border:1px solid rgba(240,154,96,.6);border-radius:14px;padding:10px 14px;font:600 16px Calibri,"Segoe UI",sans-serif;text-align:center;opacity:0;transition:opacity .3s;z-index:5;}
   .cap.on{opacity:1;}
   #finger{position:absolute;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;background:rgba(40,40,40,.25);border:2px solid rgba(255,255,255,.95);box-shadow:0 0 0 3px rgba(0,0,0,.25);z-index:9;opacity:0;transition:opacity .15s,left .5s ease,top .5s ease;}
 </style></head><body>
 <div class="scr" id="safari">
   <div class="sbar"><span>10:15</span><span>●●● ▮</span></div>
-  <div id="page"><div class="t">REGNAREN</div></div>
-  <div class="tb"><div class="url">🔒 github.io</div>
+  <div id="page"><div class="t">Regnaren</div></div>
+  <div class="tb"><div class="url">🔒 karta.fiskfiskarna.se</div>
     <div class="icons">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
@@ -64,7 +64,7 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="11" height="11" rx="2"/><rect x="9" y="9" width="11" height="11" rx="2"/></svg>
     </div></div>
   <div id="sheet">
-    <div class="sh-head"><img src="../docs/apple-touch-icon.png" alt=""><div><b>FF Map</b><small>github.io</small></div></div>
+    <div class="sh-head"><img src="../docs/apple-touch-icon.png" alt=""><div><b>FF Map</b><small>karta.fiskfiskarna.se</small></div></div>
     <div class="apps"><div style="background:#34c759"></div><div style="background:#0a7aff"></div><div style="background:#ff9500"></div><div style="background:#5856d6"></div></div>
     <div class="rows">
       <div class="row">Kopiera<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V4H4v12h4"/></svg></div>
@@ -77,7 +77,7 @@
 </div>
 <div class="scr" id="add">
   <div class="addbar"><span>Avbryt</span><b>Lägg till på hemskärmen</b><span class="ok" id="addBtn">Lägg till</span></div>
-  <div class="addcard"><img src="../docs/apple-touch-icon.png" alt=""><div style="flex:1"><div class="nm">FF Map</div><small>github.io</small></div></div>
+  <div class="addcard"><img src="../docs/apple-touch-icon.png" alt=""><div style="flex:1"><div class="nm">FF Map</div><small>karta.fiskfiskarna.se</small></div></div>
 </div>
 <div class="scr" id="home">
   <div class="sbar"><span>10:16</span><span>●●● ▮</span></div>
