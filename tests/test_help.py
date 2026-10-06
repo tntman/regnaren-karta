@@ -113,6 +113,9 @@ with sync_playwright() as p:
     # ---- someone who has read older news: the dot, until Hjälp is opened
     b, pg, errs = fresh(p, seen=3)
     check('Hjälp never opens by itself (the welcome card, every name)', pg.__welcome and not pg.is_visible('#helpView'))
+    check('...its title on one line, all of it shown (a narrow phone too)', all(pg.set_viewport_size({'width': w, 'height': 800}) or pg.evaluate(
+          "(b => getComputedStyle(b).whiteSpace === 'nowrap' && b.scrollWidth <= b.clientWidth && b.clientWidth > 0)(document.querySelector('#welcomeNote b'))") for w in (320, 375, 390)))
+    pg.set_viewport_size({'width': 390, 'height': 844})
     pg.click('#welcomeNoteClose')
     check('...✕ closes the card', not pg.is_visible('#welcomeNote'))
     check('...but new things since then: a dot on the menu button and on Hjälp', pg.is_visible('#menuBtn .newDot'))
