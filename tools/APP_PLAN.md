@@ -106,7 +106,7 @@ Webbversionen (GitHub Pages, `docs/`) ska fortsätta fungera från samma kod.
 **Fas 4 – iPhone via Codemagic (gratis nivå)**
 13. Claude: iOS-projekt, texter för "Alltid"-plats, `codemagic.yaml` (bygg → TestFlight vid push av `app`).
     **Gjort 2026-10-01** (medan Apple-kontot var "Pending"). Apple-ID-numret (6819667300) inlagt i `codemagic.yaml` 2026-10-06
-    (`APP_STORE_APPLE_ID`) när appen skapats i App Store Connect.
+    (`APP_STORE_APPLE_ID`).
 14. Du: codemagic.io (logga in med GitHub) → lägg till repot.
 15. Du: Codemagic → Teams → Integrations → App Store Connect → ladda upp .p8 + Key ID + Issuer ID.
 16. Du: push grenen `app` → Codemagic bygger (~15–20 min).
