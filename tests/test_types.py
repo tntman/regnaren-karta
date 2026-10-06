@@ -50,10 +50,12 @@ with sync_playwright() as p:
     # the keyboard (iOS shrinks only the visual viewport): the sheet moves up above it
     pg.evaluate("""() => { var vv = visualViewport, h = innerHeight; Object.defineProperty(vv, 'height', { configurable: true, get: () => h - 300 });
       vv.dispatchEvent(new Event('resize')); }"""); pg.wait_for_timeout(150)
-    kb = pg.evaluate("(r => [innerHeight - r.bottom, r.top >= 0])(document.getElementById('wpSheet').getBoundingClientRect())")
-    check('...the keyboard up: the sheet 24 px above it (like Egen text, not under it)', kb[0] == 324 and kb[1], kb)
+    kb = pg.evaluate("""(e => { var r = e.getBoundingClientRect(), b = parseFloat(getComputedStyle(e).borderBottomWidth);
+      return [innerHeight - r.bottom + b, innerHeight - r.bottom, r.top >= 0]; })(document.getElementById('wpSheet'))""")
+    check('...the keyboard up: what is in the sheet 24 px above it (like Egen text, not under it), the sheet dark all the way down (no map in the gap)',
+          kb[0] == 324 and kb[1] == 0 and kb[2], kb)
     pg.evaluate("() => { delete visualViewport.height; visualViewport.dispatchEvent(new Event('resize')); }"); pg.wait_for_timeout(150)
-    check('...the keyboard down: back at the bottom', pg.evaluate("innerHeight - document.getElementById('wpSheet').getBoundingClientRect().bottom") == 0)
+    check('...the keyboard down: back at the bottom', pg.evaluate("(e => [innerHeight - e.getBoundingClientRect().bottom, getComputedStyle(e).borderBottomWidth])(document.getElementById('wpSheet'))") == [0, '0px'])
     check('new spot name "Markering 2" (the old spot counts as a marking)', pg.input_value('#wpName') == 'Markering 2', pg.input_value('#wpName'))
     pg.screenshot(path='./shot_types_sheet.png')
     pg.click('#wpTypeSeg button[data-type="gos"]'); pg.wait_for_timeout(100)

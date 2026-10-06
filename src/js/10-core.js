@@ -103,19 +103,22 @@
   // (+ 1 s after): iOS sometimes reports the keyboard late or in steps, or scrolls the page later -- after turning the
   // phone it went wrong the first time (Filip 2026-10-06). iOS also scrolls the whole app up to show the field (the top
   // went off the screen and everything sat too high): it's put back at the top, the box is above the keyboard anyway.
+  // fill: the box stays at the bottom and a dark bottom border (its colour in the css) lifts what's in it -- dark all the
+  // way down, behind the keyboard too (#wpSheet: the map showed in the gap under it, Filip 2026-10-07)
   var kbEls = [], kbUntil = 0, kbOn = false;
-  function kbWatch(el, gap){ kbEls.push([el, gap]); }
+  function kbWatch(el, gap, fill){ kbEls.push([el, gap, fill ? 'borderBottomWidth' : 'bottom']); }
   function kbFocused(){ var a = document.activeElement; return !!a && a !== document.body && kbEls.some(function(e){ return e[0].contains(a); }); }
   function kbTick(){
     var vv = window.visualViewport, up = vv && window.innerHeight - vv.height > 80;
     kbEls.forEach(function(e){
-      var el = e[0], s = el.style;
+      var el = e[0], s = el.style, p = e[2], fill = p !== 'bottom';
       if (up && el.contains(document.activeElement)){
         if (window.scrollY || vv.offsetTop > 0.5){ window.scrollTo(0, 0); document.documentElement.scrollTop = document.body.scrollTop = 0; }
-        var d = el.getBoundingClientRect().bottom - (vv.offsetTop + vv.height - e[1]);
-        if (Math.abs(d) > 1) s.bottom = (parseFloat(getComputedStyle(el).bottom) + d) + 'px';
-        var mh = Math.round(vv.height - e[1] - 10) + 'px'; if (s.maxHeight !== mh) s.maxHeight = mh;   // (a tall sheet: its top stays in view)
-      } else if (s.bottom){ s.bottom = s.maxHeight = ''; if (window.scrollY) window.scrollTo(0, 0); }
+        var r = el.getBoundingClientRect(), lift = parseFloat(getComputedStyle(el)[p]);
+        var d = r.bottom - (fill ? lift : 0) - (vv.offsetTop + vv.height - e[1]);
+        if (Math.abs(d) > 1) s[p] = (lift + d) + 'px';
+        var mh = Math.round(fill ? r.bottom - vv.offsetTop - 10 : vv.height - e[1] - 10) + 'px'; if (s.maxHeight !== mh) s.maxHeight = mh;   // (a tall sheet: its top stays in view)
+      } else if (s[p]){ s[p] = s.maxHeight = ''; if (window.scrollY) window.scrollTo(0, 0); }
     });
     if (kbFocused() || Date.now() < kbUntil) requestAnimationFrame(kbTick); else kbOn = false;
   }

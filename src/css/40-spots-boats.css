@@ -99,6 +99,7 @@
     box-shadow:0 -8px 24px rgba(0,0,0,.4);
   }
   #wpSheet.show{transform:translateY(0);}
+  #wpSheet{border-bottom:0 solid var(--navy);}   /* (typing: kbWatch widens it -- dark down behind the keyboard, 10-core.js) */
   @media (orientation:landscape) and (max-height:520px){ #wpSheet{left:auto;width:420px;} }
   /* (the sheet: only its grip strip at the top drags it -- the rest scrolls) */
   #wpSheet.dragging{transition:none;}
