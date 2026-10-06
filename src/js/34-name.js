@@ -142,13 +142,14 @@
     showUserName();
     myUid = nameSlug(userName);
     hideNameModal();
+    splashAfterName();   // (a new phone / after Logga ut: now the start film, 35-splash.js)
     if (appStarted){
       // returning from "Logga ut" — geolocation/Firebase are already running,
       // just re-evaluate ownership of the pins already on screen under the new name
       renderWaypoints();
     } else {
       continueBootAfterName();
-      if (!helpSeen()) showHelpView(true);   // the very first time on this phone: Hjälp, with a welcome
+      afterSplash(function(){ if (!helpSeen()) showHelpView(true); });   // the very first time on this phone: Hjälp, with a welcome (after the film)
     }
   });
   nameInput.addEventListener('keydown', function(e){

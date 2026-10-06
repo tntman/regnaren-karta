@@ -16,8 +16,9 @@
 <!-- the status bar's colour (see above) = the map's background = the top fade: #141822 -->
 <meta name="theme-color" content="#141822">
 <!-- the start film (js/35-splash.js): first start, or > 24 h since the app was last in use -> all black from the
-     very first picture (html.splash), so the map never flashes up before it -->
-<script>try{var t=+localStorage.getItem('ffmap_last_active_v1');if(!t||Date.now()-t>864e5||localStorage.getItem('ffmap_splash_out_v1')&&!sessionStorage.getItem('ffmap_splash_out_v1')){document.documentElement.classList.add('splash');}}catch(e){}</script>
+     very first picture (html.splash), so the map never flashes up before it. No name yet (a new phone, after Logga
+     ut): "Vem är du?" first, the film after it (__ffSplashName) -->
+<script>try{var t=+localStorage.getItem('ffmap_last_active_v1');if(!t||Date.now()-t>864e5||localStorage.getItem('ffmap_splash_out_v1')&&!sessionStorage.getItem('ffmap_splash_out_v1')){if(localStorage.getItem('regnaren_user_name_v1'))document.documentElement.classList.add('splash');else window.__ffSplashName=1}}catch(e){}</script>
 <!-- the start picture, like a native app's: the logo on the dark blue (= the status bar) from the very first
      picture -- the html's own background, before the page's <style> and body -- then the app fades in over it
      (html.boot, js/35-splash.js), or with the start film the black closes over it (the status bar stays blue).

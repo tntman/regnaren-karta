@@ -15,7 +15,7 @@
   function splashOn(){ return document.documentElement.classList.contains('splash'); }
   function afterSplash(fn){ if (splashOn()) spWait.push(fn); else fn(); }   // (the name picker waits: never two WebGL at once)
   function splashAge(){ var t = 0; try { t = +localStorage.getItem(SPLASH_KEY) || 0; } catch(e){} return t ? Date.now() - t : Infinity; }
-  function splashMark(){ try { localStorage.setItem(SPLASH_KEY, String(Date.now())); } catch(e){} }
+  function splashMark(){ if (window.__ffSplashName) return; try { localStorage.setItem(SPLASH_KEY, String(Date.now())); } catch(e){} }
   // Logga ut, then the app closed: the film on the next start (sessionStorage: not on a rotation's reload before that)
   function splashAfterLogout(){ try { localStorage.setItem('ffmap_splash_out_v1', '1'); sessionStorage.setItem('ffmap_splash_out_v1', '1'); } catch(e){} }
 
@@ -137,7 +137,7 @@
     spBloom.width = spBloom.height = 0;
     spFlatImg.removeAttribute('src');
     spApp.style.filter = spApp.style.transform = '';
-    document.documentElement.classList.remove('splash', 'bootsp');
+    document.documentElement.classList.remove('splash', 'bootsp'); spEl.classList.remove('spIn');
     spSt.running = false; spSt.mode = '';
     var w = spWait; spWait = [];
     w.forEach(function(f){ f(); });
@@ -152,7 +152,7 @@
   // in use = now; shown again after > 24 h (also back from the background without a reload)
   function splashTick(e){
     var vis = document.visibilityState !== 'hidden';
-    if (vis && !splashOn() && splashAge() > SPLASH_GAP){ document.documentElement.classList.add('splash'); splashStart(); }
+    if (vis && !splashOn() && !window.__ffSplashName && splashAge() > SPLASH_GAP){ document.documentElement.classList.add('splash'); splashStart(); }
     if (vis || e) splashMark();   // (every minute while it's shown, and when it's hidden)
   }
   // Inställningar -> Avancerat -> Startfilmen: play it again (over the map, so the settings' own 3D logo isn't running too)
@@ -171,6 +171,14 @@
     if (mi.complete && mi.naturalWidth) go(); else mi.addEventListener('load', go, { once: true });
   })();
   if (splashOn()){ splashStart(); try { localStorage.removeItem('ffmap_splash_out_v1'); } catch(e){} }
+  // no name yet (a new phone, after Logga ut): head.html left the film for after "Vem är du?" -- it fades to black, then the film
+  function splashAfterName(){
+    if (!window.__ffSplashName) return;
+    window.__ffSplashName = 0; splashMark();
+    try { localStorage.removeItem('ffmap_splash_out_v1'); } catch(e){}
+    spEl.classList.add('spIn');
+    document.documentElement.classList.add('splash'); splashStart();
+  }
   splashMark();
   setInterval(splashTick, 60000);
   document.addEventListener('visibilitychange', splashTick);

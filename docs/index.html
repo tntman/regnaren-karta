@@ -16,8 +16,9 @@
 <!-- the status bar's colour (see above) = the map's background = the top fade: #141822 -->
 <meta name="theme-color" content="#141822">
 <!-- the start film (js/35-splash.js): first start, or > 24 h since the app was last in use -> all black from the
-     very first picture (html.splash), so the map never flashes up before it -->
-<script>try{var t=+localStorage.getItem('ffmap_last_active_v1');if(!t||Date.now()-t>864e5||localStorage.getItem('ffmap_splash_out_v1')&&!sessionStorage.getItem('ffmap_splash_out_v1')){document.documentElement.classList.add('splash');}}catch(e){}</script>
+     very first picture (html.splash), so the map never flashes up before it. No name yet (a new phone, after Logga
+     ut): "Vem är du?" first, the film after it (__ffSplashName) -->
+<script>try{var t=+localStorage.getItem('ffmap_last_active_v1');if(!t||Date.now()-t>864e5||localStorage.getItem('ffmap_splash_out_v1')&&!sessionStorage.getItem('ffmap_splash_out_v1')){if(localStorage.getItem('regnaren_user_name_v1'))document.documentElement.classList.add('splash');else window.__ffSplashName=1}}catch(e){}</script>
 <!-- the start picture, like a native app's: the logo on the dark blue (= the status bar) from the very first
      picture -- the html's own background, before the page's <style> and body -- then the app fades in over it
      (html.boot, js/35-splash.js), or with the start film the black closes over it (the status bar stays blue).
@@ -2118,7 +2119,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity .6s
      html.splash (set in head.html before the page is drawn) = all black over everything at once. */
   #splash{display:none;}
   html.splash #splash{display:block;position:fixed;inset:0;z-index:100000;touch-action:none;}
-  html.bootsp #splash{animation:spIn .5s both;}   /* (a real start: the black closes over the start picture's logo) */
+  html.bootsp #splash, #splash.spIn{animation:spIn .5s both;}   /* (the black closes over the start picture / the map after the name) */
   @keyframes spIn{from{opacity:0}}
   #splash > *{position:absolute;inset:0;width:100%;height:100%;}
   .spBlack{background:#000;}
@@ -6128,13 +6129,14 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity .6s
     showUserName();
     myUid = nameSlug(userName);
     hideNameModal();
+    splashAfterName();   // (a new phone / after Logga ut: now the start film, 35-splash.js)
     if (appStarted){
       // returning from "Logga ut" — geolocation/Firebase are already running,
       // just re-evaluate ownership of the pins already on screen under the new name
       renderWaypoints();
     } else {
       continueBootAfterName();
-      if (!helpSeen()) showHelpView(true);   // the very first time on this phone: Hjälp, with a welcome
+      afterSplash(function(){ if (!helpSeen()) showHelpView(true); });   // the very first time on this phone: Hjälp, with a welcome (after the film)
     }
   });
   nameInput.addEventListener('keydown', function(e){
@@ -6364,7 +6366,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity .6s
   function splashOn(){ return document.documentElement.classList.contains('splash'); }
   function afterSplash(fn){ if (splashOn()) spWait.push(fn); else fn(); }   // (the name picker waits: never two WebGL at once)
   function splashAge(){ var t = 0; try { t = +localStorage.getItem(SPLASH_KEY) || 0; } catch(e){} return t ? Date.now() - t : Infinity; }
-  function splashMark(){ try { localStorage.setItem(SPLASH_KEY, String(Date.now())); } catch(e){} }
+  function splashMark(){ if (window.__ffSplashName) return; try { localStorage.setItem(SPLASH_KEY, String(Date.now())); } catch(e){} }
   // Logga ut, then the app closed: the film on the next start (sessionStorage: not on a rotation's reload before that)
   function splashAfterLogout(){ try { localStorage.setItem('ffmap_splash_out_v1', '1'); sessionStorage.setItem('ffmap_splash_out_v1', '1'); } catch(e){} }
 
@@ -6486,7 +6488,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity .6s
     spBloom.width = spBloom.height = 0;
     spFlatImg.removeAttribute('src');
     spApp.style.filter = spApp.style.transform = '';
-    document.documentElement.classList.remove('splash', 'bootsp');
+    document.documentElement.classList.remove('splash', 'bootsp'); spEl.classList.remove('spIn');
     spSt.running = false; spSt.mode = '';
     var w = spWait; spWait = [];
     w.forEach(function(f){ f(); });
@@ -6501,7 +6503,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity .6s
   // in use = now; shown again after > 24 h (also back from the background without a reload)
   function splashTick(e){
     var vis = document.visibilityState !== 'hidden';
-    if (vis && !splashOn() && splashAge() > SPLASH_GAP){ document.documentElement.classList.add('splash'); splashStart(); }
+    if (vis && !splashOn() && !window.__ffSplashName && splashAge() > SPLASH_GAP){ document.documentElement.classList.add('splash'); splashStart(); }
     if (vis || e) splashMark();   // (every minute while it's shown, and when it's hidden)
   }
   // Inställningar -> Avancerat -> Startfilmen: play it again (over the map, so the settings' own 3D logo isn't running too)
@@ -6520,6 +6522,14 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity .6s
     if (mi.complete && mi.naturalWidth) go(); else mi.addEventListener('load', go, { once: true });
   })();
   if (splashOn()){ splashStart(); try { localStorage.removeItem('ffmap_splash_out_v1'); } catch(e){} }
+  // no name yet (a new phone, after Logga ut): head.html left the film for after "Vem är du?" -- it fades to black, then the film
+  function splashAfterName(){
+    if (!window.__ffSplashName) return;
+    window.__ffSplashName = 0; splashMark();
+    try { localStorage.removeItem('ffmap_splash_out_v1'); } catch(e){}
+    spEl.classList.add('spIn');
+    document.documentElement.classList.add('splash'); splashStart();
+  }
   splashMark();
   setInterval(splashTick, 60000);
   document.addEventListener('visibilitychange', splashTick);

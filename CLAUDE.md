@@ -160,7 +160,7 @@ Uppdatera rätt anteckning när något ändras.
   utan omladdning). Även efter Logga ut + stängd app (`ffmap_splash_out_v1` i localStorage, sessionStorage-kopian stoppar den vid en vridnings omladdning). Skriptet i `src/head.html` sätter `html.splash` före första bilden (allt svart, kartan blinkar aldrig fram).
   **Startbild**: loggan på #141822 direkt (html-bakgrunden, `html.boot` i head.html), appen tonar in över den (35-splash.js), med film stänger det svarta över den (`html.bootsp`); statusraden förblir #141822 även under filmen (toppen tonar, `.tint`). Prövat: svart startbild med blå tona överst – syntes som en kant. Firebase-skripten ligger sist i body (`html/99-firebase.html`) så att inget håller upp bilden;
   iOS-startbilder `assets/launch-*.png` (`tools/launch_images.py`, ny iPhone-storlek läggs till där), Android gör sin egen av manifestet.
-  Namnrutan och platsfrågan (`startGeolocation`, 90-boot.js) väntar (`afterSplash`). Inställningar → Avancerat → Startfilmen "Spela" visar den igen. Testerna: fakefb sätter nyckeln = nu i varje context (opt-in `splash=True`, test_splash).
+  Namnrutan och platsfrågan (`startGeolocation`, 90-boot.js) väntar (`afterSplash`). Utan namn (ny telefon, efter Logga ut): "Vem är du?" först, sedan tonar det till svart och filmen (`__ffSplashName` från head.html), Hjälp efter filmen. Inställningar → Avancerat → Startfilmen "Spela" visar den igen. Testerna: fakefb sätter nyckeln = nu i varje context (opt-in `splash=True`, test_splash).
 - **Pushnotiser**: inte gjort (kräver server/Firebase-betalplan).
 
 ## Firestore-regler (aktuella, i Firebase-konsolen)
