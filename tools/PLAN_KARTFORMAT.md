@@ -1,6 +1,11 @@
 # Plan: nytt kartformat (bas + delat kurvlager) och Mälaren
 
-Sidochatt 2026-10-06. Undersökt och visat för Filip, **inget byggt**. Main-chatten bygger.
+Sidochatt 2026-10-06 → **kart-chatten** (worktree `.claude/worktrees/kartformat`, gren `worktree-kartformat`).
+
+**Status 2026-10-06: byggt.** Alla fem sjöar i nya formatet (Regnaren 39 MB, Vågsfjärden 29,5, Sibbo 28,3,
+Sjösjön 5,3, Östra Vitten 3,5 – förr 379 MB ihop), bitarna har 8 px kant från grannarna (skarvarna, KARTOR.md).
+Mälaren byggd med `tools/genesis_big.py` (block). Inte inslaget i main / pushat ännu (Filip: ingen använder appen
+på riktigt just nu – gör klart i lugn och ro).
 
 **Beslutat (Filip):** nya formatet enligt avsnitt 2 (bas WebP 35 + delat kurvlager, 32 färger, zoom 18 för alla
 kartlägen) för alla sjöar; Mälaren läggs till med området i `tools/malaren_polygon.json` (v2, avsnitt 5).

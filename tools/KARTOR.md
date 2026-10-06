@@ -296,13 +296,34 @@ djup = färgens rang (ej kalibrerat) × 10 m; utjämning σ 4,5 px; Sobel-lutnin
       2026-10-05, steg 9–10 (bygg + tester) i main-chatten 2026-10-06. (matplotlib saknades
       efter ominstallationen – `py -3 -m pip install --user matplotlib`.)
 - [ ] **Mälaren + nytt kartformat (bas + delat kurvlager, WebP): plan i `tools/PLAN_KARTFORMAT.md` (2026-10-06).**
-- [ ] **Stora sjöar (Mälaren):** Filips utsnitt Bålsta–Ekerö var ~42 × 33 km ≈ 45 × Regnaren → uppskattat
-      6–7 GB i docs/, ~3 GB offline, ~1,8 miljoner Genesis-rutor. Går inte: GitHub Pages ~1 GB totalt,
-      zoom 14-bilden (~7 600 × 7 000 px) för stor för iPhone Safari, Kartanalys räknar hela sjön. Ett
-      utsnitt på ~8 × 6 km (≈ Regnaren) går bra. Hela Mälaren kräver ombyggnad (översiktskarta i bitar,
-      djup per område, analys bara det som syns, filerna någon annanstans än GitHub). Utökning av ett
-      utsnitt senare = ny bbox, hämtar bara nya rutor (cachat). Tumregel: docs-storlek ∝ vattenyta
-      (Regnaren 143 MB, Vågsfjärden 102, Sibbo 97, Sjösjön 19; totalt ~360 MB).
+- [x] **Mälaren (stor sjö, 2026-10-06):** bara området i `tools/malaren_polygon.json` (175 km², ~66 km² vatten med
+      Genesis-data; convex hull runt alla fångster +20 %, östra sidan rak – Filips ritning). Byggs med
+      `tools/genesis_big.py` (avsnittet "Stora sjöar" nedan), inte genesis_depth/genesis_render. 70 avlästa siffror
+      0,3–48 m, 90 % inom 0,22 m, maxdjup 49 m, `depth_step` 0,3 m, `grid_div` 16 (cell ~10 m). Ska kunna
+      utökas med fler områden (Filip): större polygon i malaren_polygon.json → hämta (cachat) → bygg om.
+
+## Stora sjöar: `tools/genesis_big.py` (block)
+
+För sjöar för stora för minnet (Mälaren: 24 576 × 40 960 px på zoom 17). Samma kartlägen och ritkod som
+genesis_render.py (`make_styles`, `style_image`, `line_layer`, `bake`, `pack_depth`), men allt räknas i **block om
+4 096 × 4 096 px** (zoom 17) och bara block som rör sjöns polygon (`"clip"` i source.json, `"blocks": 4096`).
+Genesis-rutorna läses direkt ur `raw/<id>/z<z>/<lager>/` – sys aldrig ihop (för stort).
+1. **Hämta:** `FF_CLIP=<polygon.json> py -3 tools/genesis_tiles.py …` hämtar bara rutor inom polygonen (+ 2 rutor).
+   Zoom 14–17 alla lager, **zoom 18 bara `t`** (baserna kommer från zoom 17). Mälaren: `sh tools/malaren_fetch.sh`
+   (shards parallellt, ~45 min, ~70 000 rutor). **Vänta tills den är helt klar** (skriver "done") innan render – zoom 14–16 hämtas
+   sist, och ritades Mälaren medan de kom saknades kurvor/vegetation/hårdhet på zoom 16 (fick ritas om).
+2. `py -3 tools/genesis_big.py <id> colours` – alla Genesis djupfärger i polygonen, rangordnade grunt → djupt.
+3. `FF_PER=2 py -3 tools/genesis_big.py <id> sheet` → `raw/<id>/z17/labels_sheet.png`; läs av siffrorna in i
+   `lakes/<id>/raw/depth_labels.json` (positioner i globala px, `gx`/`gy`). FF_PER = siffror per 3 färger (2 räckte).
+4. `… depth [k/n]` – djupet per block (`raw/<id>/z17/depth/<bx>_<by>.npz`), marginal 640 px. Kör 8 st `k/8`
+   parallellt, sedan en gång utan (maxdjup + kontroll mot siffrorna). Mälaren: ~2 min/block.
+5. `… relief [k/n]` – T1 × AO per block (marginal 128 px) + **en ljusskala för hela sjön** (percentiler ur
+   stickprov från alla block) – annars får blocken olika ljushet och skarvar.
+6. `… render [k/n]` – bitar (bas + kurvlager, med kant från grannarna), per block `render_parts/` (översiktsbild,
+   tumnaglar, have-listor, djup-/bottennät). Utan k/n: sätter ihop allt + lake.json. ~80 s/block, ~1,4 GB/process
+   (5 parallellt gick bra). Allt är återupptagbart: klara block hoppas över (ta bort filerna för att göra om).
+Översiktsbilden (zoom 14) = flygfoto överallt i bbox:en, blockens bilder ovanpå. Inget `depth_raw.npz` (bara
+Regnarens används i testerna).
 
 ## Namn på kartan (OpenStreetMap)
 

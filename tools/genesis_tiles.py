@@ -79,6 +79,19 @@ def main():
     # (everything is cached by then, so that run is quick)
     shard = os.environ.get('FF_SHARD')
     sk, sn = (int(v) for v in shard.split('/')) if shard else (0, 1)
+    # FF_CLIP=<polygon json> ("polygon_latlon": [[lat, lon], ...], e.g. tools/malaren_polygon.json): only tiles
+    # inside the polygon (+ 2 tiles round it) -- for a big lake where only a part is wanted
+    clip = None
+    if os.environ.get('FF_CLIP'):
+        from PIL import ImageDraw
+        import numpy as np
+        poly = json.load(open(os.environ['FF_CLIP'], encoding='utf-8'))['polygon_latlon']
+        m = Image.new('L', (nx, ny), 0)
+        ImageDraw.Draw(m).polygon([(ll2px(a, b, z)[0] / 256 - tx0, ll2px(a, b, z)[1] / 256 - ty0) for a, b in poly], fill=1, outline=1)
+        clip = np.array(m, bool)
+        for _ in range(2):
+            c2 = clip.copy(); c2[1:] |= clip[:-1]; c2[:-1] |= clip[1:]; c2[:, 1:] |= clip[:, :-1]; c2[:, :-1] |= clip[:, 1:]; clip = c2
+        print('  FF_CLIP: %d of %d tiles per layer' % (clip.sum(), nx * ny))
     for L in layers:
         mode = 'RGB' if L == 'a' else 'RGBA'
         canvas = None if shard else Image.new(mode, (nx * 256, ny * 256))
@@ -86,6 +99,7 @@ def main():
         for j in range(ny):
             if j % sn != sk: continue
             for i in range(nx):
+                if clip is not None and not clip[j, i]: continue
                 qk = quadkey(tx0 + i, ty0 + j, z)
                 p = os.path.join(out, L, qk + ('.jpg' if L == 'a' else '.png'))
                 if fetch(SRC[L].format(qk=qk, s=(i + j) % 4), p):
