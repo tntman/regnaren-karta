@@ -61,6 +61,7 @@ if not getattr(_Browser, '_ffGuarded', False):
             ctx.add_init_script("try { if (!localStorage.getItem('ffmap_help_seen_v1')) localStorage.setItem('ffmap_help_seen_v1', '999'); } catch(e){}")
         if not splash:   # the start film (35-splash.js, 3.5 s) only on a first start / after 24 h -- tests start as if in use just now (test_splash: splash=True)
             ctx.add_init_script("try { if (!localStorage.getItem('ffmap_last_active_v1')) localStorage.setItem('ffmap_last_active_v1', String(Date.now())); } catch(e){}")
+            ctx.add_init_script("window.__ffNoBoot = true;")   # (nor the start picture: the app fading in over the logo)
         # Inställningar in sections: the tests start with them all open (test_extras checks closing / opening)
         ctx.add_init_script("try { if (!localStorage.getItem('ffmap_settings_open_v1')) localStorage.setItem('ffmap_settings_open_v1', '[\"map\", \"boat\", \"warn\", \"an\", \"catch\", \"off\", \"adv\"]'); } catch(e){}")
         return ctx

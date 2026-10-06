@@ -164,6 +164,15 @@
     showMapView();
     document.documentElement.classList.add('splash'); splashStart(false);
   });
+  // the start picture (head.html, html.boot: the logo on the dark blue, like iOS's launch image): the app fades
+  // in over it once the map is there (at most 1 s), then the logo's gone for good
+  (function(){
+    var c = document.documentElement.classList, mi = document.getElementById('mapImg'), t;
+    if (!c.contains('boot')) return;
+    function go(){ clearTimeout(t); requestAnimationFrame(function(){ c.remove('boot'); c.add('booted'); setTimeout(function(){ c.remove('booted'); }, 400); }); }
+    t = setTimeout(go, 1000);
+    if (mi.complete && mi.naturalWidth) go(); else mi.addEventListener('load', go, { once: true });
+  })();
   if (splashOn()){ splashStart(true); try { localStorage.removeItem('ffmap_splash_out_v1'); } catch(e){} }
   splashMark();
   setInterval(splashTick, 60000);

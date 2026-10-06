@@ -10,7 +10,7 @@ def check(name, cond, info=''):
 
 # when #app is parsed: is it already black (html.splash, and #splash before it)?
 FIRST_JS = """new MutationObserver(function(m, o){ var f = document.querySelector('script[src*=gstatic]');
-  if (f && !window.__spBg) window.__spBg = getComputedStyle(document.documentElement).backgroundColor;
+  if (f && !window.__spBg){ window.__spBg = getComputedStyle(document.documentElement).backgroundColor; window.__spBgImg = getComputedStyle(document.documentElement).backgroundImage; }
   if (document.getElementById('app')){ o.disconnect();
   window.__spFirst = { cls: document.documentElement.classList.contains('splash'), el: !!document.getElementById('splash') }; } })
   .observe(document, { childList: true, subtree: true });"""
@@ -59,8 +59,11 @@ with sync_playwright() as p:
     check('...then "Vem är du?" (a new phone)', names_shown(pg))
     # 2. a reload within 24 h (rotation, another lake, Demo Mode): no film
     pg.evaluate('window.__spBg = null'); pg.reload(); pg.wait_for_timeout(800)
-    check('a start without the film: the dark blue at once (before the Firebase scripts hold up the page own css), never white',
+    check('a start without the film: the dark blue (and the logo) at once (before the Firebase scripts hold up the page own css), never white',
           pg.evaluate('window.__spBg') == 'rgb(20, 24, 34)', pg.evaluate('window.__spBg'))
+    check('...the start picture (the logo on the dark blue), then the app fades in over it, the logo gone',
+          pg.evaluate("!document.documentElement.classList.contains('boot') && !document.documentElement.classList.contains('booted') && getComputedStyle(document.body).opacity === '1'")
+          and pg.evaluate('window.__spBgImg').startswith('url("data:image/svg'), pg.evaluate('window.__spBgImg'))
     check('reload within 24 h: no film', not sp(pg)['shown'] and not html_splash(pg) and names_shown(pg), sp(pg))
     # 3. + 5. last in use 25 h ago: the film; a tap skips to the end
     reload_ago(pg, 25)

@@ -158,6 +158,8 @@ Uppdatera rätt anteckning när något ändras.
 - **Startfilm** (`js/35-splash.js`, `tools/PLAN_SPLASH.md`): 3D-loggan 3,5 s vid första starten och när appen inte använts på > 24 h
   (`ffmap_last_active_v1`, hela telefonen: skrivs vid start, varje minut när den syns och när den döljs – även tillbaka ur bakgrunden
   utan omladdning). Även efter Logga ut + stängd app (`ffmap_splash_out_v1` i localStorage, sessionStorage-kopian stoppar den vid en vridnings omladdning). Skriptet i `src/head.html` sätter `html.splash` före första bilden (allt svart, kartan blinkar aldrig fram).
+  **Startbild** (vanlig start): loggan på #141822 direkt (html-bakgrunden, `html.boot` i head.html), appen tonar in över den (35-splash.js);
+  iOS-startbilder `assets/launch-*.png` (`tools/launch_images.py`, ny iPhone-storlek läggs till där), Android gör sin egen av manifestet.
   Namnrutan och platsfrågan (`startGeolocation`, 90-boot.js) väntar (`afterSplash`). Inställningar → Avancerat → Startfilmen "Spela" visar den igen. Testerna: fakefb sätter nyckeln = nu i varje context (opt-in `splash=True`, test_splash).
 - **Pushnotiser**: inte gjort (kräver server/Firebase-betalplan).
 
