@@ -16,7 +16,11 @@
   var msgOwn = document.getElementById('msgOwn'), msgOwnIn = document.getElementById('msgOwnIn'), msgOwnN = document.getElementById('msgOwnN');
   function openMsgOwn(open){
     msgOwn.classList.toggle('show', open);
-    if (open){ msgOwnIn.value = ''; msgOwnCount(); msgOwnIn.focus(); } else msgOwnIn.blur();
+    // (opens high up, where the keyboard won't cover it: iOS then doesn't push the whole app up to show the field --
+    // kbWatch lays it just above the keyboard once that's up; only this box, the spot sheet works its own way, Filip 2026-10-07)
+    if (open){ msgOwnIn.value = ''; msgOwnCount(); msgOwn.style.bottom = Math.round(innerHeight * 0.62) + 'px'; msgOwn._kbHold = Date.now() + 1500;
+      msgOwnIn.focus({ preventScroll: true }); }
+    else { msgOwn._kbHold = 0; msgOwnIn.blur(); }
   }
   kbWatch(msgOwn, 24);   // (above the phone's keyboard, 10-core.js; 24 px: 10 was tight, Filip 2026-10-06)
   function msgOwnCount(){

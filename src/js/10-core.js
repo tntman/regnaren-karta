@@ -118,7 +118,7 @@
         var d = r.bottom - (fill ? lift : 0) - (vv.offsetTop + vv.height - e[1]);
         if (Math.abs(d) > 1) s[p] = (lift + d) + 'px';
         var mh = Math.round(fill ? r.bottom - vv.offsetTop - 10 : vv.height - e[1] - 10) + 'px'; if (s.maxHeight !== mh) s.maxHeight = mh;   // (a tall sheet: its top stays in view)
-      } else if (s[p]){ s[p] = s.maxHeight = ''; if (window.scrollY) window.scrollTo(0, 0); }
+      } else if (s[p] && !(el._kbHold > Date.now())){ s[p] = s.maxHeight = ''; if (window.scrollY) window.scrollTo(0, 0); }   // (_kbHold: placed for the keyboard on its way, #msgOwn)
     });
     if (kbFocused() || Date.now() < kbUntil) requestAnimationFrame(kbTick); else kbOn = false;
   }

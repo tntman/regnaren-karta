@@ -142,10 +142,11 @@ with sync_playwright() as p:
     pg.click('#msgOwnBtn'); pg.wait_for_timeout(80)
     c = pg.evaluate("(() => { const r = document.getElementById('msgOwn').getBoundingClientRect(); return [r.x + r.width / 2, innerWidth / 2]; })()")
     check('...it comes in centred (not sliding in from the side)', abs(c[0] - c[1]) < 4, c)
+    check('...it opens high up, where the keyboard will not cover it (iOS then does not push the whole app up)',
+          pg.evaluate("document.getElementById('msgOwn').getBoundingClientRect().bottom < innerHeight * 0.45"))
     pg.wait_for_timeout(220)
     check('...tap it: the small box, ready to type (focused), the choices gone', pg.is_visible('#msgOwn') and pg.evaluate("document.activeElement.id") == 'msgOwnIn' and not pg.is_visible('#msgPop') and pg.inner_text('#msgOwnN') == '0/15')
     # the keyboard (iOS: only the visual viewport shrinks), reported late and in steps, iOS scrolled 50 px to show the field
-    b0 = pg.evaluate("document.getElementById('msgOwn').getBoundingClientRect().bottom")
     pg.evaluate("""() => { var vv = visualViewport, h = innerHeight; window.__kbH = h - 200; window.__kbT = 0; window.__kbScrolls = 0;
       var st = window.scrollTo; window.scrollTo = function(){ window.__kbScrolls++; return st.apply(window, arguments); };
       Object.defineProperty(vv, 'height', { configurable: true, get: () => window.__kbH }); Object.defineProperty(vv, 'offsetTop', { configurable: true, get: () => window.__kbT });
@@ -158,7 +159,7 @@ with sync_playwright() as p:
     kb2 = pg.evaluate("innerHeight - 330 - document.getElementById('msgOwn').getBoundingClientRect().bottom")
     check('...the keyboard changes long after (no event, the field still has focus): the box follows', abs(kb2 - 24) < 1.5, kb2)
     pg.evaluate("() => { delete visualViewport.height; delete visualViewport.offsetTop; visualViewport.dispatchEvent(new Event('resize')); }"); pg.wait_for_timeout(100)
-    check('...the keyboard down: back in its place', abs(pg.evaluate("document.getElementById('msgOwn').getBoundingClientRect().bottom") - b0) < 1, b0)
+    check('...the keyboard down: back in its place', pg.evaluate("document.getElementById('msgOwn').style.bottom") == '')
     pg.keyboard.type('Vart är ni?? 😅!!!!'); pg.wait_for_timeout(200)
     v = pg.input_value('#msgOwnIn')
     check('...at most 15 characters (an emoji counts as one); the counter red when full', len(list(v)) == 15 and v == 'Vart är ni?? 😅!' and pg.inner_text('#msgOwnN') == '15/15' and pg.eval_on_selector('#msgOwnN', 'e => e.classList.contains("full")'), v)
@@ -166,7 +167,7 @@ with sync_playwright() as p:
     pg.keyboard.press('Enter'); pg.wait_for_timeout(400)
     w = [x for x in pg.evaluate('window.__posWrites') if x.get('msg')]
     check('...Enter sends it (for everyone) and shows it at your boat', w and w[-1]['msg'] == 'Vart är ni?? 😅!' and not pg.is_visible('#msgOwn') and any(m['k'] == 'me' and 'Vart är ni' in m['t'] for m in pg.evaluate('window.__ffMsgs()')), w)
-    pg.click('#msgBtn'); pg.click('#msgOwnBtn'); pg.wait_for_timeout(200); pg.keyboard.type('Nej'); pg.mouse.click(200, 300); pg.wait_for_timeout(300)
+    pg.click('#msgBtn'); pg.click('#msgOwnBtn'); pg.wait_for_timeout(200); pg.keyboard.type('Nej'); pg.mouse.click(60, pg.evaluate('innerHeight * 0.7')); pg.wait_for_timeout(300)   # (the map -- the box opens high up)
     check('...tap outside: closed, nothing sent', not pg.is_visible('#msgOwn') and not [x for x in pg.evaluate('window.__posWrites') if x.get('msg') == 'Nej'])
     check('no page errors', not errs, errs)
     b.close()
