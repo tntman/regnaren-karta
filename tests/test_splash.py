@@ -51,9 +51,9 @@ with sync_playwright() as p:
           && !document.documentElement.classList.contains('booted') && getComputedStyle(document.body).opacity === '1'"""))
     check('...no film at start, "Vem är du?"', not sp(pg)['shown'] and not html_splash(pg) and names_shown(pg), sp(pg))
     fakefb.login(pg, 'Filip'); pg.wait_for_timeout(100)
-    check('a name chosen: the dark (#141822 = the status bar, no edge) fades in over the app, the film',
+    check('a name chosen: black fades in over the app (the top fades from the status bar #141822, no edge), the film',
           html_splash(pg) and sp(pg)['running'] and pg.evaluate("document.getElementById('splash').classList.contains('spIn')")
-          and theme(pg) == '#141822' and pg.evaluate("getComputedStyle(document.querySelector('#splash .spBlack')).backgroundColor") == 'rgb(20, 24, 34)', sp(pg))
+          and theme(pg) == '#141822' and pg.evaluate("getComputedStyle(document.querySelector('#splash .spBlack')).backgroundColor") == 'rgb(0, 0, 0)' and pg.is_visible('#splash .spTop'), sp(pg))
     pg.wait_for_function("window.__ffSplash().mode === 'film'", timeout=10000)
     check('...the film runs (3D sign); the welcome card and the location question wait', sp(pg)['gl'] and not names_shown(pg) and not pg.is_visible('#welcomeNote')
           and pg.evaluate('window.__geoAt.length') == 0, (sp(pg), pg.evaluate('window.__geoAt')))

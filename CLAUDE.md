@@ -159,7 +159,8 @@ Uppdatera rätt anteckning när något ändras.
   samma som Heatmap/Kartanalys ritar (`hmShoreLayer`, `js/68-heatmap.js`); döljs när de visas (de har sin egen).
 - **Startfilm** (`js/35-splash.js`, `tools/PLAN_SPLASH.md`): 3D-loggan 3,5 s **varje gång ett namn väljs** ("Vem är du?": ny telefon,
   efter Logga ut – även utan att appen stängts) och från Inställningar → Avancerat → Startfilmen "Spela" (`splashPlay()`): svart tonar in
-  över appen, sedan filmen. Filmens "svart" är #141822 = statusraden (iOS byter inte statusradens färg i en igång hemskärmsapp) – ingen kant.
+  över appen, sedan filmen. Filmen är svart; toppen tonar från statusradens #141822 (`.spTop` – iOS byter inte statusradens färg i en igång hemskärmsapp;
+  Filip 2026-10-06: helt svart först i iPhone-appen (Capacitor), som kan styra statusraden).
   Välkomstrutan och platsfrågan (`startGeolocation`, 90-boot.js) väntar (`afterSplash`). Ingen film efter 24 h (Filips beslut 2026-10-06).
   **Startbild** (varje start utom vridningens omladdning): loggan på #141822 direkt (html-bakgrunden, `html.boot` i head.html), appen tonar in
   över den (1,2 s). Prövat: svart startbild med blå tona överst – syntes som en kant. Firebase-skripten ligger sist i body (`html/99-firebase.html`)

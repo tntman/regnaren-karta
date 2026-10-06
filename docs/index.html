@@ -2121,23 +2121,25 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   .setSec, #settingsBody > .settingsRow, #visMore, #hmPanel, #anPanel, #wpSheet, #menuPanel{box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 18px 50px rgba(0,0,0,.4);}
   .anSeg button.on::before, .helpSeg button.on::before, .segmented button.active::before{box-shadow:inset 0 1px 0 rgba(255,255,255,.08);}
   /* ---------------- The start film (js/35-splash.js) ----------------
-     html.splash = the film over everything (a name chosen, "Spela"). Its "black" is #141822 = the status bar (iOS keeps
-     that colour in a home-screen app): no edge at the top. */
+     html.splash = the film over everything (a name chosen, "Spela"). */
   #splash{display:none;}
   html.splash #splash{display:block;position:fixed;inset:0;z-index:100000;touch-action:none;}
-  #splash.spIn{animation:spIn .5s both;}   /* (the dark closes over the app) */
+  #splash.spIn{animation:spIn .5s both;}   /* (the black closes over the app) */
   @keyframes spIn{from{opacity:0}}
   #splash > *{position:absolute;inset:0;width:100%;height:100%;}
-  .spBlack{background:#141822;}
-  .spGlow{background:radial-gradient(55% 34% at 50% 47%, #5a2c1c 0%, #35211f 38%, #1b1b23 70%, #141822 100%);opacity:0;}
+  .spBlack{background:#000;}
+  .spGlow{background:radial-gradient(55% 34% at 50% 47%, #5a2c1c 0%, #2a1612 38%, #0a0608 70%, #000 100%);opacity:0;}
   .spLogo canvas{position:absolute;inset:0;width:100%;height:100%;}
   .spBloom{filter:blur(16px) brightness(1.2) saturate(1.4);mix-blend-mode:screen;opacity:0;}
   #splash .spFlat{inset:auto;left:50%;top:47%;width:min(62vw,320px);height:auto;transform:translate(-50%,-50%);}
   .spFlat:not([src]){display:none;}
   .spFlash{background:radial-gradient(circle at 50% 47%, #fff6ea, #ffd2a8 40%, #f09a60 100%);opacity:0;}
-  .spVig{background:radial-gradient(120% 80% at 50% 47%, transparent 45%, rgba(20,24,34,.85) 100%);}
-  .spGrain{opacity:.09;mix-blend-mode:overlay;-webkit-mask-image:linear-gradient(transparent, #000 90px);mask-image:linear-gradient(transparent, #000 90px);
+  .spVig{background:radial-gradient(120% 80% at 50% 47%, transparent 45%, rgba(0,0,0,.85) 100%);}
+  .spGrain{opacity:.09;mix-blend-mode:overlay;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+  /* iOS keeps the status bar's #141822 in a home-screen app (it isn't recoloured once the page has loaded): the top
+     fades from it into the black instead of an edge (the iPhone app (Capacitor) can make it all black) */
+  #splash .spTop{height:64px;bottom:auto;background:linear-gradient(#141822, rgba(20,24,34,0));}
   #splash.lite .spGrain, #splash.lite .spBloom{display:none;}   /* (older phones, the flat logo) */
 </style>
 </head>
@@ -2152,6 +2154,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   <div class="spFlash"></div>
   <div class="spVig"></div>
   <div class="spGrain"></div>
+  <div class="spTop"></div>
 </div>
 <div id="app">
   <div id="stage">
@@ -6365,7 +6368,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
      -- nothing keeps running. Hjälp and the location question wait for it (afterSplash). */
   var spEl = document.getElementById('splash'), spLogo = spEl.querySelector('.spLogo'), spBloom = spEl.querySelector('.spBloom');
   var spFlatImg = spEl.querySelector('.spFlat'), spApp = document.getElementById('app'), spS = {};
-  ['spBlack', 'spGlow', 'spLogo', 'spFlash', 'spVig', 'spGrain'].forEach(function(c){ spS[c] = spEl.querySelector('.' + c).style; });
+  ['spBlack', 'spGlow', 'spLogo', 'spFlash', 'spVig', 'spGrain', 'spTop'].forEach(function(c){ spS[c] = spEl.querySelector('.' + c).style; });
   var spSt = { shown: false, running: false, t: 0, mode: '' }, spRaf = 0, spGl = null, spWait = [], spSafety = 0, spLoadTimer = 0, spBlur = false;
   function splashOn(){ return document.documentElement.classList.contains('splash'); }
   function afterSplash(fn){ if (splashOn()) spWait.push(fn); else fn(); }
@@ -6396,6 +6399,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     spS.spBlack.opacity = p.blackA;
     spS.spVig.opacity = Math.max(p.blackA, p.logoA);
     spS.spGrain.opacity = (0.09 * p.blackA).toFixed(3);
+    spS.spTop.opacity = p.blackA;
     spS.spGrain.backgroundPosition = (Math.random() * 160 | 0) + 'px ' + (Math.random() * 160 | 0) + 'px';
     // the app under it: from blurred and darker to sharp (only on phones that manage it)
     spApp.style.filter = spBlur && p.appBlur ? 'blur(' + (14 * p.appBlur).toFixed(1) + 'px) brightness(' + (1 - 0.3 * p.appBlur).toFixed(2) + ')' : '';

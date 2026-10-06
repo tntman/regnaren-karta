@@ -7,7 +7,7 @@
      -- nothing keeps running. Hjälp and the location question wait for it (afterSplash). */
   var spEl = document.getElementById('splash'), spLogo = spEl.querySelector('.spLogo'), spBloom = spEl.querySelector('.spBloom');
   var spFlatImg = spEl.querySelector('.spFlat'), spApp = document.getElementById('app'), spS = {};
-  ['spBlack', 'spGlow', 'spLogo', 'spFlash', 'spVig', 'spGrain'].forEach(function(c){ spS[c] = spEl.querySelector('.' + c).style; });
+  ['spBlack', 'spGlow', 'spLogo', 'spFlash', 'spVig', 'spGrain', 'spTop'].forEach(function(c){ spS[c] = spEl.querySelector('.' + c).style; });
   var spSt = { shown: false, running: false, t: 0, mode: '' }, spRaf = 0, spGl = null, spWait = [], spSafety = 0, spLoadTimer = 0, spBlur = false;
   function splashOn(){ return document.documentElement.classList.contains('splash'); }
   function afterSplash(fn){ if (splashOn()) spWait.push(fn); else fn(); }
@@ -38,6 +38,7 @@
     spS.spBlack.opacity = p.blackA;
     spS.spVig.opacity = Math.max(p.blackA, p.logoA);
     spS.spGrain.opacity = (0.09 * p.blackA).toFixed(3);
+    spS.spTop.opacity = p.blackA;
     spS.spGrain.backgroundPosition = (Math.random() * 160 | 0) + 'px ' + (Math.random() * 160 | 0) + 'px';
     // the app under it: from blurred and darker to sharp (only on phones that manage it)
     spApp.style.filter = spBlur && p.appBlur ? 'blur(' + (14 * p.appBlur).toFixed(1) + 'px) brightness(' + (1 - 0.3 * p.appBlur).toFixed(2) + ')' : '';
