@@ -18,7 +18,6 @@
   function splashMark(){ try { localStorage.setItem(SPLASH_KEY, String(Date.now())); } catch(e){} }
   // Logga ut, then the app closed: the film on the next start (sessionStorage: not on a rotation's reload before that)
   function splashAfterLogout(){ try { localStorage.setItem('ffmap_splash_out_v1', '1'); sessionStorage.setItem('ffmap_splash_out_v1', '1'); } catch(e){} }
-  function spTheme(c){ var m = document.querySelector('meta[name=theme-color]'); if (m) m.content = c; }   // (the status bar: black during the film)
 
   function spSeg(t, a, b){ return Math.max(0, Math.min(1, (t - a) / (b - a))); }
   function spInOut(x){ return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; }
@@ -106,12 +105,11 @@
     };
   }
   function spCancelLoad(){ clearTimeout(spLoadTimer); spLoadTimer = 0; }
-  // atLoad: head.html made it black before the page was drawn (the status bar too). Later (Spela, back from the
-  // background) iOS keeps the status bar's colour: leave it, and fade the top from it instead (.tint)
-  function splashStart(atLoad){
+  // the status bar keeps its #141822 (iOS doesn't recolour it in a home-screen app, and the start picture is that
+  // blue too): the film's top fades from it into the black (.tint)
+  function splashStart(){
     spSt.shown = spSt.running = true; spSt.t = 0; spSt.mode = 'load';
-    if (atLoad) spTheme('#000');
-    spEl.classList.toggle('tint', !atLoad);
+    spEl.classList.add('tint');
     clearTimeout(spSafety); spSafety = setTimeout(splashDone, 9000);   // (whatever happens: never stuck behind the black)
     var flat = nlTier === 'flat' || nlReduce;
     spBlur = !flat && nlTier === 'full';
@@ -140,7 +138,6 @@
     spFlatImg.removeAttribute('src');
     spApp.style.filter = spApp.style.transform = '';
     document.documentElement.classList.remove('splash', 'bootsp');
-    spTheme('#141822');   // (as in head.html)
     spSt.running = false; spSt.mode = '';
     var w = spWait; spWait = [];
     w.forEach(function(f){ f(); });
@@ -155,16 +152,16 @@
   // in use = now; shown again after > 24 h (also back from the background without a reload)
   function splashTick(e){
     var vis = document.visibilityState !== 'hidden';
-    if (vis && !splashOn() && splashAge() > SPLASH_GAP){ document.documentElement.classList.add('splash'); splashStart(false); }
+    if (vis && !splashOn() && splashAge() > SPLASH_GAP){ document.documentElement.classList.add('splash'); splashStart(); }
     if (vis || e) splashMark();   // (every minute while it's shown, and when it's hidden)
   }
   // Inställningar -> Avancerat -> Startfilmen: play it again (over the map, so the settings' own 3D logo isn't running too)
   document.getElementById('splashReplayBtn').addEventListener('click', function(){
     if (splashOn()) return;
     showMapView();
-    document.documentElement.classList.add('splash'); splashStart(false);
+    document.documentElement.classList.add('splash'); splashStart();
   });
-  // the start picture (head.html, html.boot: the logo on black, like iOS's launch image): the app fades
+  // the start picture (head.html, html.boot: the logo on the dark blue, like iOS's launch image): the app fades
   // in over it once the map is there (at most 1 s), then the logo's gone for good
   (function(){
     var c = document.documentElement.classList, mi = document.getElementById('mapImg'), t;
@@ -173,7 +170,7 @@
     t = setTimeout(go, 1000);
     if (mi.complete && mi.naturalWidth) go(); else mi.addEventListener('load', go, { once: true });
   })();
-  if (splashOn()){ splashStart(true); try { localStorage.removeItem('ffmap_splash_out_v1'); } catch(e){} }
+  if (splashOn()){ splashStart(); try { localStorage.removeItem('ffmap_splash_out_v1'); } catch(e){} }
   splashMark();
   setInterval(splashTick, 60000);
   document.addEventListener('visibilitychange', splashTick);
