@@ -165,3 +165,15 @@ if os.environ.get('NOLINES'): ta = ta * 0
 Körs med `PYTHONPATH=tools`, `NOLINES=1 … regnaren preview 14,15,16,17 <mapp>` och `LINESONLY=1 … preview 15,16,17,18 <mapp>`.
 Mätt (bit 11_3, s1): z17 idag JPG 83 kB → bas 11 + kurvor 45 = 56 kB; z18 idag 253 kB (4 bitar) → kurvor 110 kB.
 Bas WebP 80/65/50/35 = 21/16/14/11 kB.
+
+## Framtid: repots storlek (2026-10-06)
+
+Varje kartversion ligger kvar i git-historiken (de gamla kartorna är borttagna ur `docs/`, men inte ur historiken).
+Repot var ~1 GB lokalt efter kartformatet + Mälaren (GitHub rekommenderar < 1 GB, varnar vid 5 GB; Pages-gränsen
+1 GB gäller bara den publicerade sidan – ~380 MB nu). Skriv inte om historiken i vardagen (inget force-push, beslut).
+Om repot närmar sig några GB:
+1. **Kartorna i ett eget repo/annan lagring** (t.ex. eget GitHub Pages-repo `ffmap-kartor` eller molnlagring), appens
+   repo förblir litet; `lakeUrl()` (`js/10-core.js`) pekar dit. Bäst på sikt, särskilt om fler stora sjöar kommer.
+2. **Engångsrensning av historiken** (git filter-repo på `docs/lakes/`), planerad med Filip, när inga andra kopior
+   används (app-grenen, GitHub Desktop, andra chattars worktrees) – kräver force-push en gång.
+Kolla storleken: `git count-objects -vH` (size-pack).
