@@ -18,9 +18,9 @@
   ];
   var AN_HARD = ['Mjuk', 'Medelhård', 'Hård', 'Mycket hård'];      // Genesis' 4 levels
   var AN_COLORS = { depth: null, steep: [255, 70, 200], tops: [255, 190, 40], veg: [90, 235, 80], hard: [240, 70, 10],
-                    wind: [255, 178, 63], similar: [255, 80, 160], abborre: [255, 210, 26], gadda: [120, 255, 120], gos: [58, 134, 255],
-                    c_abborre: [255, 122, 26], c_gadda: [53, 210, 74], c_gos: [58, 134, 255] };   // (c_ = from the catches: the species' colours)
-  var AN_PLAIN = { depth: 1, steep: 1, tops: 1, veg: 1, hard: 1, wind: 1, combo: 1 };   // Kartdata: no colour, just the map shown through the mask
+                    wind: [255, 178, 63], similar: [255, 80, 160], abborre: [255, 210, 26], gadda: [120, 255, 120], gos: [58, 134, 255] };
+  // Kartdata and Fångster "Tänt" (Filip 2026-10-06): no colour, just the map shown through the mask ("Skala" colours the whole lake)
+  var AN_PLAIN = { depth: 1, steep: 1, tops: 1, veg: 1, hard: 1, wind: 1, combo: 1, c_abborre: 1, c_gadda: 1, c_gos: 1 };
   // the depth scale of the sliders = the legend's (0 .. the lake's max depth, same colours)
   var AN_DMAX = parseFloat(String((LAKE.legendTicks || []).slice(-1)[0] || '').replace(',', '.')) || Math.ceil(LAKE.depth.max || 20);
   var AN_SIMF = [['d', 'Djup'], ['s', 'Lutning'], ['h', 'Botten'], ['v', 'Växter'], ['t', 'Grynna/håla']];

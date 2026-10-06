@@ -50,7 +50,9 @@ with sync_playwright() as p:
     size(pg, '#anControls', 0, 130); pg.wait_for_timeout(2000)
     l7 = lit_pct(pg)
     check('...the data decides how much is lit, short on the row: "Fiska i det tända: x % av gäddorna på y % av sjön · Se ⓘ" (fits: not cut)', l7 is not None and re.search(r'Fiska i det tända: \d+ % av gäddorna på', res) and res.rstrip().endswith('Se ⓘ') and pg.evaluate("(() => { var r = document.getElementById('anResult'); return r.scrollHeight <= r.clientHeight + 2; })()"), res)
-    check('...lit in the species\' colour (green), the catches as dots', pixels(pg, 'green') > 300, pixels(pg, 'green'))
+    clear = pg.evaluate("""() => { var c = document.getElementById('anLayer'), d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data, n = 0;
+      for (var i = 3; i < d.length; i += 4) if (d[i] === 0) n++; return n; }""")
+    check('..."Tänt" only masks: the lit part is the map itself (no colour on it, like Kartdata), the catches as dots', pixels(pg, 'green') < 20 and clear > 1000, (pixels(pg, 'green'), clear))
     dots = pg.eval_on_selector_all('#anCF button', 'e => e.map(x => x.textContent)')
     check('each value with dots (how much it alone points gädda out here), at least one ●●●', len(dots) == 6 and all(re.search('[●○]{3}', d) for d in dots) and any('●●●' in d for d in dots), dots)
     pg.screenshot(path='shot_ancatch_area.png')
