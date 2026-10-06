@@ -111,6 +111,10 @@ Alla kommandon körs från repots rot (`E:\github\regnaren-karta`), med `py -3`.
 - **Förhandsgranska innan bygge:** `py -3 tools/genesis_render.py <id> preview 14,15 <mapp>`
   ritar hela bilderna för de nivåerna i alla kartlägen till en valfri mapp, utan att
   röra `docs/` eller `lakes/`.
+- **Ny kartversion och iPhone-appen (beslut 2026-10-06, app-chatten):** appen (Capacitor) packar in
+  `lake.json` och hämtar detaljbitarna från webben. Får en sjö ny kartversion (`tiles_v<N>`) och den gamla
+  mappen tas bort, visar appen suddiga bitar tills en ny app byggs. **Claude påminner Filip:** "Ny kartversion –
+  be app-chatten bygga ny app."
 
 ---
 
