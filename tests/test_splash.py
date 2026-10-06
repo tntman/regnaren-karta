@@ -44,8 +44,8 @@ with sync_playwright() as p:
     # 1. the first start
     b, pg, errs, reqs = fresh(p)
     first = pg.evaluate('window.__spFirst')
-    check('first start: black from the very first picture (html.splash and #splash before the map is parsed), status bar black',
-          first == {'cls': True, 'el': True} and theme(pg) == '#000', (first, theme(pg)))
+    check('first start: black from the very first picture (html.splash and #splash before the map is parsed), status bar black (no top fade)',
+          first == {'cls': True, 'el': True} and theme(pg) == '#000' and not pg.is_visible('#splash .spTop'), (first, theme(pg)))
     pg.wait_for_function("window.__ffSplash().mode === 'film'", timeout=10000)
     check('...the film runs (3D sign), the name picker waits', sp(pg)['gl'] and pg.is_visible('#splash') and not names_shown(pg), sp(pg))
     t0 = time.time(); ok = done(pg)
@@ -82,6 +82,7 @@ with sync_playwright() as p:
     pg.click('#splashReplayBtn'); pg.wait_for_timeout(100)
     check('Inställningar -> Avancerat -> Startfilmen "Spela": the film again, Inställningar closed (its 3D logo stops)',
           sp(pg)['running'] and html_splash(pg) and not pg.evaluate("document.getElementById('settingsView').classList.contains('show')"), sp(pg))
+    check('...without a reload the status bar stays #141822 (iOS keeps it): the top fades from it instead', theme(pg) == '#141822' and pg.is_visible('#splash .spTop'), theme(pg))
     check('...over again, back on the map', done(pg, 12000) and not html_splash(pg) and not sp(pg)['gl'], sp(pg))
     check('no errors', not errs, errs)
     b.close()

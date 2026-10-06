@@ -10,7 +10,7 @@
   var SPLASH_KEY = 'ffmap_last_active_v1', SPLASH_GAP = 24 * 3600000;
   var spEl = document.getElementById('splash'), spLogo = spEl.querySelector('.spLogo'), spBloom = spEl.querySelector('.spBloom');
   var spFlatImg = spEl.querySelector('.spFlat'), spApp = document.getElementById('app'), spS = {};
-  ['spBlack', 'spGlow', 'spLogo', 'spFlash', 'spVig', 'spGrain'].forEach(function(c){ spS[c] = spEl.querySelector('.' + c).style; });
+  ['spBlack', 'spGlow', 'spLogo', 'spFlash', 'spVig', 'spGrain', 'spTop'].forEach(function(c){ spS[c] = spEl.querySelector('.' + c).style; });
   var spSt = { shown: false, running: false, t: 0, mode: '' }, spRaf = 0, spGl = null, spWait = [], spSafety = 0, spLoadTimer = 0, spBlur = false;
   function splashOn(){ return document.documentElement.classList.contains('splash'); }
   function afterSplash(fn){ if (splashOn()) spWait.push(fn); else fn(); }   // (the name picker waits: never two WebGL at once)
@@ -44,6 +44,7 @@
     spS.spBlack.opacity = p.blackA;
     spS.spVig.opacity = Math.max(p.blackA, p.logoA);
     spS.spGrain.opacity = (0.09 * p.blackA).toFixed(3);
+    spS.spTop.opacity = p.blackA;
     spS.spGrain.backgroundPosition = (Math.random() * 160 | 0) + 'px ' + (Math.random() * 160 | 0) + 'px';
     // the app under it: from blurred and darker to sharp (only on phones that manage it)
     spApp.style.filter = spBlur && p.appBlur ? 'blur(' + (14 * p.appBlur).toFixed(1) + 'px) brightness(' + (1 - 0.3 * p.appBlur).toFixed(2) + ')' : '';
@@ -103,9 +104,12 @@
     };
   }
   function spCancelLoad(){ clearTimeout(spLoadTimer); spLoadTimer = 0; }
-  function splashStart(){
+  // atLoad: head.html made it black before the page was drawn (the status bar too). Later (Spela, back from the
+  // background) iOS keeps the status bar's colour: leave it, and fade the top from it instead (.tint)
+  function splashStart(atLoad){
     spSt.shown = spSt.running = true; spSt.t = 0; spSt.mode = 'load';
-    spTheme('#000');
+    if (atLoad) spTheme('#000');
+    spEl.classList.toggle('tint', !atLoad);
     clearTimeout(spSafety); spSafety = setTimeout(splashDone, 9000);   // (whatever happens: never stuck behind the black)
     var flat = nlTier === 'flat' || nlReduce;
     spBlur = !flat && nlTier === 'full';
@@ -149,16 +153,16 @@
   // in use = now; shown again after > 24 h (also back from the background without a reload)
   function splashTick(e){
     var vis = document.visibilityState !== 'hidden';
-    if (vis && !splashOn() && splashAge() > SPLASH_GAP){ document.documentElement.classList.add('splash'); splashStart(); }
+    if (vis && !splashOn() && splashAge() > SPLASH_GAP){ document.documentElement.classList.add('splash'); splashStart(false); }
     if (vis || e) splashMark();   // (every minute while it's shown, and when it's hidden)
   }
   // Inställningar -> Avancerat -> Startfilmen: play it again (over the map, so the settings' own 3D logo isn't running too)
   document.getElementById('splashReplayBtn').addEventListener('click', function(){
     if (splashOn()) return;
     showMapView();
-    document.documentElement.classList.add('splash'); splashStart();
+    document.documentElement.classList.add('splash'); splashStart(false);
   });
-  if (splashOn()) splashStart();
+  if (splashOn()) splashStart(true);
   splashMark();
   setInterval(splashTick, 60000);
   document.addEventListener('visibilitychange', splashTick);

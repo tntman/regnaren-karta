@@ -13,4 +13,8 @@
   .spVig{background:radial-gradient(120% 80% at 50% 47%, transparent 45%, rgba(0,0,0,.85) 100%);}
   .spGrain{opacity:.09;mix-blend-mode:overlay;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+  /* started without a reload (Spela, back from the background): iOS doesn't recolour the status bar then -- the
+     top fades from its #141822 into the black instead of an edge */
+  #splash .spTop{display:none;height:64px;bottom:auto;background:linear-gradient(#141822, rgba(20,24,34,0));}
+  #splash.tint .spTop{display:block;}
   #splash.lite .spGrain, #splash.lite .spBloom{display:none;}   /* (older phones, the flat logo) */

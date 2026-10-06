@@ -2,7 +2,9 @@
 
 **Byggd 2026-10-06** (main-chatten). Avvikelse: HTML:en ligger i `src/html/05-splash.html` (först i sidan, så att den finns
 redan i första bilden) i stället för 60-. Testkrok: `window.__ffSplashLoadMs` (gränsen 1,5 s; testerna väntar längre).
-**Kvar:** Filip provar på iPhone (statusraden #000 → #141822, mjukheten).
+Filip 2026-10-06: vid "Spela" (utan omladdning) byter iOS inte statusradens färg → då rörs den inte, och toppen tonar i stället
+från #141822 ner i det svarta (`.spTop`, `#splash.tint`). Vid start (head-skriptet före första bilden) sätts den till #000.
+**Kvar:** Filip kollar att statusraden är svart vid en riktig start.
 
 Från sidochatten 2026-10-06. Mockupen som Filip godkände (förslag 7) finns i `tools/splash_mockup.html`
 (öppna via servern "repo" i `.claude/launch.json`: http://localhost:8897/tools/splash_mockup.html;
