@@ -243,7 +243,7 @@
     background:rgba(28,33,44,.96);border:1px solid rgba(255,210,26,.6);border-radius:14px;padding:11px 40px 11px 14px;color:var(--offwhite);
     box-shadow:0 8px 24px rgba(0,0,0,.5);font-size:13px;line-height:1.4;transition:opacity .8s;}
   #wakeNote.show{display:block;}
-  /* cards at the top that stay until tapped or closed: "Ny version" (#updNote, sw.js), the welcome (#welcomeNote) */
+  /* cards at the top that stay until tapped or closed: the welcome (#welcomeNote) */
   .topNote{position:absolute;left:14px;right:14px;top:calc(env(safe-area-inset-top,0px) + 96px);z-index:31;max-width:400px;display:none;
     background:rgba(28,33,44,.96);border:1px solid rgba(255,210,26,.6);border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.5);}
   .topNote.show{display:block;}

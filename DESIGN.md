@@ -146,7 +146,7 @@ Kort och med lite fjäder, aldrig loopande (utom GPS-ringen).
 - **Avsnitt** (Inställningar) och ⓘ-rutorna fälls ut och ihop mjukt (höjden glider, 0,38 s). Valda fliken glider över, ↺ snurrar ett varv.
 - **Heatmap och Kartanalys** tonar in på kartan.
 - **En ny plats landar** (nålen faller, ringen sprids) – det enda stora ögonblicket.
-- **Startfilmen** (första starten och efter > 24 h, 3,5 s, `js/35-splash.js`): ur helt svart snurrar 3D-loggan in ett lugnt varv
+- **Startfilmen** (när ett namn väljs och vid "Spela", 3,5 s, `js/35-splash.js`): ur helt svart snurrar 3D-loggan in ett lugnt varv
   (55 % → full storlek) medan ljuset tonar upp och är fullt när den landar (1,9 s); den vaggar, nyckelljusets glans glider över;
   sedan vrider den sig och flyger genom kameran med en varm blixt (3,0 s) och det svarta löses upp mot appen, som går från suddig
   till skarp. Ljus: varmt nyckelljus #ffd9b0, kallt motljus #7fb0ff, varmt fyllnadsljus #ff9a60, klarlack, ACES; varmt sken bakom,

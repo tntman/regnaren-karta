@@ -1,8 +1,7 @@
 /* FF Map service worker: lets the app open even without coverage.
-   - The app page itself: the saved copy at once (a fast start, no white), the
-     newest fetched alongside it -- changed: saved for the next start and the
-     page shows "Ny version – tryck för att ladda om" (#updNote). The very
-     first time: the network (the saved copy after 4 s, if there is one).
+   - The app page itself: always tries the network first (so a new version
+     reaches everyone as soon as they have coverage), but gives up after
+     4 s and uses the saved copy instead.
    - Icons, manifest, the map pictures and the Firebase library: served
      from the saved copy (fetched and saved the first time).
    - Firebase's own traffic (the database, sign-in) is never touched here --
@@ -53,48 +52,6 @@ self.addEventListener('message', function(e){
   }));
 });
 
-// the very first start (nothing saved yet): the network, the saved copy only if it doesn't answer in 4 s
-function fromNetwork(req){
-  return new Promise(function(resolve){
-    var done = false;
-    function useSaved(){
-      if (done) return;
-      caches.match(APP_KEY).then(function(r){
-        if (done) return;
-        if (r){ done = true; resolve(r); }
-      });
-    }
-    var timer = setTimeout(useSaved, 4000); // weak coverage: don't keep people waiting
-    fetch(req).then(function(r){
-      if (r.ok){
-        var copy = r.clone();
-        caches.open(CACHE).then(function(c){ c.put(APP_KEY, copy); });
-      }
-      if (!done){ done = true; clearTimeout(timer); resolve(r); }
-    }).catch(function(){
-      clearTimeout(timer);
-      caches.match(APP_KEY).then(function(r){
-        if (done) return;
-        done = true;
-        resolve(r || new Response('FF Map kunde inte laddas utan nät.', { status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8' } }));
-      });
-    });
-  });
-}
-// the page from the network (past the browser's own cache); changed -> saved, and the open pages are told
-function refreshApp(saved){
-  return Promise.all([fetch(new URL(APP_KEY, self.registration.scope).href, { cache: 'no-cache' }), saved.text()]).then(function(a){
-    var r = a[0];
-    if (!r.ok) return;
-    return r.clone().text().then(function(t){
-      if (t === a[1]) return;
-      return caches.open(CACHE).then(function(c){ return c.put(APP_KEY, r); }).then(function(){
-        return self.clients.matchAll({ type: 'window' });
-      }).then(function(cs){ cs.forEach(function(c){ c.postMessage({ type: 'newVersion' }); }); });
-    });
-  }).catch(function(){});
-}
-
 function isAppPage(req, url){
   return req.mode === 'navigate' ||
     (url.origin === self.location.origin && (/\/$/.test(url.pathname) || /\/index\.html$/.test(url.pathname)));
@@ -106,11 +63,31 @@ self.addEventListener('fetch', function(e){
   var url = new URL(req.url);
 
   if (isAppPage(req, url)){
-    // the saved copy at once (a fast start, no white while the page comes over the network), and the newest
-    // fetched alongside it: if it's changed, it's saved for the next start and the page offers "Ny version"
-    var saved = caches.match(APP_KEY);
-    e.respondWith(saved.then(function(r){ return r || fromNetwork(req); }));
-    e.waitUntil(saved.then(function(r){ if (r) return caches.match(APP_KEY).then(refreshApp); }));   // (its own copy: the first one's body goes to the page)
+    e.respondWith(new Promise(function(resolve){
+      var done = false;
+      function useSaved(){
+        if (done) return;
+        caches.match(APP_KEY).then(function(r){
+          if (done) return;
+          if (r){ done = true; resolve(r); }
+        });
+      }
+      var timer = setTimeout(useSaved, 4000); // weak coverage: don't keep people waiting
+      fetch(req).then(function(r){
+        if (r.ok){
+          var copy = r.clone();
+          caches.open(CACHE).then(function(c){ c.put(APP_KEY, copy); });
+        }
+        if (!done){ done = true; clearTimeout(timer); resolve(r); }
+      }).catch(function(){
+        clearTimeout(timer);
+        caches.match(APP_KEY).then(function(r){
+          if (done) return;
+          done = true;
+          resolve(r || new Response('FF Map kunde inte laddas utan nät.', { status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8' } }));
+        });
+      });
+    }));
     return;
   }
 

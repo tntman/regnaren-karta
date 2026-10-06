@@ -1369,7 +1369,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     background:rgba(28,33,44,.96);border:1px solid rgba(255,210,26,.6);border-radius:14px;padding:11px 40px 11px 14px;color:var(--offwhite);
     box-shadow:0 8px 24px rgba(0,0,0,.5);font-size:13px;line-height:1.4;transition:opacity .8s;}
   #wakeNote.show{display:block;}
-  /* cards at the top that stay until tapped or closed: "Ny version" (#updNote, sw.js), the welcome (#welcomeNote) */
+  /* cards at the top that stay until tapped or closed: the welcome (#welcomeNote) */
   .topNote{position:absolute;left:14px;right:14px;top:calc(env(safe-area-inset-top,0px) + 96px);z-index:31;max-width:400px;display:none;
     background:rgba(28,33,44,.96);border:1px solid rgba(255,210,26,.6);border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.5);}
   .topNote.show{display:block;}
@@ -2824,8 +2824,6 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     <div id="hmCardNav"><button type="button" id="hmCardPrev" aria-label="Föregående">‹</button><span id="hmCardPos"></span><button type="button" id="hmCardNext" aria-label="Nästa">›</button></div>
     <div class="msgCardBtns"><button type="button" id="hmCardGo" class="a">➤ Åk hit</button><button type="button" id="hmCardLike">🔎 Liknande</button></div>
   </div>
-  <!-- a new version saved by sw.js (the start used the saved copy): tap = reload into it -->
-  <div id="updNote" class="topNote" role="status"><button type="button" id="updNoteGo" class="tnGo"><b>Ny version</b><span>Tryck för att ladda om</span></button><button type="button" id="updNoteClose" class="tnX" aria-label="Stäng">✕</button></div>
   <!-- every time a name is chosen (after the start film, 34-name.js): the way to Hjälp -->
   <div id="welcomeNote" class="topNote" role="status"><button type="button" id="welcomeNoteGo" class="tnGo"><b>Välkommen till Fiskfiskarnas Kart app!</b><span><u>Klicka här</u> för att komma till hjälp sidan.</span></button><button type="button" id="welcomeNoteClose" class="tnX" aria-label="Stäng">✕</button></div>
   <div id="wakeNote" role="status"><button type="button" id="wakeNoteClose" aria-label="Stäng">✕</button>
@@ -11876,11 +11874,6 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
       }).catch(function(){});
     };
     if (document.readyState === 'complete') registerSw(); else window.addEventListener('load', registerSw);
-    // sw.js started us from the saved copy and found a newer one (saved for the next start): offer it now
-    var updNote = document.getElementById('updNote');
-    navigator.serviceWorker.addEventListener('message', function(e){ if (e.data && e.data.type === 'newVersion') updNote.classList.add('show'); });
-    document.getElementById('updNoteGo').addEventListener('click', function(){ location.reload(); });
-    document.getElementById('updNoteClose').addEventListener('click', function(){ updNote.classList.remove('show'); });
   }
 })();
 </script>
