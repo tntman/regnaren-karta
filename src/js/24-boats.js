@@ -388,7 +388,7 @@
     if (mine && isNew) setTimeout(function(){ wpNameInput.focus(); wpNameInput.select(); }, 260);
     // (only a new spot gets the keyboard: an old one is tapped to look at -- tap the name to change it, Filip 2026-10-06)
   }
-  kbWatch(wpSheet, 0);   // (above the phone's keyboard, 10-core.js)
+  kbWatch(wpSheet, 24);   // (above the phone's keyboard, 10-core.js; 24 px like Egen text -- flush was too low, Filip 2026-10-06)
   // the keyboard's blue "Klar" (enterkeyhint="done", like Egen text's "Skicka"): done typing -- the keyboard goes down,
   // the sheet stays (Spara saves; Filip 2026-10-06)
   wpNameInput.addEventListener('keydown', function(e){ if (e.key === 'Enter'){ e.preventDefault(); wpNameInput.blur(); } });
