@@ -44,6 +44,7 @@ specificitet.
 | `30-map-ui.html` | rubrik, väderkort, mätpanel, knappar, meddelanden, Kartanalys-panel, Heatmap-rutorna, Filter, radar |
 | `40-help.html` | Hjälp-sidan (bildstorlekarna skrivs av `tools/help_anim.py`) |
 | `50-sheets.html` | platsens ruta, namnrutan, båtinfo, tävlingslåsets ruta (`#lockCard`) |
+| `99-firebase.html` | Firebase-skripten, sist före skriptet (i `<head>` höll de upp startbilden) |
 | **js/** | |
 | `10-core.js` | start på skriptet, sjöar (`LAKES`), geo-referens, `MAX_ZOOM` |
 | `12-map.js` | panorera/zooma, lodet, zoomnivåer (detaljbitar), fingrar/mus (`mapPointerDown`) |

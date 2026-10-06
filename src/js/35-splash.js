@@ -139,7 +139,7 @@
     spBloom.width = spBloom.height = 0;
     spFlatImg.removeAttribute('src');
     spApp.style.filter = spApp.style.transform = '';
-    document.documentElement.classList.remove('splash');
+    document.documentElement.classList.remove('splash', 'bootsp');
     spTheme('#141822');   // (as in head.html)
     spSt.running = false; spSt.mode = '';
     var w = spWait; spWait = [];
@@ -164,12 +164,12 @@
     showMapView();
     document.documentElement.classList.add('splash'); splashStart(false);
   });
-  // the start picture (head.html, html.boot: the logo on the dark blue, like iOS's launch image): the app fades
+  // the start picture (head.html, html.boot: the logo on black, like iOS's launch image): the app fades
   // in over it once the map is there (at most 1 s), then the logo's gone for good
   (function(){
     var c = document.documentElement.classList, mi = document.getElementById('mapImg'), t;
     if (!c.contains('boot')) return;
-    function go(){ clearTimeout(t); requestAnimationFrame(function(){ c.remove('boot'); c.add('booted'); setTimeout(function(){ c.remove('booted'); }, 400); }); }
+    function go(){ clearTimeout(t); requestAnimationFrame(function(){ c.remove('boot'); c.add('booted'); setTimeout(function(){ c.remove('booted'); }, 700); }); }
     t = setTimeout(go, 1000);
     if (mi.complete && mi.naturalWidth) go(); else mi.addEventListener('load', go, { once: true });
   })();

@@ -88,7 +88,7 @@ Uppdatera rätt anteckning när något ändras.
   translucent gör iOS 26 webbvyn en statusrad för kort – en död rand längst ner som ingen CSS
   når (WebKit-bugg 301108). `default` lägger sidan under statusraden (som `black`) men ger raden
   `theme-color`: design A:s midnatt #141822 (21c, sedan 2026-10-05; innan dess #090B10 och #08080A, ännu tidigare mörkblå #06141C) – samma
-  som kartans bakgrund (`#stage`), body, den tidiga `<style>` i head.html (före Firebase-skripten – annars vitt i början), manifestet och toppens tona i stående hemskärmsapp (`html.iosApp`,
+  som kartans bakgrund (`#stage`), body, den tidiga `<style>` i head.html (annars vitt i början), manifestet och toppens tona i stående hemskärmsapp (`html.iosApp`,
   börjar i #141822 och tonar ut). Ändrad statusrad kräver att appen läggs till på hemskärmen igen.
 - **Ordning/hoisting:** många `var` deklareras i senare js-filer. Sätt checkbox-tillstånd som
   beror på sådana variabler i `boot()` (`js/90-boot.js`, se toggleDepth/toggleTrack).
@@ -158,7 +158,7 @@ Uppdatera rätt anteckning när något ändras.
 - **Startfilm** (`js/35-splash.js`, `tools/PLAN_SPLASH.md`): 3D-loggan 3,5 s vid första starten och när appen inte använts på > 24 h
   (`ffmap_last_active_v1`, hela telefonen: skrivs vid start, varje minut när den syns och när den döljs – även tillbaka ur bakgrunden
   utan omladdning). Även efter Logga ut + stängd app (`ffmap_splash_out_v1` i localStorage, sessionStorage-kopian stoppar den vid en vridnings omladdning). Skriptet i `src/head.html` sätter `html.splash` före första bilden (allt svart, kartan blinkar aldrig fram).
-  **Startbild** (vanlig start): loggan på #141822 direkt (html-bakgrunden, `html.boot` i head.html), appen tonar in över den (35-splash.js);
+  **Startbild**: loggan på svart (statusradens #141822 tonar ner i det) direkt (html-bakgrunden, `html.boot` i head.html), appen tonar in över den (35-splash.js), med film stänger det svarta över loggan (`html.bootsp`). Firebase-skripten ligger sist i body (`html/99-firebase.html`) så att inget håller upp bilden;
   iOS-startbilder `assets/launch-*.png` (`tools/launch_images.py`, ny iPhone-storlek läggs till där), Android gör sin egen av manifestet.
   Namnrutan och platsfrågan (`startGeolocation`, 90-boot.js) väntar (`afterSplash`). Inställningar → Avancerat → Startfilmen "Spela" visar den igen. Testerna: fakefb sätter nyckeln = nu i varje context (opt-in `splash=True`, test_splash).
 - **Pushnotiser**: inte gjort (kräver server/Firebase-betalplan).

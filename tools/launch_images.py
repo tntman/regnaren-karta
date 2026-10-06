@@ -1,5 +1,5 @@
 """iOS's launch images (apple-touch-startup-image): what a home-screen app shows while it starts, instead of black.
-The same picture as the page's own start picture (src/head.html, html.boot: the logo on the dark blue), so it
+The same picture as the page's own start picture (src/head.html, html.boot: the logo on black, the status bar's dark blue fading into it), so it
 fades straight into the app. Made from the built page's rule, in Edge, at each iPhone's size:
 
     py -3 tools/build.py; py -3 tools/launch_images.py; py -3 tools/build.py     (-> assets/launch-*.png)
@@ -30,14 +30,15 @@ LAUNCH = [
 if __name__ == '__main__':
     from playwright.sync_api import sync_playwright
     page = open(os.path.join(ROOT, 'docs', 'index.html'), encoding='utf-8').read()
-    style = re.search(r'<style>html\{background:#141822\}.*?</style>', page).group(0)
+    style = re.search(r'<style>html\{background:#141822;--ffLogo.*?</style>', page, re.S).group(0)
     exe = os.environ.get('CHROMIUM', 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe')
     with sync_playwright() as p:
         b = p.chromium.launch(executable_path=exe)
         for w, h, r, sb in LAUNCH:
             pg = b.new_page(viewport={'width': w, 'height': h}, device_scale_factor=r)
-            pg.set_content('<html class="boot"><head>%s<style>html.boot{background-position:50%% calc(50%% + %dpx)}</style></head><body></body></html>'
-                           % (style, sb // 2))
+            pg.set_content('<html class="boot"><head>%s<style>html.boot{background-position:50%% calc(50%% + %dpx),0 %dpx}html.boot body{opacity:1}</style></head>'
+                           '<body><div style="position:fixed;left:0;right:0;top:0;height:%dpx;background:#141822"></div></body></html>'
+                           % (style, sb // 2, sb, sb))
             pg.wait_for_timeout(200)
             f = os.path.join(ROOT, 'assets', 'launch-%dx%d.png' % (w * r, h * r))
             pg.screenshot(path=f)
