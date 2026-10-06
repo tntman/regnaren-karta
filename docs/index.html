@@ -3451,6 +3451,29 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   }
 
+
+  // The phone's keyboard (iOS shrinks only the visual viewport, the page stays tall): a box with the focused field
+  // (kbWatch: #msgOwn, #wpSheet) is lifted so its bottom sits gap px above the keyboard, back when it closes.
+  // Measured (getBoundingClientRect against the visual viewport), so whatever iOS has scrolled to show the field
+  // doesn't matter, and re-checked every frame for 1 s after each change: iOS sometimes reports the keyboard late
+  // or in steps, and a sheet still sliding in measures wrong (Filip 2026-10-06: "Egen text" sometimes stayed under it).
+  var kbEls = [], kbUntil = 0;
+  function kbWatch(el, gap){ kbEls.push([el, gap]); }
+  function kbTick(){
+    var vv = window.visualViewport, up = vv && window.innerHeight - vv.height > 80;
+    kbEls.forEach(function(e){
+      var el = e[0], s = el.style;
+      if (up && el.contains(document.activeElement)){
+        var d = el.getBoundingClientRect().bottom - (vv.offsetTop + vv.height - e[1]);
+        if (Math.abs(d) > 1) s.bottom = (parseFloat(getComputedStyle(el).bottom) + d) + 'px';
+        s.maxHeight = (vv.height - 2 * e[1] - 10) + 'px';
+      } else if (s.bottom){ s.bottom = s.maxHeight = ''; if (window.scrollY) window.scrollTo(0, 0); }
+    });
+    if (Date.now() < kbUntil) requestAnimationFrame(kbTick);
+  }
+  function kbCheck(){ var idle = Date.now() >= kbUntil; kbUntil = Date.now() + 1000; if (idle) kbTick(); }
+  if (window.visualViewport){ visualViewport.addEventListener('resize', kbCheck); visualViewport.addEventListener('scroll', kbCheck); }
+  window.addEventListener('scroll', kbCheck); document.addEventListener('focusin', kbCheck); document.addEventListener('focusout', kbCheck);
   /* ---------- pan / zoom viewer -------------------------------------- */
   var appEl = document.getElementById('app');
   var stage = document.getElementById('stage');
@@ -5098,17 +5121,11 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     if (mine && isNew) setTimeout(function(){ wpNameInput.focus(); wpNameInput.select(); }, 260);
     // (only a new spot gets the keyboard: an old one is tapped to look at -- tap the name to change it, Filip 2026-10-06)
   }
-  // the phone's keyboard: the sheet sits just above it, not under it (iOS only shrinks the visual viewport, as #msgOwn)
-  function wpSheetPlace(){
-    var vv = window.visualViewport, kb = vv ? window.innerHeight - vv.height - vv.offsetTop : 0;
-    if (wpSheet.classList.contains('show') && kb > 80){ wpSheet.style.bottom = kb + 'px'; wpSheet.style.maxHeight = (vv.height - 10) + 'px'; }
-    else if (wpSheet.style.bottom){ wpSheet.style.bottom = wpSheet.style.maxHeight = ''; if (window.scrollY) window.scrollTo(0, 0); }
-  }
-  if (window.visualViewport){ visualViewport.addEventListener('resize', wpSheetPlace); visualViewport.addEventListener('scroll', wpSheetPlace); }
+  kbWatch(wpSheet, 0);   // (above the phone's keyboard, 10-core.js)
   function closeSheet(){
     sheetBackdrop.classList.remove('show');
     wpSheet.classList.remove('show');
-    wpNameInput.blur(); wpSheetPlace();
+    wpNameInput.blur();
     editingId = null;
     editingIsNew = false;
     editingWpInfo = null;
@@ -10558,16 +10575,9 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   var msgOwn = document.getElementById('msgOwn'), msgOwnIn = document.getElementById('msgOwnIn'), msgOwnN = document.getElementById('msgOwnN');
   function openMsgOwn(open){
     msgOwn.classList.toggle('show', open);
-    if (open){ msgOwnIn.value = ''; msgOwnCount(); msgOwnIn.focus(); } else { msgOwnIn.blur(); msgOwnPlace(); }
+    if (open){ msgOwnIn.value = ''; msgOwnCount(); msgOwnIn.focus(); } else msgOwnIn.blur();
   }
-  // the phone's keyboard: the box sits just above it (iOS only shrinks the visual viewport, the page stays tall);
-  // closed = back in its place, and the page iOS scrolled up to show the field goes back down
-  function msgOwnPlace(){
-    var vv = window.visualViewport, kb = vv ? window.innerHeight - vv.height - vv.offsetTop : 0;
-    if (msgOwn.classList.contains('show') && kb > 80) msgOwn.style.bottom = (kb + 10) + 'px';
-    else { msgOwn.style.bottom = ''; if (window.scrollY) window.scrollTo(0, 0); }
-  }
-  if (window.visualViewport){ visualViewport.addEventListener('resize', msgOwnPlace); visualViewport.addEventListener('scroll', msgOwnPlace); }
+  kbWatch(msgOwn, 10);   // (above the phone's keyboard, 10-core.js)
   function msgOwnCount(){
     var ch = Array.from(msgOwnIn.value);
     if (ch.length > MSG_OWN_MAX){ msgOwnIn.value = ch.slice(0, MSG_OWN_MAX).join(''); ch = ch.slice(0, MSG_OWN_MAX); }

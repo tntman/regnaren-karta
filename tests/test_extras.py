@@ -144,6 +144,16 @@ with sync_playwright() as p:
     check('...it comes in centred (not sliding in from the side)', abs(c[0] - c[1]) < 4, c)
     pg.wait_for_timeout(220)
     check('...tap it: the small box, ready to type (focused), the choices gone', pg.is_visible('#msgOwn') and pg.evaluate("document.activeElement.id") == 'msgOwnIn' and not pg.is_visible('#msgPop') and pg.inner_text('#msgOwnN') == '0/15')
+    # the keyboard (iOS: only the visual viewport shrinks), reported late and in steps, iOS scrolled 50 px to show the field
+    b0 = pg.evaluate("document.getElementById('msgOwn').getBoundingClientRect().bottom")
+    pg.evaluate("""() => { var vv = visualViewport, h = innerHeight; window.__kbH = h - 200; window.__kbT = 0;
+      Object.defineProperty(vv, 'height', { configurable: true, get: () => window.__kbH }); Object.defineProperty(vv, 'offsetTop', { configurable: true, get: () => window.__kbT });
+      vv.dispatchEvent(new Event('resize')); setTimeout(() => { window.__kbH = h - 370; window.__kbT = 50; }, 150); }""")   # (no event for the second step)
+    pg.wait_for_timeout(500)
+    kb = pg.evaluate("innerHeight - 320 - document.getElementById('msgOwn').getBoundingClientRect().bottom")
+    check('...the keyboard up (late, in steps, the page scrolled): the box 10 px above it', abs(kb - 10) < 1.5, kb)
+    pg.evaluate("() => { delete visualViewport.height; delete visualViewport.offsetTop; visualViewport.dispatchEvent(new Event('resize')); }"); pg.wait_for_timeout(100)
+    check('...the keyboard down: back in its place', abs(pg.evaluate("document.getElementById('msgOwn').getBoundingClientRect().bottom") - b0) < 1, b0)
     pg.keyboard.type('Vart är ni?? 😅!!!!'); pg.wait_for_timeout(200)
     v = pg.input_value('#msgOwnIn')
     check('...at most 15 characters (an emoji counts as one); the counter red when full', len(list(v)) == 15 and v == 'Vart är ni?? 😅!' and pg.inner_text('#msgOwnN') == '15/15' and pg.eval_on_selector('#msgOwnN', 'e => e.classList.contains("full")'), v)

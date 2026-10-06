@@ -16,16 +16,9 @@
   var msgOwn = document.getElementById('msgOwn'), msgOwnIn = document.getElementById('msgOwnIn'), msgOwnN = document.getElementById('msgOwnN');
   function openMsgOwn(open){
     msgOwn.classList.toggle('show', open);
-    if (open){ msgOwnIn.value = ''; msgOwnCount(); msgOwnIn.focus(); } else { msgOwnIn.blur(); msgOwnPlace(); }
+    if (open){ msgOwnIn.value = ''; msgOwnCount(); msgOwnIn.focus(); } else msgOwnIn.blur();
   }
-  // the phone's keyboard: the box sits just above it (iOS only shrinks the visual viewport, the page stays tall);
-  // closed = back in its place, and the page iOS scrolled up to show the field goes back down
-  function msgOwnPlace(){
-    var vv = window.visualViewport, kb = vv ? window.innerHeight - vv.height - vv.offsetTop : 0;
-    if (msgOwn.classList.contains('show') && kb > 80) msgOwn.style.bottom = (kb + 10) + 'px';
-    else { msgOwn.style.bottom = ''; if (window.scrollY) window.scrollTo(0, 0); }
-  }
-  if (window.visualViewport){ visualViewport.addEventListener('resize', msgOwnPlace); visualViewport.addEventListener('scroll', msgOwnPlace); }
+  kbWatch(msgOwn, 10);   // (above the phone's keyboard, 10-core.js)
   function msgOwnCount(){
     var ch = Array.from(msgOwnIn.value);
     if (ch.length > MSG_OWN_MAX){ msgOwnIn.value = ch.slice(0, MSG_OWN_MAX).join(''); ch = ch.slice(0, MSG_OWN_MAX); }

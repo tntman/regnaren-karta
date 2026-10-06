@@ -101,5 +101,6 @@ appen fungera när `main` förs över till `app`.
 |---|---|---|
 | `lakeUrl(p)` | `10-core.js` | varje sjöfil laddas genom den: `mapFile()`/`thumbFile()`, detaljbitarna, djup- och bottendata, offline-listan |
 | `lakeImgError(el)` | `10-core.js` | anropas först när en kartbild/detaljbit inte laddas; `true` = appen tog hand om det |
+| `kbWatch(el, gap)` | `10-core.js` | en ruta med textfält lyfts ovanför telefonens tangentbord (mäter mot `visualViewport`, kollar om i 1 s): `#msgOwn`, `#wpSheet` – ny ruta med textfält nere på skärmen → lägg till den |
 | `offStore` | `18-offline.js` | offline-lagringen (`available`, `has`, `size`, `put`, `clear`) – här Cache API |
 | `writeOwnPosition(data)` | `24-boats.js` | skriver din egen position (merge) – appens bakgrunds-GPS skriver också genom den |
