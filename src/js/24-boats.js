@@ -385,13 +385,20 @@
     refreshSheetMeta();
     sheetBackdrop.classList.add('show');
     wpSheet.classList.add('show');
-    if (mine) setTimeout(function(){ wpNameInput.focus(); if (isNew) wpNameInput.select(); }, 260);
-    // (an admin editing someone else's spot doesn't get the keyboard popping up)
+    if (mine && isNew) setTimeout(function(){ wpNameInput.focus(); wpNameInput.select(); }, 260);
+    // (only a new spot gets the keyboard: an old one is tapped to look at -- tap the name to change it, Filip 2026-10-06)
   }
+  // the phone's keyboard: the sheet sits just above it, not under it (iOS only shrinks the visual viewport, as #msgOwn)
+  function wpSheetPlace(){
+    var vv = window.visualViewport, kb = vv ? window.innerHeight - vv.height - vv.offsetTop : 0;
+    if (wpSheet.classList.contains('show') && kb > 80){ wpSheet.style.bottom = kb + 'px'; wpSheet.style.maxHeight = (vv.height - 10) + 'px'; }
+    else if (wpSheet.style.bottom){ wpSheet.style.bottom = wpSheet.style.maxHeight = ''; if (window.scrollY) window.scrollTo(0, 0); }
+  }
+  if (window.visualViewport){ visualViewport.addEventListener('resize', wpSheetPlace); visualViewport.addEventListener('scroll', wpSheetPlace); }
   function closeSheet(){
     sheetBackdrop.classList.remove('show');
     wpSheet.classList.remove('show');
-    wpNameInput.blur();
+    wpNameInput.blur(); wpSheetPlace();
     editingId = null;
     editingIsNew = false;
     editingWpInfo = null;

@@ -44,6 +44,15 @@ with sync_playwright() as p:
     pg.click('#addHereBtn'); pg.wait_for_timeout(900)
     act = pg.eval_on_selector('#wpTypeSeg .active', 'e=>e.textContent')
     check('new spot: type picker, Markering chosen', act == 'Markering', act)
+    try: pg.wait_for_function("document.activeElement.id === 'wpName' && getComputedStyle(document.getElementById('wpSheet')).transform.endsWith(', 0)')", timeout=5000); f = True
+    except Exception: f = False
+    check('new spot: the name field gets the keyboard', f, pg.evaluate("document.activeElement.id"))
+    # the keyboard (iOS shrinks only the visual viewport): the sheet moves up above it
+    kb = pg.evaluate("""() => { var vv = visualViewport, h = innerHeight; Object.defineProperty(vv, 'height', { configurable: true, get: () => h - 300 });
+      vv.dispatchEvent(new Event('resize')); var r = document.getElementById('wpSheet').getBoundingClientRect(); return [h - r.bottom, r.top >= 0]; }""")
+    check('...the keyboard up: the sheet sits just above it (not under it)', kb[0] == 300 and kb[1], kb)
+    pg.evaluate("() => { delete visualViewport.height; visualViewport.dispatchEvent(new Event('resize')); }")
+    check('...the keyboard down: back at the bottom', pg.evaluate("innerHeight - document.getElementById('wpSheet').getBoundingClientRect().bottom") == 0)
     check('new spot name "Markering 2" (the old spot counts as a marking)', pg.input_value('#wpName') == 'Markering 2', pg.input_value('#wpName'))
     pg.screenshot(path='./shot_types_sheet.png')
     pg.click('#wpTypeSeg button[data-type="gos"]'); pg.wait_for_timeout(100)
@@ -68,6 +77,11 @@ with sync_playwright() as p:
     dis = pg.eval_on_selector_all('#wpTypeSeg button', 'els => els.every(b => b.disabled)')
     check("someone else's spot: no type buttons, the type as a small pill on the 'Sparad av' line", dis and not pg.is_visible('#wpTypeSeg') and pg.inner_text('#wpMeta .miniType') == 'Gädda', pg.inner_text('#wpMeta'))
     check("...only Åk hit and Liknande (no Ta bort / Spara)", pg.is_visible('#wpGo') and pg.is_visible('#wpLike') and not pg.is_visible('#wpDelete') and not pg.is_visible('#wpSave'))
+    pg.click('#wpCancel'); pg.wait_for_timeout(300)
+    # your own old spot: opened to look at, no keyboard (tap the name to change it)
+    pg.evaluate("() => document.querySelector('#waypoints .wpPin--mark:not(.wpPin--other)').click()"); pg.wait_for_timeout(500)
+    check('your own old spot: no keyboard popping up, the name can still be changed', pg.input_value('#wpName') == 'Gammal vik'
+          and pg.evaluate("document.activeElement.id") != 'wpName' and pg.is_enabled('#wpName'))
     pg.click('#wpCancel'); pg.wait_for_timeout(300)
 
     # log icons
