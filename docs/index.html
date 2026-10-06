@@ -156,8 +156,6 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   .cpColors button{width:34px;height:34px;border-radius:50%;border:3px solid transparent;box-shadow:0 0 0 1px rgba(255,255,255,.25);padding:0;cursor:pointer;}
   .cpColors button.active{border-color:#fff;}
   .cpLbl{flex:0 0 auto;min-width:50px;font-size:14px;color:var(--offwhite);}
-  .satSlider.cpSlider::-webkit-slider-runnable-track{background:rgba(255,255,255,.28);}
-  .satSlider.cpSlider::-moz-range-track{background:rgba(255,255,255,.28);}
   #dotCenter{display:none;}
   #dotArrow{
     position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;
@@ -305,8 +303,6 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   #trackLayer{position:absolute;left:0;top:0;width:100%;height:100%;z-index:13;pointer-events:none;overflow:visible;}
   #trackLayer path{fill:none;stroke-linecap:round;stroke-linejoin:round;}
   #trackLayer{opacity:.6;} /* "Spårets synlighet" in Settings (default 60 %) */
-  .satSlider.trkSlider::-webkit-slider-runnable-track{background:linear-gradient(to right, rgba(240,154,96,.15), #F09A60);}
-  .satSlider.trkSlider::-moz-range-track{background:linear-gradient(to right, rgba(240,154,96,.15), #F09A60);}
   #trackLayer path{stroke-dasharray:7 5;}
   #trackLayer .trkUnder{stroke:rgba(10,20,26,.8);stroke-width:3.4;}
   #trackLayer .trkLine{stroke:#F09A60;stroke-width:1.8;}
@@ -1223,12 +1219,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   #legend.noBar::after{content:attr(data-contour);font-size:10.5px;color:var(--text-muted);}
   /* "Kartans färg" (saturation) slider */
   .satRow{display:flex;align-items:center;gap:12px;margin-top:10px;}
-  .satSlider{flex:1 1 auto;min-width:0;-webkit-appearance:none;appearance:none;height:30px;margin:0;background:transparent;cursor:pointer;}
-  .satSlider:focus{outline:none;}
-  .satSlider::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:linear-gradient(to right,#7b8084,#2f7fe0 55%,#19c9c3 75%,#f5c518 88%,#ef3b2d);}
-  .satSlider::-moz-range-track{height:6px;border-radius:3px;background:linear-gradient(to right,#7b8084,#2f7fe0 55%,#19c9c3 75%,#f5c518 88%,#ef3b2d);}
-  .satSlider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:24px;height:24px;margin-top:-9px;border-radius:50%;background:var(--amber);border:3px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.5),0 2px 6px rgba(0,0,0,.5);}
-  .satSlider::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--amber);border:3px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.5),0 2px 6px rgba(0,0,0,.5);}
+  .satSlider{flex:1 1 auto;min-width:0;}   /* (how every slider looks: 95-design-a.css) */
   .satVal{flex:0 0 auto;min-width:46px;text-align:right;font-size:14px;font-weight:700;color:var(--offwhite);}
   .segmented{
     display:flex;gap:4px;margin-top:12px;padding:3px;
@@ -1503,7 +1494,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   #anControls{margin-top:6px;}
   .anRange{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12.5px;color:#dbe4e7;}
   .anRange label{flex:0 0 58px;}
-  .anRange input[type=range]{flex:1;accent-color:var(--amber);height:26px;}
+  .anRange input[type=range]{flex:1;}
   .anRange output{flex:0 0 48px;text-align:right;font-weight:700;color:var(--amber);}
   .anList{margin-top:7px;display:flex;flex-direction:column;gap:5px;}
   .anList .li{display:flex;align-items:center;gap:9px;background:rgba(255,255,255,.05);border-radius:10px;padding:6px 9px;font-size:13px;color:#dbe4e7;}
@@ -1517,12 +1508,21 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   /* ---- Kartanalys: the greyed-out map (a 2nd canvas desaturates what's under it), the depth-range slider ---- */
   #anSat{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;display:none;mix-blend-mode:saturation;}
   #anSat.on{display:block;}
+  /* the lamp (#anLamp): the lit area 2× brighter -- 50 % grey "colour-dodged" over the map = its colours × 2 (anDraw) */
+  #anGlow{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;display:none;mix-blend-mode:color-dodge;}
+  #anGlow.on{display:block;}
   #anPanel.dragging{transition:none;}
   .anDual{position:relative;height:34px;margin:12px 13px 0;touch-action:none;cursor:pointer;}
-  .anTrack{position:absolute;left:0;right:0;top:14px;height:6px;border-radius:3px;}
-  .anSel{position:absolute;top:9px;height:16px;border:2.5px solid #fff;border-radius:8px;box-sizing:border-box;margin-left:-3px;padding-right:6px;box-shadow:0 0 0 1px rgba(0,0,0,.35);}
-  .anKnob{position:absolute;top:4px;width:26px;height:26px;margin-left:-13px;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.55);}
-  .anTicks{display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin:2px 6px 0;}
+  /* (Djup keeps the depth colours; outside the chosen range they're dimmed -- the window's shadow, clipped by the bar; the
+     knobs as every slider's (25 px, 95-design-a.css), the chosen depths under them, the lake's 0 and max at the ends) */
+  .anTrack{position:absolute;left:0;right:0;top:14px;height:6px;border-radius:3px;overflow:hidden;}
+  .anSel{position:absolute;top:0;bottom:0;box-shadow:0 0 0 999px rgba(28,33,44,.75);}
+  .anKnob{position:absolute;top:4.5px;width:25px;height:25px;margin-left:-12.5px;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.55);transition:transform .15s;}
+  .anKnob.act{transform:scale(1.15);}
+  .anTicks{position:relative;height:15px;margin:1px 13px 0;font-size:11px;color:var(--text-muted);}
+  .anTicks > *{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap;}
+  .anTicks span:first-of-type{left:0;} .anTicks span:last-child{left:100%;}
+  .anTicks b{font-size:11.5px;font-weight:700;color:var(--offwhite);}
   /* ---- Liknande: what to compare + how big an area ---- */
   .anFactors{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
   .anFactors button{font:inherit;font-size:12px;padding:5px 9px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.16);color:var(--text-muted);cursor:pointer;}
@@ -1548,16 +1548,15 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   .anLbl.simRef::after{animation-delay:1s;}
   @keyframes simRing{0%{transform:scale(.25);opacity:1;}100%{transform:scale(1.6);opacity:0;}}
   #anCatSeg{margin-top:6px;}
-  #anCatSeg button.has{box-shadow:inset 0 -2px 0 var(--amber);}      /* (what's on is in this category) */
   .anSep{width:1.5px;align-self:stretch;background:rgba(255,255,255,.3);border-radius:1px;margin:3px 3px;}
   /* ---- the panels' top row (Kartanalys, Heatmap): what it shows now (2 lines at most) + ⓘ ↺ ⏻; ✕ in the grip ---- */
-  .pnHead{display:flex;align-items:center;gap:6px;min-height:40px;margin:-2px 0 2px;}
-  .pnResCol{flex:1 1 auto;min-width:0;}
+  .pnHead{display:flex;align-items:center;gap:2px;min-height:40px;margin:-2px 0 2px;}
+  .pnResCol{flex:1 1 auto;min-width:0;margin-right:4px;}   /* (icons 32 px, 2 px apart: room for the result's two lines with 4 of them, 2026-10-06) */
   .pnRes{font-size:13px;line-height:1.3;color:#dbe4e7;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;}
   .pnRes b{color:var(--amber);}
   .pnRes .note{display:none;}                                           /* (behind ⓘ) */
   .pnHid{color:#ff8a80;}
-  .hdBtn{flex:0 0 auto;width:36px;height:36px;border-radius:11px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);
+  .hdBtn{flex:0 0 auto;width:32px;height:36px;border-radius:11px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);
     color:var(--offwhite);display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;}
   .hdBtn svg{width:18px;height:18px;display:block;}
   .hdBtn:active{transform:scale(.92);}
@@ -1584,17 +1583,17 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   #anControls .anRange, #hmCtl .anRange, #hmSize .anRange{flex-wrap:wrap;row-gap:0;margin-top:8px;}
   #anControls .anRange label, #hmCtl .anRange label, #hmSize .anRange label{flex:1 1 auto;}
   #anControls .anRange output, #hmCtl .anRange output, #hmSize .anRange output{flex:0 0 auto;}
-  #anControls .anRange input, #hmCtl .anRange input{flex:1 1 100%;order:3;height:24px;}
+  #anControls .anRange input, #hmCtl .anRange input{flex:1 1 100%;order:3;}
   /* "Storlek" (Heatmap, Kartanalys "Från fångsterna", sizeRow in 56-analysis.js): two range inputs on top of each other, only their handles take touches; the part between them orange */
   #hmSize .anRange{margin-top:6px;}
   .sizeDual{position:relative;flex:1 1 100%;order:3;height:28px;}
-  .sizeDual::before{content:'';position:absolute;left:10px;right:10px;top:12px;height:4px;border-radius:2px;
-    background:linear-gradient(90deg,var(--s3) var(--a),var(--amber) var(--a),var(--amber) var(--b),var(--s3) var(--b));}
+  .sizeDual::before{content:'';position:absolute;left:12.5px;right:12.5px;top:11px;height:6px;border-radius:3px;   /* (the knobs' centres: 12.5 px in from the ends) */
+    background:linear-gradient(90deg,rgba(255,255,255,.14) var(--a),var(--amber) var(--a),var(--amber) var(--b),rgba(255,255,255,.14) var(--b));}
   :is(#anControls, #hmSize) .sizeDual input{position:absolute;left:0;top:0;width:100%;height:28px;margin:0;-webkit-appearance:none;appearance:none;background:none;pointer-events:none;}
-  .sizeDual input::-webkit-slider-runnable-track{height:28px;background:none;}
-  .sizeDual input::-moz-range-track{background:none;}
-  .sizeDual input::-webkit-slider-thumb{-webkit-appearance:none;pointer-events:auto;width:20px;height:20px;margin-top:4px;border-radius:50%;background:var(--amber);box-shadow:0 1px 4px rgba(0,0,0,.5);cursor:pointer;}
-  .sizeDual input::-moz-range-thumb{pointer-events:auto;width:20px;height:20px;border:none;border-radius:50%;background:var(--amber);box-shadow:0 1px 4px rgba(0,0,0,.5);cursor:pointer;}
+  .sizeDual input[type=range]::-webkit-slider-runnable-track{height:28px;background:none;}
+  .sizeDual input[type=range]::-moz-range-track, .sizeDual input[type=range]::-moz-range-progress{background:none;}
+  .sizeDual input[type=range]::-webkit-slider-thumb{pointer-events:auto;margin-top:1.5px;}
+  .sizeDual input[type=range]::-moz-range-thumb{pointer-events:auto;}
   .pnRow2{display:flex;gap:8px;align-items:center;}
   .pnRow2 .anSeg{flex:1 1 auto;} .pnRow2 .anChips{flex:0 0 auto;padding-right:0;-webkit-mask-image:none;mask-image:none;}
   #anPanel .anSeg, #hmPanel .anSeg{margin-top:6px;}
@@ -2071,11 +2070,21 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   }
 
   /* ---- fixes after the first look (2026-10-05) ---- */
-  /* coloured sliders: the colours past the thumb dimmed (--f = where the thumb is, 0..1: satFill(), 91-motion.js) */
-  .satSlider:not(.cpSlider)::-webkit-slider-runnable-track{background-image:linear-gradient(90deg,transparent calc(12px + (100% - 24px) * var(--f,1)),rgba(28,33,44,.75) 0),
+  /* ---- sliders: one look in the whole app (Filip 2026-10-06) -- a white knob (25 px: the depth range's knob, 5 % smaller), the
+     bar orange up to it and a faint white after it (--f = where the knob is, 0..1: rangeFill(), js/91-motion.js). Only Djup
+     (Kartanalys, .anDual in 70-analysis.css) and Färgmättnad keep their colours, dimmed outside what's chosen. ---- */
+  input[type=range]{-webkit-appearance:none;appearance:none;height:28px;margin:0;background:transparent;cursor:pointer;}
+  input[type=range]:focus{outline:none;}
+  input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:linear-gradient(90deg,var(--amber) calc(12.5px + (100% - 25px) * var(--f,0)),rgba(255,255,255,.14) 0);}
+  input[type=range]::-moz-range-track{height:6px;border-radius:3px;background:rgba(255,255,255,.14);}
+  input[type=range]::-moz-range-progress{height:6px;border-radius:3px;background:var(--amber);}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:25px;height:25px;margin-top:-9.5px;border:none;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.55);transition:transform .15s;}
+  input[type=range]::-moz-range-thumb{width:25px;height:25px;border:none;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.55);}
+  input[type=range]:active::-webkit-slider-thumb{transform:scale(1.15);}   /* (grows a little while held) */
+  #mapSatSlider::-webkit-slider-runnable-track{background:linear-gradient(90deg,transparent calc(12.5px + (100% - 25px) * var(--f,1)),rgba(28,33,44,.75) 0),
     linear-gradient(to right,#7b8084,#2f7fe0 55%,#19c9c3 75%,#f5c518 88%,#ef3b2d);}
-  .satSlider.trkSlider::-webkit-slider-runnable-track{background-image:linear-gradient(90deg,transparent calc(12px + (100% - 24px) * var(--f,1)),rgba(28,33,44,.75) 0),
-    linear-gradient(to right,rgba(240,154,96,.15),#F09A60);}
+  #mapSatSlider::-moz-range-track{background:linear-gradient(to right,#7b8084,#2f7fe0 55%,#19c9c3 75%,#f5c518 88%,#ef3b2d);}
+  #mapSatSlider::-moz-range-progress{background:none;}
   /* #app never scrolls (an off-screen panel getting focus or a tap mid-slide used to scroll it -- js/91-motion.js holds it too) */
   #app{overflow:clip;}
   /* small headings: sentence case, like the rest of A */
@@ -2112,9 +2121,6 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   /* the heatmap / Kartanalys fade in on the map */
   @keyframes layerIn{from{opacity:0;}}
   #hmLayer.on, #hmSat.on, #anLayer.on{animation:layerIn .6s ease;}
-  /* a slider's knob grows a little while held */
-  .satSlider::-webkit-slider-thumb{transition:transform .15s;}
-  .satSlider:active::-webkit-slider-thumb{transform:scale(1.15);}
   @media (prefers-reduced-motion:reduce){
     .mapPill:not([hidden]), #ltOffPill:not([hidden]), #farAway.show, #msgOwn.show, #msgToast.show, #trkPanel.show > *, #pfCard.show > *, #hmCard.show > *{animation:fadeIn .15s ease both !important;}
   }
@@ -2165,6 +2171,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     <div id="detailLayer" aria-hidden="true"></div>
     <canvas id="shoreLayer" aria-hidden="true"></canvas>
     <canvas id="windLayer" aria-hidden="true"></canvas>
+    <canvas id="anGlow" aria-hidden="true"></canvas>
     <canvas id="anSat" aria-hidden="true"></canvas>
     <canvas id="anLayer" aria-hidden="true"></canvas>
     <canvas id="hmSat" aria-hidden="true"></canvas>
@@ -2755,6 +2762,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     <div class="grab"><button type="button" id="anClose" class="gripX" aria-label="Stäng">✕</button></div>
     <div class="pnHead"><div class="pnResCol"><div id="anResult" class="pnRes"></div></div>
       <button type="button" class="hdBtn pnInfoBtn" aria-label="Förklaring" aria-pressed="false" title="Förklaring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6M12 7.5v.5"></path></svg></button>
+      <button type="button" id="anLamp" class="hdBtn" aria-label="Lys upp" aria-pressed="false" title="Lys upp det tända (2× ljusare)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 18h5"></path><path d="M10.5 21h3"></path><path d="M12 3a6 6 0 0 0-3.7 10.7c.8.7 1.2 1.5 1.2 2.3V16h5v-.1c0-.8.4-1.6 1.2-2.3A6 6 0 0 0 12 3z"></path></svg></button>
       <button type="button" id="anReset" class="hdBtn rsBtn" aria-label="Återställ" title="Återställ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.3-5.6"></path><path d="M4 4v4.5h4.5"></path></svg></button>
       <button type="button" id="anClear" class="hdBtn pwBtn" aria-label="Stäng av kartanalys" title="Stäng av kartanalys" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 3v8"></path><path d="M6.6 6.6a7.5 7.5 0 1 0 10.8 0"></path></svg></button></div>
     <div class="pnInfo" hidden></div>
@@ -4602,7 +4610,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     document.getElementById('detailLayer').style.filter = f;
     var bar = document.querySelector('#legend .bar');
     if (bar) bar.style.filter = f;
-    mapSatSlider.value = String(mapSat);
+    mapSatSlider.value = String(mapSat); rangeFill(mapSatSlider);
     mapSatVal.textContent = mapSat + ' %';
   }
   mapSatSlider.addEventListener('input', function(){
@@ -4647,7 +4655,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   var trackOpSlider = document.getElementById('trackOpSlider');
   function applyTrackOpacity(){
     document.getElementById('trackLayer').style.opacity = String(trackOp / 100);
-    trackOpSlider.value = String(trackOp);
+    trackOpSlider.value = String(trackOp); rangeFill(trackOpSlider);
     document.getElementById('trackOpVal').textContent = trackOp + ' %';
   }
   trackOpSlider.addEventListener('input', function(){
@@ -8515,7 +8523,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     if (c.who && !trkWhoSel.querySelector('option[value="' + c.who + '"]')) trkWhoSel.insertAdjacentHTML('beforeend', '<option value="' + c.who + '">' + c.who + '</option>');   // (a name that isn't on the member list)
     trkWhoSel.value = c.who || ''; trkWhoSel.classList.toggle('on', !!c.who);
     document.getElementById('trkStopMinBox').hidden = !c.stops;
-    document.getElementById('trkStopMin').value = String(c.stopMin); satFill(document.getElementById('trkStopMin')); document.getElementById('trkStopMinVal').textContent = c.stopMin + ' min';
+    document.getElementById('trkStopMin').value = String(c.stopMin); rangeFill(document.getElementById('trkStopMin')); document.getElementById('trkStopMinVal').textContent = c.stopMin + ' min';
     Array.from(document.querySelectorAll('#trkRange button')).forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-r') === c.range); });
     Array.from(document.querySelectorAll('#trkDash button')).forEach(function(b){ b.classList.toggle('on', (b.getAttribute('data-d') === '1') === !!c.dash); });
     Array.from(document.querySelectorAll('#trkColors button')).forEach(function(b){ var on = b.getAttribute('data-c').toLowerCase() === String(c.color).toLowerCase(); b.classList.toggle('active', on); b.setAttribute('aria-checked', on ? 'true' : 'false'); });
@@ -9264,7 +9272,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   var cpColorsEl = document.getElementById('cpColors'), cpLenEl = document.getElementById('cpLen'), cpAngEl = document.getElementById('cpAng');
   var cpWedgeEl = document.getElementById('cpShowWedge'), cpDialEl = document.getElementById('cpShowDial');
   function compassCfgUi(){
-    cpLenEl.value = compassCfg.len; cpAngEl.value = compassCfg.ang;
+    cpLenEl.value = compassCfg.len; cpAngEl.value = compassCfg.ang; rangeFill(cpLenEl); rangeFill(cpAngEl);
     cpWedgeEl.checked = compassCfg.wedge; cpDialEl.checked = compassCfg.dial;
     cpWedgeEl.disabled = !compassCfg.dial; cpDialEl.disabled = !compassCfg.wedge;   // den enda som är på kan inte stängas av
     document.getElementById('cpLenVal').textContent = compassCfg.len + ' m';
@@ -9476,16 +9484,18 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   }
   var anSet = { simF: { d: 1, s: 1, h: 1, v: 1, t: 1 }, simR: 0, mode: null, lo: 4, hi: 6, slope: 10, topP: 0.6, holeP: 0.8, hmin: 3, dim: 0.72, ref: null,
                cF: { d: 1, s: 1, h: 1, v: 1, l: 1, t: 1 }, cCov: 7, cView: 'area', size: {},   // (c* = "Från fångsterna", 57-an-catches.js)
-               combo: [], near: { tops: 0, veg: 15, hard: 15, wind: 15 } };   // Kartdata combined (mode 'combo'): the parts, "inom … m"
+               combo: [], near: { tops: 0, veg: 15, hard: 15, wind: 15 },     // Kartdata combined (mode 'combo'): the parts, "inom … m"
+               lamp: 0, mem: {} };   // lamp: the lit area 2× brighter (#anGlow); mem: each tab's own choice, [mode, combo] -- back when you go back to it
   var AN_DEFAULTS = JSON.stringify(anSet);   // (for "Återställ")
   anSet.cat = 'map';                            // the category shown: map / rule / data / similar
   try { var sv = JSON.parse(localStorage.getItem(AN_KEY) || 'null'); if (sv) for (var k0 in sv) anSet[k0] = sv[k0]; } catch(e){}
   delete anSet.cm0; delete anSet.cm1;   // (the first Storlek, one range for all species)
-  if (!rotState) anSet.mode = null;          // a new start of the app: off (turning the phone keeps it)
+  if (!rotState){ anSet.mode = null; anSet.combo = []; anSet.mem = {}; }   // a new start of the app: off, the tabs' choices too (turning the phone keeps it)
   var anShow = true;
   try { anShow = localStorage.getItem(SHOW_AN_KEY) !== '0'; } catch(e){}
   var anCanvas = document.getElementById('anLayer'), anCtx = anCanvas.getContext('2d');
   var anSatCanvas = document.getElementById('anSat'), anSatCtx = anSatCanvas.getContext('2d');
+  var anGlowCanvas = document.getElementById('anGlow'), anGlowCtx = anGlowCanvas.getContext('2d');
   var anPanel = document.getElementById('anPanel'), anBtn = document.getElementById('anBtn'), anLabelsEl = document.getElementById('anLabels'), anPill = document.getElementById('anPill');
   var AN = null, anBottom = null, anBottomLoading = false, anRes = null, anView = null, anVer = 0;
   function anSave(){ try { localStorage.setItem(AN_KEY, JSON.stringify(anSet)); } catch(e){} }
@@ -9815,21 +9825,23 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   function anDraw(){
     shoreDraw();                              // (Strandlinje on the plain map, 68-heatmap.js: off while this shows)
     var dpr = window.devicePixelRatio || 1, W = stage.clientWidth, H = stage.clientHeight;
-    var on = anShow && anSet.mode && anRes && anRes.M;
-    anCanvas.classList.toggle('on', !!on); anSatCanvas.classList.toggle('on', !!on);
+    var on = anShow && anSet.mode && anRes && anRes.M, glow = !!(on && anSet.lamp);
+    anCanvas.classList.toggle('on', !!on); anSatCanvas.classList.toggle('on', !!on); anGlowCanvas.classList.toggle('on', glow);
     anLabelsEl.style.display = on ? '' : 'none';
     if (!on) return;
-    [anCanvas, anSatCanvas].forEach(function(c){ if (c.width !== Math.round(W * dpr) || c.height !== Math.round(H * dpr)){ c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); } });
+    (glow ? [anCanvas, anSatCanvas, anGlowCanvas] : [anCanvas, anSatCanvas]).forEach(function(c){ if (c.width !== Math.round(W * dpr) || c.height !== Math.round(H * dpr)){ c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); } });
     anCtx.setTransform(dpr, 0, 0, dpr, 0, 0); anCtx.clearRect(0, 0, W, H);
     anSatCtx.setTransform(dpr, 0, 0, dpr, 0, 0); anSatCtx.clearRect(0, 0, W, H);
+    if (glow){ anGlowCtx.setTransform(dpr, 0, 0, dpr, 0, 0); anGlowCtx.clearRect(0, 0, W, H); }
     if (!(W >= 2 && H >= 2)) return;          // (mid-rotation the map can be 0 px for a moment)
     var STEP = viewStep(W, H), vw = Math.ceil(W / STEP), vh = Math.ceil(H / STEP), A = AN, R = anRes;
-    var key = originX.toFixed(1) + ',' + originY.toFixed(1) + ',' + scale.toFixed(5) + ',' + W + 'x' + H + ',' + R.ver + ',' + anSet.dim + ',' + STEP;
+    var key = originX.toFixed(1) + ',' + originY.toFixed(1) + ',' + scale.toFixed(5) + ',' + W + 'x' + H + ',' + R.ver + ',' + anSet.dim + ',' + STEP + ',' + glow;
     if (!anView || anView.key !== key){
-      var cv = anView ? anView.cv : document.createElement('canvas'), sv = anView ? anView.sv : document.createElement('canvas');
-      [cv, sv].forEach(function(c){ if (c.width !== vw || c.height !== vh){ c.width = vw; c.height = vh; } });
+      var cv = anView ? anView.cv : document.createElement('canvas'), sv = anView ? anView.sv : document.createElement('canvas'), gv = anView ? anView.gv : document.createElement('canvas');
+      (glow ? [cv, sv, gv] : [cv, sv]).forEach(function(c){ if (c.width !== vw || c.height !== vh){ c.width = vw; c.height = vh; } });
       var c2 = cv.getContext('2d'), im = c2.createImageData(vw, vh), px = im.data, col = R.color;
       var s2 = sv.getContext('2d'), sm = s2.createImageData(vw, vh), sp = sm.data;
+      var g2c = glow ? gv.getContext('2d') : null, gm = glow ? g2c.createImageData(vw, vh) : null, gp = glow ? gm.data : null;   // (the lamp: grey where it's lit)
       var dimA = Math.round(255 * anSet.dim), satA = Math.round(255 * Math.min(1, anSet.dim + 0.2));
       var N2 = vw * vh, f1 = new Float32Array(N2), f2 = new Float32Array(N2), fl = new Float32Array(N2);
       // the smooth field at the level where a cell is about one drawn point (see anField)
@@ -9878,13 +9890,15 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
         if (es > 0) over(255, 255, 255, 128 * es);      // the shore: a solid line, 50 %
         if (a > 0){ px[k] = r / a; px[k + 1] = g / a; px[k + 2] = b / a; px[k + 3] = a * 255; }
         sp[k] = 128; sp[k + 1] = 128; sp[k + 2] = 128; sp[k + 3] = satA * k0 * (1 - ra);
+        if (gp){ gp[k] = gp[k + 1] = gp[k + 2] = 128; gp[k + 3] = 255 * Math.max(k1, k2); }
       }
-      c2.putImageData(im, 0, 0); s2.putImageData(sm, 0, 0);
-      anView = { key: key, cv: cv, sv: sv };
+      c2.putImageData(im, 0, 0); s2.putImageData(sm, 0, 0); if (glow) g2c.putImageData(gm, 0, 0);
+      anView = { key: key, cv: cv, sv: sv, gv: gv };
     }
     anCtx.imageSmoothingEnabled = true; anSatCtx.imageSmoothingEnabled = true;
     anCtx.drawImage(anView.cv, 0, 0, vw * STEP, vh * STEP);
     anSatCtx.drawImage(anView.sv, 0, 0, vw * STEP, vh * STEP);
+    if (glow){ anGlowCtx.imageSmoothingEnabled = true; anGlowCtx.drawImage(anView.gv, 0, 0, vw * STEP, vh * STEP); }
     // from the catches: the catches it's worked out from, small white dots
     if (R.pts) R.pts.forEach(function(p){
       var x = originX + p.x * scale, y = originY + p.y * scale; if (x < -5 || y < -5 || x > W + 5 || y > H + 5) return;
@@ -9904,7 +9918,8 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     document.getElementById('anClear').disabled = !m;      // (only when there's something to clear)
     anDataRow();
     var cat = anSet.cat || 'map';
-    Array.prototype.forEach.call(document.querySelectorAll('#anCatSeg button'), function(b){ b.classList.toggle('on', b.getAttribute('data-cat') === cat); b.classList.toggle('has', b.getAttribute('data-cat') === anCatOf(m) && cat !== anCatOf(m)); });
+    Array.prototype.forEach.call(document.querySelectorAll('#anCatSeg button'), function(b){ b.classList.toggle('on', b.getAttribute('data-cat') === cat); });
+    var lampB = document.getElementById('anLamp'); lampB.classList.toggle('on', !!anSet.lamp); lampB.setAttribute('aria-pressed', anSet.lamp ? 'true' : 'false');
     document.getElementById('anChips').hidden = cat !== 'map';
     document.getElementById('anPresets').hidden = cat !== 'rule';
     document.getElementById('anDataChips').hidden = cat !== 'data';
@@ -9948,19 +9963,25 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     return '<div class="anRange"><label for="' + id + '">' + label + '</label><input type="range" id="' + id + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + val + '"><output>' + fmt(val) + '</output>' +
       (ends ? '<div class="anEnds"><span>' + ends[0] + '</span><span>' + ends[1] + '</span></div>' : '') + '</div>';
   }
-  // a depth range: one bar in the depth colours (like the legend) with two handles
+  // a depth range: one bar in the depth colours (like the legend), dimmed outside the range, two handles; under it the chosen
+  // depths (under the handles) and only the lake's 0 and max at the ends (Filip 2026-10-06)
   function anDualRow(key){
-    var ticks = (LAKE.legendTicks || ['0 m', AN_DMAX + ' m']).map(function(t){ return '<span>' + t.replace(' m', '') + '</span>'; });
-    ticks[ticks.length - 1] = ticks[ticks.length - 1].replace('</span>', ' m</span>');
-    return '<div class="anDual" data-k="' + key + '"><div class="anTrack" style="background:' + ((MAP_STYLES[0] && MAP_STYLES[0].legend) || '#2a86c9') + '"></div>' +
-      '<div class="anSel"></div><div class="anKnob" data-h="0"></div><div class="anKnob" data-h="1"></div></div><div class="anTicks">' + ticks.join('') + '</div>';
+    return '<div class="anDual" data-k="' + key + '"><div class="anTrack" style="background:' + ((MAP_STYLES[0] && MAP_STYLES[0].legend) || '#2a86c9') + '"><div class="anSel"></div></div>' +
+      '<div class="anKnob" data-h="0"></div><div class="anKnob" data-h="1"></div></div><div class="anTicks"><b></b><b></b><span>0</span><span>' + anM(AN_DMAX) + ' m</span></div>';
   }
+  function anM(v){ return String(Math.round(v * 10) / 10).replace('.', ','); }   // (4 / 4,5)
   var AN_DUAL = { depth: ['lo', 'hi'] };         // (only Djup has a depth range)
   function anDualPlace(){
     Array.prototype.forEach.call(document.querySelectorAll('#anControls .anDual'), function(d){
-      var k = AN_DUAL[d.getAttribute('data-k')], a = anSet[k[0]] / AN_DMAX * 100, z = anSet[k[1]] / AN_DMAX * 100;
-      d.children[1].style.left = a + '%'; d.children[1].style.width = Math.max(0, z - a) + '%';
-      d.children[2].style.left = a + '%'; d.children[3].style.left = z + '%';
+      var k = AN_DUAL[d.getAttribute('data-k')], lo = anSet[k[0]], hi = anSet[k[1]], a = lo / AN_DMAX * 100, z = hi / AN_DMAX * 100;
+      var sel = d.querySelector('.anSel'), kn = d.querySelectorAll('.anKnob'), t = d.nextElementSibling, v = t.querySelectorAll('b'), ends = t.querySelectorAll('span');
+      sel.style.left = a + '%'; sel.style.width = Math.max(0, z - a) + '%';
+      kn[0].style.left = a + '%'; kn[1].style.left = z + '%';
+      // the numbers: centred under the handles (one "4–4,5 m" when they'd touch); an end's number gives way to them
+      function near(x, y){ return Math.abs(x.offsetLeft - y.offsetLeft) < (x.offsetWidth + y.offsetWidth) / 2 + 6; }
+      v[0].textContent = anM(lo) + ' m'; v[1].textContent = anM(hi) + ' m'; v[0].style.left = a + '%'; v[1].style.left = z + '%'; v[1].hidden = false;
+      if (near(v[0], v[1])){ v[0].textContent = anM(lo) + (hi > lo ? '–' + anM(hi) : '') + ' m'; v[0].style.left = (a + z) / 2 + '%'; v[1].hidden = true; }
+      Array.prototype.forEach.call(ends, function(e){ e.hidden = false; e.hidden = near(e, v[0]) || (!v[1].hidden && near(e, v[1])); });
     });
   }
   var anCtlMode = '#';
@@ -9973,13 +9994,14 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
       ? anSet.combo.map(function(k){ return anCtlFor(k) +     // each part's own controls, + "inom … m" for the spots
           (AN_NEAR[k] ? anRangeRow('anNear_' + k, anName(k) + ' · inom', 0, 50, 5, anSet.near[k] || 0, function(v){ return v + ' m'; }) : ''); }).join('')
       : anCtlFor(m);
+    rangeFills(el);   // (the bar orange up to the knob, 91-motion.js)
     if (m && m.indexOf('c_') === 0) anCatchDots();
     anDualPlace();
   }
   function anCtlFor(m){
     var h = '';
     if (m === 'depth') h = anDualRow('depth');
-    else if (m === 'steep') h = anRangeRow('anSlope', 'Lutning', 4, 30, 1, anSet.slope, function(v){ return v + ' %'; });
+    else if (m === 'steep') h = anRangeRow('anSlope', 'Lutning över', 4, 30, 1, anSet.slope, function(v){ return v + ' %'; });
     else if (m === 'tops') h = anRangeRow('anTopP', 'Grynnor', 0.3, 2.5, 0.1, anSet.topP, function(v){ return '≥ ' + fmtDepth(+v) + ' m'; }) +
       anRangeRow('anHoleP', 'Hålor', 0.3, 2.5, 0.1, anSet.holeP, function(v){ return '≥ ' + fmtDepth(+v) + ' m'; });
     else if (m && m.indexOf('c_') === 0) h = anCatchControls();
@@ -10022,6 +10044,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     var v = Math.max(0, Math.min(AN_DMAX, (e.clientX - r.left) / r.width * AN_DMAX));
     var h = e.target.classList.contains('anKnob') ? +e.target.getAttribute('data-h') : (Math.abs(v - anSet[k[0]]) <= Math.abs(v - anSet[k[1]]) ? 0 : 1);
     anDrag = { d: d, k: k, h: h, id: e.pointerId };
+    d.querySelectorAll('.anKnob')[h].classList.add('act');
     try { d.setPointerCapture(e.pointerId); } catch(err){}
     anDragTo(e.clientX);
   });
@@ -10032,7 +10055,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     anDualPlace(); anLater();
   }
   document.getElementById('anControls').addEventListener('pointermove', function(e){ if (anDrag && e.pointerId === anDrag.id){ e.preventDefault(); anDragTo(e.clientX); } });
-  function anDragEnd(e){ if (anDrag && e.pointerId === anDrag.id) anDrag = null; }
+  function anDragEnd(e){ if (anDrag && e.pointerId === anDrag.id){ Array.prototype.forEach.call(anDrag.d.querySelectorAll('.anKnob'), function(k){ k.classList.remove('act'); }); anDrag = null; } }
   document.getElementById('anControls').addEventListener('pointerup', anDragEnd);
   document.getElementById('anControls').addEventListener('pointercancel', anDragEnd);
   document.getElementById('anControls').addEventListener('click', function(e){
@@ -10064,7 +10087,9 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     anApplyMode(L.length > 1 ? 'combo' : L[0] || null);
   }
   function anApplyMode(m){
-    anSet.mode = m; if (m !== 'combo') anSet.combo = []; if (anSet.mode) anSet.cat = anCatOf(anSet.mode); anSave(); anCtlMode = '#';
+    anSet.mode = m; if (m !== 'combo') anSet.combo = []; if (anSet.mode) anSet.cat = anCatOf(anSet.mode);
+    if (anSet.cat !== 'similar'){ if (m) anSet.mem[anSet.cat] = [m, anSet.combo.slice()]; else delete anSet.mem[anSet.cat]; }   // (the tab's own choice)
+    anSave(); anCtlMode = '#';
     if (anSet.mode && hmOn) hmSetOn(false);      // (not together with the heat map)
     if (anSet.mode && !anShow){ anShow = true; toggleAnEl.checked = true; try { localStorage.setItem(SHOW_AN_KEY, '1'); } catch(e){} }
     anCompute();
@@ -10076,9 +10101,12 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   anPanel.addEventListener('click', function(e){
     var ct = e.target.closest ? e.target.closest('#anCatSeg button[data-cat]') : null;
     if (ct){
-      anSet.cat = ct.getAttribute('data-cat'); anSave();
-      if (anSet.cat === 'similar' && anSet.mode !== 'similar') anSetMode('similar');   // (Liknande: one thing -- straight on)
-      else anRender();
+      // another tab takes over (Filip 2026-10-06): what was on goes off, this tab's own choice comes back (anSet.mem);
+      // Liknande is one thing -- straight on
+      var c = ct.getAttribute('data-cat');
+      if (c === anSet.cat && (c !== 'similar' || anSet.mode === 'similar')) return;
+      anSet.cat = c; var r = c === 'similar' ? ['similar', []] : anSet.mem[c] || [null, []];
+      anSet.combo = r[1].slice(); anApplyMode(r[0]);
       return;
     }
     var b = e.target.closest ? e.target.closest('button[data-m]') : null;
@@ -10102,16 +10130,22 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   anPill.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
   anPill.addEventListener('click', function(e){ e.stopPropagation(); showAnPanel(!anPanel.classList.contains('show')); });
   document.getElementById('anClose').addEventListener('click', function(){ showAnPanel(false); });
-  document.getElementById('anClear').addEventListener('click', function(){ anSet.mode = null; anSet.combo = []; anSave(); anCtlMode = '#'; anCompute(); showAnPanel(false); });
-  // "Återställ": every setting in the panel back to how it was from the start (what's shown stays; "Mörkare" is in Inställningar)
-  // (what is shown -- mode, the combined parts -- and "Mörkare" stay)
-  function anKeep(k){ return k === 'mode' || k === 'combo' || k === 'dim'; }
-  function anIsDefault(){ var d = JSON.parse(AN_DEFAULTS); return Object.keys(d).every(function(k){ return anKeep(k) || JSON.stringify(anSet[k]) === JSON.stringify(d[k]); }); }
+  document.getElementById('anClear').addEventListener('click', function(){ anApplyMode(null); showAnPanel(false); });
+  // "↺ Återställ": everything back to how it was from the start (Filip 2026-10-06) -- every tab's choice, every slider, the lamp.
+  // You stay in the tab you're in (Liknande stays on: the tab is the choice). "Mörkare" is in Inställningar: kept.
+  function anStartMode(){ return anSet.cat === 'similar' ? 'similar' : null; }
+  function anIsDefault(){
+    var d = JSON.parse(AN_DEFAULTS); d.mode = anStartMode(); d.dim = anSet.dim;
+    if (anSet.ref && anSet.ref === (anSpots()[0] || {}).id) d.ref = anSet.ref;   // (Liknande starts with the first spot)
+    return Object.keys(d).every(function(k){ return JSON.stringify(anSet[k]) === JSON.stringify(d[k]); });
+  }
   document.getElementById('anReset').addEventListener('click', function(){
-    var d = JSON.parse(AN_DEFAULTS); Object.keys(d).forEach(function(k){ if (!anKeep(k)) anSet[k] = d[k]; });
-    anExtraRef = null; anSave(); anCtlMode = '#'; anCompute();
+    var d = JSON.parse(AN_DEFAULTS); Object.keys(d).forEach(function(k){ if (k !== 'dim') anSet[k] = d[k]; });
+    anExtraRef = null; anApplyMode(anStartMode());
     resetDone(this);
   });
+  // the lamp: the lit area 2× brighter (on / off, remembered; ↺ puts it out)
+  document.getElementById('anLamp').addEventListener('click', function(){ anSet.lamp = anSet.lamp ? 0 : 1; anSave(); anRender(); });
   // "↺ Återställ" (Kartanalys, Heatmap, Namn) says it's done: the arrow spins round once, then the usual grey ↺
   // (nothing left to reset)
   function resetDone(btn){
@@ -10416,6 +10450,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     nmEl('nmSize').value = namesCfg.size; nmEl('nmSizeVal').textContent = namesCfg.size + ' px';
     nmEl('nmOp').value = namesCfg.op; nmEl('nmOpVal').textContent = namesCfg.op + ' %';
     nmEl('nmDot').value = namesCfg.dot; nmEl('nmDotVal').textContent = String(namesCfg.dot).replace('.', ',') + ' px';
+    rangeFill(nmEl('nmSize')); rangeFill(nmEl('nmOp')); rangeFill(nmEl('nmDot'));
     Array.prototype.forEach.call(nmEl('nmKindSeg').children, function(b){ var on = b.getAttribute('data-k') === namesCfg.kind; b.classList.toggle('active', on); b.setAttribute('aria-checked', on ? 'true' : 'false'); });
     namesDraw();
   }
@@ -11226,7 +11261,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     if (hmOn){
       if (!restoring && !hmShow) hmSetShow(true);   // (turned on by hand: shown, like choosing a Kartanalys mode)
       loadCatches(false);
-      if (anSet.mode){ anSet.mode = null; anSave(); anCtlMode = '#'; anCompute(); }   // (not together with Kartanalys)
+      if (anSet.mode) anApplyMode(null);   // (not together with Kartanalys)
       showAnPanel(false);
     } else { hmShowPanel(false); hmCloseCard(); }
     hmShowUi();
@@ -11288,6 +11323,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
       : st === 'species' ? rng('rad', 'Radie', 20, 200, 10)
       : st === 'hex' ? '<div class="pnRow2"><div class="anSeg" aria-label="Rutans storlek">' + [30, 60, 120].map(function(m){ return '<button type="button" data-hx="' + m + '" class="' + (hmSet.hexM === m ? 'on' : '') + '">' + m + ' m</button>'; }).join('') + '</div><div class="anChips">' + tog('cnt', 'Visa antal') + '</div></div>'
       : '<div class="anChips">' + tog('big', 'Större prick = större fisk') + tog('names', 'Visa namn') + '</div>';
+    rangeFills(document.getElementById('hmCtl'));
     hmRenderTime();
     var res = document.getElementById('hmResult'), all = hmAll();
     if (!catchData) res.innerHTML = 'Hämtar fångster…';
@@ -11796,10 +11832,12 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
       now.classList.remove('segGlide'); void now.offsetWidth; now.classList.add('segGlide');
     }, 0);
   }, true);
-  // coloured sliders: where the thumb is (--f, 0..1), so the colours past it are dimmed (css/95-design-a.css)
-  function satFill(el){ var a = +el.min || 0, b = +el.max || 100; el.style.setProperty('--f', String(Math.max(0, Math.min(1, (el.value - a) / (b - a))))); }
-  Array.prototype.forEach.call(document.querySelectorAll('.satSlider'), satFill);
-  document.addEventListener('input', function(e){ if (e.target.classList && e.target.classList.contains('satSlider')) satFill(e.target); }, true);
+  // sliders: where the knob is (--f, 0..1) -- the bar is orange up to it (css/95-design-a.css). On every move and at start; code
+  // that builds sliders (innerHTML) or sets their value calls rangeFills / rangeFill itself
+  function rangeFill(el){ var a = +el.min || 0, b = +el.max || 100; el.style.setProperty('--f', String(Math.max(0, Math.min(1, (el.value - a) / (b - a))))); }
+  function rangeFills(root){ Array.prototype.forEach.call((root || document).querySelectorAll('input[type=range]'), rangeFill); }
+  rangeFills();
+  document.addEventListener('input', function(e){ if (e.target.type === 'range') rangeFill(e.target); }, true);
   // #app must never scroll (css overflow:clip; this is for browsers without it)
   (function(){
     var app = document.getElementById('app');

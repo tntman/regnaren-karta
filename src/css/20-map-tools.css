@@ -70,8 +70,6 @@
   #trackLayer{position:absolute;left:0;top:0;width:100%;height:100%;z-index:13;pointer-events:none;overflow:visible;}
   #trackLayer path{fill:none;stroke-linecap:round;stroke-linejoin:round;}
   #trackLayer{opacity:.6;} /* "Spårets synlighet" in Settings (default 60 %) */
-  .satSlider.trkSlider::-webkit-slider-runnable-track{background:linear-gradient(to right, rgba(240,154,96,.15), #F09A60);}
-  .satSlider.trkSlider::-moz-range-track{background:linear-gradient(to right, rgba(240,154,96,.15), #F09A60);}
   #trackLayer path{stroke-dasharray:7 5;}
   #trackLayer .trkUnder{stroke:rgba(10,20,26,.8);stroke-width:3.4;}
   #trackLayer .trkLine{stroke:#F09A60;stroke-width:1.8;}

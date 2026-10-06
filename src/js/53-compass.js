@@ -52,7 +52,7 @@
   var cpColorsEl = document.getElementById('cpColors'), cpLenEl = document.getElementById('cpLen'), cpAngEl = document.getElementById('cpAng');
   var cpWedgeEl = document.getElementById('cpShowWedge'), cpDialEl = document.getElementById('cpShowDial');
   function compassCfgUi(){
-    cpLenEl.value = compassCfg.len; cpAngEl.value = compassCfg.ang;
+    cpLenEl.value = compassCfg.len; cpAngEl.value = compassCfg.ang; rangeFill(cpLenEl); rangeFill(cpAngEl);
     cpWedgeEl.checked = compassCfg.wedge; cpDialEl.checked = compassCfg.dial;
     cpWedgeEl.disabled = !compassCfg.dial; cpDialEl.disabled = !compassCfg.wedge;   // den enda som är på kan inte stängas av
     document.getElementById('cpLenVal').textContent = compassCfg.len + ' m';

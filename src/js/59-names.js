@@ -41,6 +41,7 @@
     nmEl('nmSize').value = namesCfg.size; nmEl('nmSizeVal').textContent = namesCfg.size + ' px';
     nmEl('nmOp').value = namesCfg.op; nmEl('nmOpVal').textContent = namesCfg.op + ' %';
     nmEl('nmDot').value = namesCfg.dot; nmEl('nmDotVal').textContent = String(namesCfg.dot).replace('.', ',') + ' px';
+    rangeFill(nmEl('nmSize')); rangeFill(nmEl('nmOp')); rangeFill(nmEl('nmDot'));
     Array.prototype.forEach.call(nmEl('nmKindSeg').children, function(b){ var on = b.getAttribute('data-k') === namesCfg.kind; b.classList.toggle('active', on); b.setAttribute('aria-checked', on ? 'true' : 'false'); });
     namesDraw();
   }

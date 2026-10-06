@@ -228,11 +228,21 @@
   }
 
   /* ---- fixes after the first look (2026-10-05) ---- */
-  /* coloured sliders: the colours past the thumb dimmed (--f = where the thumb is, 0..1: satFill(), 91-motion.js) */
-  .satSlider:not(.cpSlider)::-webkit-slider-runnable-track{background-image:linear-gradient(90deg,transparent calc(12px + (100% - 24px) * var(--f,1)),rgba(28,33,44,.75) 0),
+  /* ---- sliders: one look in the whole app (Filip 2026-10-06) -- a white knob (25 px: the depth range's knob, 5 % smaller), the
+     bar orange up to it and a faint white after it (--f = where the knob is, 0..1: rangeFill(), js/91-motion.js). Only Djup
+     (Kartanalys, .anDual in 70-analysis.css) and Färgmättnad keep their colours, dimmed outside what's chosen. ---- */
+  input[type=range]{-webkit-appearance:none;appearance:none;height:28px;margin:0;background:transparent;cursor:pointer;}
+  input[type=range]:focus{outline:none;}
+  input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:linear-gradient(90deg,var(--amber) calc(12.5px + (100% - 25px) * var(--f,0)),rgba(255,255,255,.14) 0);}
+  input[type=range]::-moz-range-track{height:6px;border-radius:3px;background:rgba(255,255,255,.14);}
+  input[type=range]::-moz-range-progress{height:6px;border-radius:3px;background:var(--amber);}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:25px;height:25px;margin-top:-9.5px;border:none;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.55);transition:transform .15s;}
+  input[type=range]::-moz-range-thumb{width:25px;height:25px;border:none;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.55);}
+  input[type=range]:active::-webkit-slider-thumb{transform:scale(1.15);}   /* (grows a little while held) */
+  #mapSatSlider::-webkit-slider-runnable-track{background:linear-gradient(90deg,transparent calc(12.5px + (100% - 25px) * var(--f,1)),rgba(28,33,44,.75) 0),
     linear-gradient(to right,#7b8084,#2f7fe0 55%,#19c9c3 75%,#f5c518 88%,#ef3b2d);}
-  .satSlider.trkSlider::-webkit-slider-runnable-track{background-image:linear-gradient(90deg,transparent calc(12px + (100% - 24px) * var(--f,1)),rgba(28,33,44,.75) 0),
-    linear-gradient(to right,rgba(240,154,96,.15),#F09A60);}
+  #mapSatSlider::-moz-range-track{background:linear-gradient(to right,#7b8084,#2f7fe0 55%,#19c9c3 75%,#f5c518 88%,#ef3b2d);}
+  #mapSatSlider::-moz-range-progress{background:none;}
   /* #app never scrolls (an off-screen panel getting focus or a tap mid-slide used to scroll it -- js/91-motion.js holds it too) */
   #app{overflow:clip;}
   /* small headings: sentence case, like the rest of A */
@@ -269,9 +279,6 @@
   /* the heatmap / Kartanalys fade in on the map */
   @keyframes layerIn{from{opacity:0;}}
   #hmLayer.on, #hmSat.on, #anLayer.on{animation:layerIn .6s ease;}
-  /* a slider's knob grows a little while held */
-  .satSlider::-webkit-slider-thumb{transition:transform .15s;}
-  .satSlider:active::-webkit-slider-thumb{transform:scale(1.15);}
   @media (prefers-reduced-motion:reduce){
     .mapPill:not([hidden]), #ltOffPill:not([hidden]), #farAway.show, #msgOwn.show, #msgToast.show, #trkPanel.show > *, #pfCard.show > *, #hmCard.show > *{animation:fadeIn .15s ease both !important;}
   }

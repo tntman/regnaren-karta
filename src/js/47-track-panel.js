@@ -20,7 +20,7 @@
     if (c.who && !trkWhoSel.querySelector('option[value="' + c.who + '"]')) trkWhoSel.insertAdjacentHTML('beforeend', '<option value="' + c.who + '">' + c.who + '</option>');   // (a name that isn't on the member list)
     trkWhoSel.value = c.who || ''; trkWhoSel.classList.toggle('on', !!c.who);
     document.getElementById('trkStopMinBox').hidden = !c.stops;
-    document.getElementById('trkStopMin').value = String(c.stopMin); satFill(document.getElementById('trkStopMin')); document.getElementById('trkStopMinVal').textContent = c.stopMin + ' min';
+    document.getElementById('trkStopMin').value = String(c.stopMin); rangeFill(document.getElementById('trkStopMin')); document.getElementById('trkStopMinVal').textContent = c.stopMin + ' min';
     Array.from(document.querySelectorAll('#trkRange button')).forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-r') === c.range); });
     Array.from(document.querySelectorAll('#trkDash button')).forEach(function(b){ b.classList.toggle('on', (b.getAttribute('data-d') === '1') === !!c.dash); });
     Array.from(document.querySelectorAll('#trkColors button')).forEach(function(b){ var on = b.getAttribute('data-c').toLowerCase() === String(c.color).toLowerCase(); b.classList.toggle('active', on); b.setAttribute('aria-checked', on ? 'true' : 'false'); });

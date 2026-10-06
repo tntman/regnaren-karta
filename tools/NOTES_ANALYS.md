@@ -32,7 +32,8 @@ raderas den då (`pagehide`).
   (på som standard). När ett läge är på (och syns): skylten **Kartanalys** under väderchipet
   (`#anPill`, som Heatmaps) – tryck = rutan. Panel `#anPanel`: Djup, Branta kanter, Grynnor & hålor, Växter, Hård botten,
   Vindkant, Liknande + förinställt Abborre/Gädda/Gös (tumregler från vanliga fiskeråd, INTE data).
-- Djupreglage = stapel i djupfärgerna med två handtag (`anDualRow`). "Mörkare" (standard 72 %)
+- Djupreglage = stapel i djupfärgerna med två handtag (`anDualRow`), mörkare utanför det valda, de valda djupen under
+  handtagen och bara 0 / maxdjupet i ändarna (2026-10-06, tools/UI.md → Reglage). "Mörkare" (standard 72 %)
   ligger i Inställningar (`#anDimSet`) + gråtoning (`#anSat`, mix-blend-mode saturation).
   Reglage för hård botten (hårdhet + djup). "Växter" = var det finns växter.
 - **Grynnor & hålor (heter aldrig "toppar") = prominens** (`anDome`: h-dome med morfologisk
@@ -52,11 +53,15 @@ raderas den då (`pagehide`).
   platserna laddats) = ingen gråtoning.
 - Panelen (som heatmapens, tight – högst ~1/3 av skärmen): **översta raden** (`.pnHead`) = resultatet
   (`#anResult`, högst 2 rader; noterna `.note` + kontrollernas `.anNote` visas bara i **ⓘ**-rutan `.pnInfo`,
-  `pnInfo()`, `ffmap_panel_info_v1`) + **ⓘ**, **↺ Återställ** (`#anReset`: alla inställningar tillbaka till
-  start – `AN_DEFAULTS`; läget och "Mörkare" behålls; grå när allt redan är som från start; grön bock efteråt,
-  `resetDone`) och **⏻ Stäng av** (`#anClear`, bärnsten när något är på). Sedan **kategoriraden**
-  (`#anCatSeg`: Kartdata / Tumregler / Fångster / Liknande – `anSet.cat`, `anCatOf(mode)`; kategorin med det
-  som är på får en amber understrykning) och bara den kategorins knappar, en rad som skrollar i sidled.
+  `pnInfo()`, `ffmap_panel_info_v1`) + **ⓘ**, **💡 Lys upp** (`#anLamp`, `anSet.lamp`, av/på, minns: det tända 2×
+  ljusare – canvasen `#anGlow` med 50 % grått och `mix-blend-mode:color-dodge` = kartans färger × 2 där det lyser),
+  **↺ Återställ** (`#anReset`, 2026-10-06: ALLT tillbaka till start – `AN_DEFAULTS`: alla flikars val, alla reglage,
+  lampan; man stannar i fliken (Liknande förblir på – fliken är valet); bara "Mörkare" (Inställningar) behålls; grå när
+  allt redan är som från start; snurr efteråt, `resetDone`) och **⏻ Stäng av** (`#anClear`, bärnsten när något är på).
+  Sedan **kategoriraden** (`#anCatSeg`: Kartdata / Tumregler / Fångster / Liknande – `anSet.cat`, `anCatOf(mode)`).
+  **Byte av flik (2026-10-06):** det som var på släcks och den nya flikens eget val tänds igen (`anSet.mem[flik]` =
+  `[läge, combo]`, uppdateras i `anApplyMode`; Liknande tänds direkt), så bara den flikens reglage syns. Omstart av
+  appen tömmer alla flikars val (av efter omstart). Sedan bara den kategorins knappar, en rad som skrollar i sidled.
   Två reglage sida vid sida. Liknande-listan i `#anListBox`. Liknande = kategorin själv (inget extra val).
 - **Kombinera i Kartdata** (2026-10-01): Kartdata-knapparna slås på/av (`anToggleMap`, `aria-pressed`). En på = som
   förut (`anSet.mode` = den), fler = läget `'combo'` med delarna i `anSet.combo`. Tänt = där ALLA delar stämmer
@@ -64,8 +69,9 @@ raderas den då (`pagehide`).
   `AN_NEAR`) räknas "inom … m" (`anSet.near`, reglage `#anNear_<del>`, 0–50 m, 0 = exakt; standard 15, grynnor 0) med
   `anNear`. **Bara Djup har ett djupreglage** (Branta kanter och Hård botten räknar på hela sjön – lägg till Djup för att
   begränsa; deras gamla `elo/ehi/hlo/hhi` är borta). Knapparna som är på får ett "+" framför namnet när fler än en är på (`#anChips.combo`). Området visar kartans egna färger, resten grått – det gäller ALLA Kartdata-lägen, även ett ensamt (`AN_PLAIN`, `anDraw`: ingen färgfyllning; hålor räknas med i samma mask; skyltarna med färgad kant, den tunna vita kanten och strandlinjen finns kvar). Tumregler, Liknande och Fångster behåller sina färger. Blir inget kvar: "Inget kvar – <del>
-  tar bort det sista" + tips. ⓘ visar stegen ("Djup: 23 % → + Branta kanter: 1 % → …"). Återställ behåller delarna.
-  Tumregler och Fångster blandas inte in. Dra = mindre, snärt/hela vägen = stäng (`sheetSwipe`, tools/UI.md).
+  tar bort det sista" + tips. ⓘ visar stegen ("Djup: 23 % → + Branta kanter: 1 % → …"). Återställ släcker delarna också.
+  Tumregler och Fångster blandas inte in (byter man flik släcks Kartdata, och kommer tillbaka när man byter tillbaka).
+  Branta kanters reglage heter "Lutning över". Dra = mindre, snärt/hela vägen = stäng (`sheetSwipe`, tools/UI.md).
 - **Liknande**: välj vad som jämförs (djup, lutning, botten, växter, grynna/håla) och område
   (bara platsen/25/50/100 m = snittet inom radien, `anSimFeatures`), med förklaring. Platsen
   själv lyser och får en rosa ring (`.anLbl.simRef`), men står inte i listan (inget inom 60 m);

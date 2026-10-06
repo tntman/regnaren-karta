@@ -54,10 +54,12 @@
       now.classList.remove('segGlide'); void now.offsetWidth; now.classList.add('segGlide');
     }, 0);
   }, true);
-  // coloured sliders: where the thumb is (--f, 0..1), so the colours past it are dimmed (css/95-design-a.css)
-  function satFill(el){ var a = +el.min || 0, b = +el.max || 100; el.style.setProperty('--f', String(Math.max(0, Math.min(1, (el.value - a) / (b - a))))); }
-  Array.prototype.forEach.call(document.querySelectorAll('.satSlider'), satFill);
-  document.addEventListener('input', function(e){ if (e.target.classList && e.target.classList.contains('satSlider')) satFill(e.target); }, true);
+  // sliders: where the knob is (--f, 0..1) -- the bar is orange up to it (css/95-design-a.css). On every move and at start; code
+  // that builds sliders (innerHTML) or sets their value calls rangeFills / rangeFill itself
+  function rangeFill(el){ var a = +el.min || 0, b = +el.max || 100; el.style.setProperty('--f', String(Math.max(0, Math.min(1, (el.value - a) / (b - a))))); }
+  function rangeFills(root){ Array.prototype.forEach.call((root || document).querySelectorAll('input[type=range]'), rangeFill); }
+  rangeFills();
+  document.addEventListener('input', function(e){ if (e.target.type === 'range') rangeFill(e.target); }, true);
   // #app must never scroll (css overflow:clip; this is for browsers without it)
   (function(){
     var app = document.getElementById('app');

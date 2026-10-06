@@ -111,8 +111,6 @@
   .cpColors button{width:34px;height:34px;border-radius:50%;border:3px solid transparent;box-shadow:0 0 0 1px rgba(255,255,255,.25);padding:0;cursor:pointer;}
   .cpColors button.active{border-color:#fff;}
   .cpLbl{flex:0 0 auto;min-width:50px;font-size:14px;color:var(--offwhite);}
-  .satSlider.cpSlider::-webkit-slider-runnable-track{background:rgba(255,255,255,.28);}
-  .satSlider.cpSlider::-moz-range-track{background:rgba(255,255,255,.28);}
   #dotCenter{display:none;}
   #dotArrow{
     position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;

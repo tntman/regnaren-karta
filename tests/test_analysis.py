@@ -55,6 +55,15 @@ with sync_playwright() as p:
     pg.mouse.move(k[0], k[1]); pg.mouse.down(); pg.mouse.move(r[0] + r[2] * 9 / dmax, k[1], steps=8); pg.mouse.up(); pg.wait_for_timeout(600)
     a = an(pg)
     check('drag the right handle to 9 m: more of the lake', a['n'] > n46 and '4,0–9,0 m' in a['text'], a['text'])
+    def ticks(): return pg.evaluate("[...document.querySelectorAll('#anControls .anTicks > *')].filter(e => !e.hidden).map(e => e.textContent)")
+    check('...under it: the chosen depths under the handles, only the lake\'s 0 and max at the ends (nothing between)', ticks() == ['4 m', '9 m', '0', '12 m'], ticks())
+    check('...outside the range the bar is dimmed (no white frame round the range)', pg.evaluate(
+          "(s => s.borderTopWidth === '0px' && s.boxShadow.indexOf('rgba(28, 33, 44, 0.75)') >= 0)(getComputedStyle(document.querySelector('#anControls .anSel')))"))
+    k0 = pg.eval_on_selector_all('#anControls .anKnob', 'e => e.map(x => { var r = x.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; })')[0]
+    pg.mouse.move(k0[0], k0[1]); pg.mouse.down(); pg.mouse.move(r[0] + r[2] * 8.5 / dmax, k0[1], steps=8); pg.mouse.up(); pg.wait_for_timeout(300)
+    check('...the handles close together: one number for both ("8,5–9 m")', ticks() == ['8,5–9 m', '0', '12 m'], ticks())
+    k0 = pg.eval_on_selector_all('#anControls .anKnob', 'e => e.map(x => { var r = x.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; })')[0]
+    pg.mouse.move(k0[0], k0[1]); pg.mouse.down(); pg.mouse.move(r[0] + r[2] * 4 / dmax, k0[1], steps=8); pg.mouse.up(); pg.wait_for_timeout(600)
     check('no "Mörkare" in the panel any more (it is in Inställningar)', pg.query_selector('#anControls #anDim') is None and pg.input_value('#anDimSet') == '0.72')
     dark = pg.evaluate("(() => { var c = document.getElementById('anLayer'); return c.getContext('2d').getImageData(5, 5, 1, 1).data[3]; })()")
     pg.evaluate("(() => { var e = document.getElementById('anDimSet'); e.value = 0.4; e.dispatchEvent(new Event('input', { bubbles: true })); })()"); pg.wait_for_timeout(300)
@@ -66,7 +75,18 @@ with sync_playwright() as p:
     shore = pg.evaluate("""() => { var c = document.getElementById('anLayer'), d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data, n = 0;
       for (var i = 0; i < d.length; i += 4) if (d[i] > 235 && d[i + 1] > 235 && d[i + 2] > 235 && d[i + 3] > 90 && d[i + 3] < 170) n++; return n; }""")
     check('the lake outline: a thin solid (smooth) white line at ~50 %', shore > 150, shore)
+    # the lamp (between ⓘ and ↺): the lit area 2× brighter
+    order = pg.evaluate("[...document.querySelectorAll('#anPanel .pnHead .hdBtn')].map(b => b.getAttribute('aria-label'))")
+    check('the lamp: between ⓘ and ↺, off from the start', order == ['Förklaring', 'Lys upp', 'Återställ', 'Stäng av kartanalys'] and pg.get_attribute('#anLamp', 'aria-pressed') == 'false' and not pg.is_visible('#anGlow'), order)
+    pg.click('#anLamp'); pg.wait_for_timeout(600)
+    glow = pg.evaluate("""() => { var c = document.getElementById('anGlow'), d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data, n = 0;
+      for (var i = 3; i < d.length; i += 4) if (d[i] > 200 && d[i - 1] === 128) n++; return n; }""")
+    check('...on: the lit area brightened (50 % grey colour-dodged over the map = ×2), the lamp lit', pg.is_visible('#anGlow') and pg.get_attribute('#anLamp', 'aria-pressed') == 'true' and
+          pg.evaluate("getComputedStyle(document.getElementById('anGlow')).mixBlendMode") == 'color-dodge' and glow > 10000, glow)
+    pg.click('#anLamp'); pg.wait_for_timeout(400)
+    check('...off again', not pg.is_visible('#anGlow') and pg.get_attribute('#anLamp', 'aria-pressed') == 'false')
     a = pick(pg, 'steep'); check('Branta kanter: steep parts found; Lutning only, no depth slider (only Djup has one)', a['ready'] and a['n'] > 100 and pg.is_visible('#anSlope') and not pg.query_selector('#anControls .anDual'), a)
+    check('...its slider says "Lutning över"', pg.inner_text('label[for=anSlope]') == 'Lutning över', pg.inner_text('label[for=anSlope]'))
     a = pick(pg, 'tops'); check('never called "topp"; the labels are just the depth ("2,4 m")', a['labels'] and pg.evaluate("[].every.call(document.querySelectorAll('.anLbl:not(.sim):not(.simRef)'), e => /^\d+(,\d)? m$/.test(e.textContent))") and 'topp' not in pg.inner_text('#anPanel').lower())
     a = an(pg); check('Grynnor & hålor (prominence: how far they rise above the saddle): labelled on the map', a['ready'] and a['labels'] >= 4 and 'reser sig minst 0,6 m' in a['text'], a)
     def setr(i, v): pg.evaluate("([i, v]) => { var e = document.getElementById(i); e.value = v; e.dispatchEvent(new Event('input', { bubbles: true })); }", [i, v])
@@ -146,12 +166,16 @@ with sync_playwright() as p:
     check('...something chosen: ⏻ active, amber (something is on)', pg.is_enabled('#anClear') and pg.evaluate("getComputedStyle(document.getElementById('anClear')).color") == 'rgb(240, 154, 96)')
     pg.click('#anClear'); pg.wait_for_timeout(300)
     check('"Stäng av kartanalys": nothing chosen, nothing drawn; the panel closes (like Heatmap)', an(pg)['mode'] is None and lit(pg) == 0 and not pg.evaluate("document.getElementById('anPanel').classList.contains('show')"))
-    # Återställ: every setting back to the start (what's on stays on)
+    # Återställ: everything back to the start -- every tab's choice, the sliders, the lamp; you stay in the tab
     a = pick(pg, 'steep')
     pg.evaluate("(() => { var e = document.getElementById('anSlope'); e.value = 22; e.dispatchEvent(new Event('input', { bubbles: true })); })()"); pg.wait_for_timeout(900)
-    check('a setting changed: "Återställ" can be pressed', pg.is_enabled('#anReset'))
+    pg.click('#anLamp'); pg.wait_for_timeout(300)
+    check('something on, a slider changed, the lamp on: "Återställ" can be pressed', pg.is_enabled('#anReset'))
     pg.click('#anReset'); pg.wait_for_timeout(1200)
-    check('..."Återställ": back to the start (lutning 10 %), still showing Branta kanter; then greyed out', an(pg)['mode'] == 'steep' and 'över 10 %' in an(pg)['text'] and pg.is_disabled('#anReset'), an(pg)['text'])
+    check('..."Återställ": nothing on any more (still in Kartdata), the lamp out; then greyed out', an(pg)['mode'] is None and lit(pg) == 0 and pg.inner_text('#anCatSeg button.on') == 'Kartdata'
+          and pg.get_attribute('#anLamp', 'aria-pressed') == 'false' and pg.is_disabled('#anReset'), an(pg))
+    a = pick(pg, 'steep')
+    check('...the sliders from the start too (lutning 10 %)', 'över 10 %' in a['text'], a['text'])
     pg.click('#anClear'); pg.wait_for_timeout(300)
     # a spot's sheet: "Hitta liknande" opens the analysis on "Liknande" for that spot
     pg.evaluate("n => { var id = Object.keys(window.__wpDocs).filter(k => window.__wpDocs[k].name === n)[0]; document.querySelector('#waypoints [data-id=' + JSON.stringify(id) + ']').click(); }", 'Djupa hålet')
@@ -205,6 +229,19 @@ with sync_playwright() as p:
     check('...one depth slider (Djup\'s) + Lutning; "+" before the names of the buttons that are on',
           pg.evaluate("document.querySelectorAll('#anControls .anDual').length") == 1 and pg.is_visible('#anSlope') and
           pg.evaluate("getComputedStyle(document.querySelector('#anChips button.on'), '::before').content") == '"+ "')
+    # another tab takes over: what was on goes off (and its sliders), each tab's own choice comes back when you go back
+    pg.click('#anCatSeg button[data-cat="rule"]'); pg.wait_for_timeout(1200)
+    check('another tab (Tumregler): Kartdata\'s choice off -- nothing drawn, none of its sliders', an(pg)['mode'] is None and lit(pg) == 0 and
+          pg.inner_text('#anControls').strip() == '' and pg.is_visible('#anPresets'), an(pg))
+    pg.click('#anPresets button[data-m="gadda"]'); pg.wait_for_timeout(2500)
+    pg.click('#anCatSeg button[data-cat="map"]'); pg.wait_for_timeout(1500); a3 = an(pg)
+    check('...back to Kartdata: its choice again (Djup + Branta kanter, their sliders), Gädda off', a3['mode'] == 'combo' and a3['n'] == a['n'] and
+          pg.query_selector('#anControls .anDual') is not None and pg.is_visible('#anSlope'), (a['n'], a3))
+    pg.click('#anCatSeg button[data-cat="rule"]'); pg.wait_for_timeout(2500)
+    check('...and Tumregler\'s: Gädda again', an(pg)['mode'] == 'gadda', an(pg))
+    pg.click('#anCatSeg button[data-cat="map"]'); pg.wait_for_timeout(1500)
+    rs = pg.evaluate("[...document.querySelectorAll('input[type=range]')].map(e => [e.id || e.dataset.r, getComputedStyle(e).appearance, e.style.getPropertyValue('--f') !== ''])")
+    check('every slider in the app the same (none native), its bar filled up to the knob (--f)', len(rs) >= 10 and all(x[1] == 'none' and x[2] for x in rs), rs)
     pg.click('#anChips button[data-m="hard"]'); pg.wait_for_timeout(2500); a2 = an(pg)
     check('+ Hård botten: smaller again, with "inom … m" (15 m)', a2['n'] <= a['n'] and pg.input_value('#anNear_hard') == '15', (a['n'], a2['n']))
     pg.click('#anPanel .pnInfoBtn'); pg.wait_for_timeout(300)

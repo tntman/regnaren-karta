@@ -125,6 +125,8 @@ pillren är kapslar. Platt: inga skuggor på det frostade; menyer och kort över
   en färgprick, vald = artens färg som ton + text.
 - **Flikar** (Kartdata/Tumregler …, Värme/Per art …): ingen bädd, vald flik = yta 2 med vit text.
 - **Reglage:** av = yta 3, på = orange, utan sken (borttaget 2026-10-05).
+- **Skjutreglage** (alla, 2026-10-06): vit cirkel 25 px, stapeln orange fram till cirkeln och svagt vitt efter. Bara Djup
+  (djupfärgerna, mörkare utanför det valda) och Färgmättnad (färgskalan) har egna färger. `tools/UI.md` → Reglage.
 - **Fakta** (Djup, Lutning, Botten, Växter): en rad med tunna streck emellan, inga rutor.
 - **Kort i mitten** (båten, ett meddelande, tävlingslåset): solida, 20 px, mörk bakgrund bakom; namnet med › öppnar profilen.
 - **Menyer** (Meny, Kartlägen, Filter): solida, 18 px, kompakta som förut. Valt = orange text / ljusare rad,

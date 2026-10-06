@@ -13,7 +13,7 @@
     document.getElementById('detailLayer').style.filter = f;
     var bar = document.querySelector('#legend .bar');
     if (bar) bar.style.filter = f;
-    mapSatSlider.value = String(mapSat);
+    mapSatSlider.value = String(mapSat); rangeFill(mapSatSlider);
     mapSatVal.textContent = mapSat + ' %';
   }
   mapSatSlider.addEventListener('input', function(){
@@ -58,7 +58,7 @@
   var trackOpSlider = document.getElementById('trackOpSlider');
   function applyTrackOpacity(){
     document.getElementById('trackLayer').style.opacity = String(trackOp / 100);
-    trackOpSlider.value = String(trackOp);
+    trackOpSlider.value = String(trackOp); rangeFill(trackOpSlider);
     document.getElementById('trackOpVal').textContent = trackOp + ' %';
   }
   trackOpSlider.addEventListener('input', function(){

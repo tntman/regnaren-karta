@@ -64,12 +64,21 @@ vald = `.on`/`.active` (amber). För få, fasta val (Av/5/10/20 km, Bara platsen
 
 ## Reglage
 
+- **Samma utseende i hela appen** (Filip 2026-10-06, `input[type=range]` i `95-design-a.css`): vit cirkel 25 px
+  (djupreglagets förra, 5 % mindre) som växer lite när den hålls, stapeln 6 px – orange fram till cirkeln, svagt vitt
+  (14 %) efter. Var cirkeln står = `--f` (0–1) som `rangeFill(el)` sätter (`91-motion.js`: vid varje drag och vid
+  start). **Den som bygger reglage med innerHTML kör `rangeFills(rot)`, den som sätter `.value` i kod kör
+  `rangeFill(el)`** – annars står den orange delen fel. Undantag med egna färger: Djup (nedan) och Färgmättnad
+  (`#mapSatSlider`, färgskalan, mörkare efter cirkeln). Inga andra reglagestilar (gamla `.satSlider`-färgerna borta;
+  `.satSlider` är bara layout).
 - **Ett handtag:** `anRangeRow(id, etikett, min, max, steg, värde, format)` →
-  etikett – `<input type=range>` (amber, `accent-color`) – värdet till höger (`output`, amber).
+  etikett – `<input type=range>` – värdet till höger (`output`, amber).
+- **Två handtag, Storlek:** `sizeRow` (`.sizeDual`, två range-inputs på varandra): orange mellan cirklarna, svagt vitt utanför.
 - **Djupintervall, två handtag:** `anDualRow(nyckel)` → en stapel i djupfärgerna
-  (samma som skalan nere till vänster: `MAP_STYLES[0].legend`, 0 → sjöns maxdjup),
-  två vita runda handtag (26 px), det valda omringat av en vit ram, siffror under
-  (`legendTicks`). Dras med pekaren (`anDrag`), steg 0,5 m, handtagen kan inte korsa
+  (samma som skalan nere till vänster: `MAP_STYLES[0].legend`, 0 → sjöns maxdjup), mörkare utanför det valda
+  (`.anSel`:s skugga, klippt av stapeln), två vita cirklar (25 px). Under: de valda djupen under cirklarna (ett
+  "4–4,5 m" när de skulle krocka) och bara 0 och sjöns maxdjup i ändarna (ändsiffran viker för en cirkels siffra;
+  `anDualPlace`). Dras med pekaren (`anDrag`), steg 0,5 m, handtagen kan inte korsa
   varandra. Registrera nycklarna i `AN_DUAL` (t.ex. `depth: ['lo','hi']`).
   `touch-action:none` på stapeln.
 

@@ -104,16 +104,18 @@
   }
   var anSet = { simF: { d: 1, s: 1, h: 1, v: 1, t: 1 }, simR: 0, mode: null, lo: 4, hi: 6, slope: 10, topP: 0.6, holeP: 0.8, hmin: 3, dim: 0.72, ref: null,
                cF: { d: 1, s: 1, h: 1, v: 1, l: 1, t: 1 }, cCov: 7, cView: 'area', size: {},   // (c* = "Från fångsterna", 57-an-catches.js)
-               combo: [], near: { tops: 0, veg: 15, hard: 15, wind: 15 } };   // Kartdata combined (mode 'combo'): the parts, "inom … m"
+               combo: [], near: { tops: 0, veg: 15, hard: 15, wind: 15 },     // Kartdata combined (mode 'combo'): the parts, "inom … m"
+               lamp: 0, mem: {} };   // lamp: the lit area 2× brighter (#anGlow); mem: each tab's own choice, [mode, combo] -- back when you go back to it
   var AN_DEFAULTS = JSON.stringify(anSet);   // (for "Återställ")
   anSet.cat = 'map';                            // the category shown: map / rule / data / similar
   try { var sv = JSON.parse(localStorage.getItem(AN_KEY) || 'null'); if (sv) for (var k0 in sv) anSet[k0] = sv[k0]; } catch(e){}
   delete anSet.cm0; delete anSet.cm1;   // (the first Storlek, one range for all species)
-  if (!rotState) anSet.mode = null;          // a new start of the app: off (turning the phone keeps it)
+  if (!rotState){ anSet.mode = null; anSet.combo = []; anSet.mem = {}; }   // a new start of the app: off, the tabs' choices too (turning the phone keeps it)
   var anShow = true;
   try { anShow = localStorage.getItem(SHOW_AN_KEY) !== '0'; } catch(e){}
   var anCanvas = document.getElementById('anLayer'), anCtx = anCanvas.getContext('2d');
   var anSatCanvas = document.getElementById('anSat'), anSatCtx = anSatCanvas.getContext('2d');
+  var anGlowCanvas = document.getElementById('anGlow'), anGlowCtx = anGlowCanvas.getContext('2d');
   var anPanel = document.getElementById('anPanel'), anBtn = document.getElementById('anBtn'), anLabelsEl = document.getElementById('anLabels'), anPill = document.getElementById('anPill');
   var AN = null, anBottom = null, anBottomLoading = false, anRes = null, anView = null, anVer = 0;
   function anSave(){ try { localStorage.setItem(AN_KEY, JSON.stringify(anSet)); } catch(e){} }
@@ -443,21 +445,23 @@
   function anDraw(){
     shoreDraw();                              // (Strandlinje on the plain map, 68-heatmap.js: off while this shows)
     var dpr = window.devicePixelRatio || 1, W = stage.clientWidth, H = stage.clientHeight;
-    var on = anShow && anSet.mode && anRes && anRes.M;
-    anCanvas.classList.toggle('on', !!on); anSatCanvas.classList.toggle('on', !!on);
+    var on = anShow && anSet.mode && anRes && anRes.M, glow = !!(on && anSet.lamp);
+    anCanvas.classList.toggle('on', !!on); anSatCanvas.classList.toggle('on', !!on); anGlowCanvas.classList.toggle('on', glow);
     anLabelsEl.style.display = on ? '' : 'none';
     if (!on) return;
-    [anCanvas, anSatCanvas].forEach(function(c){ if (c.width !== Math.round(W * dpr) || c.height !== Math.round(H * dpr)){ c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); } });
+    (glow ? [anCanvas, anSatCanvas, anGlowCanvas] : [anCanvas, anSatCanvas]).forEach(function(c){ if (c.width !== Math.round(W * dpr) || c.height !== Math.round(H * dpr)){ c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); } });
     anCtx.setTransform(dpr, 0, 0, dpr, 0, 0); anCtx.clearRect(0, 0, W, H);
     anSatCtx.setTransform(dpr, 0, 0, dpr, 0, 0); anSatCtx.clearRect(0, 0, W, H);
+    if (glow){ anGlowCtx.setTransform(dpr, 0, 0, dpr, 0, 0); anGlowCtx.clearRect(0, 0, W, H); }
     if (!(W >= 2 && H >= 2)) return;          // (mid-rotation the map can be 0 px for a moment)
     var STEP = viewStep(W, H), vw = Math.ceil(W / STEP), vh = Math.ceil(H / STEP), A = AN, R = anRes;
-    var key = originX.toFixed(1) + ',' + originY.toFixed(1) + ',' + scale.toFixed(5) + ',' + W + 'x' + H + ',' + R.ver + ',' + anSet.dim + ',' + STEP;
+    var key = originX.toFixed(1) + ',' + originY.toFixed(1) + ',' + scale.toFixed(5) + ',' + W + 'x' + H + ',' + R.ver + ',' + anSet.dim + ',' + STEP + ',' + glow;
     if (!anView || anView.key !== key){
-      var cv = anView ? anView.cv : document.createElement('canvas'), sv = anView ? anView.sv : document.createElement('canvas');
-      [cv, sv].forEach(function(c){ if (c.width !== vw || c.height !== vh){ c.width = vw; c.height = vh; } });
+      var cv = anView ? anView.cv : document.createElement('canvas'), sv = anView ? anView.sv : document.createElement('canvas'), gv = anView ? anView.gv : document.createElement('canvas');
+      (glow ? [cv, sv, gv] : [cv, sv]).forEach(function(c){ if (c.width !== vw || c.height !== vh){ c.width = vw; c.height = vh; } });
       var c2 = cv.getContext('2d'), im = c2.createImageData(vw, vh), px = im.data, col = R.color;
       var s2 = sv.getContext('2d'), sm = s2.createImageData(vw, vh), sp = sm.data;
+      var g2c = glow ? gv.getContext('2d') : null, gm = glow ? g2c.createImageData(vw, vh) : null, gp = glow ? gm.data : null;   // (the lamp: grey where it's lit)
       var dimA = Math.round(255 * anSet.dim), satA = Math.round(255 * Math.min(1, anSet.dim + 0.2));
       var N2 = vw * vh, f1 = new Float32Array(N2), f2 = new Float32Array(N2), fl = new Float32Array(N2);
       // the smooth field at the level where a cell is about one drawn point (see anField)
@@ -506,13 +510,15 @@
         if (es > 0) over(255, 255, 255, 128 * es);      // the shore: a solid line, 50 %
         if (a > 0){ px[k] = r / a; px[k + 1] = g / a; px[k + 2] = b / a; px[k + 3] = a * 255; }
         sp[k] = 128; sp[k + 1] = 128; sp[k + 2] = 128; sp[k + 3] = satA * k0 * (1 - ra);
+        if (gp){ gp[k] = gp[k + 1] = gp[k + 2] = 128; gp[k + 3] = 255 * Math.max(k1, k2); }
       }
-      c2.putImageData(im, 0, 0); s2.putImageData(sm, 0, 0);
-      anView = { key: key, cv: cv, sv: sv };
+      c2.putImageData(im, 0, 0); s2.putImageData(sm, 0, 0); if (glow) g2c.putImageData(gm, 0, 0);
+      anView = { key: key, cv: cv, sv: sv, gv: gv };
     }
     anCtx.imageSmoothingEnabled = true; anSatCtx.imageSmoothingEnabled = true;
     anCtx.drawImage(anView.cv, 0, 0, vw * STEP, vh * STEP);
     anSatCtx.drawImage(anView.sv, 0, 0, vw * STEP, vh * STEP);
+    if (glow){ anGlowCtx.imageSmoothingEnabled = true; anGlowCtx.drawImage(anView.gv, 0, 0, vw * STEP, vh * STEP); }
     // from the catches: the catches it's worked out from, small white dots
     if (R.pts) R.pts.forEach(function(p){
       var x = originX + p.x * scale, y = originY + p.y * scale; if (x < -5 || y < -5 || x > W + 5 || y > H + 5) return;
@@ -532,7 +538,8 @@
     document.getElementById('anClear').disabled = !m;      // (only when there's something to clear)
     anDataRow();
     var cat = anSet.cat || 'map';
-    Array.prototype.forEach.call(document.querySelectorAll('#anCatSeg button'), function(b){ b.classList.toggle('on', b.getAttribute('data-cat') === cat); b.classList.toggle('has', b.getAttribute('data-cat') === anCatOf(m) && cat !== anCatOf(m)); });
+    Array.prototype.forEach.call(document.querySelectorAll('#anCatSeg button'), function(b){ b.classList.toggle('on', b.getAttribute('data-cat') === cat); });
+    var lampB = document.getElementById('anLamp'); lampB.classList.toggle('on', !!anSet.lamp); lampB.setAttribute('aria-pressed', anSet.lamp ? 'true' : 'false');
     document.getElementById('anChips').hidden = cat !== 'map';
     document.getElementById('anPresets').hidden = cat !== 'rule';
     document.getElementById('anDataChips').hidden = cat !== 'data';
@@ -576,19 +583,25 @@
     return '<div class="anRange"><label for="' + id + '">' + label + '</label><input type="range" id="' + id + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + val + '"><output>' + fmt(val) + '</output>' +
       (ends ? '<div class="anEnds"><span>' + ends[0] + '</span><span>' + ends[1] + '</span></div>' : '') + '</div>';
   }
-  // a depth range: one bar in the depth colours (like the legend) with two handles
+  // a depth range: one bar in the depth colours (like the legend), dimmed outside the range, two handles; under it the chosen
+  // depths (under the handles) and only the lake's 0 and max at the ends (Filip 2026-10-06)
   function anDualRow(key){
-    var ticks = (LAKE.legendTicks || ['0 m', AN_DMAX + ' m']).map(function(t){ return '<span>' + t.replace(' m', '') + '</span>'; });
-    ticks[ticks.length - 1] = ticks[ticks.length - 1].replace('</span>', ' m</span>');
-    return '<div class="anDual" data-k="' + key + '"><div class="anTrack" style="background:' + ((MAP_STYLES[0] && MAP_STYLES[0].legend) || '#2a86c9') + '"></div>' +
-      '<div class="anSel"></div><div class="anKnob" data-h="0"></div><div class="anKnob" data-h="1"></div></div><div class="anTicks">' + ticks.join('') + '</div>';
+    return '<div class="anDual" data-k="' + key + '"><div class="anTrack" style="background:' + ((MAP_STYLES[0] && MAP_STYLES[0].legend) || '#2a86c9') + '"><div class="anSel"></div></div>' +
+      '<div class="anKnob" data-h="0"></div><div class="anKnob" data-h="1"></div></div><div class="anTicks"><b></b><b></b><span>0</span><span>' + anM(AN_DMAX) + ' m</span></div>';
   }
+  function anM(v){ return String(Math.round(v * 10) / 10).replace('.', ','); }   // (4 / 4,5)
   var AN_DUAL = { depth: ['lo', 'hi'] };         // (only Djup has a depth range)
   function anDualPlace(){
     Array.prototype.forEach.call(document.querySelectorAll('#anControls .anDual'), function(d){
-      var k = AN_DUAL[d.getAttribute('data-k')], a = anSet[k[0]] / AN_DMAX * 100, z = anSet[k[1]] / AN_DMAX * 100;
-      d.children[1].style.left = a + '%'; d.children[1].style.width = Math.max(0, z - a) + '%';
-      d.children[2].style.left = a + '%'; d.children[3].style.left = z + '%';
+      var k = AN_DUAL[d.getAttribute('data-k')], lo = anSet[k[0]], hi = anSet[k[1]], a = lo / AN_DMAX * 100, z = hi / AN_DMAX * 100;
+      var sel = d.querySelector('.anSel'), kn = d.querySelectorAll('.anKnob'), t = d.nextElementSibling, v = t.querySelectorAll('b'), ends = t.querySelectorAll('span');
+      sel.style.left = a + '%'; sel.style.width = Math.max(0, z - a) + '%';
+      kn[0].style.left = a + '%'; kn[1].style.left = z + '%';
+      // the numbers: centred under the handles (one "4–4,5 m" when they'd touch); an end's number gives way to them
+      function near(x, y){ return Math.abs(x.offsetLeft - y.offsetLeft) < (x.offsetWidth + y.offsetWidth) / 2 + 6; }
+      v[0].textContent = anM(lo) + ' m'; v[1].textContent = anM(hi) + ' m'; v[0].style.left = a + '%'; v[1].style.left = z + '%'; v[1].hidden = false;
+      if (near(v[0], v[1])){ v[0].textContent = anM(lo) + (hi > lo ? '–' + anM(hi) : '') + ' m'; v[0].style.left = (a + z) / 2 + '%'; v[1].hidden = true; }
+      Array.prototype.forEach.call(ends, function(e){ e.hidden = false; e.hidden = near(e, v[0]) || (!v[1].hidden && near(e, v[1])); });
     });
   }
   var anCtlMode = '#';
@@ -601,13 +614,14 @@
       ? anSet.combo.map(function(k){ return anCtlFor(k) +     // each part's own controls, + "inom … m" for the spots
           (AN_NEAR[k] ? anRangeRow('anNear_' + k, anName(k) + ' · inom', 0, 50, 5, anSet.near[k] || 0, function(v){ return v + ' m'; }) : ''); }).join('')
       : anCtlFor(m);
+    rangeFills(el);   // (the bar orange up to the knob, 91-motion.js)
     if (m && m.indexOf('c_') === 0) anCatchDots();
     anDualPlace();
   }
   function anCtlFor(m){
     var h = '';
     if (m === 'depth') h = anDualRow('depth');
-    else if (m === 'steep') h = anRangeRow('anSlope', 'Lutning', 4, 30, 1, anSet.slope, function(v){ return v + ' %'; });
+    else if (m === 'steep') h = anRangeRow('anSlope', 'Lutning över', 4, 30, 1, anSet.slope, function(v){ return v + ' %'; });
     else if (m === 'tops') h = anRangeRow('anTopP', 'Grynnor', 0.3, 2.5, 0.1, anSet.topP, function(v){ return '≥ ' + fmtDepth(+v) + ' m'; }) +
       anRangeRow('anHoleP', 'Hålor', 0.3, 2.5, 0.1, anSet.holeP, function(v){ return '≥ ' + fmtDepth(+v) + ' m'; });
     else if (m && m.indexOf('c_') === 0) h = anCatchControls();
@@ -650,6 +664,7 @@
     var v = Math.max(0, Math.min(AN_DMAX, (e.clientX - r.left) / r.width * AN_DMAX));
     var h = e.target.classList.contains('anKnob') ? +e.target.getAttribute('data-h') : (Math.abs(v - anSet[k[0]]) <= Math.abs(v - anSet[k[1]]) ? 0 : 1);
     anDrag = { d: d, k: k, h: h, id: e.pointerId };
+    d.querySelectorAll('.anKnob')[h].classList.add('act');
     try { d.setPointerCapture(e.pointerId); } catch(err){}
     anDragTo(e.clientX);
   });
@@ -660,7 +675,7 @@
     anDualPlace(); anLater();
   }
   document.getElementById('anControls').addEventListener('pointermove', function(e){ if (anDrag && e.pointerId === anDrag.id){ e.preventDefault(); anDragTo(e.clientX); } });
-  function anDragEnd(e){ if (anDrag && e.pointerId === anDrag.id) anDrag = null; }
+  function anDragEnd(e){ if (anDrag && e.pointerId === anDrag.id){ Array.prototype.forEach.call(anDrag.d.querySelectorAll('.anKnob'), function(k){ k.classList.remove('act'); }); anDrag = null; } }
   document.getElementById('anControls').addEventListener('pointerup', anDragEnd);
   document.getElementById('anControls').addEventListener('pointercancel', anDragEnd);
   document.getElementById('anControls').addEventListener('click', function(e){
@@ -692,7 +707,9 @@
     anApplyMode(L.length > 1 ? 'combo' : L[0] || null);
   }
   function anApplyMode(m){
-    anSet.mode = m; if (m !== 'combo') anSet.combo = []; if (anSet.mode) anSet.cat = anCatOf(anSet.mode); anSave(); anCtlMode = '#';
+    anSet.mode = m; if (m !== 'combo') anSet.combo = []; if (anSet.mode) anSet.cat = anCatOf(anSet.mode);
+    if (anSet.cat !== 'similar'){ if (m) anSet.mem[anSet.cat] = [m, anSet.combo.slice()]; else delete anSet.mem[anSet.cat]; }   // (the tab's own choice)
+    anSave(); anCtlMode = '#';
     if (anSet.mode && hmOn) hmSetOn(false);      // (not together with the heat map)
     if (anSet.mode && !anShow){ anShow = true; toggleAnEl.checked = true; try { localStorage.setItem(SHOW_AN_KEY, '1'); } catch(e){} }
     anCompute();
@@ -704,9 +721,12 @@
   anPanel.addEventListener('click', function(e){
     var ct = e.target.closest ? e.target.closest('#anCatSeg button[data-cat]') : null;
     if (ct){
-      anSet.cat = ct.getAttribute('data-cat'); anSave();
-      if (anSet.cat === 'similar' && anSet.mode !== 'similar') anSetMode('similar');   // (Liknande: one thing -- straight on)
-      else anRender();
+      // another tab takes over (Filip 2026-10-06): what was on goes off, this tab's own choice comes back (anSet.mem);
+      // Liknande is one thing -- straight on
+      var c = ct.getAttribute('data-cat');
+      if (c === anSet.cat && (c !== 'similar' || anSet.mode === 'similar')) return;
+      anSet.cat = c; var r = c === 'similar' ? ['similar', []] : anSet.mem[c] || [null, []];
+      anSet.combo = r[1].slice(); anApplyMode(r[0]);
       return;
     }
     var b = e.target.closest ? e.target.closest('button[data-m]') : null;
@@ -730,16 +750,22 @@
   anPill.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
   anPill.addEventListener('click', function(e){ e.stopPropagation(); showAnPanel(!anPanel.classList.contains('show')); });
   document.getElementById('anClose').addEventListener('click', function(){ showAnPanel(false); });
-  document.getElementById('anClear').addEventListener('click', function(){ anSet.mode = null; anSet.combo = []; anSave(); anCtlMode = '#'; anCompute(); showAnPanel(false); });
-  // "Återställ": every setting in the panel back to how it was from the start (what's shown stays; "Mörkare" is in Inställningar)
-  // (what is shown -- mode, the combined parts -- and "Mörkare" stay)
-  function anKeep(k){ return k === 'mode' || k === 'combo' || k === 'dim'; }
-  function anIsDefault(){ var d = JSON.parse(AN_DEFAULTS); return Object.keys(d).every(function(k){ return anKeep(k) || JSON.stringify(anSet[k]) === JSON.stringify(d[k]); }); }
+  document.getElementById('anClear').addEventListener('click', function(){ anApplyMode(null); showAnPanel(false); });
+  // "↺ Återställ": everything back to how it was from the start (Filip 2026-10-06) -- every tab's choice, every slider, the lamp.
+  // You stay in the tab you're in (Liknande stays on: the tab is the choice). "Mörkare" is in Inställningar: kept.
+  function anStartMode(){ return anSet.cat === 'similar' ? 'similar' : null; }
+  function anIsDefault(){
+    var d = JSON.parse(AN_DEFAULTS); d.mode = anStartMode(); d.dim = anSet.dim;
+    if (anSet.ref && anSet.ref === (anSpots()[0] || {}).id) d.ref = anSet.ref;   // (Liknande starts with the first spot)
+    return Object.keys(d).every(function(k){ return JSON.stringify(anSet[k]) === JSON.stringify(d[k]); });
+  }
   document.getElementById('anReset').addEventListener('click', function(){
-    var d = JSON.parse(AN_DEFAULTS); Object.keys(d).forEach(function(k){ if (!anKeep(k)) anSet[k] = d[k]; });
-    anExtraRef = null; anSave(); anCtlMode = '#'; anCompute();
+    var d = JSON.parse(AN_DEFAULTS); Object.keys(d).forEach(function(k){ if (k !== 'dim') anSet[k] = d[k]; });
+    anExtraRef = null; anApplyMode(anStartMode());
     resetDone(this);
   });
+  // the lamp: the lit area 2× brighter (on / off, remembered; ↺ puts it out)
+  document.getElementById('anLamp').addEventListener('click', function(){ anSet.lamp = anSet.lamp ? 0 : 1; anSave(); anRender(); });
   // "↺ Återställ" (Kartanalys, Heatmap, Namn) says it's done: the arrow spins round once, then the usual grey ↺
   // (nothing left to reset)
   function resetDone(btn){

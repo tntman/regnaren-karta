@@ -31,7 +31,7 @@
   #anControls{margin-top:6px;}
   .anRange{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12.5px;color:#dbe4e7;}
   .anRange label{flex:0 0 58px;}
-  .anRange input[type=range]{flex:1;accent-color:var(--amber);height:26px;}
+  .anRange input[type=range]{flex:1;}
   .anRange output{flex:0 0 48px;text-align:right;font-weight:700;color:var(--amber);}
   .anList{margin-top:7px;display:flex;flex-direction:column;gap:5px;}
   .anList .li{display:flex;align-items:center;gap:9px;background:rgba(255,255,255,.05);border-radius:10px;padding:6px 9px;font-size:13px;color:#dbe4e7;}
@@ -45,12 +45,21 @@
   /* ---- Kartanalys: the greyed-out map (a 2nd canvas desaturates what's under it), the depth-range slider ---- */
   #anSat{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;display:none;mix-blend-mode:saturation;}
   #anSat.on{display:block;}
+  /* the lamp (#anLamp): the lit area 2× brighter -- 50 % grey "colour-dodged" over the map = its colours × 2 (anDraw) */
+  #anGlow{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;display:none;mix-blend-mode:color-dodge;}
+  #anGlow.on{display:block;}
   #anPanel.dragging{transition:none;}
   .anDual{position:relative;height:34px;margin:12px 13px 0;touch-action:none;cursor:pointer;}
-  .anTrack{position:absolute;left:0;right:0;top:14px;height:6px;border-radius:3px;}
-  .anSel{position:absolute;top:9px;height:16px;border:2.5px solid #fff;border-radius:8px;box-sizing:border-box;margin-left:-3px;padding-right:6px;box-shadow:0 0 0 1px rgba(0,0,0,.35);}
-  .anKnob{position:absolute;top:4px;width:26px;height:26px;margin-left:-13px;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.55);}
-  .anTicks{display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin:2px 6px 0;}
+  /* (Djup keeps the depth colours; outside the chosen range they're dimmed -- the window's shadow, clipped by the bar; the
+     knobs as every slider's (25 px, 95-design-a.css), the chosen depths under them, the lake's 0 and max at the ends) */
+  .anTrack{position:absolute;left:0;right:0;top:14px;height:6px;border-radius:3px;overflow:hidden;}
+  .anSel{position:absolute;top:0;bottom:0;box-shadow:0 0 0 999px rgba(28,33,44,.75);}
+  .anKnob{position:absolute;top:4.5px;width:25px;height:25px;margin-left:-12.5px;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.55);transition:transform .15s;}
+  .anKnob.act{transform:scale(1.15);}
+  .anTicks{position:relative;height:15px;margin:1px 13px 0;font-size:11px;color:var(--text-muted);}
+  .anTicks > *{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap;}
+  .anTicks span:first-of-type{left:0;} .anTicks span:last-child{left:100%;}
+  .anTicks b{font-size:11.5px;font-weight:700;color:var(--offwhite);}
   /* ---- Liknande: what to compare + how big an area ---- */
   .anFactors{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
   .anFactors button{font:inherit;font-size:12px;padding:5px 9px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.16);color:var(--text-muted);cursor:pointer;}
@@ -76,16 +85,15 @@
   .anLbl.simRef::after{animation-delay:1s;}
   @keyframes simRing{0%{transform:scale(.25);opacity:1;}100%{transform:scale(1.6);opacity:0;}}
   #anCatSeg{margin-top:6px;}
-  #anCatSeg button.has{box-shadow:inset 0 -2px 0 var(--amber);}      /* (what's on is in this category) */
   .anSep{width:1.5px;align-self:stretch;background:rgba(255,255,255,.3);border-radius:1px;margin:3px 3px;}
   /* ---- the panels' top row (Kartanalys, Heatmap): what it shows now (2 lines at most) + ⓘ ↺ ⏻; ✕ in the grip ---- */
-  .pnHead{display:flex;align-items:center;gap:6px;min-height:40px;margin:-2px 0 2px;}
-  .pnResCol{flex:1 1 auto;min-width:0;}
+  .pnHead{display:flex;align-items:center;gap:2px;min-height:40px;margin:-2px 0 2px;}
+  .pnResCol{flex:1 1 auto;min-width:0;margin-right:4px;}   /* (icons 32 px, 2 px apart: room for the result's two lines with 4 of them, 2026-10-06) */
   .pnRes{font-size:13px;line-height:1.3;color:#dbe4e7;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;}
   .pnRes b{color:var(--amber);}
   .pnRes .note{display:none;}                                           /* (behind ⓘ) */
   .pnHid{color:#ff8a80;}
-  .hdBtn{flex:0 0 auto;width:36px;height:36px;border-radius:11px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);
+  .hdBtn{flex:0 0 auto;width:32px;height:36px;border-radius:11px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);
     color:var(--offwhite);display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;}
   .hdBtn svg{width:18px;height:18px;display:block;}
   .hdBtn:active{transform:scale(.92);}
@@ -112,17 +120,17 @@
   #anControls .anRange, #hmCtl .anRange, #hmSize .anRange{flex-wrap:wrap;row-gap:0;margin-top:8px;}
   #anControls .anRange label, #hmCtl .anRange label, #hmSize .anRange label{flex:1 1 auto;}
   #anControls .anRange output, #hmCtl .anRange output, #hmSize .anRange output{flex:0 0 auto;}
-  #anControls .anRange input, #hmCtl .anRange input{flex:1 1 100%;order:3;height:24px;}
+  #anControls .anRange input, #hmCtl .anRange input{flex:1 1 100%;order:3;}
   /* "Storlek" (Heatmap, Kartanalys "Från fångsterna", sizeRow in 56-analysis.js): two range inputs on top of each other, only their handles take touches; the part between them orange */
   #hmSize .anRange{margin-top:6px;}
   .sizeDual{position:relative;flex:1 1 100%;order:3;height:28px;}
-  .sizeDual::before{content:'';position:absolute;left:10px;right:10px;top:12px;height:4px;border-radius:2px;
-    background:linear-gradient(90deg,var(--s3) var(--a),var(--amber) var(--a),var(--amber) var(--b),var(--s3) var(--b));}
+  .sizeDual::before{content:'';position:absolute;left:12.5px;right:12.5px;top:11px;height:6px;border-radius:3px;   /* (the knobs' centres: 12.5 px in from the ends) */
+    background:linear-gradient(90deg,rgba(255,255,255,.14) var(--a),var(--amber) var(--a),var(--amber) var(--b),rgba(255,255,255,.14) var(--b));}
   :is(#anControls, #hmSize) .sizeDual input{position:absolute;left:0;top:0;width:100%;height:28px;margin:0;-webkit-appearance:none;appearance:none;background:none;pointer-events:none;}
-  .sizeDual input::-webkit-slider-runnable-track{height:28px;background:none;}
-  .sizeDual input::-moz-range-track{background:none;}
-  .sizeDual input::-webkit-slider-thumb{-webkit-appearance:none;pointer-events:auto;width:20px;height:20px;margin-top:4px;border-radius:50%;background:var(--amber);box-shadow:0 1px 4px rgba(0,0,0,.5);cursor:pointer;}
-  .sizeDual input::-moz-range-thumb{pointer-events:auto;width:20px;height:20px;border:none;border-radius:50%;background:var(--amber);box-shadow:0 1px 4px rgba(0,0,0,.5);cursor:pointer;}
+  .sizeDual input[type=range]::-webkit-slider-runnable-track{height:28px;background:none;}
+  .sizeDual input[type=range]::-moz-range-track, .sizeDual input[type=range]::-moz-range-progress{background:none;}
+  .sizeDual input[type=range]::-webkit-slider-thumb{pointer-events:auto;margin-top:1.5px;}
+  .sizeDual input[type=range]::-moz-range-thumb{pointer-events:auto;}
   .pnRow2{display:flex;gap:8px;align-items:center;}
   .pnRow2 .anSeg{flex:1 1 auto;} .pnRow2 .anChips{flex:0 0 auto;padding-right:0;-webkit-mask-image:none;mask-image:none;}
   #anPanel .anSeg, #hmPanel .anSeg{margin-top:6px;}

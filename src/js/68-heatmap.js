@@ -73,7 +73,7 @@
     if (hmOn){
       if (!restoring && !hmShow) hmSetShow(true);   // (turned on by hand: shown, like choosing a Kartanalys mode)
       loadCatches(false);
-      if (anSet.mode){ anSet.mode = null; anSave(); anCtlMode = '#'; anCompute(); }   // (not together with Kartanalys)
+      if (anSet.mode) anApplyMode(null);   // (not together with Kartanalys)
       showAnPanel(false);
     } else { hmShowPanel(false); hmCloseCard(); }
     hmShowUi();
@@ -135,6 +135,7 @@
       : st === 'species' ? rng('rad', 'Radie', 20, 200, 10)
       : st === 'hex' ? '<div class="pnRow2"><div class="anSeg" aria-label="Rutans storlek">' + [30, 60, 120].map(function(m){ return '<button type="button" data-hx="' + m + '" class="' + (hmSet.hexM === m ? 'on' : '') + '">' + m + ' m</button>'; }).join('') + '</div><div class="anChips">' + tog('cnt', 'Visa antal') + '</div></div>'
       : '<div class="anChips">' + tog('big', 'Större prick = större fisk') + tog('names', 'Visa namn') + '</div>';
+    rangeFills(document.getElementById('hmCtl'));
     hmRenderTime();
     var res = document.getElementById('hmResult'), all = hmAll();
     if (!catchData) res.innerHTML = 'Hämtar fångster…';
