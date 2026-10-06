@@ -11616,7 +11616,7 @@
         document.getElementById('demoMoveToggle').checked = !!demoSim;
       }
     }
-    startGeolocation();
+    afterSplash(startGeolocation);   // (the location question after the start film, not over it)
     initSharedWaypoints(function(ok){
       if (!ok && USE_FIREBASE) return; // a late sign-in error after the shared mode already started -- ignore
       localOnlyMode = !ok;

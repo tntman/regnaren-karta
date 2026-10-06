@@ -101,6 +101,15 @@ with sync_playwright() as p:
     check('...and not on the next start', not sp(pg)['shown'] and not html_splash(pg), sp(pg))
     b.close()
 
+    # a known name, last in use 25 h ago: the location question (watchPosition) only after the film
+    b, pg, errs, reqs = fresh(p, extra="""try { localStorage.setItem('regnaren_user_name_v1', 'Filip');
+      localStorage.setItem('ffmap_last_active_v1', String(Date.now() - 25 * 3600000)); } catch(e){}
+      window.__geoAt = []; navigator.geolocation.watchPosition = function(){ window.__geoAt.push(document.documentElement.classList.contains('splash')); return 1; };""")
+    pg.wait_for_function("window.__ffSplash().mode === 'film'", timeout=10000)
+    g1 = pg.evaluate('window.__geoAt.length'); done(pg, 12000); pg.wait_for_timeout(200)
+    check('the location question waits for the film (not over it), then comes', g1 == 0 and pg.evaluate('window.__geoAt') == [False], (g1, pg.evaluate('window.__geoAt')))
+    b.close()
+
     # 6. no WebGL (the logo has stepped down to 'flat'): the flat logo, no three.js at all
     b, pg, errs, reqs = fresh(p, extra="try { localStorage.setItem('ffmap_logo3d_v1', 'flat'); } catch(e){}")
     pg.wait_for_timeout(700)
