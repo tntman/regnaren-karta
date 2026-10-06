@@ -34,8 +34,8 @@ Alla kommandon körs från repots rot (`E:\github\regnaren-karta`), med `py -3`.
    `id`, `name`, `zoom` (= djupdatans zoom, den högsta nivån där djupet räknas –
    17 om den finns), `levels` (t.ex. `[14,15,16,17,18]`), `bbox` (eller `origin` +
    `size` för att behålla ett gammalt utsnitt), `center` (valfri), `version`
-   (höj vid ny bildomgång), `top_styles` (vilka kartlägen som får nivåer över
-   djupdatans zoom – de är stora), `grid_div`, `depth_step`, `osm`.
+   (höj vid ny bildomgång), `grid_div`, `depth_step`, `osm`. (`top_styles` används inte
+   längre sedan kartformatet 2026-10-06 – alla kartlägen får alla nivåer.)
 5. **Kalibrera djupet:**
    `py -3 tools/genesis_depth.py <id> sheet` → `raw/<id>/z<zoom>/labels_sheet.png`
    Läs av Genesis djupsiffror på arket (liten siffra efter talet = tiondelar,
@@ -87,17 +87,24 @@ Alla kommandon körs från repots rot (`E:\github\regnaren-karta`), med `py -3`.
 
 - **Kartbilden** (`map_v<V>_<stil>.jpg`) = zoom 14, lägsta nivån. Zoom 12–13
   används inte (Filips beslut). Man kan zooma ut förbi 14 – då visas 14-bilden förminskad.
-- **Högre nivåer** = 512-px-bitar `tiles_v<V>/z<z>/<stil>/<c>_<r>.jpg`, bara bitar
-  nära vatten. Appen visar nivån = zoomen avrundad; förra nivån ligger kvar
+- **Högre nivåer** = 512-px-bitar, bara bitar nära vatten. **Kartformatet (2026-10-06,
+  `tools/PLAN_KARTFORMAT.md`):** varje bit = **bas** `tiles_v<V>/z<z>/<stil>/<c>_<r>.webp`
+  (bara färger, WebP kvalitet 35) + **kurvlager** `tiles_v<V>/z<z>/lines/<c>_<r>.webp`
+  (Genesis t_ för den zoomen, genomskinlig, förlustfri WebP 32 färger – **inte 8**, då blir
+  siffrornas gloria taggig) som alla kartlägen delar; c1 har ljusa linjer i `lines_w/`
+  (`"lines": "lines_w"` på kartläget i lake.json). Baser finns till `baseMax` (= djupdatans
+  zoom, 17); zoom 18 har bara kurvlager och appen lägger dem på zoom 17-basen förstorad –
+  ser likadant ut (färgerna på 18 var ändå zoom 17 förstorade). Regnaren 143 → ~35 MB.
+  Sjöar som inte byggts om har kvar det gamla (en JPG per bit med linjerna inbakade) –
+  appen klarar båda (`DETAIL.lines` finns/saknas). Appen visar nivån = zoomen avrundad; förra nivån ligger kvar
   tills den nya laddat. Zoomindikatorn: "Zoom 15,3 lager 15".
 - **Samma max zoom för alla sjöar** (beslutat, ej byggt än: 18,6). Varje sjö
   använder sitt högsta lager och förstorar det därifrån.
 - **Varje nivå visar exakt Genesis kurvlager (t_) för den zoomen** – antalet
   linjer och siffror ökar när man zoomar in, precis som på Genesis.
 - Zoom 18 HAR mer än 17: tunnare linjer och många fler djupsiffror.
-- Nivåer över djupdatans zoom (t.ex. 18 när djupet är på 17) är stora – därför
-  `top_styles`: **zoom 18 bara för s1 (Djupfärger) och g1 (C-MAP original), för alla
-  sjöar** (Filips beslut). Övriga kartlägen förstoras från zoom 17.
+- Nivåer över djupdatans zoom (t.ex. 18 när djupet är på 17): bara kurvlager, så **alla
+  kartlägen har zoom 18** (förr bara s1/g1 via `top_styles`, för att de var stora).
 - **Förhandsgranska innan bygge:** `py -3 tools/genesis_render.py <id> preview 14,15 <mapp>`
   ritar hela bilderna för de nivåerna i alla kartlägen till en valfri mapp, utan att
   röra `docs/` eller `lakes/`.
@@ -109,7 +116,7 @@ Alla kommandon körs från repots rot (`E:\github\regnaren-karta`), med `py -3`.
 **Vi ritar ALDRIG egna djupkurvor eller siffror.** Bara Genesis t_-lager, för
 rätt zoom, och bara nära vår sjö (inte grannsjöar). Det vi ritar själva är
 färger och relief (ur det kalibrerade djupet).
-- Mörka kartlägen (Natt, Flygfoto + linjer): linjerna färgas ljusa. Siffrorna
+- Kartlägen utan vattenfärg (c1 Bottenhårdhet; förr Natt och Flygfoto + linjer): linjerna färgas ljusa. Siffrorna
   känns igen på sin ljusa gloria och lämnas som de är (inte på "svart klump" –
   då blir ihopsmälta linjer i branter fel).
 
@@ -179,15 +186,15 @@ färger och relief (ur det kalibrerade djupet).
 - s2 **Förenklad:** exakt samma färger som Djupfärger, men ingen relief (Filips beslut;
   tidigare `turbo_r` – samma djup fick annan nyans än i Djupfärger)
 - ~~s4 Natt~~ – **borttagen, skapa den aldrig** (Filips beslut). Id `s4` används inte.
-- s5 **Flygfoto + linjer:** flygfoto, vita linjer – tunnare (alfa^2,5, bara linjernas
-  kärna) och 55 % opacitet (`LINE_THIN`, `LINE_OPACITY`); siffrorna på 100 %
+- ~~s5 Flygfoto + linjer~~ – **borttagen 2026-10-06** (Filips beslut). Dess ljusa linjer
+  (alfa^2,5, 55 %, `LINE_THIN`, `LINE_OPACITY`, siffrorna 100 %) lever kvar i c1.
 - s6 **Blå relief:** #cfeefa → #6fc3e8 → #2a86c9 → #12509a → #0a2c63 + relief
 - g1 **C-MAP original:** flygfoto + Genesis b_ + t_ (som på Genesis)
 - v1 **Vegetation:** Blå reliefs färger UTAN relief + grönt (#46dc3c, 72 %) där v_ säger växtlighet
 - **Relief bara i Djupfärger (s1) och Blå relief (s6).** Alla andra lägen: ingen relief.
 - c1 **Bottenhårdhet:** Genesis 4 nivåer (mjuk → hård) omfärgade med mer kontrast,
   palett "warm" (beslutad): ljusgul → gul-orange → röd-orange → mörkröd. Där ingen hårdhet
-  är mätt: **ingen färg alls** – flygfotot + tunna ljusa djuplinjer (som Flygfoto + linjer).
+  är mätt: **ingen färg alls** – flygfotot + tunna ljusa djuplinjer (eget kurvlager `lines_w/`).
   *Förkastat:* dämpad blå bakgrund där data saknas (såg ut som data), Genesis egna
   färger (för lika varandra), "bluered" blå → röd.
 - s3 **Sjökort:** blå band som börjar vid fasta djup 0, 1, 2, 3, 5, 7,5, 10, 20, 30 m.
@@ -268,8 +275,8 @@ djup = färgens rang (ej kalibrerat) × 10 m; utjämning σ 4,5 px; Sobel-lutnin
 - [x] Relief (T1 × AO) bara i Djupfärger + Blå relief; alla andra utan. Natt borttagen.
       (Beslutat, `relief()` i genesis_render.py.)
 - [x] Max zoom 18,6 för alla sjöar (beslutat).
-- [x] Zoom 18 bara för Djupfärger + C-MAP original (`top_styles`) för ALLA sjöar;
-      övriga kartlägen förstoras från zoom 17 (beslutat – storlek ~150 MB per sjö annars).
+- [x] ~~Zoom 18 bara för Djupfärger + C-MAP original (`top_styles`)~~ – ersatt av kartformatet
+      (bas + delat kurvlager, 2026-10-06): alla kartlägen får zoom 18.
 - [x] Samma max zoom för alla sjöar (18,6) – byggt (`MAX_ZOOM` i src/js/10-core.js).
 - [x] Regnaren ombyggd med djupkarta på zoom 17 (53 avlästa siffror, 90 % inom
       0,11 m; tidigare zoom 16: 47 siffror, 0,14 m) och lager 14–18. Filer v4
@@ -285,6 +292,7 @@ djup = färgens rang (ej kalibrerat) × 10 m; utjämning σ 4,5 px; Sobel-lutnin
       Genesis har bara norra delen (ringen runt ön) – södra delen = okänt djup. Steg 1–8 i sidochatt
       2026-10-05, steg 9–10 (bygg + tester) i main-chatten 2026-10-06. (matplotlib saknades
       efter ominstallationen – `py -3 -m pip install --user matplotlib`.)
+- [ ] **Mälaren + nytt kartformat (bas + delat kurvlager, WebP): plan i `tools/PLAN_KARTFORMAT.md` (2026-10-06).**
 - [ ] **Stora sjöar (Mälaren):** Filips utsnitt Bålsta–Ekerö var ~42 × 33 km ≈ 45 × Regnaren → uppskattat
       6–7 GB i docs/, ~3 GB offline, ~1,8 miljoner Genesis-rutor. Går inte: GitHub Pages ~1 GB totalt,
       zoom 14-bilden (~7 600 × 7 000 px) för stor för iPhone Safari, Kartanalys räknar hela sjön. Ett

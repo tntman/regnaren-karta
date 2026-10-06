@@ -136,18 +136,32 @@
      (fetched then, kept by the service worker afterwards). The level follows
      the zoom (rounded); past the highest level its pieces are just enlarged.
      While a new level's pieces load, the previous ones stay underneath, and
-     without coverage the ordinary picture simply stays. */
+     without coverage the ordinary picture simply stays.
+     New format (lake.json "detail".lines, tools/PLAN_KARTFORMAT.md): every piece is two
+     pictures -- the style's BASE (colours, no lines) and the level's LINES on top (shared
+     by every style; a style with light lines has its own folder, "lines": "lines_w").
+     Above "baseMax" there are only lines: the baseMax base is enlarged under them.
+     Lakes not rebuilt yet: one picture per piece, lines baked in. */
   var DETAIL = LAKE.detail || null;
   var detailLayer = document.getElementById('detailLayer');
-  var detailEls = {};   // 'z/style/c_r' -> img
+  var detailEls = {};   // 'z/style/c_r' (or 'z/lines/c_r') -> img
   function currentZoom(){ return ZOOM + Math.log(scale * S) / Math.LN2; }
   function detailLevel(){           // the level shown now (null = the map picture itself)
     if (!DETAIL || !DETAIL.levels) return null;
     var want = Math.round(currentZoom()), best = null;
     DETAIL.levels.forEach(function(L){
-      if (L.z <= want && L.styles.indexOf(mapStyle) !== -1 && (!best || L.z > best.z)) best = L;
+      if (L.z <= want && (!L.styles || L.styles.indexOf(mapStyle) !== -1) && (!best || L.z > best.z)) best = L;
     });
     return best;
+  }
+  function detailUrl(z, folder, c, r){
+    var tpl = folder === mapStyle ? DETAIL.file : DETAIL.lines;
+    return lakeUrl(LAKE_DIR + tpl.replace('{z}', z).replace('{style}', folder).replace('{lines}', folder).replace('{c}', c).replace('{r}', r));
+  }
+  function linesFolder(sid){ var st = LAKE.styles.filter(function(x){ return x.id === sid; })[0]; return (st && st.lines) || 'lines'; }
+  function detailBaseLevel(L){      // where the base of level L comes from (L itself, or baseMax enlarged)
+    if (L.base !== false) return L;
+    return DETAIL.levels.filter(function(x){ return x.z === DETAIL.baseMax; })[0] || null;
   }
   function placeTile(el, z, c, r){
     var size = DETAIL.tile * Math.pow(2, ZOOM - z) * S * scale;   // a piece on screen (css px)
@@ -160,28 +174,36 @@
   }
   function renderDetail(){
     var want = {}, allLoaded = true, L = detailLevel();
+    function piece(z, folder, c, r, zi){
+      var key = z + '/' + folder + '/' + c + '_' + r;
+      if (want[key]) return;
+      want[key] = true;
+      var el = detailEls[key];
+      if (!el){
+        el = document.createElement('img');
+        el.alt = ''; el.draggable = false; el.decoding = 'async';
+        el._z = z; el._c = c; el._r = r;
+        el.onload = function(){ this.classList.add('ok'); scheduleRender(); };
+        el.onerror = function(){ if (lakeImgError(this)) return; this.classList.add('bad'); scheduleRender(); };
+        el.src = detailUrl(z, folder, c, r);
+        detailLayer.appendChild(el);
+        detailEls[key] = el;
+      }
+      el.style.zIndex = zi;
+      placeTile(el, z, c, r);
+      if (!el.classList.contains('ok') && !el.classList.contains('bad')) allLoaded = false;
+    }
     if (L){
       var T = DETAIL.tile * Math.pow(2, ZOOM - L.z) * S;          // a piece in map-picture px
       var c0 = Math.max(0, Math.floor(-originX / scale / T)), c1 = Math.min(L.cols - 1, Math.floor((stageW - originX) / scale / T));
       var r0 = Math.max(0, Math.floor(-originY / scale / T)), r1 = Math.min(L.rows - 1, Math.floor((stageH - originY) / scale / T));
+      var B = DETAIL.lines ? detailBaseLevel(L) : null, d = B ? L.z - B.z : 0;
       for (var r = r0; r <= r1; r++) for (var c = c0; c <= c1; c++){
         if (L.have.charAt(r * L.cols + c) !== '1') continue;
-        var key = L.z + '/' + mapStyle + '/' + c + '_' + r;
-        want[key] = true;
-        var el = detailEls[key];
-        if (!el){
-          el = document.createElement('img');
-          el.alt = ''; el.draggable = false; el.decoding = 'async';
-          el._z = L.z; el._c = c; el._r = r;
-          el.onload = function(){ this.classList.add('ok'); scheduleRender(); };
-          el.onerror = function(){ if (lakeImgError(this)) return; this.classList.add('bad'); scheduleRender(); };
-          el.src = lakeUrl(LAKE_DIR + DETAIL.file.replace('{z}', L.z).replace('{style}', mapStyle).replace('{c}', c).replace('{r}', r));
-          detailLayer.appendChild(el);
-          detailEls[key] = el;
-        }
-        el.style.zIndex = 2;
-        placeTile(el, L.z, c, r);
-        if (!el.classList.contains('ok') && !el.classList.contains('bad')) allLoaded = false;
+        if (!DETAIL.lines){ piece(L.z, mapStyle, c, r, 2); continue; }   // (old format: lines baked in)
+        var cb = c >> d, rb = r >> d;
+        if (B && B.have.charAt(rb * B.cols + cb) === '1') piece(B.z, mapStyle, cb, rb, 2);
+        piece(L.z, linesFolder(mapStyle), c, r, 3);
       }
     }
     // pieces of another level/style: kept (underneath) until the new ones are there

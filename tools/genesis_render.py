@@ -9,8 +9,13 @@ Needs (see tools/genesis_tiles.py and tools/genesis_depth.py):
     raw/<lake>/z<zoom>/depth_m.npy, water.npy   (genesis_depth.py)
     raw/<lake>/z<level>/{a,b,t,v,c}.png         for every level (genesis_tiles.py)
 Writes
-    docs/lakes/<lake>/map_v<V>_<style>.jpg              the whole lake at the lowest level (zoom 14)
-    docs/lakes/<lake>/tiles_v<V>/z<z>/<style>/<c>_<r>.jpg  higher levels in 512 px pieces (only near water)
+    docs/lakes/<lake>/map_v<V>_<style>.jpg              the whole lake at the lowest level (zoom 14), lines baked in
+    docs/lakes/<lake>/tiles_v<V>/z<z>/<style>/<c>_<r>.webp  higher levels up to the depth data's zoom in 512 px
+                                                         pieces (only near water): the BASE -- colours, no lines
+    docs/lakes/<lake>/tiles_v<V>/z<z>/lines[_w]/<c>_<r>.webp  Genesis' lines + numbers for that zoom, see-through,
+                                                         shared by every style (lines_w = the light ones, Bottenhårdhet).
+                                                         Above the depth data's zoom there are only lines: the app
+                                                         puts them on the top base, enlarged (tools/PLAN_KARTFORMAT.md)
     docs/lakes/<lake>/thumbs_v<V>/<style>.jpg, depth_v<V>.txt
     lakes/<lake>/lake.json, lakes/<lake>/raw/depth_raw.npz (full-resolution depth for the tests)
 (The pictures only live in docs/ -- they're built output, and a copy in lakes/
@@ -30,7 +35,7 @@ from matplotlib import colors as mcolors
 Image.MAX_IMAGE_PIXELS = None
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TL = 512
-# Flygfoto + linjer: the white lines thinner (alpha ** LINE_THIN keeps the cores) and see-through
+# Bottenhårdhet (light lines): the white lines thinner (alpha ** LINE_THIN keeps the cores) and see-through
 LINE_THIN = float(os.environ.get('FF_LINE_THIN', 2.5))
 LINE_OPACITY = float(os.environ.get('FF_LINE_OPACITY', 0.55))
 # Bottenhårdhet: Genesis' 4 colours (soft -> hard) and what we draw them as
@@ -111,7 +116,6 @@ def main():
     src = json.load(open(os.path.join(L, 'raw', 'source.json'), encoding='utf-8'))
     DZ = src['zoom']                                   # the depth data's zoom
     levels = sorted(src['levels']); base, top = levels[0], levels[-1]
-    top_styles = src.get('top_styles')                 # styles that get levels above DZ (they're big)
     V = src.get('version', 1)                          # new version = new file names (phones re-download)
 
     # ---- the crop at DZ, aligned so it's whole pixels at every level
@@ -192,8 +196,7 @@ def main():
         ('s1', 'Djupfärger', 'Flygfoto + djupfärger med relief', legend_css(c1), {}, u8(ramp(c1) * sh[..., None]), 'black'),
         ('s2', 'Förenklad', 'Samma djupfärger, utan skuggning', legend_css(c1), {}, u8(ramp(c1)), 'black'),
         ('s3', 'Sjökort', 'Blå djupband som en papperskarta', bands_css(bands, edges), {}, u8(s3), 'black'),
-        # (no "Natt" (s4) -- dropped, Filip's decision; see tools/KARTOR.md)
-        ('s5', 'Flygfoto + linjer', 'Naturlig bild med vita djupkurvor', None, {}, None, (255, 255, 255)),
+        # (no "Natt" (s4) and no "Flygfoto + linjer" (s5) -- dropped, Filip's decisions; see tools/KARTOR.md)
         ('s6', 'Blå relief', 'Blå toner med skuggad bottenform', legend_css(c6), {}, u8(ramp(c6) * sh[..., None]), 'black'),
         ('g1', 'C-MAP original', 'Som på Genesis-kartan – med djupsiffror', None, {'note': 'Siffror = djup i m (liten siffra = tiondelar)'}, 'genesis', 'black'),
         ('v1', 'Vegetation', 'Grönt där ekolodet sett växtlighet', 'linear-gradient(to right,#6fc3e8 0%,#6fc3e8 50%,#46dc3c 50%,#46dc3c 100%)', {'ticks': ['Ingen', '', 'Växtlighet']}, u8(ramp(c6)), 'black'),
@@ -224,6 +227,11 @@ def main():
         os.makedirs(os.path.join(OUT, 'thumbs_v%d' % V))
         level_info = []
 
+    LDIRS = sorted({'lines' if s[6] == 'black' else 'lines_w' for s in STY})
+    def save_lines(arr, path):
+        """a see-through lines piece: 32 colours, lossless WebP (8 made the numbers' halos ragged)"""
+        a = np.clip(arr, 0, 255).astype(np.uint8); a[a[..., 3] == 0, :3] = 0
+        Image.fromarray(a, 'RGBA').quantize(32, method=Image.FASTOCTREE).convert('RGBA').save(path, 'WEBP', lossless=True, method=6)
     for z in ([] if grid_only else levels):
         f = 2 ** (DZ - z)                                   # DZ px per level px (< 1 above DZ)
         w, h = int(round(W / f)), int(round(H / f)); ox, oy = int(round(gx0 / f)), int(round(gy0 / f))
@@ -236,7 +244,6 @@ def main():
             y1, x1 = min(a.shape[0], ly + h), min(a.shape[1], lx + w)
             out[:y1 - ly, :x1 - lx] = a[ly:y1, lx:x1]
             return out
-        aer = lay('a', 'RGB').astype(np.float32)
         t = lay('t').astype(np.float32)
         wl = resize(water.astype(np.float32), w, h)
         wat = wl >= 0.5
@@ -245,7 +252,44 @@ def main():
         ta = t[..., 3:4] / 255 * near
         # depth numbers = the light halo round them (lines, even melted together on steep slopes, are black)
         labels = ndimage.binary_dilation((t[..., :3].mean(2) > 170) & (t[..., 3] > 60), iterations=3)[..., None]
-        styles_here = [s for s in STY if z <= DZ or not top_styles or s[0] in top_styles]
+        def line_layer(kind):
+            """Genesis' contour lines + depth numbers for this zoom as colour + alpha: black lines as they are, or
+            light lines (Bottenhårdhet): thinner (only the line cores -- the soft edges fade out) and see-through;
+            the depth numbers as they are"""
+            if kind == 'lines': return np.concatenate([t[..., :3], ta * 255], axis=2)
+            thin = np.where(labels, ta, (ta ** LINE_THIN) * LINE_OPACITY)
+            col = np.where(labels, t[..., :3], np.float32(255))
+            return np.concatenate([col, thin * 255], axis=2)
+        def bake(img, kind):
+            ll = line_layer(kind); a = ll[..., 3:4] / 255
+            return img * (1 - a) + ll[..., :3] * a
+        if z > base:
+            cols, rows = -(-w // TL), -(-h // TL)
+            nearw = ndimage.binary_dilation(wat, iterations=24)
+            have = ''.join('1' if nearw[r * TL:(r + 1) * TL, c * TL:(c + 1) * TL].any() else '0' for r in range(rows) for c in range(cols))
+            level_info.append({'z': z, 'cols': cols, 'rows': rows, 'have': have, 'base': z <= DZ})
+            def pieces(im, td, save):
+                os.makedirs(td)
+                pad = Image.new(im.mode, (cols * TL, rows * TL)); pad.paste(im, (0, 0))
+                n = 0
+                for r in range(rows):
+                    for c in range(cols):
+                        if have[r * cols + c] == '1':
+                            save(pad.crop((c * TL, r * TL, (c + 1) * TL, (r + 1) * TL)), os.path.join(td, '%d_%d.webp' % (c, r))); n += 1
+                return n
+            if not preview:
+                for kind in LDIRS:
+                    ll = line_layer(kind).clip(0, 255).astype(np.uint8)
+                    ntiles += pieces(Image.fromarray(ll, 'RGBA'), os.path.join(OUT, 'tiles_v%d' % V, 'z%d' % z, kind),
+                                     lambda im, pth: save_lines(np.array(im), pth))
+                    del ll
+        if z > DZ:                                          # above the depth data: only the lines (bases = DZ enlarged)
+            if preview:
+                for kind in LDIRS: Image.fromarray(line_layer(kind).clip(0, 255).astype(np.uint8), 'RGBA').save(os.path.join(PREV, '%s_z%d_%s.png' % (lake, z, kind)))
+            print('  zoom %d: %d x %d px, lines only' % (z, w, h))
+            del t; continue
+        aer = lay('a', 'RGB').astype(np.float32)
+        styles_here = STY
         if preview and os.environ.get('FF_PREVIEW_STYLES'):     # (a preview of just some styles)
             styles_here = [s for s in styles_here if s[0] in os.environ['FF_PREVIEW_STYLES'].split(',')]
         for sid, name, desc, leg, extra, colour, lines in styles_here:
@@ -267,37 +311,19 @@ def main():
                     src4 = np.array(HARD_SRC, np.float32); dst4 = np.array(HARD_PAL, np.float32)
                     k = np.argmin(((c[..., None, :3] - src4) ** 2).sum(-1), axis=-1)
                     img = img * (1 - ca) + dst4[k] * ca
-            # Genesis' contour lines + depth numbers for this zoom (light lines on dark styles; numbers as they are)
-            if lines == 'black':
-                img = img * (1 - ta) + t[..., :3] * ta
-            else:
-                # light lines (Flygfoto + linjer): thinner (only the line cores -- the soft
-                # edges fade out) and see-through; the depth numbers as they are
-                thin = np.where(labels, ta, (ta ** LINE_THIN) * LINE_OPACITY)
-                col = np.where(labels, t[..., :3], np.asarray(lines, np.float32))
-                img = img * (1 - thin) + col * thin
-            im = Image.fromarray(np.clip(img, 0, 255).astype(np.uint8))
+            kind = 'lines' if lines == 'black' else 'lines_w'
+            u8i = lambda a: Image.fromarray(np.clip(a, 0, 255).astype(np.uint8))
             if preview:
-                im.save(os.path.join(PREV, '%s_z%d_%s.jpg' % (lake, z, sid)), quality=88); continue
-            if z == base:
-                im.save(os.path.join(OUT, 'map_v%d_%s.jpg' % (V, sid)), quality=84, optimize=True, progressive=True)
-            else:
-                cols, rows = -(-w // TL), -(-h // TL)
-                nearw = ndimage.binary_dilation(wat, iterations=24)
-                have = ''.join('1' if nearw[r * TL:(r + 1) * TL, c * TL:(c + 1) * TL].any() else '0' for r in range(rows) for c in range(cols))
-                td = os.path.join(OUT, 'tiles_v%d' % V, 'z%d' % z, sid); os.makedirs(td)
-                pad = Image.new('RGB', (cols * TL, rows * TL)); pad.paste(im, (0, 0))
-                for r in range(rows):
-                    for c in range(cols):
-                        if have[r * cols + c] == '1':
-                            pad.crop((c * TL, r * TL, (c + 1) * TL, (r + 1) * TL)).save(os.path.join(td, '%d_%d.jpg' % (c, r)), quality=80, optimize=True)
-                            ntiles += 1
-                if sid == styles_here[0][0]:
-                    level_info.append({'z': z, 'cols': cols, 'rows': rows, 'have': have, 'styles': [s[0] for s in styles_here]})
+                u8i(bake(img, kind)).save(os.path.join(PREV, '%s_z%d_%s.jpg' % (lake, z, sid)), quality=88); continue
+            if z == base:                                   # the map picture: lines baked in, as before
+                u8i(bake(img, kind)).save(os.path.join(OUT, 'map_v%d_%s.jpg' % (V, sid)), quality=84, optimize=True, progressive=True)
+            else:                                           # the base: colours only, WebP 35 (soft colours take it)
+                ntiles += pieces(u8i(img), os.path.join(OUT, 'tiles_v%d' % V, 'z%d' % z, sid),
+                                 lambda im, pth: im.save(pth, 'WEBP', quality=35, method=6))
             if z == base + 1:   # thumbnails: a 200x120 look at the middle of the lake at zoom 15
                 ys, xs = np.where(wat); my, mx = int(np.median(ys)), int(np.median(xs))
                 tw = int(w * 0.3); th = int(tw * 0.6)
-                im.crop((mx - tw // 2, my - th // 2, mx + tw // 2, my + th // 2)).resize((200, 120), Image.LANCZOS).save(
+                u8i(bake(img, kind)).crop((mx - tw // 2, my - th // 2, mx + tw // 2, my + th // 2)).resize((200, 120), Image.LANCZOS).save(
                     os.path.join(OUT, 'thumbs_v%d' % V, '%s.jpg' % sid), quality=82)
         print('  zoom %d: %d x %d px, %d styles' % (z, w, h, len(styles_here)))
         del aer, t
@@ -363,8 +389,11 @@ def main():
     print('  bottom grid: %d cells with vegetation, %d with hardness' % (((bot & 8) > 0).sum(), ((bot & 7) > 0).sum()))
 
     # full-resolution depth for the tests (the crop at DZ): elevation_m = -depth, water, where it is
-    np.savez_compressed(os.path.join(L, 'raw', 'depth_raw.npz'), elevation_m=(-dep0).astype(np.float16), water=water,
-                        lake=(osm | water), zoom=DZ, origin=np.array([gx0, gy0]))
+    rawp = os.path.join(L, 'raw', 'depth_raw.npz'); el = (-dep0).astype(np.float16); lk_ = osm | water
+    old = np.load(rawp) if os.path.exists(rawp) else None
+    if old is None or not (np.array_equal(old['elevation_m'], el, equal_nan=True) and np.array_equal(old['water'], water)
+                           and np.array_equal(old['lake'], lk_) and list(old['origin']) == [gx0, gy0]):   # (unchanged: no new file for git)
+        np.savez_compressed(rawp, elevation_m=el, water=water, lake=lk_, zoom=DZ, origin=np.array([gx0, gy0]))
 
     # ---- lake.json (the map picture = the lowest level)
     latc = (la0 + la1) / 2; mb = 2 ** (DZ - base)
@@ -381,8 +410,12 @@ def main():
         'contourText': 'Djupkurvor från C-MAP Genesis',
         'mapFile': 'map_v%d_{style}.jpg' % V,
         'thumbFile': 'thumbs_v%d/{style}.jpg' % V,
-        'styles': [dict(id=s[0], name=s[1], desc=s[2], legend=s[3], **s[4]) for s in STY],
-        'detail': {'file': 'tiles_v%d/z{z}/{style}/{c}_{r}.jpg' % V, 'tile': TL, 'levels': level_info},
+        # (a style with light lines names its lines folder: "lines": "lines_w")
+        'styles': [dict(id=s[0], name=s[1], desc=s[2], legend=s[3], **s[4], **({} if s[6] == 'black' else {'lines': 'lines_w'})) for s in STY],
+        # base pieces up to baseMax (= the depth data's zoom); every level has its own lines; above baseMax the app
+        # enlarges the baseMax base under that level's lines
+        'detail': {'file': 'tiles_v%d/z{z}/{style}/{c}_{r}.webp' % V, 'lines': 'tiles_v%d/z{z}/{lines}/{c}_{r}.webp' % V,
+                   'baseMax': DZ, 'tile': TL, 'levels': level_info},
     }
     json.dump(lk, open(os.path.join(L, 'lake.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
     size = sum(os.path.getsize(os.path.join(dp, f2)) for dp, _, fs in os.walk(OUT) for f2 in fs)

@@ -32,13 +32,23 @@
   function offlineFiles(){
     var list = [lakeUrl(LAKE_DIR + LAKE.depth.file)];
     if (LAKE.bottom) list.push(lakeUrl(LAKE_DIR + LAKE.bottom.file));     // (Kartanalys: vegetation + hardness)
+    var lineDirs = {};
     QUICK_STYLES.forEach(function(sid){
       list.push(mapFile(sid), thumbFile(sid));
+      if (DETAIL && DETAIL.lines) lineDirs[linesFolder(sid)] = true;
       ((DETAIL && DETAIL.levels) || []).forEach(function(L){
-        if (L.styles.indexOf(sid) === -1) return;
+        if (DETAIL.lines ? L.base === false : L.styles.indexOf(sid) === -1) return;   // (new format: bases up to baseMax)
         for (var r = 0; r < L.rows; r++) for (var c = 0; c < L.cols; c++){
           if (L.have.charAt(r * L.cols + c) === '1')
             list.push(lakeUrl(LAKE_DIR + DETAIL.file.replace('{z}', L.z).replace('{style}', sid).replace('{c}', c).replace('{r}', r)));
+        }
+      });
+    });
+    Object.keys(lineDirs).forEach(function(dir){                // the lines: once per folder, every level
+      DETAIL.levels.forEach(function(L){
+        for (var r = 0; r < L.rows; r++) for (var c = 0; c < L.cols; c++){
+          if (L.have.charAt(r * L.cols + c) === '1')
+            list.push(lakeUrl(LAKE_DIR + DETAIL.lines.replace('{z}', L.z).replace('{lines}', dir).replace('{c}', c).replace('{r}', r)));
         }
       });
     });
@@ -59,7 +69,7 @@
     } else if (s && s.files){
       offStatus.textContent = 'Pausad · ' + Math.round(100 * s.files / n) + ' % · tryck för att fortsätta'; offBtn.textContent = 'Fortsätt';
     } else {
-      offStatus.textContent = n + ' kartbitar · ca ' + fmtMB(n * 60000); offBtn.textContent = 'Ladda ner';
+      offStatus.textContent = n + ' kartbitar · ca ' + fmtMB(n * (DETAIL && DETAIL.lines ? 20000 : 60000)); offBtn.textContent = 'Ladda ner';
     }
   }
   function offRemove(){
