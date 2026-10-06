@@ -107,10 +107,14 @@ Webbversionen (GitHub Pages, `docs/`) ska fortsätta fungera från samma kod.
 13. Claude: iOS-projekt, texter för "Alltid"-plats, `codemagic.yaml` (bygg → TestFlight vid push av `app`).
     **Gjort 2026-10-01** (medan Apple-kontot var "Pending"). Apple-ID-numret (6819667300) inlagt i `codemagic.yaml` 2026-10-06
     (`APP_STORE_APPLE_ID`).
-14. Du: codemagic.io (logga in med GitHub) → lägg till repot.
-15. Du: Codemagic → Teams → Integrations → App Store Connect → ladda upp .p8 + Key ID + Issuer ID.
-16. Du: push grenen `app` → Codemagic bygger (~15–20 min).
-17. Du: TestFlight → lägg till dig som intern testare → installera via TestFlight-appen.
+14. ✅ Du: codemagic.io (logga in med GitHub) → lägg till repot (grenen `app`).
+15. ✅ Du: Codemagic (personligt konto: **Settings**, inte Teams) → Integrations → Developer Portal: nyckeln
+    "FF Map" (.p8 + Key ID + Issuer ID); Code signing identities → iOS certificates → Generate (Apple Distribution).
+    **Plus:** provisioning profile "FF Map App Store" skapad på developer.apple.com (Profiles → App Store Connect)
+    och hämtad i Codemagic (iOS provisioning profiles → Fetch) – utan den: "No matching profiles found".
+16. ✅ Bygge startat för hand (pushar startar inte byggen än – kolla Webhooks). `submit_to_testflight: false`:
+    externa testare kräver Beta App Review-info, interna inte.
+17. ✅ (2026-10-06) Intern grupp "Fiskfiskarna" (automatisk distribution), bygge 1 installerat på Filips iPhone.
 18. Du: testa bakgrunds-GPS på iPhone (välj "Alltid").
 
 **Fas 5 – Gruppen**
