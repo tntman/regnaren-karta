@@ -84,11 +84,13 @@
     });
     anCatchDots();
     if (anSet.cView === 'grad'){
+      // "Skala": the part Likhet lights (as in Tänt) in the colour scale, from alike (the edge) to most alike -- the rest
+      // of the lake toned down (Filip 2026-10-06: Skala filtered by Likhet too; it used to colour the whole lake)
       var sv = new Float32Array(N), w = 0;
-      for (var i = 0; i < N; i++) if (wat[i]) sv[w++] = S[i];
+      for (var i = 0; i < N; i++) if (wat[i] && S[i] >= lit.thr) sv[w++] = S[i];
       sv = sv.subarray(0, w); sv.sort();
-      var lo = sv[Math.floor(w * 0.3)], hi = sv[Math.floor(w * 0.99)], G = new Float32Array(N);
-      for (var i2 = 0; i2 < N; i2++) if (wat[i2]) G[i2] = Math.max(0, Math.min(1, (S[i2] - lo) / Math.max(1e-6, hi - lo)));
+      var lo = lit.thr, hi = w ? sv[Math.floor((w - 1) * 0.99)] : lo, G = new Float32Array(N);
+      for (var i2 = 0; i2 < N; i2++) if (wat[i2] && S[i2] >= lo) G[i2] = 0.12 + 0.88 * Math.max(0, Math.min(1, (S[i2] - lo) / Math.max(1e-6, hi - lo)));
       out.G = G;
     } else {
       for (var i3 = 0; i3 < N; i3++) if (wat[i3] && S[i3] >= lit.thr) M[i3] = 1;
@@ -115,7 +117,7 @@
     var sr = sizeOf(anSet, sp), sb = sizeBounds(catchData.list.filter(function(c){ return c.sp === sp; }));
     out.note = '<p><b>' + nm[0] + (sb && sizeOn(sr, sb) ? ' ' + sizeTxt(sr, sb) : '') + '</b> ' +
       (parts.length ? 'togs oftast på ' + parts.join(', ') + '.' : 'togs inte oftare på något särskilt slags ställe.') + ' <b>Med inställningarna nedan</b> ' +
-      (grad ? 'går färgen från olikt till <b>mest likt</b> fångstplatserna.'
+      (grad ? 'har <b>' + pctT + ' % av sjön</b> färg, och där togs <b>' + inN + ' av ' + cells.length + '</b> ' + nm[1] + ' (' + inPct + ' %). Färgen går från likt till <b>mest likt</b> fångstplatserna.'
         : 'är <b>' + pctT + ' % av sjön</b> tänd, och där togs <b>' + inN + ' av ' + cells.length + '</b> ' + nm[1] + ' (' + inPct + ' %). Det är <b>' + densT + '× tätare</b> än om fångsterna låg jämnt över sjön' + few + '.') + '</p>' +
       '<ul class="pnList"><li><b>Fångster:</b> ' + cells.length + ' (' + Object.keys(months).join(', ') + ')' + (cs.length > cells.length ? ' + ' + (cs.length - cells.length) + ' utanför djupkartan' : '') + '</li>' +
       '<li>Visar platser som liknar fångstplatserna, även där ingen har fiskat än.</li></ul>';
@@ -136,8 +138,8 @@
       '<div class="anLbl2">Vad som jämförs</div>' +
       '<div class="anNote"><ul class="pnList"><li><b>Storlek:</b> bara fångster i spannet räknas.</li>' +
       '<li><b>Vad som jämförs:</b> slå av det du inte vill ha med. ●●● visar hur mycket det ensamt pekar ut arten.</li>' +
-      (anSet.cView === 'grad' ? '' : '<li><b>Likhet:</b> Mest likt tänder en liten yta med färre av fångsterna. Mindre likt tänder en större yta med fler av dem.</li>') + '</ul></div>' +
+      '<li><b>Likhet:</b> Mest likt tänder en liten yta med färre av fångsterna. Mindre likt tänder en större yta med fler av dem (i Skala: den yta som får färg).</li></ul></div>' +
       '<div class="anFactors" id="anCF">' + AN_CF.map(function(x){ return '<button type="button" data-cf="' + x[0] + '" class="' + (anSet.cF[x[0]] ? 'on' : '') + '">' + x[1] + ' <span class="anDots"></span></button>'; }).join('') + '</div>' +
-      (anSet.cView === 'grad' ? '' : anRangeRow('anCCov', 'Likhet', 5, 9, 1, anSet.cCov, function(v){ return v * 10 + ' % av ' + anCatchPl() + 'na'; }, ['Mest likt', 'Mindre likt']));
+      anRangeRow('anCCov', 'Likhet', 5, 9, 1, anSet.cCov, function(v){ return v * 10 + ' % av ' + anCatchPl() + 'na'; }, ['Mest likt', 'Mindre likt']);
   }
   function anCatchPl(){ return (AN_CSP[anSet.mode.slice(2)] || [0, 'fångster'])[1]; }   // ("70 % av gäddorna" on Likhet)

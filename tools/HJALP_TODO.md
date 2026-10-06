@@ -25,6 +25,10 @@ spåren, Ledare, Kompass, Namn, Fog of war, tävlingslåset, Storlek/När, start
   där det stämmer" gäller nu alla utom Skala) + animering `analys` (Tumregler Gös visas i blått). Nyhet: "Kartanalys färgar
   inte kartan – det som stämmer syns som vanligt, resten tonas ner" (BÄTTRE)
 
+- [ ] 2026-10-06 – Kartanalys Fångster "Skala" filtreras också med Likhet: bara den yta Likhet tänder får färg (från likt
+  till mest likt), resten tonas ner. Hjälp: Kartanalys, Fångster-raden ("Skala (hela sjön, starkast där det är mest likt)" →
+  "Skala (samma yta i färg, starkast där det är mest likt)"). Nyhet: hör till raden ovan.
+
 <!-- mall:
 - [ ] ÅÅÅÅ-MM-DD – Vad som ändrats. Hjälp: avsnitt X (text) + animering `namn`. Nyhet: "…" (NYTT/BÄTTRE/FIXAT)
 -->

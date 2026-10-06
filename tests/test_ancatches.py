@@ -15,6 +15,9 @@ def size(pg, root, a, b):   # "Storlek": move the two handles (min, max cm)
 def an(pg): return pg.evaluate('window.__ffAnalysis()')
 def lit_pct(pg):
     m = re.search(r'på (<?\d+) % av sjön', pg.inner_text('#anResult')); return int(m.group(1).replace('<', '')) if m else None
+def tinted(pg):   # pixels with a colour of their own ("Skala"), not the dark tone, white edges or the shore
+    return pg.evaluate("""() => { var c = document.getElementById('anLayer'), d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data, n = 0;
+      for (var i = 0; i < d.length; i += 4) if (d[i + 3] > 60 && Math.max(d[i], d[i + 1], d[i + 2]) - Math.min(d[i], d[i + 1], d[i + 2]) > 60) n++; return n; }""")
 def pixels(pg, test):
     return pg.evaluate("""(t) => { var c = document.getElementById('anLayer'), d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data, n = 0;
       for (var i = 0; i < d.length; i += 4){ var r = d[i], g = d[i + 1], b = d[i + 2], a = d[i + 3];
@@ -77,7 +80,9 @@ with sync_playwright() as p:
     for k in ['s', 'h', 'v', 'l', 't']: pg.click('#anCF button[data-cf="%s"]' % k); pg.wait_for_timeout(200)
     pg.click('#anCView button[data-cv="grad"]'); pg.wait_for_timeout(2500)
     res = pg.inner_text('#anResult')
-    check('"Skala": the whole lake from unlike to most alike (red) -- the one view in colour, no "Likhet" slider', 'Fiska där det lyser starkast' in res and not pg.query_selector('#anCCov') and pixels(pg, 'red') > 100, (res, pixels(pg, 'red')))
+    check('"Skala": what Likhet lights, in colour from alike to most alike (red) -- the one view in colour', 'Fiska där det lyser starkast' in res and pixels(pg, 'red') > 100, (res, pixels(pg, 'red')))
+    t7 = tinted(pg); cov(5); t5 = tinted(pg); cov(9); t9 = tinted(pg); cov(7)
+    check('..."Skala" filtered by Likhet too: Mest likt = less of the lake in colour, Mindre likt = more', pg.is_visible('#anCCov') and t5 < t7 < t9, (t5, t7, t9))
     pg.screenshot(path='shot_ancatch_grad.png')
     pg.click('#anCView button[data-cv="area"]'); pg.wait_for_timeout(1500)
     # not together with the heat map

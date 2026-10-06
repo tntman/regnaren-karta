@@ -93,7 +93,8 @@ Kod: `src/js/57-an-catches.js` (+ inkopplat i 56-analysis.js), test `tests/test_
   för värdena som är på.
 - **Tänt**: från mest lik och nedåt tills "Likhet" av 10 fångster ryms (reglage 5–9, standard 7; ändarna "Mest likt" – "Mindre likt", värdet "3 % av sjön · 70 % av gäddorna"; förr "Typiskt") – datan
   bestämmer ytan: litet tänt = tydligt mönster (< 12 % tydligt, 12–25 % måttligt, > 25 % svagt).
-  **Skala**: hela sjön olikt → mest likt (`anRes.G`, 4:e kanalen i `anField`, färger som heatmapen – den enda vyn i Kartanalys med färg).
+  **Skala**: den yta Likhet tänder (som Tänt, reglaget finns i båda sedan 2026-10-06) i färg från likt (kanten) till mest likt,
+  resten tonas ner (`anRes.G`, 4:e kanalen i `anField`, färger som heatmapen – den enda vyn i Kartanalys med färg). Förr hela sjön.
 - Av/på per värde (minst ett på); prickarna ●○○–●●● = hur mycket värdet ENSAMT pekar ut arten här
   (tänd yta för samma andel fångster jämfört med ingen information).
 - Fångsterna ritas som små vita prickar (`anRes.pts`). Texten säger vad som sticker ut + att det visar var
