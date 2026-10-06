@@ -40,7 +40,7 @@ page = ('<style>\n' + parts('css', '.css') + '</style>\n\n' + parts('html', '.ht
         + '<script>\n' + parts('js', '.js') + '</script>\n')
 head = rd('src', 'head.html')
 # the start picture's logo (inline: it's there in the very first picture) and iOS's launch images (tools/launch_images.py)
-head = head.replace('__LOGO__', 'data:image/svg+xml;base64,' + base64.b64encode(open(os.path.join(ROOT, 'assets', 'ff_logo.svg'), 'rb').read()).decode())
+head = head.replace('__LOGO__', 'data:image/svg+xml;base64,' + base64.b64encode(open(os.path.join(ROOT, 'assets', 'ff_logo.svg'), 'rb').read().replace(b'\r\n', b'\n')).decode())   # (LF: the same build in every checkout)
 head = head.replace('__LAUNCH__', chr(10).join(
     '<link rel="apple-touch-startup-image" media="(device-width: %dpx) and (device-height: %dpx) and (-webkit-device-pixel-ratio: %d) and (orientation: portrait)" href="launch-%dx%d.png">'
     % (w, h, r, w * r, h * r) for w, h, r, _ in LAUNCH))
