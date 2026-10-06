@@ -2761,6 +2761,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   <div id="anPanel" role="dialog" aria-label="Kartanalys">
     <div class="grab"><button type="button" id="anClose" class="gripX" aria-label="Stäng">✕</button></div>
     <div class="pnHead"><div class="pnResCol"><div id="anResult" class="pnRes"></div></div>
+      <button type="button" id="anScale" class="hdBtn" aria-label="Skala" aria-pressed="false" title="Skala – färg efter hur starkt det stämmer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 20v-3"></path><path d="M10 20v-7"></path><path d="M15 20v-11"></path><path d="M20 20V4"></path></svg></button>
       <button type="button" class="hdBtn pnInfoBtn" aria-label="Förklaring" aria-pressed="false" title="Förklaring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6M12 7.5v.5"></path></svg></button>
       <button type="button" id="anLamp" class="hdBtn" aria-label="Lys upp" aria-pressed="false" title="Lys upp det tända (2× ljusare)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 18h5"></path><path d="M10.5 21h3"></path><path d="M12 3a6 6 0 0 0-3.7 10.7c.8.7 1.2 1.5 1.2 2.3V16h5v-.1c0-.8.4-1.6 1.2-2.3A6 6 0 0 0 12 3z"></path></svg></button>
       <button type="button" id="anReset" class="hdBtn rsBtn" aria-label="Återställ" title="Återställ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.3-5.6"></path><path d="M4 4v4.5h4.5"></path></svg></button>
@@ -9513,6 +9514,24 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     return d;
   }
   var AN_HOLE_CORE = 0.6;            // a hole is drawn by its deepest 0.6 m (else a deep basin = one huge "hole")
+  // "Skala" (the button left of ⓘ, every mode -- Filip 2026-10-06): how strongly each found cell fits, 0..1, from lo (it
+  // only just fits) to the top 1 % of what's found
+  function anScaleOf(M, val, lo){
+    var N = M.length, v = [], i, sv = new Float32Array(N);
+    for (i = 0; i < N; i++) if (M[i]) v.push(val[i]);
+    v.sort(function(a, b){ return a - b; });
+    var hi = v.length ? v[Math.floor((v.length - 1) * 0.99)] : lo;
+    if (!(hi > lo)) hi = lo + 1e-6;
+    for (i = 0; i < N; i++) if (M[i]) sv[i] = Math.max(0, Math.min(1, (val[i] - lo) / (hi - lo)));
+    return sv;
+  }
+  function anMid(d, a, b){ return Math.max(0, 1 - Math.abs(d - (a + b) / 2) / Math.max(0.25, (b - a) / 2)); }   // (a depth range: strongest in the middle)
+  function an01(v, a, b){ return Math.max(0, Math.min(1, (v - a) / (b - a))); }
+  // what is strongest, in words (ⓘ)
+  var AN_SCALE_TXT = { depth: 'mitt i djupintervallet', steep: 'där det är brantast', tops: 'där grynnan reser sig mest och hålan är djupast',
+    veg: 'där det växer tätast', hard: 'där botten är hårdast', wind: 'där vinden har längst fritt vatten in mot stranden',
+    combo: 'där den svagaste delen är starkast', abborre: 'där tumregeln stämmer bäst', gadda: 'där tumregeln stämmer bäst',
+    gos: 'där tumregeln stämmer bäst', similar: 'där det är mest likt platsen' };
   function anDomes(A){
     if (A.domeTop) return A;
     var N = A.N, ft = new Int32Array(N), fh = new Int32Array(N);
@@ -9565,13 +9584,13 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     return true;
   }
   var anSet = { simF: { d: 1, s: 1, h: 1, v: 1, t: 1 }, simR: 0, mode: null, lo: 4, hi: 6, slope: 10, topP: 0.6, holeP: 0.8, hmin: 3, dim: 0.72, ref: null,
-               cF: { d: 1, s: 1, h: 1, v: 1, l: 1, t: 1 }, cCov: 7, cView: 'area', size: {},   // (c* = "Från fångsterna", 57-an-catches.js)
+               cF: { d: 1, s: 1, h: 1, v: 1, l: 1, t: 1 }, cCov: 7, size: {},   // (c* = "Från fångsterna", 57-an-catches.js)
                combo: [], near: { tops: 0, veg: 15, hard: 15, wind: 15 },     // Kartdata combined (mode 'combo'): the parts, "inom … m"
-               lamp: 0, mem: {} };   // lamp: the lit area 2× brighter (#anGlow); mem: each tab's own choice, [mode, combo] -- back when you go back to it
+               lamp: 0, mem: {}, scale: 0 };   // scale: "Skala" -- what's found in colour by how strongly it fits (every mode)   // lamp: the lit area 2× brighter (#anGlow); mem: each tab's own choice, [mode, combo] -- back when you go back to it
   var AN_DEFAULTS = JSON.stringify(anSet);   // (for "Återställ")
   anSet.cat = 'map';                            // the category shown: map / rule / data / similar
   try { var sv = JSON.parse(localStorage.getItem(AN_KEY) || 'null'); if (sv) for (var k0 in sv) anSet[k0] = sv[k0]; } catch(e){}
-  delete anSet.cm0; delete anSet.cm1;   // (the first Storlek, one range for all species)
+  delete anSet.cm0; delete anSet.cm1; delete anSet.cView;   // (the first Storlek, one range for all species; Fångster's own Tänt/Skala)
   if (!rotState){ anSet.mode = null; anSet.combo = []; anSet.mem = {}; }   // a new start of the app: off, the tabs' choices too (turning the phone keeps it)
   var anShow = true;
   try { anShow = localStorage.getItem(SHOW_AN_KEY) !== '0'; } catch(e){}
@@ -9700,13 +9719,13 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
         t[2][i] = s * R.cellM;
       }
     });
-    var out = new Uint8Array(A.N);
+    var out = new Uint8Array(A.N), str = new Float32Array(A.N);   // (str: metres of open water upwind -- "Skala")
     for (var y = 0; y < A.H; y++) for (var x = 0; x < A.W; x++){
       var i2 = y * A.W + x; if (!A.wat[i2]) continue;
       var rx = Math.min(R.w - 1, Math.floor(x / R.rf)), ry = Math.min(R.h - 1, Math.floor(y / R.rf)), ri = ry * R.w + rx;
-      if (R.water[ri] && up[ri] > 300 && dn[ri] < 60) out[i2] = 1;
+      if (R.water[ri] && up[ri] > 300 && dn[ri] < 60){ out[i2] = 1; str[i2] = up[ri]; }
     }
-    return { mask: out, from: w.from, ms: w.ms };
+    return { mask: out, str: str, from: w.from, ms: w.ms };
   }
   // the things "Liknande" compares, per cell -- right under (r = 0) or averaged over r m round each cell
   var anSimCache = {};
@@ -9738,8 +9757,11 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     var m = anSet.mode, A = anBase();
     if (m && A && anNeedsBottom(m) && !anBottom){ anLoadBottom(); if (!anBottom){ anRes = { wait: true }; anRender(); return; } }
     if (!m || !A){ anRender(); return; }
-    var r = m === 'combo' ? anCombo(A) : anOne(m, A, {});
-    anRes = { M: r.empty ? null : r.M, n: r.n, labels: r.labels, list: r.list, text: r.text, note: r.note, ver: anVer, G: r.G || null, pts: r.pts || null };
+    var r = m === 'combo' ? anCombo(A) : anOne(m, A, {}), G = null;
+    if (anSet.scale && r.M && r.sv){   // "Skala": the strength where something is found (0,12..1: the colour scale from just alike)
+      G = new Float32Array(A.N); for (var i = 0; i < A.N; i++) if (r.M[i]) G[i] = 0.12 + 0.88 * r.sv[i];
+    }
+    anRes = { M: r.empty ? null : r.M, n: r.n, labels: r.labels, list: r.list, text: r.text, note: r.note, ver: anVer, G: G, pts: r.pts || null };
     anRender();
   }
   // Kartdata combined: what's lit = where ALL the parts are true. The "spots" (grynnor/hålor, växter, hård
@@ -9748,12 +9770,15 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   var AN_NEAR = { tops: 1, veg: 1, hard: 1, wind: 1 };
   function anName(k){ return (AN_MODES.filter(function(x){ return x[0] === k; })[0] || [k, k])[1]; }
   function anCombo(A){
-    var parts = anSet.combo, N = A.N, M = new Uint8Array(N), i, n = 0, labels = [], steps = [], zero = null;
+    var parts = anSet.combo, N = A.N, M = new Uint8Array(N), i, n = 0, labels = [], steps = [], zero = null, sv = anSet.scale ? new Float32Array(N).fill(1) : null;
     for (i = 0; i < N; i++) if (A.wat[i]) M[i] = 1;
     for (var p = 0; p < parts.length; p++){
       var k = parts[p], r = anOne(k, A), mk = r.M, d = anSet.near[k] || 0;
       if (r.empty || !mk) return { M: null, n: 0, labels: [], text: r.text, note: r.note, empty: true };   // (e.g. no wind yet)
-      if (AN_NEAR[k] && d > 0){ var b = new Uint8Array(N); for (i = 0; i < N; i++) b[i] = mk[i] ? 1 : 0; mk = anNear(b, A.W, A.H, Math.max(1, Math.round(d / A.cell))); }
+      var ps = r.sv;
+      if (AN_NEAR[k] && d > 0){ var b = new Uint8Array(N); for (i = 0; i < N; i++) b[i] = mk[i] ? 1 : 0; mk = anNear(b, A.W, A.H, Math.max(1, Math.round(d / A.cell)));
+        if (ps) ps = anBlur(ps, b, A.W, A.H, Math.max(1, Math.round(d / A.cell))); }   // (Skala: how strong the spot is nearby, on average)
+      if (sv && ps) for (i = 0; i < N; i++) if (ps[i] < sv[i]) sv[i] = ps[i];
       n = 0; for (i = 0; i < N; i++){ if (M[i] && !mk[i]) M[i] = 0; if (M[i]) n++; }
       steps.push((p ? '+ ' : '') + anName(k) + (AN_NEAR[k] ? (d ? ' inom ' + d + ' m' : ' (exakt)') : '') + ': ' + anPct(n));
       if (k === 'tops') labels = r.labels;
@@ -9762,19 +9787,21 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     labels = labels.filter(function(l){ return M[l.i]; });
     var text = n ? parts.map(anName).join(' + ') + ' · <b>' + anPct(n) + '</b> av sjön'
       : 'Inget kvar – <b>' + anName(zero) + '</b> tar bort det sista. ' + (AN_NEAR[zero] ? 'Prova större avstånd (inom … m).' : 'Prova att ändra dess reglage.');
-    return { M: M, n: n, labels: labels, text: text, note: steps.join(' → '), empty: false };
+    return { M: M, n: n, labels: labels, text: text, note: steps.join(' → '), empty: false, sv: sv };
   }
   // one filter (or a rule of thumb / the catches / Liknande) -> a mask (1 = main colour, 2 = second colour),
   // labels and a result text.
   function anOne(m, A){
     var N = A.N, M = new Uint8Array(N), i, n = 0, labels = [], list = null, text = '', note = '';
-    var wat = A.wat, dep = A.dep;
+    var wat = A.wat, dep = A.dep, wantS = !!anSet.scale, sv = null;
     if (m === 'depth'){
       for (i = 0; i < N; i++) if (wat[i] && dep[i] >= anSet.lo && dep[i] <= anSet.hi){ M[i] = 1; n++; }
       text = '<b>' + fmtDepth(anSet.lo) + '–' + fmtDepth(anSet.hi) + ' m</b> · ' + anPct(n) + ' av sjön';   // (as the mock-up)
+      if (wantS){ sv = new Float32Array(N); for (i = 0; i < N; i++) if (M[i]) sv[i] = anMid(dep[i], anSet.lo, anSet.hi); }
     } else if (m === 'steep'){
       for (i = 0; i < N; i++) if (wat[i] && A.slope[i] >= anSet.slope){ M[i] = 1; n++; }
       text = 'Lutning över <b>' + anSet.slope + ' %</b> · ' + anPct(n) + ' av sjön';
+      if (wantS) sv = anScaleOf(M, A.slope, anSet.slope);
     } else if (m === 'tops'){
       anDomes(A);
       // the "caps" of the tops (and the bottoms of the holes), then only those that rise (sink)
@@ -9789,22 +9816,26 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
       tb.forEach(function(b, k){ b.c.forEach(function(j){ M[j] = 1; }); if (k < 14) labels.push({ i: b.i, cls: '', txt: fmtDepth(dep[b.i]) + ' m' }); });
       hb.forEach(function(b, k){ b.c.forEach(function(j){ if (A.domeHole[j] >= Math.max(0.25, b.p - AN_HOLE_CORE)) M[j] = 2; }); if (k < 8) labels.push({ i: b.i, cls: 'hole', txt: fmtDepth(dep[b.i]) + ' m' }); });
       text = '<b>' + tb.length + '</b> grynnor (reser sig minst ' + fmtDepth(anSet.topP) + ' m) · <b>' + hb.length + '</b> hålor (minst ' + fmtDepth(anSet.holeP) + ' m djupa)';
+      if (wantS){ var tv = new Float32Array(N); for (i = 0; i < N; i++) if (M[i]) tv[i] = M[i] === 1 ? A.domeTop[i] : A.domeHole[i]; sv = anScaleOf(M, tv, 0.25); }
       note = '<b>Grynna</b> = ett grundare ställe ute i sjön som reser sig minst ' + fmtDepth(anSet.topP) + ' m över den lägsta "sadeln" runt den – där det sluttar ner åt alla håll. Grunda hyllor längs land räknas inte. ' +
         '<b>Håla</b> = en grop som går minst ' + fmtDepth(anSet.holeP) + ' m under kanten runt den; bara gropens djupaste del (0,6 m) visas. Siffran = djupet där grynnan är grundast / hålan djupast. Tryck på en etikett för lodet.';
     } else if (m === 'veg'){
       for (i = 0; i < N; i++) if ((anBottom[i] & 8) && wat[i]){ M[i] = 1; n++; }
       text = n ? '<b>Växter</b> (vass, näckrosor, bottenväxter) · ' + anPct(n) + ' av sjön' : 'Ingen växtlighet mätt här.';
       note = 'Där ekolodet sett växtlighet (Genesis). Kanten mot öppet vatten är ofta bäst.';
+      if (wantS) sv = anScaleOf(M, anSimFeatures(A, 25).v, 0);
     } else if (m === 'hard'){
       var meas = 0;
       for (i = 0; i < N; i++){ var hv = anBottom[i] & 7; if (hv) meas++; if (hv >= anSet.hmin && wat[i]){ M[i] = 1; n++; } }
       text = n ? '<b>' + AN_HARD[anSet.hmin - 1] + '</b> botten eller hårdare · ' + anPct(n) + ' av sjön' : 'Ingen sådan botten mätt här.';
       note = 'Bara där ekolodet mätt hårdhet (' + anPct(meas) + ' av sjön).';
+      if (wantS) sv = anScaleOf(M, anSimFeatures(A, 25).h, anSet.hmin - 0.5);
     } else if (m === 'wind'){
       var we = anWindEdge(A);
       if (!we){ text = 'Väntar på vinden (väder)…'; }
       else { for (i = 0; i < N; i++) if (we.mask[i]){ M[i] = 1; n++; }
-        text = 'Vinden <b>' + wxNum(we.ms) + ' m/s från ' + wxCompass(we.from) + '</b> – där vågorna trycker in mot stranden'; note = 'Motsatsen till lä: maten driver dit.'; }
+        text = 'Vinden <b>' + wxNum(we.ms) + ' m/s från ' + wxCompass(we.from) + '</b> – där vågorna trycker in mot stranden'; note = 'Motsatsen till lä: maten driver dit.';
+        if (wantS) sv = anScaleOf(M, we.str, 300); }
     } else if (m === 'similar'){
       var spots = anSpots(), ref = spots.filter(function(w){ return w.id === anSet.ref; })[0] || spots[0];
       if (!ref){ text = 'Spara en fiskeplats först – sedan letar appen upp liknande ställen.'; }
@@ -9820,6 +9851,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
         var th = Math.max(0.3, vals[Math.floor(vals.length * 0.04)] || 1);
         var rx = ri % A.W, ry = Math.floor(ri / A.W), away = 60 / A.cell;
         for (i = 0; i < N; i++) if (sim[i] >= th){ M[i] = 1; n++; }          // (the spot's own surroundings lit too)
+        if (wantS) sv = anScaleOf(M, sim, th);
         // the list: the areas ranked by their most similar place (tiny ones count a bit less),
         // not the spot itself (anything within 60 m of it)
         var blobs = anBlobs(M, A.W, A.H).filter(function(c){ return !c.some(function(j){ var xx = j % A.W - rx, yy = Math.floor(j / A.W) - ry; return xx * xx + yy * yy <= away * away; }); })
@@ -9839,7 +9871,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
       }
     } else if (m.indexOf('c_') === 0){                    // from the catches (data), 57-an-catches.js
       var cr = anCatchCompute(A, m.slice(2), M);
-      n = cr.n; text = cr.text; note = cr.note; var cG = cr.G, cPts = cr.pts, cEmpty = cr.empty;
+      n = cr.n; text = cr.text; note = cr.note; sv = cr.sv || null; var cPts = cr.pts, cEmpty = cr.empty;
     } else {                                             // presets (rules of thumb)
       var hn, e2;
       if (m === 'abborre'){
@@ -9852,12 +9884,18 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
         hn = anHardNear(A, 15);
         for (i = 0; i < N; i++) if (wat[i] && dep[i] >= 4 && dep[i] <= 10 && A.slope[i] >= 8 && (!hn || hn[i])){ M[i] = 1; n++; }
       }
+      if (wantS){   // (Skala: how well the rule fits -- the depth's middle, how steep / how much of a top, the vegetation edge or the wind)
+        sv = new Float32Array(N);
+        for (i = 0; i < N; i++) if (M[i]) sv[i] = m === 'abborre' ? (anMid(dep[i], 2, 6) + Math.max(an01(A.slope[i], 8, 20), an01(A.tpi[i], 0.6, 2))) / 2
+          : m === 'gos' ? (anMid(dep[i], 4, 10) + an01(A.slope[i], 8, 20)) / 2
+          : Math.max(e2.edge[i] ? anMid(dep[i], 1, 4) : 0, wd && wd.mask[i] ? an01(wd.str[i], 300, 1500) : 0);
+      }
       var pr = AN_PRESETS.filter(function(x){ return x[0] === m; })[0];
       text = '<b>' + pr[1] + ':</b> ' + pr[2] + ' · ' + anPct(n) + ' av sjön';
       note = 'Tumregler från vanliga fiskeråd – inte fångstdata. Fisken läser inte kartan 🙂';
     }
     var empty = (m === 'similar' && !list) || (m === 'wind' && !n && !note) || !!cEmpty;
-    return { M: M, n: n, labels: labels, list: list, text: text, note: note, empty: empty, G: cG, pts: cPts };
+    return { M: M, n: n, labels: labels, list: list, text: text, note: note, empty: empty, sv: sv, pts: cPts };
   }
   function anPct(n){ var w = 0, A = AN; for (var i = 0; i < A.N; i++) w += A.wat[i]; var p = 100 * n / Math.max(1, w); return (p < 1 && p > 0 ? '<1' : Math.round(p)) + ' %'; }
   function escHtml(t){ return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
@@ -9957,16 +9995,17 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
         // "over" in order: toned down, ("Skala"), the white edge of what's found, the shore
         var r = 0, g = 0, b = 0, a = 0;
         function over(cr, cg, cb, ca){ ca /= 255; r = cr * ca + r * (1 - ca); g = cg * ca + g * (1 - ca); b = cb * ca + b * (1 - ca); a = ca + a * (1 - ca); }
-        over(6, 14, 20, dimA * k0);
-        // "Skala" (from the catches): the whole lake from unlike (blue, see-through) to most alike (red)
-        var ra = 0;
-        if (f3 && fl[q2] > 0.05){ var rc = hmRamp(Math.max(0, Math.min(1, f3[q2] / fl[q2]))); ra = rc[3] / 255 * Math.min(1, fl[q2] * 1.6); over(rc[0], rc[1], rc[2], 255 * ra); }
-        var e = Math.max(cl(1 - Math.abs(d1) / EA[0]), cl(1 - Math.abs(d2) / EA[0])) * EA[1];
+        over(6, 14, 20, dimA * (f3 ? 1 : k0));
+        // "Skala": all toned down, what's found in the colour scale by how strongly it fits (the strength / how much of
+        // the point is found -- so the edge doesn't look weaker), like the heat map; no white edge
+        var ra = 0, kf = Math.max(k1, k2), mf = f1[q2] + f2[q2];
+        if (f3 && kf > 0 && mf > 0.01){ var rc = hmRamp(Math.max(0, Math.min(1, f3[q2] / mf))); ra = rc[3] / 255 * kf; over(rc[0], rc[1], rc[2], 255 * ra); }
+        var e = f3 ? 0 : Math.max(cl(1 - Math.abs(d1) / EA[0]), cl(1 - Math.abs(d2) / EA[0])) * EA[1];
         if (e > 0) over(255, 255, 255, 180 * e);        // (as thin and soft as the lee's edge)
         var es = cl(1 - Math.abs(dl) / ES[0]) * ES[1];
         if (es > 0) over(255, 255, 255, 128 * es);      // the shore: a solid line, 50 %
         if (a > 0){ px[k] = r / a; px[k + 1] = g / a; px[k + 2] = b / a; px[k + 3] = a * 255; }
-        sp[k] = 128; sp[k + 1] = 128; sp[k + 2] = 128; sp[k + 3] = satA * k0 * (1 - ra);
+        sp[k] = 128; sp[k + 1] = 128; sp[k + 2] = 128; sp[k + 3] = satA * (f3 ? 1 : k0) * (1 - ra);
         if (gp){ gp[k] = gp[k + 1] = gp[k + 2] = 128; gp[k + 3] = 255 * Math.max(k1, k2); }
       }
       c2.putImageData(im, 0, 0); s2.putImageData(sm, 0, 0); if (glow) g2c.putImageData(gm, 0, 0);
@@ -9997,6 +10036,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     var cat = anSet.cat || 'map';
     Array.prototype.forEach.call(document.querySelectorAll('#anCatSeg button'), function(b){ b.classList.toggle('on', b.getAttribute('data-cat') === cat); });
     var lampB = document.getElementById('anLamp'); lampB.classList.toggle('on', !!anSet.lamp); lampB.setAttribute('aria-pressed', anSet.lamp ? 'true' : 'false');
+    var scB = document.getElementById('anScale'); scB.classList.toggle('on', !!anSet.scale); scB.setAttribute('aria-pressed', anSet.scale ? 'true' : 'false');
     document.getElementById('anChips').hidden = cat !== 'map';
     document.getElementById('anPresets').hidden = cat !== 'rule';
     document.getElementById('anDataChips').hidden = cat !== 'data';
@@ -10136,11 +10176,10 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   document.getElementById('anControls').addEventListener('pointerup', anDragEnd);
   document.getElementById('anControls').addEventListener('pointercancel', anDragEnd);
   document.getElementById('anControls').addEventListener('click', function(e){
-    var cf = e.target.closest ? e.target.closest('#anCF button[data-cf]') : null, cvb = e.target.closest ? e.target.closest('#anCView button[data-cv]') : null;
+    var cf = e.target.closest ? e.target.closest('#anCF button[data-cf]') : null;
     if (cf){ var ck = cf.getAttribute('data-cf'), others = AN_CF.filter(function(x){ return x[0] !== ck && anSet.cF[x[0]]; }).length;
       if (anSet.cF[ck] && !others) return;                    // (at least one stays on)
       anSet.cF[ck] = anSet.cF[ck] ? 0 : 1; cf.classList.toggle('on', !!anSet.cF[ck]); anLater(); return; }
-    if (cvb){ anSet.cView = cvb.getAttribute('data-cv'); anCtlMode = '#'; anSave(); anCompute(); return; }
     if (e.target.id === 'anRefGo'){
       var wp = anSpots().filter(function(w){ return w.id === anSet.ref; })[0];
       if (wp){ showAnPanel(false); centerOnWaypoint(wp); }
@@ -10221,6 +10260,8 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     anExtraRef = null; anApplyMode(anStartMode());
     resetDone(this);
   });
+  // Skala (left of ⓘ): what's found in colour by how strongly it fits -- every mode (on / off, remembered; ↺ turns it off)
+  document.getElementById('anScale').addEventListener('click', function(){ anSet.scale = anSet.scale ? 0 : 1; anSave(); anCtlMode = '#'; anCompute(); });
   // the lamp: the lit area 2× brighter (on / off, remembered; ↺ puts it out)
   document.getElementById('anLamp').addEventListener('click', function(){ anSet.lamp = anSet.lamp ? 0 : 1; anSave(); anRender(); });
   // "↺ Återställ" (Kartanalys, Heatmap, Namn) says it's done: the arrow spins round once, then the usual grey ↺
@@ -10241,7 +10282,8 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     if (pnInfoOn){
       if (res && res.scrollHeight > res.clientHeight + 2 && !res.querySelector('.note .pnList')){ var c = res.cloneNode(true); Array.prototype.forEach.call(c.querySelectorAll('.note'), function(n){ n.remove(); }); parts.push(c.innerHTML); }   // (cut off: all of it here -- unless the list says it all)
       Array.prototype.forEach.call(P.querySelectorAll('.pnRes .note, #anControls .anNote'), function(n){ if (n.textContent.trim()) parts.push(n.innerHTML); });
-      if (P === anPanel) parts.unshift('<b>Kartanalys</b> lyser upp det i sjön som ' + (AN_INTRO[anSet.cat] || 'passar inställningarna nedan') + '.');   // (always one line on top: what it does)
+      if (P === anPanel) parts.unshift('<b>Kartanalys</b> lyser upp det i sjön som ' + (AN_INTRO[anSet.cat] || 'passar inställningarna nedan') + '.' +   // (always one line on top: what it does)
+        (anSet.scale && anSet.mode ? ' <b>Skala</b>: färgen är starkast ' + (AN_SCALE_TXT[anSet.mode] || 'där det är mest likt fångstplatserna') + '.' : ''));
       box.innerHTML = parts.length ? parts.map(function(t){ return /^\s*<(ul|p)\b/.test(t) ? t : '<p>' + t + '</p>'; }).join('') : '<p>Ingen förklaring till det här.</p>';   // (a list as it is)
     }
     box.hidden = !pnInfoOn;
@@ -10364,18 +10406,8 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
       anCatchStrength[k] = r < 1.5 ? 1 : r < 2.5 ? 2 : 3;
     });
     anCatchDots();
-    if (anSet.cView === 'grad'){
-      // "Skala": the part Likhet lights (as in Tänt) in the colour scale, from alike (the edge) to most alike -- the rest
-      // of the lake toned down (Filip 2026-10-06: Skala filtered by Likhet too; it used to colour the whole lake)
-      var sv = new Float32Array(N), w = 0;
-      for (var i = 0; i < N; i++) if (wat[i] && S[i] >= lit.thr) sv[w++] = S[i];
-      sv = sv.subarray(0, w); sv.sort();
-      var lo = lit.thr, hi = w ? sv[Math.floor((w - 1) * 0.99)] : lo, G = new Float32Array(N);
-      for (var i2 = 0; i2 < N; i2++) if (wat[i2] && S[i2] >= lo) G[i2] = 0.12 + 0.88 * Math.max(0, Math.min(1, (S[i2] - lo) / Math.max(1e-6, hi - lo)));
-      out.G = G;
-    } else {
-      for (var i3 = 0; i3 < N; i3++) if (wat[i3] && S[i3] >= lit.thr) M[i3] = 1;
-    }
+    for (var i3 = 0; i3 < N; i3++) if (wat[i3] && S[i3] >= lit.thr) M[i3] = 1;   // (what Likhet lights)
+    if (anSet.scale) out.sv = anScaleOf(M, S, lit.thr);                          // ("Skala": from alike at the edge to most alike)
     out.n = lit.n;
     // what stands out: the steps it was clearly more often caught in (of the values switched on)
     var parts = [];
@@ -10389,11 +10421,11 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     });
     // short on the row ("Se ⓘ"), the whole sentence in ⓘ. Tätare: the share of the catches inside / the share of the lake lit
     // (= against the catches spread evenly over the whole lake). The share inside can be above Likhet: catches on alike places tie
-    var grad = anSet.cView === 'grad', pct = Math.round(lit.share * 100), pctT = pct < 1 ? '<1' : pct;
+    var grad = !!anSet.scale, pct = Math.round(lit.share * 100), pctT = pct < 1 ? '<1' : pct;
     var inN = cells.filter(function(i){ return S[i] >= lit.thr; }).length, inPct = Math.round(inN / cells.length * 100), dens = (inN / cells.length) / Math.max(0.005, lit.share);
     var densT = dens >= 2 ? Math.round(dens) : String(Math.round(dens * 10) / 10).replace('.', ','), few = cells.length < 20 ? ' (osäkert, få fångster)' : '';
-    out.text = '<b>' + nm[0] + '</b> · ' +   // (two lines at most: "oftast …" and "få fångster" are in ⓘ -- the count is on the species button)
-      (grad ? 'Fiska där det lyser starkast: mest likt fångstplatserna' : 'Fiska i det tända: <b>' + inPct + ' %</b> av ' + nm[1] + 'na på <b>' + pctT + ' %</b> av sjön') + ' · <i>Se ⓘ</i>';
+    // (two lines at most beside the five icons: the species is on its button, "oftast …" and "få fångster" in ⓘ)
+    out.text = (grad ? 'Starkast färg = mest likt · ' : 'Fiska i det tända: ') + '<b>' + inPct + ' %</b> av ' + nm[1] + 'na på <b>' + pctT + ' %</b> av sjön';
     var months = {}; cs.forEach(function(c){ months[HM_MON[new Date(c.t).getMonth()]] = 1; });
     var sr = sizeOf(anSet, sp), sb = sizeBounds(catchData.list.filter(function(c){ return c.sp === sp; }));
     out.note = '<p><b>' + nm[0] + (sb && sizeOn(sr, sb) ? ' ' + sizeTxt(sr, sb) : '') + '</b> ' +
@@ -10414,8 +10446,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     });
   }
   function anCatchControls(){
-    return '<div class="anSeg" id="anCView">' + [['area', 'Tänt'], ['grad', 'Skala']].map(function(x){ return '<button type="button" data-cv="' + x[0] + '" class="' + (anSet.cView === x[0] ? 'on' : '') + '">' + x[1] + '</button>'; }).join('') + '</div>' +
-      (catchData ? sizeRow(sizeOf(anSet, anSet.mode.slice(2)), sizeBounds(catchData.list.filter(function(c){ return c.sp === anSet.mode.slice(2); })), anSet.mode.slice(2)) : '') +
+    return (catchData ? sizeRow(sizeOf(anSet, anSet.mode.slice(2)), sizeBounds(catchData.list.filter(function(c){ return c.sp === anSet.mode.slice(2); })), anSet.mode.slice(2)) : '') +
       '<div class="anLbl2">Vad som jämförs</div>' +
       '<div class="anNote"><ul class="pnList"><li><b>Storlek:</b> bara fångster i spannet räknas.</li>' +
       '<li><b>Vad som jämförs:</b> slå av det du inte vill ha med. ●●● visar hur mycket det ensamt pekar ut arten.</li>' +

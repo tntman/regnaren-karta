@@ -81,7 +81,7 @@ with sync_playwright() as p:
     check('the lake outline: a thin solid (smooth) white line at ~50 %', shore > 150, shore)
     # the lamp (between ⓘ and ↺): the lit area 2× brighter
     order = pg.evaluate("[...document.querySelectorAll('#anPanel .pnHead .hdBtn')].map(b => b.getAttribute('aria-label'))")
-    check('the lamp: between ⓘ and ↺, off from the start', order == ['Förklaring', 'Lys upp', 'Återställ', 'Stäng av kartanalys'] and pg.get_attribute('#anLamp', 'aria-pressed') == 'false' and not pg.is_visible('#anGlow'), order)
+    check('the lamp: between ⓘ and ↺, off from the start', order == ['Skala', 'Förklaring', 'Lys upp', 'Återställ', 'Stäng av kartanalys'] and pg.get_attribute('#anLamp', 'aria-pressed') == 'false' and not pg.is_visible('#anGlow'), order)
     pg.click('#anLamp'); pg.wait_for_timeout(600)
     glow = pg.evaluate("""() => { var c = document.getElementById('anGlow'), d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data, n = 0;
       for (var i = 3; i < d.length; i += 4) if (d[i] > 200 && d[i - 1] === 128) n++; return n; }""")
@@ -89,6 +89,11 @@ with sync_playwright() as p:
           pg.evaluate("getComputedStyle(document.getElementById('anGlow')).mixBlendMode") == 'color-dodge' and glow > 10000, glow)
     pg.click('#anLamp'); pg.wait_for_timeout(400)
     check('...off again', not pg.is_visible('#anGlow') and pg.get_attribute('#anLamp', 'aria-pressed') == 'false')
+    # Skala (left of ⓘ, every mode): what's found in colour by how strongly it fits -- Djup: strongest in the middle of the range
+    pg.click('#anScale'); pg.wait_for_timeout(1000)
+    check('Skala (left of ⓘ): Djup in colour, strongest in the middle of the range', pg.get_attribute('#anScale', 'aria-pressed') == 'true' and colourful(pg) > 300, colourful(pg))
+    pg.click('#anScale'); pg.wait_for_timeout(800)
+    check('...off: the plain mask again', colourful(pg) < 30 and pg.get_attribute('#anScale', 'aria-pressed') == 'false', colourful(pg))
     a = pick(pg, 'steep'); check('Branta kanter: steep parts found; Lutning only, no depth slider (only Djup has one)', a['ready'] and a['n'] > 100 and pg.is_visible('#anSlope') and not pg.query_selector('#anControls .anDual'), a)
     check('...its slider says "Lutning över"', pg.inner_text('label[for=anSlope]') == 'Lutning över', pg.inner_text('label[for=anSlope]'))
     a = pick(pg, 'tops'); check('never called "topp"; the labels are just the depth ("2,4 m")', a['labels'] and pg.evaluate("[].every.call(document.querySelectorAll('.anLbl:not(.sim):not(.simRef)'), e => /^\d+(,\d)? m$/.test(e.textContent))") and 'topp' not in pg.inner_text('#anPanel').lower())
@@ -114,6 +119,9 @@ with sync_playwright() as p:
     a = pick(pg, 'wind'); check('Vindkant: from the weather wind (6 m/s SV)', a['ready'] and a['n'] > 100 and 'SV' in a['text'], a)
     a = pick(pg, 'similar'); check('Liknande: like "Djupa hålet", a list of places', a['ready'] and a['list'] >= 1 and 'Djupa hålet' in a['text'], a)
     check('...only a mask: the map itself where it is alike, no pink on it (the ring and the numbers stay)', colourful(pg) < 30 and pg.query_selector('.anLbl.simRef') is not None, colourful(pg))
+    pg.click('#anScale'); pg.wait_for_timeout(1500)
+    check('...Skala: in colour, strongest where it is most alike the spot', colourful(pg) > 100, colourful(pg))
+    pg.click('#anScale'); pg.wait_for_timeout(800)
     pg.screenshot(path='shot_an_similar.png')
     pg.click('#anListBox button[data-go="1"]'); pg.wait_for_timeout(700)
     check('"Åk hit" from the list: the lead line there (no extra card)', pg.eval_on_selector('#probe', 'e => e.classList.contains("show")') and pg.query_selector('#navCard') is None)
@@ -156,6 +164,9 @@ with sync_playwright() as p:
     for m in ('abborre', 'gadda', 'gos'):
         a = pick(pg, m); check('preset %s: combined, says it is rules of thumb (the category "Tumregler" lit; the note behind ⓘ)' % m, a['ready'] and a['n'] > 50 and pg.inner_text('#anCatSeg button.on') == 'Tumregler' and 'Tumregler' in pg.eval_on_selector('#anResult', 'e => e.textContent'), a)
         check('...only a mask: the map itself where the rule fits, no colour on it', colourful(pg) < 30, colourful(pg))
+    pg.click('#anScale'); pg.wait_for_timeout(1500)
+    check('Skala on a rule of thumb (Gös): in colour, strongest where the rule fits best', colourful(pg) > 50, colourful(pg))
+    pg.click('#anScale'); pg.wait_for_timeout(800)
     # Filter shows/hides it (keeps the choice)
     pg.click('#anClose'); pg.wait_for_timeout(200)
     pg.click('#visMoreBtn'); pg.wait_for_timeout(200); pg.click('label:has(#toggleAnalysis) .toggle'); pg.click('#visMoreBtn'); pg.wait_for_timeout(300)
@@ -175,11 +186,11 @@ with sync_playwright() as p:
     # Återställ: everything back to the start -- every tab's choice, the sliders, the lamp; you stay in the tab
     a = pick(pg, 'steep')
     pg.evaluate("(() => { var e = document.getElementById('anSlope'); e.value = 22; e.dispatchEvent(new Event('input', { bubbles: true })); })()"); pg.wait_for_timeout(900)
-    pg.click('#anLamp'); pg.wait_for_timeout(300)
-    check('something on, a slider changed, the lamp on: "Återställ" can be pressed', pg.is_enabled('#anReset'))
+    pg.click('#anLamp'); pg.wait_for_timeout(300); pg.click('#anScale'); pg.wait_for_timeout(600)
+    check('something on, a slider changed, the lamp and Skala on: "Återställ" can be pressed', pg.is_enabled('#anReset'))
     pg.click('#anReset'); pg.wait_for_timeout(1200)
     check('..."Återställ": nothing on any more (still in Kartdata), the lamp out; then greyed out', an(pg)['mode'] is None and lit(pg) == 0 and pg.inner_text('#anCatSeg button.on') == 'Kartdata'
-          and pg.get_attribute('#anLamp', 'aria-pressed') == 'false' and pg.is_disabled('#anReset'), an(pg))
+          and pg.get_attribute('#anLamp', 'aria-pressed') == 'false' and pg.get_attribute('#anScale', 'aria-pressed') == 'false' and pg.is_disabled('#anReset'), an(pg))
     a = pick(pg, 'steep')
     check('...the sliders from the start too (lutning 10 %)', 'över 10 %' in a['text'], a['text'])
     pg.click('#anClear'); pg.wait_for_timeout(300)

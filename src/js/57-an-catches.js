@@ -83,18 +83,8 @@
       anCatchStrength[k] = r < 1.5 ? 1 : r < 2.5 ? 2 : 3;
     });
     anCatchDots();
-    if (anSet.cView === 'grad'){
-      // "Skala": the part Likhet lights (as in Tänt) in the colour scale, from alike (the edge) to most alike -- the rest
-      // of the lake toned down (Filip 2026-10-06: Skala filtered by Likhet too; it used to colour the whole lake)
-      var sv = new Float32Array(N), w = 0;
-      for (var i = 0; i < N; i++) if (wat[i] && S[i] >= lit.thr) sv[w++] = S[i];
-      sv = sv.subarray(0, w); sv.sort();
-      var lo = lit.thr, hi = w ? sv[Math.floor((w - 1) * 0.99)] : lo, G = new Float32Array(N);
-      for (var i2 = 0; i2 < N; i2++) if (wat[i2] && S[i2] >= lo) G[i2] = 0.12 + 0.88 * Math.max(0, Math.min(1, (S[i2] - lo) / Math.max(1e-6, hi - lo)));
-      out.G = G;
-    } else {
-      for (var i3 = 0; i3 < N; i3++) if (wat[i3] && S[i3] >= lit.thr) M[i3] = 1;
-    }
+    for (var i3 = 0; i3 < N; i3++) if (wat[i3] && S[i3] >= lit.thr) M[i3] = 1;   // (what Likhet lights)
+    if (anSet.scale) out.sv = anScaleOf(M, S, lit.thr);                          // ("Skala": from alike at the edge to most alike)
     out.n = lit.n;
     // what stands out: the steps it was clearly more often caught in (of the values switched on)
     var parts = [];
@@ -108,11 +98,11 @@
     });
     // short on the row ("Se ⓘ"), the whole sentence in ⓘ. Tätare: the share of the catches inside / the share of the lake lit
     // (= against the catches spread evenly over the whole lake). The share inside can be above Likhet: catches on alike places tie
-    var grad = anSet.cView === 'grad', pct = Math.round(lit.share * 100), pctT = pct < 1 ? '<1' : pct;
+    var grad = !!anSet.scale, pct = Math.round(lit.share * 100), pctT = pct < 1 ? '<1' : pct;
     var inN = cells.filter(function(i){ return S[i] >= lit.thr; }).length, inPct = Math.round(inN / cells.length * 100), dens = (inN / cells.length) / Math.max(0.005, lit.share);
     var densT = dens >= 2 ? Math.round(dens) : String(Math.round(dens * 10) / 10).replace('.', ','), few = cells.length < 20 ? ' (osäkert, få fångster)' : '';
-    out.text = '<b>' + nm[0] + '</b> · ' +   // (two lines at most: "oftast …" and "få fångster" are in ⓘ -- the count is on the species button)
-      (grad ? 'Fiska där det lyser starkast: mest likt fångstplatserna' : 'Fiska i det tända: <b>' + inPct + ' %</b> av ' + nm[1] + 'na på <b>' + pctT + ' %</b> av sjön') + ' · <i>Se ⓘ</i>';
+    // (two lines at most beside the five icons: the species is on its button, "oftast …" and "få fångster" in ⓘ)
+    out.text = (grad ? 'Starkast färg = mest likt · ' : 'Fiska i det tända: ') + '<b>' + inPct + ' %</b> av ' + nm[1] + 'na på <b>' + pctT + ' %</b> av sjön';
     var months = {}; cs.forEach(function(c){ months[HM_MON[new Date(c.t).getMonth()]] = 1; });
     var sr = sizeOf(anSet, sp), sb = sizeBounds(catchData.list.filter(function(c){ return c.sp === sp; }));
     out.note = '<p><b>' + nm[0] + (sb && sizeOn(sr, sb) ? ' ' + sizeTxt(sr, sb) : '') + '</b> ' +
@@ -133,8 +123,7 @@
     });
   }
   function anCatchControls(){
-    return '<div class="anSeg" id="anCView">' + [['area', 'Tänt'], ['grad', 'Skala']].map(function(x){ return '<button type="button" data-cv="' + x[0] + '" class="' + (anSet.cView === x[0] ? 'on' : '') + '">' + x[1] + '</button>'; }).join('') + '</div>' +
-      (catchData ? sizeRow(sizeOf(anSet, anSet.mode.slice(2)), sizeBounds(catchData.list.filter(function(c){ return c.sp === anSet.mode.slice(2); })), anSet.mode.slice(2)) : '') +
+    return (catchData ? sizeRow(sizeOf(anSet, anSet.mode.slice(2)), sizeBounds(catchData.list.filter(function(c){ return c.sp === anSet.mode.slice(2); })), anSet.mode.slice(2)) : '') +
       '<div class="anLbl2">Vad som jämförs</div>' +
       '<div class="anNote"><ul class="pnList"><li><b>Storlek:</b> bara fångster i spannet räknas.</li>' +
       '<li><b>Vad som jämförs:</b> slå av det du inte vill ha med. ●●● visar hur mycket det ensamt pekar ut arten.</li>' +

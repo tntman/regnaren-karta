@@ -68,7 +68,7 @@ raderas den då (`pagehide`).
   (`anCombo`, varje del räknas av `anOne(m, A, opt)`). Fläckarna (grynnor/hålor, växter, hård botten, vindkant,
   `AN_NEAR`) räknas "inom … m" (`anSet.near`, reglage `#anNear_<del>`, 0–50 m, 0 = exakt; standard 15, grynnor 0) med
   `anNear`. **Bara Djup har ett djupreglage** (Branta kanter och Hård botten räknar på hela sjön – lägg till Djup för att
-  begränsa; deras gamla `elo/ehi/hlo/hhi` är borta). Knapparna som är på får ett "+" framför namnet när fler än en är på (`#anChips.combo`). Området visar kartans egna färger, resten grått – det gäller ALLA lägen (`anDraw` har ingen färgfyllning alls): Kartdata sedan 2026-10-02, Tumregler, Liknande och Fångster "Tänt" sedan 2026-10-06 (förr i läges-/artfärg). Hålor räknas med i samma mask; skyltarna med färgad kant (grynnor/hålor, Liknandes rosa), den tunna vita kanten och strandlinjen finns kvar. Bara Fångster "Skala" färgar hela sjön – en annan sorts vy (Filip 2026-10-06). Blir inget kvar: "Inget kvar – <del>
+  begränsa; deras gamla `elo/ehi/hlo/hhi` är borta). Knapparna som är på får ett "+" framför namnet när fler än en är på (`#anChips.combo`). Området visar kartans egna färger, resten grått – det gäller ALLA lägen (`anDraw` har ingen färgfyllning alls): Kartdata sedan 2026-10-02, Tumregler, Liknande och Fångster "Tänt" sedan 2026-10-06 (förr i läges-/artfärg). Hålor räknas med i samma mask; skyltarna med färgad kant (grynnor/hålor, Liknandes rosa), den tunna vita kanten och strandlinjen finns kvar. Med **Skala** på (knappen vänster om ⓘ, `#anScale`, `anSet.scale`, alla lägen sedan 2026-10-06) färgas det som hittas i heatmapens skala efter hur starkt det stämmer (`sv` 0–1 per läge, `anScaleOf`: från "stämmer nyss" till översta 1 %): Djup = mitt i intervallet, Branta kanter = brantast, Grynnor & hålor = mest prominens, Växter = tätast inom 25 m, Hård botten = hårdast, Vindkant = längst fritt vatten uppvinds, Tumregler = djupets mitt + lutning/grynna (Gädda: växtkant eller vind), Liknande = mest likt, Fångster = mest likt fångstplatserna, kombinerat = den svagaste delen (en del med "inom … m": dess snittstyrka i närheten). ⓘ säger vad som är starkast (`AN_SCALE_TXT`). Blir inget kvar: "Inget kvar – <del>
   tar bort det sista" + tips. ⓘ visar stegen ("Djup: 23 % → + Branta kanter: 1 % → …"). Återställ släcker delarna också.
   Tumregler och Fångster blandas inte in (byter man flik släcks Kartdata, och kommer tillbaka när man byter tillbaka).
   Branta kanters reglage heter "Lutning över". Dra = mindre, snärt/hela vägen = stäng (`sheetSwipe`, tools/UI.md).
@@ -93,8 +93,7 @@ Kod: `src/js/57-an-catches.js` (+ inkopplat i 56-analysis.js), test `tests/test_
   för värdena som är på.
 - **Tänt**: från mest lik och nedåt tills "Likhet" av 10 fångster ryms (reglage 5–9, standard 7; ändarna "Mest likt" – "Mindre likt", värdet "3 % av sjön · 70 % av gäddorna"; förr "Typiskt") – datan
   bestämmer ytan: litet tänt = tydligt mönster (< 12 % tydligt, 12–25 % måttligt, > 25 % svagt).
-  **Skala**: den yta Likhet tänder (som Tänt, reglaget finns i båda sedan 2026-10-06) i färg från likt (kanten) till mest likt,
-  resten tonas ner (`anRes.G`, 4:e kanalen i `anField`, färger som heatmapen – den enda vyn i Kartanalys med färg). Förr hela sjön.
+  **Skala** (knappen överst, alla lägen – Fångsters egna Tänt/Skala är borta 2026-10-06): den yta Likhet tänder, i färg från likt (kanten) till mest likt; resten tonas ner.
 - Av/på per värde (minst ett på); prickarna ●○○–●●● = hur mycket värdet ENSAMT pekar ut arten här
   (tänd yta för samma andel fångster jämfört med ingen information).
 - Fångsterna ritas som små vita prickar (`anRes.pts`). Texten säger vad som sticker ut + att det visar var

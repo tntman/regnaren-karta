@@ -21,13 +21,15 @@ spåren, Ledare, Kompass, Namn, Fog of war, tävlingslåset, Storlek/När, start
 ## Att göra
 
 - [ ] 2026-10-06 – Kartanalys färgar inte kartan: Tumregler, Liknande och Fångster "Tänt" visar bara kartan genom masken,
-  som Kartdata (bara Fångster "Skala" har kvar sin färgskala). Hjälp: Kartanalys (Kartdata-radens "den vanliga kartan syns
-  där det stämmer" gäller nu alla utom Skala) + animering `analys` (Tumregler Gös visas i blått). Nyhet: "Kartanalys färgar
+  som Kartdata (färg bara med Skala-knappen, raden nedan). Hjälp: Kartanalys (Kartdata-radens "den vanliga kartan syns
+  där det stämmer" gäller nu alla flikar) + animering `analys` (Tumregler Gös visas i blått). Nyhet: "Kartanalys färgar
   inte kartan – det som stämmer syns som vanligt, resten tonas ner" (BÄTTRE)
 
-- [ ] 2026-10-06 – Kartanalys Fångster "Skala" filtreras också med Likhet: bara den yta Likhet tänder får färg (från likt
-  till mest likt), resten tonas ner. Hjälp: Kartanalys, Fångster-raden ("Skala (hela sjön, starkast där det är mest likt)" →
-  "Skala (samma yta i färg, starkast där det är mest likt)"). Nyhet: hör till raden ovan.
+- [ ] 2026-10-06 – Kartanalys: knappen **Skala** (vänster om ⓘ) för alla lägen – det som hittas i färg efter hur starkt det
+  stämmer (Djup: mitt i intervallet, Branta kanter: brantast, Tumregler: där regeln stämmer bäst, Liknande/Fångster: mest likt,
+  kombinerat: den svagaste delen). Fångsters egna Tänt/Skala är borta, Likhet styr ytan. Fångster-raden kortare ("Fiska i
+  det tända: 70 % av gäddorna på 15 % av sjön"). Hjälp: Kartanalys (översta raden: Skala; Fångster-raden utan Tänt/Skala) +
+  animering `analys` (visa Skala). Nyhet: "Kartanalys: Skala – se var det stämmer starkast, i alla lägen" (NYTT)
 
 <!-- mall:
 - [ ] ÅÅÅÅ-MM-DD – Vad som ändrats. Hjälp: avsnitt X (text) + animering `namn`. Nyhet: "…" (NYTT/BÄTTRE/FIXAT)
