@@ -129,6 +129,10 @@ TestFlight-bygge går ut efter 90 dagar → nytt bygge minst var ~80:e dag (Clau
 21. Claude: kort instruktion till gruppen (installera, varför "Alltid"-plats).
 
 **Fas 6 – Underhåll**
+**Arbetsgång (beslut 2026-10-06):** Filip utvecklar och testar i webbchatten som vanligt. Ny app (main → app,
+tester, push efter ok → Codemagic → TestFlight) när Filip säger till: före resor (1–2 dagar innan), när appen
+blivit bättre, minst var ~80:e dag – och **direkt när en sjö fått ny kartversion** (`tiles_vN`): appen packar
+in lake.json och hämtar detaljbitarna från webben, så gamla appbyggen får suddiga bitar när den gamla mappen tas bort.
 22. Webbappen på `main` fungerar som förut.
 23. Ändringar i `main` → till `app` via GitHub Desktop (Branch → Update from main; Claude guidar).
 24. TestFlight-versioner gäller 90 dagar → ny push = ny version. Claude påminner.
