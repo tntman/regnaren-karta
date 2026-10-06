@@ -10,8 +10,8 @@
   #msgPop.show{display:flex;}
   #msgPop button{background:rgba(28,33,44,.95);border:1px solid rgba(255,255,255,.22);color:#fff;border-radius:18px;padding:8px 13px;font:inherit;font-weight:700;font-size:14px;box-shadow:0 4px 12px rgba(0,0,0,.4);cursor:pointer;}
   #msgPop button:active{background:var(--amber);color:var(--navy);}
-  #msgToast{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 72px);transform:translateX(-50%);z-index:24;max-width:calc(100vw - 40px);
-    background:rgba(28,33,44,.95);border:1px solid rgba(240,154,96,.6);color:#fff;border-radius:14px;padding:8px 14px;font-size:13.5px;opacity:0;pointer-events:none;transition:opacity .2s;text-align:center;}
+  #msgToast{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 72px);transform:translateX(-50%);z-index:24;width:max-content;max-width:calc(100vw - 40px);   /* (max-content: else only half the screen to wrap in, left:50%) */
+    background:rgba(28,33,44,.95);border:1px solid rgba(240,154,96,.6);color:#fff;border-radius:14px;padding:8px 14px;font-size:13.5px;opacity:0;pointer-events:none;transition:opacity .2s;text-align:center;text-wrap:balance;}
   #msgToast.show{opacity:1;}
   #msgLayer{position:absolute;inset:0;z-index:17;pointer-events:none;}
   .msgBub{position:absolute;left:0;top:0;pointer-events:auto;cursor:pointer;background:#fff;color:#1C212C;border:1px solid #000;border-radius:11px;padding:1px 7px;
