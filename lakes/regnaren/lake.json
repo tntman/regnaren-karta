@@ -16,7 +16,7 @@
   "imgH": 795
  },
  "depth": {
-  "file": "depth_v5.txt",
+  "file": "depth_v6.txt",
   "w": 1627,
   "h": 795,
   "step": 0.08,
@@ -24,7 +24,7 @@
   "capped": false
  },
  "bottom": {
-  "file": "bottom_v5.txt"
+  "file": "bottom_v6.txt"
  },
  "legendTicks": [
   "0 m",
@@ -33,8 +33,8 @@
   "12 m"
  ],
  "contourText": "Djupkurvor från C-MAP Genesis",
- "mapFile": "map_v5_{style}.jpg",
- "thumbFile": "thumbs_v5/{style}.jpg",
+ "mapFile": "map_v6_{style}.jpg",
+ "thumbFile": "thumbs_v6/{style}.jpg",
  "styles": [
   {
    "id": "s1",

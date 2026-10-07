@@ -101,6 +101,10 @@ Alla kommandon körs från repots rot (`E:\github\regnaren-karta`), med `py -3`.
   Sjöar som inte byggts om har kvar det gamla (en JPG per bit med linjerna inbakade) –
   appen klarar båda (`DETAIL.lines` finns/saknas). Appen visar nivån = zoomen avrundad; förra nivån ligger kvar
   tills den nya laddat. Zoomindikatorn: "Zoom 15,3 lager 15".
+  **Halva djupsiffror:** Genesis ritar 8 × 8 rutor åt gången och klipper siffrorna vid de kanterna (var 2 048:e px,
+  globalt, på varje zoom) – syntes som en rak skarv med halva siffror (Mälaren, 2026-10-07). `cut_labels()` i
+  genesis_render.py tar bort varje siffra som rör en sådan kant (båda halvorna; ett litet glapp i linjen, som under
+  alla siffror). Används av både genesis_render och genesis_big.
 - **Samma max zoom för alla sjöar** (beslutat, ej byggt än: 18,6). Varje sjö
   använder sitt högsta lager och förstorar det därifrån.
 - **Varje nivå visar exakt Genesis kurvlager (t_) för den zoomen** – antalet

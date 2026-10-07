@@ -158,6 +158,24 @@ def save_lines(arr, path):
     a = np.clip(arr, 0, 255).astype(np.uint8); a[a[..., 3] == 0, :3] = 0
     Image.fromarray(a, 'RGBA').quantize(32, method=Image.FASTOCTREE).convert('RGBA').save(path, 'WEBP', lossless=True, method=6)
 
+MT = 2048   # Genesis renders 8 x 8 tiles at a time and cuts the depth numbers in half at those edges
+
+def cut_labels(t, X0, Y0):
+    """remove the depth numbers Genesis cut in half at its 2048 px edges: the halo + digits of every number
+    touching such an edge, both halves (a small gap in the line, as under any number -- we never draw numbers).
+    t = Genesis' t layer (RGBA), X0/Y0 = its global px at that zoom."""
+    h, w = t.shape[:2]
+    halo = (t[..., :3].mean(2) > 170) & (t[..., 3] > 60)
+    lab, n = ndimage.label(ndimage.binary_closing(halo, iterations=2))
+    edge = np.zeros((h, w), bool)
+    for x in range(-X0 % MT, w, MT): edge[:, max(0, x - 1):x + 1] = True
+    for y in range(-Y0 % MT, h, MT): edge[max(0, y - 1):y + 1, :] = True
+    hit = np.unique(lab[edge & (lab > 0)])
+    if not len(hit): return t
+    m = ndimage.binary_dilation(ndimage.binary_fill_holes(np.isin(lab, hit)), iterations=2)
+    t = t.copy(); t[m, 3] = 0
+    return t
+
 def line_layer(kind, t, ta, labels):
     """Genesis' contour lines + depth numbers for a zoom as colour + alpha: black lines as they are, or
     light lines (Bottenhårdhet): thinner (only the line cores -- the soft edges fade out) and see-through;
@@ -314,7 +332,7 @@ def main():
             y1, x1 = min(a.shape[0], ly + h), min(a.shape[1], lx + w)
             out[:y1 - ly, :x1 - lx] = a[ly:y1, lx:x1]
             return out
-        t = lay('t').astype(np.float32)
+        t = cut_labels(lay('t'), ox, oy).astype(np.float32)
         wl = resize(water.astype(np.float32), w, h)
         wat = wl >= 0.5
         alpha = np.clip(ndimage.gaussian_filter(wl, 0.6), 0, 1)[..., None]

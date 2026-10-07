@@ -355,7 +355,7 @@ def render(lk, shard=None):
             f = 2 ** (lk.DZ - z); core = int(lk.BS / f); mg = int(RMG / f); w = h = core + 2 * mg
             X0, Y0 = int((lk.gx0 + bx * lk.BS) / f) - mg, int((lk.gy0 + by * lk.BS) / f) - mg      # level px, global
             lay = lambda n, mode='RGBA': read(lk.id, z, n, X0, Y0, w, h) if os.path.isdir(os.path.join(ROOT, 'raw', lk.id, 'z%d' % z, n)) else None
-            t = lay('t').astype(np.float32)
+            t = R.cut_labels(lay('t'), X0, Y0).astype(np.float32)
             wl = R.resize(water.astype(np.float32), w, h); wat = wl >= 0.5
             alpha = np.clip(ndimage.gaussian_filter(wl, 0.6), 0, 1)[..., None]
             near = ndimage.binary_dilation(wat, iterations=max(3, int(14 / f)))[..., None]
