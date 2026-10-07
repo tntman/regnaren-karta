@@ -11,7 +11,7 @@
     try { L = detailLevel(); z = currentZoom(); } catch(e){}
     document.querySelectorAll('canvas').forEach(function(c){ canv += c.width * c.height; });
     return {
-      t: Date.now(), lake: LAKE_ID, up: Math.round((Date.now() - crashT0) / 1000),
+      t: Date.now(), ver: document.lastModified, lake: LAKE_ID, up: Math.round((Date.now() - crashT0) / 1000),
       zoom: Math.round(z * 10) / 10, level: L ? L.z : 14, tiles: tiles, peak: crashPeak, zooms: crashZooms,
       imgs: document.images.length, canvasMP: Math.round(canv / 1e5) / 10,
       style: mapStyle, an: anSet.mode || '', hm: hmOn, err: crashErr, clean: false
@@ -22,7 +22,7 @@
   }
   function crashText(o){
     function hm(t){ var d = new Date(t); return d.toLocaleDateString('sv-SE') + ' ' + d.toLocaleTimeString('sv-SE'); }
-    return hm(o.t) + ' · ' + o.lake + ' · zoom ' + o.zoom + ' (nivå ' + o.level + ') · bitar ' + o.tiles + ' (max ' + o.peak + ')' +
+    return hm(o.t) + ' · ' + o.lake + (o.ver ? ' · version ' + o.ver : '') + ' · zoom ' + o.zoom + ' (nivå ' + o.level + ') · bitar ' + o.tiles + ' (max ' + o.peak + ')' +
       ' · bilder ' + o.imgs + ' · canvas ' + o.canvasMP + ' MP · zoombyten ' + o.zooms + ' · igång ' + o.up + ' s · kartläge ' + o.style +
       (o.an ? ' · Kartanalys ' + o.an : '') + (o.hm ? ' · Heatmap' : '') + (o.err ? ' · fel: ' + o.err : '');
   }
