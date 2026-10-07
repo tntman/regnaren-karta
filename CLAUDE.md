@@ -158,6 +158,8 @@ Uppdatera rätt anteckning när något ändras.
   välkomna; **Fortsätt** gör det man höll på med, **Demo Mode** öppnar Avancerat. Aldrig i Demo Mode, för upplåst admin eller när appen
   inte vet (ingen kopia/API-fel). Admins "Tävlingslåset av för alla" borttaget (`config/<sjö>.lockOff` läses inte längre). Grindarna i
   knapparnas handlers (24-boats.js). Testerna: notisen av i testwebbläsaren (`window.__ffNoLock`, fakefb) utom med `cfg={'lock': True}` (test_lock.py).
+- **Kraschlogg** (Inställningar → Avancerat → Senaste krasch, `js/91-crashlog.js`): en rad om vad appen gör sparas i localStorage var 2:a
+  sekund; stängdes sidan inte rent (pagehide) visas raden vid nästa start. Rader samlas i `tools/KRASCHLOGG.md`.
 - **Strandlinje** (Inställningar → Kartan `#toggleShore`, på som standard, `ffmap_shore_v1`): sjöns kant som tunn vit linje på vanliga kartan,
   samma som Heatmap/Kartanalys ritar (`hmShoreLayer`, `js/68-heatmap.js`); döljs när de visas (de har sin egen).
 - **Startfilm** (`js/35-splash.js`, `tools/PLAN_SPLASH.md`): 3D-loggan 3,5 s **varje gång ett namn väljs** ("Vem är du?": ny telefon,
