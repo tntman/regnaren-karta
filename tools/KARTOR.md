@@ -331,7 +331,10 @@ Regnarens används i testerna).
 **Minnet i appen:** allt som räknas för hela sjön (Kartanalys, Vind och lä, rutten) går på `workGrid()` (`js/38-speed-depth.js`),
 högst 1,5 M rutor (`GRID_MAX`); större djupnät slås ihop 2×2 (4×4 …). Mälaren 1 536 × 2 560 räknas som 768 × 1 280 (~20 m);
 blir den större (fler områden) och passerar 6 M djupceller blir det automatiskt 4×4 (~40 m). Översiktsbilden avkodad =
-imgW × imgH × 4 byte hela tiden (Mälaren 63 MB, Regnaren 5 MB) – se `tools/PLAN_MINNE.md`.
+imgW × imgH × 4 byte hela tiden (Mälaren 63 MB, Regnaren 5 MB) – se `tools/PLAN_MINNE.md`. Därför (sista steget i `finish`,
+eller `… zoom14` för sig): översiktsbilden i **halv storlek** (`map_v<V>h_*.jpg`, 16 MB avkodad; `<img>` får ändå full storlek
+i CSS) + den fulla som **zoom 14-bitar med kurvorna inbakade** (`"baked": true` i levels – inget kurvlager ovanpå) som tar över
+från zoom 13,5, så det är lika skarpt. Den fulla bilden sparas i `raw/<id>/z17/map14_<stil>.jpg`.
 
 ## Namn på kartan (OpenStreetMap)
 

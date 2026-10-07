@@ -9,6 +9,7 @@ too big). tools/PLAN_KARTFORMAT.md.
     py -3 tools/genesis_big.py <lake> relief      relief (T1, AO) per block + the lake-wide brightness scale
     py -3 tools/genesis_big.py <lake> render [k/n] pictures, pieces, depth/bottom grid, lake.json (k/n: every
                                                   n-th block from k -- several side by side, then once without)
+    py -3 tools/genesis_big.py <lake> zoom14      (part of finish) half overview + zoom 14 pieces, lake.json
 """
 import sys, os, json, math, base64, shutil
 from functools import lru_cache
@@ -442,8 +443,8 @@ def finish(lk, maxd, DMAX, LMAX, TICKS):
         sl = (slice(by * cw, (by + 1) * cw), slice(bx * cw, (bx + 1) * cw))
         num[sl] = q['num']; den[sl] = q['den']; lakef[sl] = q['lakef']; bot[sl] = q['bot']
         if best is None or q['nwater'] > best[0]: best = (int(q['nwater']), bx, by)
-    for sid, m in maps.items():
-        Image.fromarray(m).save(os.path.join(OUT, 'map_v%d_%s.jpg' % (lk.V, sid)), quality=84, optimize=True, progressive=True)
+    for sid, m in maps.items():         # (full size kept in raw/ -- zoom14() makes the half one + the z14 pieces)
+        Image.fromarray(m).save(os.path.join(lk.D, 'map14_%s.jpg' % sid), quality=84, optimize=True, progressive=True)
     q = np.load(os.path.join(PART, '%d_%d.npz' % best[1:]))
     for s in STY:
         th = q['th_' + s[0]]; hh, ww = th.shape[:2]; tw = int(ww * 0.6); tht = int(tw * 0.6)
@@ -476,8 +477,40 @@ def finish(lk, maxd, DMAX, LMAX, TICKS):
                    'baseMax': lk.DZ, 'tile': TL, 'pad': PAD, 'levels': level_info},
     }
     json.dump(lake, open(os.path.join(lk.L, 'lake.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
+    zoom14(lk)
     size = sum(os.path.getsize(os.path.join(dp, f2)) for dp, _, fs in os.walk(OUT) for f2 in fs)
     print('map %d x %d (zoom %d), depth grid %d x %d, max %.1f m, docs/lakes/%s = %.1f MB' % (mw, mh, lk.base, gw, gh, maxd, lk.id, size / 1e6))
+
+def zoom14(lk):
+    """the overview picture in half size (a quarter of the phone's memory -- the full one decoded is
+    imgW x imgH x 4 bytes all the time, Mälaren 63 MB) + the full one as zoom 14 pieces (lines baked in,
+    "baked": true) that take over from zoom 13.5, so it is just as sharp. Reads raw/<lake>/z<DZ>/map14_<style>.jpg."""
+    OUT = os.path.join(ROOT, 'docs', 'lakes', lk.id); P = os.path.join(lk.L, 'lake.json')
+    lake = json.load(open(P, encoding='utf-8')); det = lake['detail']
+    L15 = [L for L in det['levels'] if L['z'] == lk.base + 1][0]
+    h15 = np.array([c == '1' for c in L15['have']]).reshape(L15['rows'], L15['cols'])
+    rows, cols = L15['rows'] // 2, L15['cols'] // 2
+    have = h15[:rows * 2, :cols * 2].reshape(rows, 2, cols, 2).any(axis=(1, 3))
+    for st in lake['styles']:
+        sid = st['id']; m = np.array(Image.open(os.path.join(lk.D, 'map14_%s.jpg' % sid)).convert('RGB'))
+        h, w = m.shape[:2]
+        Image.fromarray(m).resize((w // 2, h // 2), Image.LANCZOS).save(
+            os.path.join(OUT, 'map_v%dh_%s.jpg' % (lk.V, sid)), quality=84, optimize=True, progressive=True)
+        old = os.path.join(OUT, 'map_v%d_%s.jpg' % (lk.V, sid))
+        if os.path.exists(old): os.remove(old)
+        mp = np.pad(m, ((PAD, PAD), (PAD, PAD), (0, 0)), mode='edge')
+        d = os.path.join(OUT, 'tiles_v%d' % lk.V, 'z%d' % lk.base, sid); os.makedirs(d, exist_ok=True)
+        for r in range(rows):
+            for c in range(cols):
+                if have[r, c]:
+                    Image.fromarray(mp[r * TL:(r + 1) * TL + 2 * PAD, c * TL:(c + 1) * TL + 2 * PAD]).save(
+                        os.path.join(d, '%d_%d.webp' % (c, r)), 'WEBP', quality=70, method=6)
+    lake['mapFile'] = 'map_v%dh_{style}.jpg' % lk.V
+    det['levels'] = [L for L in det['levels'] if L['z'] != lk.base] + [
+        {'z': lk.base, 'cols': cols, 'rows': rows, 'have': ''.join('1' if x else '0' for x in have.ravel()), 'base': True, 'baked': True}]
+    det['levels'].sort(key=lambda L: L['z'])
+    json.dump(lake, open(P, 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
+    print('  zoom 14: half overview %d x %d + %d pieces per style' % (w // 2, h // 2, have.sum()))
 
 if __name__ == '__main__':
     lk = Lake(sys.argv[1]); step = sys.argv[2]
@@ -489,4 +522,5 @@ if __name__ == '__main__':
         sh = tuple(int(v) for v in sys.argv[3].split('/')) if len(sys.argv) > 3 else None
         render(lk, sh)
     elif step == 'finish': finish(lk, *legend_scale(lk))
+    elif step == 'zoom14': zoom14(lk)
     else: raise SystemExit(__doc__)

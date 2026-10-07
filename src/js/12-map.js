@@ -209,7 +209,7 @@
       var B = DETAIL.lines ? detailBaseLevel(L) : null, d = B ? L.z - B.z : 0;
       for (var r = r0; r <= r1; r++) for (var c = c0; c <= c1; c++){
         if (L.have.charAt(r * L.cols + c) !== '1') continue;
-        if (!DETAIL.lines){ piece(L.z, mapStyle, c, r, 2); continue; }   // (old format: lines baked in)
+        if (!DETAIL.lines || L.baked){ piece(L.z, mapStyle, c, r, 2); continue; }   // (old format / big lake's zoom 14: lines baked in)
         var cb = c >> d, rb = r >> d;
         if (B && B.have.charAt(rb * B.cols + cb) === '1') piece(B.z, mapStyle, cb, rb, 2);
         piece(L.z, linesFolder(mapStyle), c, r, 3);

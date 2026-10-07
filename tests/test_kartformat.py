@@ -67,4 +67,28 @@ with sync_playwright() as p:
     pg.screenshot(path='shot_kartformat_c1.png')
     check('no page errors', not errs, errs)
     b.close()
+
+# a big lake (Mälaren): the overview picture in half size (memory) + zoom 14 pieces with the lines baked in
+# (genesis_big.py zoom14) that take over from zoom 13.5 -- no lines pieces on top of them
+MK = json.load(open('../lakes/malaren/lake.json', encoding='utf-8'))
+L14 = [L for L in MK['detail']['levels'] if L['z'] == 14]
+check('Mälaren lake.json: half overview (map_v1h_), zoom 14 level baked', 'h_{style}' in MK['mapFile'] and L14 and L14[0].get('baked'), MK['mapFile'])
+with sync_playwright() as p:
+    b, ctx, pg, errs = new_page(p, geo=(59.433, 17.582), cfg={}, name='Filip')
+    pg.evaluate("() => localStorage.setItem('ffmap_lake_v1', 'malaren')"); pg.reload(); pg.wait_for_timeout(2500)
+    nat = pg.evaluate("[document.getElementById('mapImg').naturalWidth, parseFloat(document.getElementById('mapImg').style.width)]")
+    check('Mälaren: overview file half size, shown at full size', nat[0] * 2 == MK['geo']['imgW'] and round(nat[1]) == MK['geo']['imgW'], nat)
+    pg.mouse.move(195, 422)
+    for i in range(30):                    # zoom 13.6-14.4 (the label's L is 14 already below 13.5)
+        zl = float(pg.inner_text('#zoomLabel').split('×')[0].split()[-1].replace(',', '.'))
+        if 13.6 <= zl <= 14.4: break
+        pg.mouse.wheel(0, -60 if zl < 13.6 else 60); pg.wait_for_timeout(120)
+    pg.wait_for_timeout(1800)
+    t = pieces(pg)
+    check('Mälaren zoom 14: only baked z14 base pieces (no lines layer)', t and all('/z14/s1/' in x[0] and x[2] for x in t), t[:6])
+    zoom_to(pg, 15)
+    t = pieces(pg)
+    check('Mälaren zoom 15: base + lines as usual', any('/z15/s1/' in x[0] for x in t) and any('/z15/lines/' in x[0] for x in t), t[:6])
+    check('Mälaren: no page errors', not errs, errs)
+    b.close()
 print('\n%d/%d passed' % (sum(results), len(results)))

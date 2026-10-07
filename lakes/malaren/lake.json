@@ -32,7 +32,7 @@
   "50 m"
  ],
  "contourText": "Djupkurvor från C-MAP Genesis",
- "mapFile": "map_v1_{style}.jpg",
+ "mapFile": "map_v1h_{style}.jpg",
  "thumbFile": "thumbs_v1/{style}.jpg",
  "styles": [
   {
@@ -97,6 +97,14 @@
   "tile": 512,
   "pad": 8,
   "levels": [
+   {
+    "z": 14,
+    "cols": 6,
+    "rows": 10,
+    "have": "111110111111011111011111000101000111000110000111000011000000",
+    "base": true,
+    "baked": true
+   },
    {
     "z": 15,
     "cols": 12,
