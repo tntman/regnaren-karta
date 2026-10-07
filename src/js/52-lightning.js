@@ -122,14 +122,12 @@
   }
   // the strikes on the map (screen canvas, redrawn with the map) + the edge marker
   function ltDrawMap(){
-    var dpr = window.devicePixelRatio || 1, W = stage.clientWidth, H = stage.clientHeight, now = Date.now();
-    if (ltCanvas.width !== Math.round(W * dpr) || ltCanvas.height !== Math.round(H * dpr)){
-      ltCanvas.width = Math.round(W * dpr); ltCanvas.height = Math.round(H * dpr);
-    }
+    var on = ltOn && !!(ltRec.length || ltNear);      // (no strikes: no canvas -- it's on by default)
+    var dpr = fitLayer(ltCanvas, on), W = stage.clientWidth, H = stage.clientHeight, now = Date.now();
+    if (!on) return { drawn: 0, edge: null };
     lctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     lctx.clearRect(0, 0, W, H);
     var drawn = 0, edge = null;
-    if (!ltOn) return { drawn: 0, edge: null };
     var fl = (now - ltFlash.from) / 2500;                           // new strikes: a ring spreading out, 2,5 s
     ltRec.forEach(function(r){
       var p = latLonToImgPx(r.s.lat, r.s.lon), x = originX + p.x * scale, y = originY + p.y * scale;

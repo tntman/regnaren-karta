@@ -43,17 +43,17 @@
       }
     });
     var leeD = leeDistM(w.ms);
-    // A smooth fetch field at the depth grid's size: bilinear between route cells, then
+    // A smooth fetch field at the work grid's size (the depth grid's; a big lake's coarser, workGrid): bilinear between route cells, then
     // blurred ~10 m inside the lake (no speckles / 9 m steps). The lee is then drawn per
     // screen pixel from this field (drawLeeView), so its edge stays smooth at any zoom.
-    var g = loadDepthGrid(), N = DEPTH_W * DEPTH_H;
+    var wg = workGrid(), g = wg.g, GW = wg.W, GH = wg.H, N = GW * GH, rr = R.rf / wg.k;   // (rr: route cells in work-grid cells)
     var ff = new Float32Array(N), lk = new Float32Array(N);
-    for (var y0 = 0; y0 < DEPTH_H; y0++){
-      var fy = (y0 + 0.5) / R.rf - 0.5, iy = Math.floor(fy), ty = fy - iy;
-      for (var x0 = 0; x0 < DEPTH_W; x0++){
-        var j0 = y0 * DEPTH_W + x0; if (g[j0] === 255) continue;
+    for (var y0 = 0; y0 < GH; y0++){
+      var fy = (y0 + 0.5) / rr - 0.5, iy = Math.floor(fy), ty = fy - iy;
+      for (var x0 = 0; x0 < GW; x0++){
+        var j0 = y0 * GW + x0; if (g[j0] === 255) continue;
         lk[j0] = 1;
-        var fx = (x0 + 0.5) / R.rf - 0.5, ix = Math.floor(fx), tx = fx - ix, sum = 0, ws = 0;
+        var fx = (x0 + 0.5) / rr - 0.5, ix = Math.floor(fx), tx = fx - ix, sum = 0, ws = 0;
         for (var dy = 0; dy <= 1; dy++) for (var dx = 0; dx <= 1; dx++){
           var cx2 = ix + dx, cy2 = iy + dy;
           if (cx2 < 0 || cy2 < 0 || cx2 >= R.w || cy2 >= R.h || !R.water[cy2 * R.w + cx2]) continue;
@@ -62,15 +62,15 @@
         ff[j0] = ws > 0 ? sum / ws : 0;
       }
     }
-    var rad = Math.max(1, Math.round(10 / (WEB_METERS_PER_PX * IMG_W / DEPTH_W)));
+    var rad = Math.max(1, Math.round(10 / (WEB_METERS_PER_PX * IMG_W / GW)));
     function boxBlur(horiz){                      // weighted by the lake mask, so land doesn't pull it to 0
-      var out = new Float32Array(N), L1 = horiz ? DEPTH_W : DEPTH_H, L2 = horiz ? DEPTH_H : DEPTH_W;
+      var out = new Float32Array(N), L1 = horiz ? GW : GH, L2 = horiz ? GH : GW;
       for (var b = 0; b < L2; b++){
         var s = 0, sw = 0;
         for (var a0 = -rad; a0 < L1 + rad; a0++){
-          var ai = a0 + rad; if (ai < L1){ var jj = horiz ? b * DEPTH_W + ai : ai * DEPTH_W + b; s += ff[jj] * lk[jj]; sw += lk[jj]; }
-          var ao = a0 - rad - 1; if (ao >= 0 && ao < L1){ var jo = horiz ? b * DEPTH_W + ao : ao * DEPTH_W + b; s -= ff[jo] * lk[jo]; sw -= lk[jo]; }
-          if (a0 >= 0 && a0 < L1){ var jc = horiz ? b * DEPTH_W + a0 : a0 * DEPTH_W + b; if (lk[jc]) out[jc] = sw > 0 ? s / sw : 0; }
+          var ai = a0 + rad; if (ai < L1){ var jj = horiz ? b * GW + ai : ai * GW + b; s += ff[jj] * lk[jj]; sw += lk[jj]; }
+          var ao = a0 - rad - 1; if (ao >= 0 && ao < L1){ var jo = horiz ? b * GW + ao : ao * GW + b; s -= ff[jo] * lk[jo]; sw -= lk[jo]; }
+          if (a0 >= 0 && a0 < L1){ var jc = horiz ? b * GW + a0 : a0 * GW + b; if (lk[jc]) out[jc] = sw > 0 ? s / sw : 0; }
         }
       }
       ff = out;
@@ -93,12 +93,21 @@
   // it's never thinner than one point each side, and fainter to match (the same amount of line).
   // -> [half width in points, strength]
   function edgeW(STEP, css){ var w = (css || 1.1) / STEP; return w >= 1 ? [w, 1] : [1, w]; }
-  function gridAt(arr, ix, iy){
-    var gx = ix / IMG_W * DEPTH_W - 0.5, gy = iy / IMG_H * DEPTH_H - 0.5;
+  // a screen layer's canvas (lee, lightning, heat map, Kartanalys, shore, fog): the screen's size while it's on,
+  // 1x1 when it's off -- a full one is 12 MB at 3x even when empty (tools/PLAN_MINNE.md). soft = drawn from
+  // coarse pictures anyway: at most 2x (3x doesn't show, and is 2,25x the memory). -> the scale to draw at
+  function fitLayer(c, on, soft){
+    var dpr = window.devicePixelRatio || 1; if (soft) dpr = Math.min(2, dpr);
+    var w = on ? Math.round(stage.clientWidth * dpr) : 1, h = on ? Math.round(stage.clientHeight * dpr) : 1;
+    if (c.width !== w || c.height !== h){ c.width = w; c.height = h; }
+    return dpr;
+  }
+  function gridAt(arr, ix, iy){     // (arr: a field on the work grid -- there once a wind field is)
+    var GW = workGridC.W, GH = workGridC.H, gx = ix / IMG_W * GW - 0.5, gy = iy / IMG_H * GH - 0.5;
     var x0 = Math.floor(gx), y0 = Math.floor(gy), tx = gx - x0, ty = gy - y0;
-    if (x0 < 0 || y0 < 0 || x0 >= DEPTH_W - 1 || y0 >= DEPTH_H - 1) return 0;
-    var j = y0 * DEPTH_W + x0;
-    return (arr[j] * (1 - tx) + arr[j + 1] * tx) * (1 - ty) + (arr[j + DEPTH_W] * (1 - tx) + arr[j + DEPTH_W + 1] * tx) * ty;
+    if (x0 < 0 || y0 < 0 || x0 >= GW - 1 || y0 >= GH - 1) return 0;
+    var j = y0 * GW + x0;
+    return (arr[j] * (1 - tx) + arr[j + 1] * tx) * (1 - ty) + (arr[j + GW] * (1 - tx) + arr[j + GW + 1] * tx) * ty;
   }
   // the lee for what's on screen, 1 point per css px (coarser while dragging, see viewStep; redone only when the view moves)
   function drawLeeView(F, W, H){
@@ -134,15 +143,12 @@
     wctx.drawImage(F.view.cv, 0, 0, vw * STEP, vh * STEP);
   }
   function drawWind(){
-    var dpr = window.devicePixelRatio || 1, W = stage.clientWidth, H = stage.clientHeight;
-    if (windCanvas.width !== Math.round(W * dpr) || windCanvas.height !== Math.round(H * dpr)){
-      windCanvas.width = Math.round(W * dpr); windCanvas.height = Math.round(H * dpr);
-    }
+    var W = stage.clientWidth, H = stage.clientHeight, F = windOn ? computeWindField() : null;
+    var dpr = fitLayer(windCanvas, !!F, true);
+    if (!F) return 0;
     wctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     wctx.clearRect(0, 0, W, H);
     if (!(W >= 2 && H >= 2)) return 0;          // (mid-rotation the map can be 0 px for a moment: nothing to draw)
-    var F = windOn ? computeWindField() : null;
-    if (!F) return 0;
     drawLeeView(F, W, H);
     if (F.ms < 1.5) return 0;
     // comets

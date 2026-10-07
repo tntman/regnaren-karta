@@ -7536,6 +7536,27 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     } catch(e){ console.warn('djupdata', e); }
     return depthGrid;
   }
+  // the grid that things for the whole lake are worked out on (Kartanalys, Vind och lä, the route): at most ~1,5 M
+  // cells -- a bigger lake's depth cells are taken 2x2 (4x4 ...) together. Mälaren: 3,9 M cells of 10 m -> 1 M of 20 m
+  // (it crashed the phone, tools/PLAN_MINNE.md); the other lakes: the depth grid itself. The depth (lodet) stays exact.
+  var GRID_MAX = 1.5e6, workGridC = null;
+  function gridStep(){ for (var k = 1; (DEPTH_W / k) * (DEPTH_H / k) > GRID_MAX; k *= 2); return k; }
+  function workGrid(){              // -> { g (like the depth grid: depth steps, 252 lake without depth, 255 land), W, H, k }
+    if (workGridC) return workGridC;
+    var g = loadDepthGrid(); if (!g) return null;
+    var k = gridStep();
+    if (k === 1) return (workGridC = { g: g, W: DEPTH_W, H: DEPTH_H, k: 1 });
+    var W = Math.ceil(DEPTH_W / k), H = Math.ceil(DEPTH_H / k), o = new Uint8Array(W * H);
+    for (var y = 0; y < H; y++) for (var x = 0; x < W; x++){
+      var n = 0, nl = 0, nw = 0, s = 0;
+      for (var yy = y * k; yy < Math.min(DEPTH_H, y * k + k); yy++) for (var xx = x * k; xx < Math.min(DEPTH_W, x * k + k); xx++){
+        var v = g[yy * DEPTH_W + xx]; n++; if (v !== 255){ nl++; if (v <= 250){ nw++; s += v; } }
+      }
+      // mostly land: land; half or more with depth: their mean depth; else lake without depth
+      o[y * W + x] = nl * 2 < n ? 255 : nw * 2 >= n ? Math.round(s / nw) : 252;
+    }
+    return (workGridC = { g: o, W: W, H: H, k: k });
+  }
   function depthAtImgPx(x, y){
     var g = loadDepthGrid();
     if (!g) return null;
@@ -7575,7 +7596,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     if (RT) return RT;
     var g = loadDepthGrid(); if (!g) return null;
     var cellM0 = WEB_METERS_PER_PX * IMG_W / DEPTH_W;
-    var rf = Math.max(1, Math.round(9 / cellM0));
+    var rf = Math.max(gridStep(), Math.round(9 / cellM0));   // (a big lake: coarser, see workGrid)
     var w = Math.ceil(DEPTH_W / rf), h = Math.ceil(DEPTH_H / rf);
     var water = new Uint8Array(w * h);
     for (var y = 0; y < DEPTH_H; y++) for (var x = 0; x < DEPTH_W; x++)
@@ -8696,10 +8717,9 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   }
   function fogAddStep(a, b){ if (fogOn && !fogDirty) fogStep(a, b); else fogDirty = true; }
   function fogDraw(){
-    if (!fogOn){ return; }
+    if (!fogOn){ fitLayer(fogEl, false); return; }
     if (fogDirty) fogRebuild();
-    var dpr = window.devicePixelRatio || 1, W = stage.clientWidth, H = stage.clientHeight;
-    if (fogEl.width !== Math.round(W * dpr) || fogEl.height !== Math.round(H * dpr)){ fogEl.width = Math.round(W * dpr); fogEl.height = Math.round(H * dpr); }
+    var dpr = fitLayer(fogEl, true, true), W = stage.clientWidth, H = stage.clientHeight;
     fogCtx.setTransform(dpr, 0, 0, dpr, 0, 0); fogCtx.globalCompositeOperation = 'source-over'; fogCtx.clearRect(0, 0, W, H);
     if (!(W >= 2 && H >= 2)) return;
     fogCtx.fillStyle = 'rgba(20,24,34,.93)'; fogCtx.fillRect(0, 0, W, H);
@@ -8924,17 +8944,17 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
       }
     });
     var leeD = leeDistM(w.ms);
-    // A smooth fetch field at the depth grid's size: bilinear between route cells, then
+    // A smooth fetch field at the work grid's size (the depth grid's; a big lake's coarser, workGrid): bilinear between route cells, then
     // blurred ~10 m inside the lake (no speckles / 9 m steps). The lee is then drawn per
     // screen pixel from this field (drawLeeView), so its edge stays smooth at any zoom.
-    var g = loadDepthGrid(), N = DEPTH_W * DEPTH_H;
+    var wg = workGrid(), g = wg.g, GW = wg.W, GH = wg.H, N = GW * GH, rr = R.rf / wg.k;   // (rr: route cells in work-grid cells)
     var ff = new Float32Array(N), lk = new Float32Array(N);
-    for (var y0 = 0; y0 < DEPTH_H; y0++){
-      var fy = (y0 + 0.5) / R.rf - 0.5, iy = Math.floor(fy), ty = fy - iy;
-      for (var x0 = 0; x0 < DEPTH_W; x0++){
-        var j0 = y0 * DEPTH_W + x0; if (g[j0] === 255) continue;
+    for (var y0 = 0; y0 < GH; y0++){
+      var fy = (y0 + 0.5) / rr - 0.5, iy = Math.floor(fy), ty = fy - iy;
+      for (var x0 = 0; x0 < GW; x0++){
+        var j0 = y0 * GW + x0; if (g[j0] === 255) continue;
         lk[j0] = 1;
-        var fx = (x0 + 0.5) / R.rf - 0.5, ix = Math.floor(fx), tx = fx - ix, sum = 0, ws = 0;
+        var fx = (x0 + 0.5) / rr - 0.5, ix = Math.floor(fx), tx = fx - ix, sum = 0, ws = 0;
         for (var dy = 0; dy <= 1; dy++) for (var dx = 0; dx <= 1; dx++){
           var cx2 = ix + dx, cy2 = iy + dy;
           if (cx2 < 0 || cy2 < 0 || cx2 >= R.w || cy2 >= R.h || !R.water[cy2 * R.w + cx2]) continue;
@@ -8943,15 +8963,15 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
         ff[j0] = ws > 0 ? sum / ws : 0;
       }
     }
-    var rad = Math.max(1, Math.round(10 / (WEB_METERS_PER_PX * IMG_W / DEPTH_W)));
+    var rad = Math.max(1, Math.round(10 / (WEB_METERS_PER_PX * IMG_W / GW)));
     function boxBlur(horiz){                      // weighted by the lake mask, so land doesn't pull it to 0
-      var out = new Float32Array(N), L1 = horiz ? DEPTH_W : DEPTH_H, L2 = horiz ? DEPTH_H : DEPTH_W;
+      var out = new Float32Array(N), L1 = horiz ? GW : GH, L2 = horiz ? GH : GW;
       for (var b = 0; b < L2; b++){
         var s = 0, sw = 0;
         for (var a0 = -rad; a0 < L1 + rad; a0++){
-          var ai = a0 + rad; if (ai < L1){ var jj = horiz ? b * DEPTH_W + ai : ai * DEPTH_W + b; s += ff[jj] * lk[jj]; sw += lk[jj]; }
-          var ao = a0 - rad - 1; if (ao >= 0 && ao < L1){ var jo = horiz ? b * DEPTH_W + ao : ao * DEPTH_W + b; s -= ff[jo] * lk[jo]; sw -= lk[jo]; }
-          if (a0 >= 0 && a0 < L1){ var jc = horiz ? b * DEPTH_W + a0 : a0 * DEPTH_W + b; if (lk[jc]) out[jc] = sw > 0 ? s / sw : 0; }
+          var ai = a0 + rad; if (ai < L1){ var jj = horiz ? b * GW + ai : ai * GW + b; s += ff[jj] * lk[jj]; sw += lk[jj]; }
+          var ao = a0 - rad - 1; if (ao >= 0 && ao < L1){ var jo = horiz ? b * GW + ao : ao * GW + b; s -= ff[jo] * lk[jo]; sw -= lk[jo]; }
+          if (a0 >= 0 && a0 < L1){ var jc = horiz ? b * GW + a0 : a0 * GW + b; if (lk[jc]) out[jc] = sw > 0 ? s / sw : 0; }
         }
       }
       ff = out;
@@ -8974,12 +8994,21 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   // it's never thinner than one point each side, and fainter to match (the same amount of line).
   // -> [half width in points, strength]
   function edgeW(STEP, css){ var w = (css || 1.1) / STEP; return w >= 1 ? [w, 1] : [1, w]; }
-  function gridAt(arr, ix, iy){
-    var gx = ix / IMG_W * DEPTH_W - 0.5, gy = iy / IMG_H * DEPTH_H - 0.5;
+  // a screen layer's canvas (lee, lightning, heat map, Kartanalys, shore, fog): the screen's size while it's on,
+  // 1x1 when it's off -- a full one is 12 MB at 3x even when empty (tools/PLAN_MINNE.md). soft = drawn from
+  // coarse pictures anyway: at most 2x (3x doesn't show, and is 2,25x the memory). -> the scale to draw at
+  function fitLayer(c, on, soft){
+    var dpr = window.devicePixelRatio || 1; if (soft) dpr = Math.min(2, dpr);
+    var w = on ? Math.round(stage.clientWidth * dpr) : 1, h = on ? Math.round(stage.clientHeight * dpr) : 1;
+    if (c.width !== w || c.height !== h){ c.width = w; c.height = h; }
+    return dpr;
+  }
+  function gridAt(arr, ix, iy){     // (arr: a field on the work grid -- there once a wind field is)
+    var GW = workGridC.W, GH = workGridC.H, gx = ix / IMG_W * GW - 0.5, gy = iy / IMG_H * GH - 0.5;
     var x0 = Math.floor(gx), y0 = Math.floor(gy), tx = gx - x0, ty = gy - y0;
-    if (x0 < 0 || y0 < 0 || x0 >= DEPTH_W - 1 || y0 >= DEPTH_H - 1) return 0;
-    var j = y0 * DEPTH_W + x0;
-    return (arr[j] * (1 - tx) + arr[j + 1] * tx) * (1 - ty) + (arr[j + DEPTH_W] * (1 - tx) + arr[j + DEPTH_W + 1] * tx) * ty;
+    if (x0 < 0 || y0 < 0 || x0 >= GW - 1 || y0 >= GH - 1) return 0;
+    var j = y0 * GW + x0;
+    return (arr[j] * (1 - tx) + arr[j + 1] * tx) * (1 - ty) + (arr[j + GW] * (1 - tx) + arr[j + GW + 1] * tx) * ty;
   }
   // the lee for what's on screen, 1 point per css px (coarser while dragging, see viewStep; redone only when the view moves)
   function drawLeeView(F, W, H){
@@ -9015,15 +9044,12 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     wctx.drawImage(F.view.cv, 0, 0, vw * STEP, vh * STEP);
   }
   function drawWind(){
-    var dpr = window.devicePixelRatio || 1, W = stage.clientWidth, H = stage.clientHeight;
-    if (windCanvas.width !== Math.round(W * dpr) || windCanvas.height !== Math.round(H * dpr)){
-      windCanvas.width = Math.round(W * dpr); windCanvas.height = Math.round(H * dpr);
-    }
+    var W = stage.clientWidth, H = stage.clientHeight, F = windOn ? computeWindField() : null;
+    var dpr = fitLayer(windCanvas, !!F, true);
+    if (!F) return 0;
     wctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     wctx.clearRect(0, 0, W, H);
     if (!(W >= 2 && H >= 2)) return 0;          // (mid-rotation the map can be 0 px for a moment: nothing to draw)
-    var F = windOn ? computeWindField() : null;
-    if (!F) return 0;
     drawLeeView(F, W, H);
     if (F.ms < 1.5) return 0;
     // comets
@@ -9213,14 +9239,12 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   }
   // the strikes on the map (screen canvas, redrawn with the map) + the edge marker
   function ltDrawMap(){
-    var dpr = window.devicePixelRatio || 1, W = stage.clientWidth, H = stage.clientHeight, now = Date.now();
-    if (ltCanvas.width !== Math.round(W * dpr) || ltCanvas.height !== Math.round(H * dpr)){
-      ltCanvas.width = Math.round(W * dpr); ltCanvas.height = Math.round(H * dpr);
-    }
+    var on = ltOn && !!(ltRec.length || ltNear);      // (no strikes: no canvas -- it's on by default)
+    var dpr = fitLayer(ltCanvas, on), W = stage.clientWidth, H = stage.clientHeight, now = Date.now();
+    if (!on) return { drawn: 0, edge: null };
     lctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     lctx.clearRect(0, 0, W, H);
     var drawn = 0, edge = null;
-    if (!ltOn) return { drawn: 0, edge: null };
     var fl = (now - ltFlash.from) / 2500;                           // new strikes: a ring spreading out, 2,5 s
     ltRec.forEach(function(r){
       var p = latLonToImgPx(r.s.lat, r.s.lon), x = originX + p.x * scale, y = originY + p.y * scale;
@@ -9620,8 +9644,8 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   // the lake's grids: depth, water, slope (%), "higher/lower than around" (m), distance from land (m)
   function anBase(){
     if (AN) return AN;
-    var g = loadDepthGrid(); if (!g) return null;
-    var W = DEPTH_W, H = DEPTH_H, N = W * H, cell = WEB_METERS_PER_PX * IMG_W / W;
+    var wg = workGrid(); if (!wg) return null;
+    var g = wg.g, W = wg.W, H = wg.H, N = W * H, cell = WEB_METERS_PER_PX * IMG_W / W;
     var dep = new Float32Array(N), wat = new Uint8Array(N), lake = new Uint8Array(N), i, x, y;
     for (i = 0; i < N; i++){ var v = g[i]; lake[i] = v !== 255 ? 1 : 0; if (v <= 250){ wat[i] = 1; dep[i] = v * DEPTH_STEP; } }
     var sm = anBlur(dep, wat, W, H, Math.max(1, Math.round(4 / cell)));
@@ -9657,6 +9681,18 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
         var v = bin.charCodeAt(i);
         if (v === 250){ j += bin.charCodeAt(i + 1) | (bin.charCodeAt(i + 2) << 8); i += 2; }
         else b[j++] = v;
+      }
+      var k = gridStep();
+      if (k > 1){   // (a big lake: on the work grid, like AN -- plants where most of it has them, the mean measured hardness)
+        var W2 = Math.ceil(DEPTH_W / k), H2 = Math.ceil(DEPTH_H / k), o = new Uint8Array(W2 * H2);
+        for (var y = 0; y < H2; y++) for (var x = 0; x < W2; x++){
+          var n = 0, nv = 0, nh = 0, sh = 0;
+          for (var yy = y * k; yy < Math.min(DEPTH_H, y * k + k); yy++) for (var xx = x * k; xx < Math.min(DEPTH_W, x * k + k); xx++){
+            var bt = b[yy * DEPTH_W + xx]; n++; if (bt & 8) nv++; if (bt & 7){ nh++; sh += bt & 7; }
+          }
+          o[y * W2 + x] = (nv * 2 >= n ? 8 : 0) | (nh ? Math.round(sh / nh) : 0);
+        }
+        b = o;
       }
       anBottom = b; anCompute();
       if (typeof editingWpInfo !== 'undefined' && editingWpInfo && wpSheet.classList.contains('show')) refreshSheetMeta();
@@ -9737,6 +9773,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
       F = { d: anBlur(A.sm, wt, A.W, A.H, r), s: anBlur(sl, wt, A.W, A.H, r), t: anBlur(A.tpi, wt, A.W, A.H, r), v: anBlur(veg, wt, A.W, A.H, r), h: hm };
     }
     F.A = A; F.b = !!anBottom; anSimCache[rm] = F;
+    for (var k in anSimCache) if (+k !== rm && +k !== 25) delete anSimCache[k];   // (25 m: the catches and Skala; else only the last -- 80 MB each on Mälaren)
     return F;
   }
   function anCellOfImg(x, y){ var A = AN; return Math.min(A.H - 1, Math.max(0, Math.floor(y / IMG_H * A.H))) * A.W + Math.min(A.W - 1, Math.max(0, Math.floor(x / IMG_W * A.W))); }
@@ -9751,6 +9788,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     anRes = null; anVer++;
     var m = anSet.mode, A = anBase();
     if (m && A && anNeedsBottom(m) && !anBottom){ anLoadBottom(); if (!anBottom){ anRes = { wait: true }; anRender(); return; } }
+    if (!m){ anSimCache = {}; if (anPyrBox) anPyrBox.p = null; if (A) A.cBins = null; }   // off: let go of all but the lake's grids (AN: quick back on)
     if (!m || !A){ anRender(); return; }
     var r = m === 'combo' ? anCombo(A) : anOne(m, A, {}), G = null;
     if (anSet.scale && r.M && r.sv){   // "Skala": the strength where something is found (0,12..1: the colour scale from just alike)
@@ -9950,12 +9988,12 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   // draw: toned down outside, lit (+ a light edge) inside; per screen point like the lee
   function anDraw(){
     shoreDraw();                              // (Strandlinje on the plain map, 68-heatmap.js: off while this shows)
-    var dpr = window.devicePixelRatio || 1, W = stage.clientWidth, H = stage.clientHeight;
-    var on = anShow && anSet.mode && anRes && anRes.M, glow = !!(on && anSet.lamp);
-    anCanvas.classList.toggle('on', !!on); anSatCanvas.classList.toggle('on', !!on); anGlowCanvas.classList.toggle('on', glow);
+    var W = stage.clientWidth, H = stage.clientHeight;
+    var on = !!(anShow && anSet.mode && anRes && anRes.M), glow = !!(on && anSet.lamp);
+    anCanvas.classList.toggle('on', on); anSatCanvas.classList.toggle('on', on); anGlowCanvas.classList.toggle('on', glow);
     anLabelsEl.style.display = on ? '' : 'none';
+    var dpr = fitLayer(anCanvas, on, true); fitLayer(anSatCanvas, on, true); fitLayer(anGlowCanvas, glow, true);
     if (!on) return;
-    (glow ? [anCanvas, anSatCanvas, anGlowCanvas] : [anCanvas, anSatCanvas]).forEach(function(c){ if (c.width !== Math.round(W * dpr) || c.height !== Math.round(H * dpr)){ c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); } });
     anCtx.setTransform(dpr, 0, 0, dpr, 0, 0); anCtx.clearRect(0, 0, W, H);
     anSatCtx.setTransform(dpr, 0, 0, dpr, 0, 0); anSatCtx.clearRect(0, 0, W, H);
     if (glow){ anGlowCtx.setTransform(dpr, 0, 0, dpr, 0, 0); anGlowCtx.clearRect(0, 0, W, H); }
@@ -10336,7 +10374,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   // (the depth grid arrives a moment after start: work it out then)
   var anWaitGrid = setInterval(function(){ if (loadDepthGrid()){ clearInterval(anWaitGrid); if (anSet.mode) anCompute(); else anRender(); } }, 400);
   window.__ffAnalysis = function(){ var R = anRes; return { mode: anSet.mode, show: anShow, ready: !!(R && R.M), n: R ? R.n : 0, labels: R && R.labels ? R.labels.length : 0,
-    list: R && R.list ? R.list.length : 0, text: R ? (R.text || '').replace(/<[^>]+>/g, '') : '' }; };
+    list: R && R.list ? R.list.length : 0, text: R ? (R.text || '').replace(/<[^>]+>/g, '') : '', grid: AN ? AN.W + 'x' + AN.H : '', sim: Object.keys(anSimCache).length }; };
 
   /* ================= Kartanalys "Från fångsterna (data)" -- per species =================
      Not rules of thumb: the competitions' catches (66-catches.js) of one species in THIS lake.
@@ -11682,12 +11720,12 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   }
   function hmDraw(){
     shoreDraw();
-    var dpr = window.devicePixelRatio || 1, W = stage.clientWidth, H = stage.clientHeight;
-    [hmCanvas, hmSatCanvas].forEach(function(c){ if (c.width !== Math.round(W * dpr) || c.height !== Math.round(H * dpr)){ c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); } });
+    var W = stage.clientWidth, H = stage.clientHeight, on = hmOn && hmShow && W >= 2 && H >= 2;
+    var dpr = fitLayer(hmCanvas, on); fitLayer(hmSatCanvas, on);
+    hmHexCells = null;
+    if (!on) return;
     hmCtx.setTransform(dpr, 0, 0, dpr, 0, 0); hmCtx.clearRect(0, 0, W, H);
     hmSatCtx.setTransform(dpr, 0, 0, dpr, 0, 0); hmSatCtx.clearRect(0, 0, W, H);
-    hmHexCells = null;
-    if (!hmOn || !hmShow || !(W >= 2 && H >= 2)) return;
     // the map toned down and greyed like in Kartanalys (Inställningar "Mörkare")
     hmSatCtx.fillStyle = 'rgba(128,128,128,' + Math.min(1, anSet.dim + 0.2) + ')'; hmSatCtx.fillRect(0, 0, W, H);
     hmCtx.fillStyle = 'rgba(6,14,20,' + anSet.dim + ')'; hmCtx.fillRect(0, 0, W, H);
@@ -11810,10 +11848,10 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   });
   function shoreDraw(){
     if (!shoreCanvas) return;          // (render before this file has run)
-    var dpr = window.devicePixelRatio || 1, W = stage.clientWidth, H = stage.clientHeight;
+    var W = stage.clientWidth, H = stage.clientHeight;
     var vis = shoreOn && !(hmOn && hmShow) && !(anShow && anSet.mode && anRes && anRes.M) && W >= 2 && H >= 2;
-    shoreCanvas.classList.toggle('on', vis); if (!vis) return;
-    if (shoreCanvas.width !== Math.round(W * dpr) || shoreCanvas.height !== Math.round(H * dpr)){ shoreCanvas.width = Math.round(W * dpr); shoreCanvas.height = Math.round(H * dpr); }
+    shoreCanvas.classList.toggle('on', vis);
+    var dpr = fitLayer(shoreCanvas, vis, true); if (!vis) return;
     shoreCtx.setTransform(dpr, 0, 0, dpr, 0, 0); shoreCtx.clearRect(0, 0, W, H);
     var sh = hmShoreLayer(W, H); if (!sh) return;
     shoreCtx.imageSmoothingEnabled = true; shoreCtx.drawImage(sh.cv, 0, 0, sh.cv.width * sh.STEP, sh.cv.height * sh.STEP);

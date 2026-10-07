@@ -49,6 +49,12 @@ raderas den då (`pagehide`).
   **Minne** (2026-10-07, Mälaren: rutnät 3× Regnarens, ~400 MB → iPhone stängde sidan vid zoom): fullstora nivån = maskerna
   själva (byte, sjöns egen `A.lake`, ingen float-kopia), tom kanal = null, och ett rutnät över `AN_FIELD_MAX` (2 M celler)
   mjukas aldrig i full storlek (finaste nivån 2 × 2 celler). Nu ~160 MB; `tests/test_lakes.py` mäter (< 260 MB).
+  **Rutnätsbudget** (2026-10-07, kraschade ändå – kraschloggen, `tools/PLAN_MINNE.md`): Kartanalys räknar på `workGrid()`
+  (38-speed-depth.js), högst `GRID_MAX` 1,5 M celler – större sjö = djupcellerna 2 × 2 (4 × 4 …) ihop (land om mest land,
+  annars medeldjupet; bottendatan likadant i `anLoadBottom`: växter om mest växter, medel av mätt hårdhet). Mälaren 20 m-celler
+  (~60 MB, 4× snabbare; små grynnor/hålor < ~40 m försvinner, "runt om" blir större); övriga sjöar = djupgriden, oförändrat.
+  `anBlur` skickar tre rutnät fram och tillbaka (förr ett nytt per pass); `anSimCache` håller bara 25 m + senaste radien;
+  Kartanalys av = cachen, fångststaplarna och `anField`-pyramiden släpps (`AN` blir kvar).
   Linjerna aldrig smalare än en ritad punkt åt varje håll, svagare i stället (`edgeW(STEP, css)` i
   50-wind-lee.js) – annars pärlband när varannan px ritas. `tests/test_smooth.py` mäter fladdret. Upplösning `viewStep()` (50-wind-lee.js): 1 css-px när kartan står
   still, grövre medan man drar (och på stora skärmar); steget ingår i cache-nyckeln.

@@ -259,12 +259,12 @@
   }
   function hmDraw(){
     shoreDraw();
-    var dpr = window.devicePixelRatio || 1, W = stage.clientWidth, H = stage.clientHeight;
-    [hmCanvas, hmSatCanvas].forEach(function(c){ if (c.width !== Math.round(W * dpr) || c.height !== Math.round(H * dpr)){ c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); } });
+    var W = stage.clientWidth, H = stage.clientHeight, on = hmOn && hmShow && W >= 2 && H >= 2;
+    var dpr = fitLayer(hmCanvas, on); fitLayer(hmSatCanvas, on);
+    hmHexCells = null;
+    if (!on) return;
     hmCtx.setTransform(dpr, 0, 0, dpr, 0, 0); hmCtx.clearRect(0, 0, W, H);
     hmSatCtx.setTransform(dpr, 0, 0, dpr, 0, 0); hmSatCtx.clearRect(0, 0, W, H);
-    hmHexCells = null;
-    if (!hmOn || !hmShow || !(W >= 2 && H >= 2)) return;
     // the map toned down and greyed like in Kartanalys (Inställningar "Mörkare")
     hmSatCtx.fillStyle = 'rgba(128,128,128,' + Math.min(1, anSet.dim + 0.2) + ')'; hmSatCtx.fillRect(0, 0, W, H);
     hmCtx.fillStyle = 'rgba(6,14,20,' + anSet.dim + ')'; hmCtx.fillRect(0, 0, W, H);
@@ -387,10 +387,10 @@
   });
   function shoreDraw(){
     if (!shoreCanvas) return;          // (render before this file has run)
-    var dpr = window.devicePixelRatio || 1, W = stage.clientWidth, H = stage.clientHeight;
+    var W = stage.clientWidth, H = stage.clientHeight;
     var vis = shoreOn && !(hmOn && hmShow) && !(anShow && anSet.mode && anRes && anRes.M) && W >= 2 && H >= 2;
-    shoreCanvas.classList.toggle('on', vis); if (!vis) return;
-    if (shoreCanvas.width !== Math.round(W * dpr) || shoreCanvas.height !== Math.round(H * dpr)){ shoreCanvas.width = Math.round(W * dpr); shoreCanvas.height = Math.round(H * dpr); }
+    shoreCanvas.classList.toggle('on', vis);
+    var dpr = fitLayer(shoreCanvas, vis, true); if (!vis) return;
     shoreCtx.setTransform(dpr, 0, 0, dpr, 0, 0); shoreCtx.clearRect(0, 0, W, H);
     var sh = hmShoreLayer(W, H); if (!sh) return;
     shoreCtx.imageSmoothingEnabled = true; shoreCtx.drawImage(sh.cv, 0, 0, sh.cv.width * sh.STEP, sh.cv.height * sh.STEP);

@@ -162,8 +162,8 @@
   // the lake's grids: depth, water, slope (%), "higher/lower than around" (m), distance from land (m)
   function anBase(){
     if (AN) return AN;
-    var g = loadDepthGrid(); if (!g) return null;
-    var W = DEPTH_W, H = DEPTH_H, N = W * H, cell = WEB_METERS_PER_PX * IMG_W / W;
+    var wg = workGrid(); if (!wg) return null;
+    var g = wg.g, W = wg.W, H = wg.H, N = W * H, cell = WEB_METERS_PER_PX * IMG_W / W;
     var dep = new Float32Array(N), wat = new Uint8Array(N), lake = new Uint8Array(N), i, x, y;
     for (i = 0; i < N; i++){ var v = g[i]; lake[i] = v !== 255 ? 1 : 0; if (v <= 250){ wat[i] = 1; dep[i] = v * DEPTH_STEP; } }
     var sm = anBlur(dep, wat, W, H, Math.max(1, Math.round(4 / cell)));
@@ -199,6 +199,18 @@
         var v = bin.charCodeAt(i);
         if (v === 250){ j += bin.charCodeAt(i + 1) | (bin.charCodeAt(i + 2) << 8); i += 2; }
         else b[j++] = v;
+      }
+      var k = gridStep();
+      if (k > 1){   // (a big lake: on the work grid, like AN -- plants where most of it has them, the mean measured hardness)
+        var W2 = Math.ceil(DEPTH_W / k), H2 = Math.ceil(DEPTH_H / k), o = new Uint8Array(W2 * H2);
+        for (var y = 0; y < H2; y++) for (var x = 0; x < W2; x++){
+          var n = 0, nv = 0, nh = 0, sh = 0;
+          for (var yy = y * k; yy < Math.min(DEPTH_H, y * k + k); yy++) for (var xx = x * k; xx < Math.min(DEPTH_W, x * k + k); xx++){
+            var bt = b[yy * DEPTH_W + xx]; n++; if (bt & 8) nv++; if (bt & 7){ nh++; sh += bt & 7; }
+          }
+          o[y * W2 + x] = (nv * 2 >= n ? 8 : 0) | (nh ? Math.round(sh / nh) : 0);
+        }
+        b = o;
       }
       anBottom = b; anCompute();
       if (typeof editingWpInfo !== 'undefined' && editingWpInfo && wpSheet.classList.contains('show')) refreshSheetMeta();
@@ -279,6 +291,7 @@
       F = { d: anBlur(A.sm, wt, A.W, A.H, r), s: anBlur(sl, wt, A.W, A.H, r), t: anBlur(A.tpi, wt, A.W, A.H, r), v: anBlur(veg, wt, A.W, A.H, r), h: hm };
     }
     F.A = A; F.b = !!anBottom; anSimCache[rm] = F;
+    for (var k in anSimCache) if (+k !== rm && +k !== 25) delete anSimCache[k];   // (25 m: the catches and Skala; else only the last -- 80 MB each on Mälaren)
     return F;
   }
   function anCellOfImg(x, y){ var A = AN; return Math.min(A.H - 1, Math.max(0, Math.floor(y / IMG_H * A.H))) * A.W + Math.min(A.W - 1, Math.max(0, Math.floor(x / IMG_W * A.W))); }
@@ -293,6 +306,7 @@
     anRes = null; anVer++;
     var m = anSet.mode, A = anBase();
     if (m && A && anNeedsBottom(m) && !anBottom){ anLoadBottom(); if (!anBottom){ anRes = { wait: true }; anRender(); return; } }
+    if (!m){ anSimCache = {}; if (anPyrBox) anPyrBox.p = null; if (A) A.cBins = null; }   // off: let go of all but the lake's grids (AN: quick back on)
     if (!m || !A){ anRender(); return; }
     var r = m === 'combo' ? anCombo(A) : anOne(m, A, {}), G = null;
     if (anSet.scale && r.M && r.sv){   // "Skala": the strength where something is found (0,12..1: the colour scale from just alike)
@@ -492,12 +506,12 @@
   // draw: toned down outside, lit (+ a light edge) inside; per screen point like the lee
   function anDraw(){
     shoreDraw();                              // (Strandlinje on the plain map, 68-heatmap.js: off while this shows)
-    var dpr = window.devicePixelRatio || 1, W = stage.clientWidth, H = stage.clientHeight;
-    var on = anShow && anSet.mode && anRes && anRes.M, glow = !!(on && anSet.lamp);
-    anCanvas.classList.toggle('on', !!on); anSatCanvas.classList.toggle('on', !!on); anGlowCanvas.classList.toggle('on', glow);
+    var W = stage.clientWidth, H = stage.clientHeight;
+    var on = !!(anShow && anSet.mode && anRes && anRes.M), glow = !!(on && anSet.lamp);
+    anCanvas.classList.toggle('on', on); anSatCanvas.classList.toggle('on', on); anGlowCanvas.classList.toggle('on', glow);
     anLabelsEl.style.display = on ? '' : 'none';
+    var dpr = fitLayer(anCanvas, on, true); fitLayer(anSatCanvas, on, true); fitLayer(anGlowCanvas, glow, true);
     if (!on) return;
-    (glow ? [anCanvas, anSatCanvas, anGlowCanvas] : [anCanvas, anSatCanvas]).forEach(function(c){ if (c.width !== Math.round(W * dpr) || c.height !== Math.round(H * dpr)){ c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); } });
     anCtx.setTransform(dpr, 0, 0, dpr, 0, 0); anCtx.clearRect(0, 0, W, H);
     anSatCtx.setTransform(dpr, 0, 0, dpr, 0, 0); anSatCtx.clearRect(0, 0, W, H);
     if (glow){ anGlowCtx.setTransform(dpr, 0, 0, dpr, 0, 0); anGlowCtx.clearRect(0, 0, W, H); }
@@ -878,5 +892,5 @@
   // (the depth grid arrives a moment after start: work it out then)
   var anWaitGrid = setInterval(function(){ if (loadDepthGrid()){ clearInterval(anWaitGrid); if (anSet.mode) anCompute(); else anRender(); } }, 400);
   window.__ffAnalysis = function(){ var R = anRes; return { mode: anSet.mode, show: anShow, ready: !!(R && R.M), n: R ? R.n : 0, labels: R && R.labels ? R.labels.length : 0,
-    list: R && R.list ? R.list.length : 0, text: R ? (R.text || '').replace(/<[^>]+>/g, '') : '' }; };
+    list: R && R.list ? R.list.length : 0, text: R ? (R.text || '').replace(/<[^>]+>/g, '') : '', grid: AN ? AN.W + 'x' + AN.H : '', sim: Object.keys(anSimCache).length }; };
 

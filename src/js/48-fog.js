@@ -46,10 +46,9 @@
   }
   function fogAddStep(a, b){ if (fogOn && !fogDirty) fogStep(a, b); else fogDirty = true; }
   function fogDraw(){
-    if (!fogOn){ return; }
+    if (!fogOn){ fitLayer(fogEl, false); return; }
     if (fogDirty) fogRebuild();
-    var dpr = window.devicePixelRatio || 1, W = stage.clientWidth, H = stage.clientHeight;
-    if (fogEl.width !== Math.round(W * dpr) || fogEl.height !== Math.round(H * dpr)){ fogEl.width = Math.round(W * dpr); fogEl.height = Math.round(H * dpr); }
+    var dpr = fitLayer(fogEl, true, true), W = stage.clientWidth, H = stage.clientHeight;
     fogCtx.setTransform(dpr, 0, 0, dpr, 0, 0); fogCtx.globalCompositeOperation = 'source-over'; fogCtx.clearRect(0, 0, W, H);
     if (!(W >= 2 && H >= 2)) return;
     fogCtx.fillStyle = 'rgba(20,24,34,.93)'; fogCtx.fillRect(0, 0, W, H);
