@@ -219,35 +219,44 @@
 
   window.__ffCatches = function(){ return catchData ? catchData.list.map(function(c){ return { id: c.id, sp: c.sp, cm: c.cm, who: c.who, comp: c.comp }; }) : null; };
 
-  /* --- Tävlingslåset (tools/PLAN_TAVLINGSLAS.md): spots can only be added, changed or removed from a week
-     before a competition on this lake until a week after it. Always open: Demo Mode, admin, and when the app
-     doesn't know (no copy, the API not answering) -- better than locking people out on the lake mid-competition.
-     Only in the app: the Firestore rules still let anyone signed in write (a friendly lock, not security). */
-  var LOCK_DAYS = 7;
+  /* --- Tävlingsnotisen (was the lock until 2026-10-07, tools/PLAN_TAVLINGSLAS.md): spots can always be added, changed
+     and removed. Outside a competition on this lake (more than a week before / after one) the first change of the day shows
+     a note instead: no competition now (the next one, if it has a date), Demo Mode to just try, and that private fishing and
+     open competitions are welcome. "Fortsätt" does what you were doing; at most once a day per lake and phone. Never in
+     Demo Mode, for an unlocked admin, or when the app doesn't know (no copy, the API not answering). Filip 2026-10-07. */
+  var LOCK_DAYS = 7, LOCK_NOTE_KEY = lakeKey('ffmap_compnote_v1', 'compnote_v1'), lockThen = null, lockGo = false;
   function lockDays(c){ return /^\d{4}-\d\d-\d\d$/.test(c.date) ? Math.round((Date.parse(c.date) - Date.parse(catchTodayIso())) / CATCH_DAY) : null; }
-  function mapEditAllowed(){
-    if (TEST_MODE || isAdminUnlocked() || compLockOff || window.__ffNoLock) return true;   // (compLockOff: admin, 26-sync.js)   // (__ffNoLock: only the test browser, fakefb.py)
+  function compNear(){
+    if (TEST_MODE || isAdminUnlocked() || window.__ffNoLock) return true;   // (__ffNoLock: only the test browser, fakefb.py)
     catchReadCopy();
     if (!catchHist || catchErr) return true;
     return catchHist.comps.some(function(c){ var d = lockDays(c); return c.status === 'active' || (d !== null && Math.abs(d) <= LOCK_DAYS); });
   }
+  // true = the note is shown and `then` waits for "Fortsätt" (the caller stops); false = go on
+  function compNote(then){
+    if (lockGo || compNear()) return false;
+    try { if (Date.now() - (+localStorage.getItem(LOCK_NOTE_KEY) || 0) < CATCH_DAY) return false; localStorage.setItem(LOCK_NOTE_KEY, String(Date.now())); } catch(e){}
+    lockThen = then; showLockCard(); return true;
+  }
   var lockBackdrop = document.getElementById('lockBackdrop'), lockCard = document.getElementById('lockCard');
+  var LOCK_WD = ['söndag', 'måndag', 'tisdag', 'onsdag', 'torsdag', 'fredag', 'lördag'];
+  var LOCK_MON = ['januari', 'februari', 'mars', 'april', 'maj', 'juni', 'juli', 'augusti', 'september', 'oktober', 'november', 'december'];
   function showLockCard(){
     // ponytail: a copy over an hour old is asked again now; the answer counts from the next try
     if (catchHist && !catchLoading && Date.now() - catchHist.at > CATCH_HOUR) loadHistory();
-    var next = (catchHist ? catchHist.comps : []).filter(function(c){ return lockDays(c) > LOCK_DAYS; })
-      .sort(function(a, b){ return a.date < b.date ? -1 : 1; })[0];
-    var at = next && new Date(Date.parse(next.date) - LOCK_DAYS * CATCH_DAY);
-    document.getElementById('lockWhen').textContent = next ? 'Öppnar ' + at.getUTCDate() + '/' + (at.getUTCMonth() + 1) + ' inför ' + (next.name || 'nästa tävling') + '.'
-      : 'Ingen tävling i ' + LAKE.name + ' är planerad just nu.';
+    var cs = catchHist ? catchHist.comps.filter(function(c){ return c.status === 'planned' || c.status === 'active' || lockDays(c) > 0; }) : [];
+    var next = cs.filter(function(c){ return lockDays(c) > 0; }).sort(function(a, b){ return a.date < b.date ? -1 : 1; })[0] || cs[0], at = next && lockDays(next) !== null ? new Date(next.date + 'T12:00:00Z') : null;
+    document.getElementById('lockTitle').textContent = 'Ingen tävling pågår i ' + LAKE.name;
+    document.getElementById('lockWhen').innerHTML = next ? 'Nästa tävling i ' + escHtml(LAKE.name) + ': <b>' + escHtml(next.name || 'tävling') + '</b>' +
+      (at ? ', ' + LOCK_WD[at.getUTCDay()] + ' ' + at.getUTCDate() + ' ' + LOCK_MON[at.getUTCMonth()] + '.' : ' (datum inte bestämt).') : 'Ingen tävling i ' + escHtml(LAKE.name) + ' är planerad just nu.';
     lockBackdrop.classList.add('show'); lockCard.classList.add('show');
   }
-  function hideLockCard(){ lockBackdrop.classList.remove('show'); lockCard.classList.remove('show'); }
+  function hideLockCard(){ lockBackdrop.classList.remove('show'); lockCard.classList.remove('show'); lockThen = null; }
   lockBackdrop.addEventListener('click', hideLockCard);
-  document.getElementById('lockClose').addEventListener('click', hideLockCard);
+  document.getElementById('lockClose').addEventListener('click', function(){ var t = lockThen; hideLockCard(); if (t){ lockGo = true; try { t(); } finally { lockGo = false; } } });   // "Fortsätt" (lockGo: what it does doesn't ask again)
   document.getElementById('lockDemo').addEventListener('click', function(){   // (like Hjälp's Demo Mode link, 30-help.js)
     hideLockCard(); if (wpSheet.classList.contains('show')) closeSheet();
     showSettingsView(); openSettingsSec('adv');
     setTimeout(function(){ document.getElementById('demoModeToggle').scrollIntoView({ block: 'center' }); }, 50);
   });
-  window.__ffLock = function(){ return { allowed: mapEditAllowed(), shown: lockCard.classList.contains('show'), when: document.getElementById('lockWhen').textContent }; };
+  window.__ffLock = function(){ return { near: compNear(), shown: lockCard.classList.contains('show'), when: document.getElementById('lockWhen').textContent }; };

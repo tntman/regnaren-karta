@@ -2,6 +2,11 @@
 
 Status: **byggt** (2026-10-04). Granskat av Opus, besluten tagna av Filip.
 
+> **Ändrat 2026-10-07 (Filip): låset borta – en notis i stället.** Platser kan alltid ändras. Mer än en vecka från en tävling
+> visas första ändringen per dygn en ruta: ingen tävling pågår i sjön, nästa tävling (datum om det finns), Demo Mode för att
+> testa, och att privat fiske och open-tävlingar är välkomna att använda appen fullt ut. Knappar **Demo Mode** och **Fortsätt**
+> (gör det man höll på med). Admins nödbrytare borttagen. Resten av planen nedan gäller låset som det var.
+
 ## Mål (Filip)
 Mellan tävlingarna ska ingen kunna ändra platserna på den delade kartan. Försöker man visas en ruta med vad som gäller, när
 kartan öppnar och en knapp till Demo Mode, där man får prova fritt.

@@ -2672,15 +2672,6 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
         <div class="adminNote">Hur ofta en båt som rör sig skickar sin position. Gäller alla telefoner. Kortare tid = båtarna rör sig jämnare på kartan men kostar fler reads. Står man still skickas den en gång i minuten oavsett.</div>
       </div>
       <div class="adminCard">
-        <div class="settingsRowTitle">Tävlingslåset</div>
-        <div class="segmented" id="adminCompLockSeg" role="radiogroup" aria-label="Tävlingslåset" style="margin-top:8px;">
-          <button type="button" role="radio" data-off="0">På</button>
-          <button type="button" role="radio" data-off="1">Av för alla</button>
-        </div>
-        <div class="adminNote" id="adminCompLockStatus" style="color:var(--amber);" hidden></div>
-        <div class="adminNote">På: platser kan bara läggas, ändras och tas bort från en vecka före till en vecka efter en tävling. Av för alla: kartan är öppen för alla tills du slår på låset igen – t.ex. om Fiskfiskarnas sida strular. Gäller den här sjön. Du själv kan alltid ändra.</div>
-      </div>
-      <div class="adminCard">
         <div class="btnRowWrap" style="margin-top:0;">
           <button id="adminLock" class="btnAdmin" type="button">Lås admin på den här enheten</button>
         </div>
@@ -3400,13 +3391,13 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
 
   <div id="lockBackdrop"></div>
   <div id="lockCard" role="dialog" aria-labelledby="lockTitle">
-    <div class="modalTitle" id="lockTitle">Kartan är låst just nu</div>
-    <div class="modalDesc">Platser kan bara läggas till, ändras och tas bort från en vecka före till en vecka efter en tävling – så hålls gruppens karta ren mellan tävlingarna.</div>
+    <div class="modalTitle" id="lockTitle">Ingen tävling pågår</div>
     <div class="modalDesc" id="lockWhen"></div>
-    <div class="modalDesc"><b>Vill du prova?</b> Slå på Demo Mode: du får en låtsasposition vid sjön och en egen testdatabas, ser bara andra i Demo Mode och inget sparas på den riktiga kartan. Stängs av efter 15 min.</div>
+    <div class="modalDesc"><b>Vill du bara testa?</b> Slå på Demo Mode – en egen testkarta där inget sparas på den riktiga.</div>
+    <div class="modalDesc"><b>Fiskar du privat eller är med i en open-tävling?</b> Då är du välkommen att använda appen fullt ut, även mellan tävlingarna. Det du sparar syns för alla i gruppen.</div>
     <div class="sheetRow">
-      <button id="lockClose" class="btnGhost" type="button">Stäng</button>
-      <button id="lockDemo" class="btnPrimary" type="button">Öppna Demo Mode</button>
+      <button id="lockDemo" class="btnGhost" type="button">Demo Mode</button>
+      <button id="lockClose" class="btnPrimary" type="button">Fortsätt</button>
     </div>
   </div>
 </div>
@@ -5091,7 +5082,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   }
 
   function placeWaypointAtScreen(sx, sy){
-    if (!mapEditAllowed()){ showLockCard(); return; }   // (the competition lock, 66-catches.js)
+    if (compNote(function(){ placeWaypointAtScreen(sx, sy); })) return;   // (no competition now: the note first, once a day -- 66-catches.js)
     var imgX = (sx - originX) / scale, imgY = (sy - originY) / scale;
     var ll = imgPxToLatLon(imgX, imgY);
     var name = nextWaypointName('mark'); // new spots start as a Markering
@@ -5159,7 +5150,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   wpTypeSeg.addEventListener('click', function(e){
     var b = e.target.closest ? e.target.closest('button[data-type]') : null;
     if (!b || b.disabled || !editingId) return;
-    if (!editingIsNew && !mapEditAllowed()){ showLockCard(); return; }
+    if (!editingIsNew && compNote(function(){ b.click(); })) return;
     editingType = b.getAttribute('data-type');
     showEditingType();
     refreshSheetMeta(); // ("Syns för alla i 1 h" for a Träffpunkt)
@@ -5240,7 +5231,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     if (hiddenTypes[editingType]) setTypeHidden(editingType, false); // don't let the spot you just saved vanish
     var cur = waypoints.filter(function(w){ return w.id === editingId; })[0];
     if (cur && wpType(cur) === editingType && (!v || v === cur.name)){ closeSheet(); return; } // nothing changed
-    if (!editingIsNew && !mapEditAllowed()){ showLockCard(); return; }   // (a new spot: already made while it was open)
+    if (!editingIsNew && compNote(function(){ wpSaveBtn.click(); })) return;   // (a new spot: the note came when it was made)
     if (v) upd.name = v;           // an emptied name keeps the old one
     // Träffpunkt: an hour from now (a new one, or a spot turned into one); only
     // one per person -- your previous one goes. Turned into something else: stays.
@@ -5272,7 +5263,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   function flushDelete(){ if (!undoPending) return; var id = undoPending.id; undoPending = null; clearTimeout(undoT); undoToast.classList.remove('show'); deleteWaypointById(id); }
   wpDeleteBtn.addEventListener('click', function(){
     if (!editingId) return;
-    if (!editingIsNew && !mapEditAllowed()){ showLockCard(); return; }
+    if (!editingIsNew && compNote(function(){ wpDeleteBtn.click(); })) return;
     flushDelete();                                           // (an earlier one still waiting: delete it now)
     var wp = waypoints.filter(function(w){ return w.id === editingId; })[0];
     undoPending = { id: editingId };
@@ -5530,7 +5521,6 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
       try { localStorage.setItem(POS_INTERVAL_KEY, String(v)); } catch(e){} // (for offline starts)
     }
     renderPosIntervalAdmin();
-    if (d || !fromCache){ compLockOff = !!(d && d.lockOff); renderCompLockAdmin(); }
     if (TEST_MODE) testApply(d ? d.test : null);   // (the test mode's made-up competition, 37-testmode.js)
   }
   function setSharedPosInterval(v){
@@ -5577,28 +5567,6 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   });
   renderPosIntervalAdmin();
 
-  /* ---- the competition lock off for everyone on this lake (admin; config/<lake>.lockOff, mapEditAllowed() in 66-catches.js) ---- */
-  var compLockOff = false, compLockMsg = '';
-  function setCompLockOff(off){
-    if (!USE_FIREBASE || !cfgDoc){ compLockMsg = 'Ingen anslutning till databasen – försök igen.'; renderCompLockAdmin(); return; }
-    compLockMsg = 'Sparar…'; renderCompLockAdmin();
-    addUsage('w', 1);   // (posIntervalS along: the config rule wants it in every write; the snapshot shows the change)
-    cfgDoc.set({ posIntervalS: posIntervalS, lockOff: off, updatedBy: userName || '', updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true })
-      .then(function(){ compLockMsg = 'Sparat – gäller alla telefoner.'; renderCompLockAdmin(); },
-            function(err){ compLockMsg = 'Kunde inte spara (' + ((err && err.code) || 'fel') + ').'; renderCompLockAdmin(); });
-  }
-  function renderCompLockAdmin(){
-    Array.from(document.getElementById('adminCompLockSeg').children).forEach(function(b){
-      var on = (b.getAttribute('data-off') === '1') === compLockOff;
-      b.classList.toggle('active', on); b.setAttribute('aria-checked', on ? 'true' : 'false');
-    });
-    var st = document.getElementById('adminCompLockStatus'); st.textContent = compLockMsg; st.hidden = !compLockMsg;
-  }
-  document.getElementById('adminCompLockSeg').addEventListener('click', function(e){
-    var b = e.target.closest ? e.target.closest('button[data-off]') : null;
-    if (b) setCompLockOff(b.getAttribute('data-off') === '1');
-  });
-  renderCompLockAdmin();
 
   /* ---------------- sjöar (lakes) ---------------- */
   // The list comes from lakes/*/lake.json (LAKES, top of the script).
@@ -11236,38 +11204,47 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
 
   window.__ffCatches = function(){ return catchData ? catchData.list.map(function(c){ return { id: c.id, sp: c.sp, cm: c.cm, who: c.who, comp: c.comp }; }) : null; };
 
-  /* --- Tävlingslåset (tools/PLAN_TAVLINGSLAS.md): spots can only be added, changed or removed from a week
-     before a competition on this lake until a week after it. Always open: Demo Mode, admin, and when the app
-     doesn't know (no copy, the API not answering) -- better than locking people out on the lake mid-competition.
-     Only in the app: the Firestore rules still let anyone signed in write (a friendly lock, not security). */
-  var LOCK_DAYS = 7;
+  /* --- Tävlingsnotisen (was the lock until 2026-10-07, tools/PLAN_TAVLINGSLAS.md): spots can always be added, changed
+     and removed. Outside a competition on this lake (more than a week before / after one) the first change of the day shows
+     a note instead: no competition now (the next one, if it has a date), Demo Mode to just try, and that private fishing and
+     open competitions are welcome. "Fortsätt" does what you were doing; at most once a day per lake and phone. Never in
+     Demo Mode, for an unlocked admin, or when the app doesn't know (no copy, the API not answering). Filip 2026-10-07. */
+  var LOCK_DAYS = 7, LOCK_NOTE_KEY = lakeKey('ffmap_compnote_v1', 'compnote_v1'), lockThen = null, lockGo = false;
   function lockDays(c){ return /^\d{4}-\d\d-\d\d$/.test(c.date) ? Math.round((Date.parse(c.date) - Date.parse(catchTodayIso())) / CATCH_DAY) : null; }
-  function mapEditAllowed(){
-    if (TEST_MODE || isAdminUnlocked() || compLockOff || window.__ffNoLock) return true;   // (compLockOff: admin, 26-sync.js)   // (__ffNoLock: only the test browser, fakefb.py)
+  function compNear(){
+    if (TEST_MODE || isAdminUnlocked() || window.__ffNoLock) return true;   // (__ffNoLock: only the test browser, fakefb.py)
     catchReadCopy();
     if (!catchHist || catchErr) return true;
     return catchHist.comps.some(function(c){ var d = lockDays(c); return c.status === 'active' || (d !== null && Math.abs(d) <= LOCK_DAYS); });
   }
+  // true = the note is shown and `then` waits for "Fortsätt" (the caller stops); false = go on
+  function compNote(then){
+    if (lockGo || compNear()) return false;
+    try { if (Date.now() - (+localStorage.getItem(LOCK_NOTE_KEY) || 0) < CATCH_DAY) return false; localStorage.setItem(LOCK_NOTE_KEY, String(Date.now())); } catch(e){}
+    lockThen = then; showLockCard(); return true;
+  }
   var lockBackdrop = document.getElementById('lockBackdrop'), lockCard = document.getElementById('lockCard');
+  var LOCK_WD = ['söndag', 'måndag', 'tisdag', 'onsdag', 'torsdag', 'fredag', 'lördag'];
+  var LOCK_MON = ['januari', 'februari', 'mars', 'april', 'maj', 'juni', 'juli', 'augusti', 'september', 'oktober', 'november', 'december'];
   function showLockCard(){
     // ponytail: a copy over an hour old is asked again now; the answer counts from the next try
     if (catchHist && !catchLoading && Date.now() - catchHist.at > CATCH_HOUR) loadHistory();
-    var next = (catchHist ? catchHist.comps : []).filter(function(c){ return lockDays(c) > LOCK_DAYS; })
-      .sort(function(a, b){ return a.date < b.date ? -1 : 1; })[0];
-    var at = next && new Date(Date.parse(next.date) - LOCK_DAYS * CATCH_DAY);
-    document.getElementById('lockWhen').textContent = next ? 'Öppnar ' + at.getUTCDate() + '/' + (at.getUTCMonth() + 1) + ' inför ' + (next.name || 'nästa tävling') + '.'
-      : 'Ingen tävling i ' + LAKE.name + ' är planerad just nu.';
+    var cs = catchHist ? catchHist.comps.filter(function(c){ return c.status === 'planned' || c.status === 'active' || lockDays(c) > 0; }) : [];
+    var next = cs.filter(function(c){ return lockDays(c) > 0; }).sort(function(a, b){ return a.date < b.date ? -1 : 1; })[0] || cs[0], at = next && lockDays(next) !== null ? new Date(next.date + 'T12:00:00Z') : null;
+    document.getElementById('lockTitle').textContent = 'Ingen tävling pågår i ' + LAKE.name;
+    document.getElementById('lockWhen').innerHTML = next ? 'Nästa tävling i ' + escHtml(LAKE.name) + ': <b>' + escHtml(next.name || 'tävling') + '</b>' +
+      (at ? ', ' + LOCK_WD[at.getUTCDay()] + ' ' + at.getUTCDate() + ' ' + LOCK_MON[at.getUTCMonth()] + '.' : ' (datum inte bestämt).') : 'Ingen tävling i ' + escHtml(LAKE.name) + ' är planerad just nu.';
     lockBackdrop.classList.add('show'); lockCard.classList.add('show');
   }
-  function hideLockCard(){ lockBackdrop.classList.remove('show'); lockCard.classList.remove('show'); }
+  function hideLockCard(){ lockBackdrop.classList.remove('show'); lockCard.classList.remove('show'); lockThen = null; }
   lockBackdrop.addEventListener('click', hideLockCard);
-  document.getElementById('lockClose').addEventListener('click', hideLockCard);
+  document.getElementById('lockClose').addEventListener('click', function(){ var t = lockThen; hideLockCard(); if (t){ lockGo = true; try { t(); } finally { lockGo = false; } } });   // "Fortsätt" (lockGo: what it does doesn't ask again)
   document.getElementById('lockDemo').addEventListener('click', function(){   // (like Hjälp's Demo Mode link, 30-help.js)
     hideLockCard(); if (wpSheet.classList.contains('show')) closeSheet();
     showSettingsView(); openSettingsSec('adv');
     setTimeout(function(){ document.getElementById('demoModeToggle').scrollIntoView({ block: 'center' }); }, 50);
   });
-  window.__ffLock = function(){ return { allowed: mapEditAllowed(), shown: lockCard.classList.contains('show'), when: document.getElementById('lockWhen').textContent }; };
+  window.__ffLock = function(){ return { near: compNear(), shown: lockCard.classList.contains('show'), when: document.getElementById('lockWhen').textContent }; };
   /* ================= Profiler: a fisher's page =================
      From Fiskfiskarnas API (dashboard.php, fetched with the history in 66-catches.js -- no extra calls):
      anglers (name, nickname, since, home water, bio), anglerStats (wins, competitions, biggest fish),

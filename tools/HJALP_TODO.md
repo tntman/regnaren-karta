@@ -36,6 +36,11 @@ spåren, Ledare, Kompass, Namn, Fog of war, tävlingslåset, Storlek/När, start
   Kartanalys (ny del Fiska nu: vad % betyder) + animering `analys` (visa Fiska nu). Nyhet: "Kartanalys: Fiska nu – fem tips på
   var det nappat mest vid den här tiden" (NYTT)
 
+- [ ] 2026-10-07 – Tävlingslåset borta: platser kan alltid ändras. Mellan tävlingarna en notis första gången per dygn (ingen
+  tävling nu, nästa tävling, Demo Mode, privat fiske/open välkomna, Fortsätt). Hjälp säger fortfarande "kartan är låst" – rätta:
+  Demo Mode (rad 20), Fiskeplatser (142), Tävlingarna (181), Tips (332). Nyhet: "Kartan är öppen hela året – mellan tävlingarna
+  kommer bara en påminnelse" (ÄNDRAT)
+
 <!-- mall:
 - [ ] ÅÅÅÅ-MM-DD – Vad som ändrats. Hjälp: avsnitt X (text) + animering `namn`. Nyhet: "…" (NYTT/BÄTTRE/FIXAT)
 -->

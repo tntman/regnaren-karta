@@ -151,12 +151,13 @@ Uppdatera rätt anteckning när något ändras.
   inte positions/usage) till en JSON-fil och tillbaka. Gratisplanen har ingen egen backup, och reglerna kräver bara
   inloggning (vem som helst kan logga in anonymt). Återställ = `set` på allt i filen, bara till samma projekt. Ny
   samling som ska sparas för evigt → lägg till i `BACKUP_COLS`.
-- **Tävlingslåset** (`mapEditAllowed()`/`showLockCard()` sist i `js/66-catches.js`, `tools/PLAN_TAVLINGSLAS.md`): platser kan bara
-  läggas, ändras (namn/typ) och tas bort från 7 dagar före till 7 dagar efter en tävling på sjön (datum i API-kopian, eller status
-  `active`) – även Fara/Träffpunkt. Annars rutan `#lockCard` (när det öppnar + Öppna Demo Mode). Alltid öppet: Demo Mode, upplåst
-  admin, när appen inte vet (ingen kopia/API-fel), och när admin slagit av låset för alla (Admin → Tävlingslåset, `config/<sjö>.lockOff`). Båtpositioner, meddelanden, spår låses inte. Bara i appen – reglerna släpper in
-  alla inloggade. Grindarna ligger i knapparnas handlers (24-boats.js), inte i `deleteWaypointById` (utgångna Träffpunkter, Avbryt
-  på ny plats). Testerna: låset av i testwebbläsaren (`window.__ffNoLock`, fakefb) utom med `cfg={'lock': True}` (test_lock.py).
+- **Tävlingsnotisen** (förr Tävlingslåset – låset borta 2026-10-07; `compNote(then)`/`showLockCard()` sist i `js/66-catches.js`,
+  `tools/PLAN_TAVLINGSLAS.md`): platser kan alltid läggas, ändras och tas bort. Mer än 7 dagar från en tävling på sjön (datum i
+  API-kopian, eller status `active`) visas första ändringen per dygn (per sjö och telefon, `ffmap_compnote_v1`/`lakeKey`) rutan
+  `#lockCard`: ingen tävling nu + nästa (datum, eller "datum inte bestämt"), Demo Mode för att testa, privat fiske och open-tävlingar
+  välkomna; **Fortsätt** gör det man höll på med, **Demo Mode** öppnar Avancerat. Aldrig i Demo Mode, för upplåst admin eller när appen
+  inte vet (ingen kopia/API-fel). Admins "Tävlingslåset av för alla" borttaget (`config/<sjö>.lockOff` läses inte längre). Grindarna i
+  knapparnas handlers (24-boats.js). Testerna: notisen av i testwebbläsaren (`window.__ffNoLock`, fakefb) utom med `cfg={'lock': True}` (test_lock.py).
 - **Strandlinje** (Inställningar → Kartan `#toggleShore`, på som standard, `ffmap_shore_v1`): sjöns kant som tunn vit linje på vanliga kartan,
   samma som Heatmap/Kartanalys ritar (`hmShoreLayer`, `js/68-heatmap.js`); döljs när de visas (de har sin egen).
 - **Startfilm** (`js/35-splash.js`, `tools/PLAN_SPLASH.md`): 3D-loggan 3,5 s **varje gång ett namn väljs** ("Vem är du?": ny telefon,
