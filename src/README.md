@@ -89,6 +89,7 @@ specificitet.
 | `69-leader.js` | Ledare (Filter → Lager, av som standard): live-ställningen under väderchipet + krona efter ledarens namn på båten (`leadCrownFor`, `24-boats.js`) |
 | `68-heatmap.js` | Heatmap: ritning (värme, per art, rutor, prickar), bottenrutan, fångstrutan, tryck på kartan; Strandlinje på vanliga kartan (`shoreDraw`, Inställningar → Kartan) |
 | `90-boot.js` | start (`boot()`) |
+| `91-crashlog.js` | Kraschlogg (Inställningar → Avancerat → Senaste krasch): en rad om vad appen gör skrivs i localStorage; inte stängd rent (`pagehide`) = krasch, visas vid nästa start |
 | `92-rotation.js` | vridning: spara/återställ läget, service worker-registrering, slutet på skriptet |
 
 ## Krokar för appen (får inte tas bort)
