@@ -140,11 +140,12 @@
   function anSave(){ try { localStorage.setItem(AN_KEY, JSON.stringify(anSet)); } catch(e){} }
 
   // weighted box blur (only water counts), radius r cells, twice ~ gaussian
+  // (three grids in all, passed back and forth -- Mälaren's are 16 MB each, a new one per pass crashed iOS)
   function anBlur(val, wt, W, H, r){
-    var a = new Float32Array(W * H), w = new Float32Array(W * H), i;
+    var a = new Float32Array(W * H), w = new Float32Array(W * H), tmp = new Float32Array(W * H), i;
     for (i = 0; i < W * H; i++){ a[i] = val[i] * wt[i]; w[i] = wt[i]; }
-    function pass(src, horiz){
-      var out = new Float32Array(W * H), L1 = horiz ? W : H, L2 = horiz ? H : W;
+    function pass(src, out, horiz){
+      var L1 = horiz ? W : H, L2 = horiz ? H : W;
       for (var b = 0; b < L2; b++){
         var s = 0;
         for (var q = -r; q < L1 + r; q++){
@@ -153,12 +154,10 @@
           if (q >= 0 && q < L1) out[horiz ? b * W + q : q * W + b] = s;
         }
       }
-      return out;
     }
-    for (var t = 0; t < 2; t++){ a = pass(pass(a, true), false); w = pass(pass(w, true), false); }
-    var o = new Float32Array(W * H);
-    for (i = 0; i < W * H; i++) o[i] = w[i] > 1e-6 ? a[i] / w[i] : 0;
-    return o;
+    for (var t = 0; t < 2; t++){ pass(a, tmp, true); pass(tmp, a, false); pass(w, tmp, true); pass(tmp, w, false); }
+    for (i = 0; i < W * H; i++) a[i] = w[i] > 1e-6 ? a[i] / w[i] : 0;
+    return a;
   }
   // the lake's grids: depth, water, slope (%), "higher/lower than around" (m), distance from land (m)
   function anBase(){

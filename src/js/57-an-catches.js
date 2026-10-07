@@ -57,8 +57,8 @@
     });
     var on = AN_CF.map(function(x){ return x[0]; }).filter(function(k){ return anSet.cF[k] && L[k].ok; });
     if (!on.length){ out.text = 'Slå på minst en sak att jämföra (' + AN_CF.filter(function(x){ return L[x[0]].ok; }).map(function(x){ return x[1].toLowerCase(); }).join(', ') + ').'; return out; }
-    function scoreWith(keys){
-      var S = new Float32Array(N);
+    function scoreWith(keys, S){
+      S = S || new Float32Array(N);
       for (var i = 0; i < N; i++){ if (!wat[i]) continue; var s = 0;
         for (var q = 0; q < keys.length; q++){ var j = B.bins[keys[q]][i]; if (j >= 0) s += L[keys[q]].logl[j]; }
         S[i] = s; }
@@ -77,9 +77,10 @@
     // how much each value on its own points the species out (the dots on its button): lit share
     // alone against "no information" (cCov/10 of the lake for cCov/10 of the catches)
     anCatchStrength = {};
+    var S1 = new Float32Array(N);   // (one grid for all six -- 16 MB each on Mälaren)
     AN_CF.forEach(function(x){
       var k = x[0]; if (!L[k].ok){ anCatchStrength[k] = 0; return; }
-      var r = (anSet.cCov / 10) / Math.max(0.005, litShare(scoreWith([k])).share);
+      var r = (anSet.cCov / 10) / Math.max(0.005, litShare(scoreWith([k], S1)).share);
       anCatchStrength[k] = r < 1.5 ? 1 : r < 2.5 ? 2 : 3;
     });
     anCatchDots();
