@@ -10,7 +10,7 @@
     if (RT) return RT;
     var g = loadDepthGrid(); if (!g) return null;
     var cellM0 = WEB_METERS_PER_PX * IMG_W / DEPTH_W;
-    var rf = Math.max(1, Math.round(9 / cellM0));
+    var rf = Math.max(gridStep(), Math.round(9 / cellM0));   // (a big lake: coarser, see workGrid)
     var w = Math.ceil(DEPTH_W / rf), h = Math.ceil(DEPTH_H / rf);
     var water = new Uint8Array(w * h);
     for (var y = 0; y < DEPTH_H; y++) for (var x = 0; x < DEPTH_W; x++)

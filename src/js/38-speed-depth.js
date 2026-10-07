@@ -132,6 +132,27 @@
     } catch(e){ console.warn('djupdata', e); }
     return depthGrid;
   }
+  // the grid that things for the whole lake are worked out on (Kartanalys, Vind och lä, the route): at most ~1,5 M
+  // cells -- a bigger lake's depth cells are taken 2x2 (4x4 ...) together. Mälaren: 3,9 M cells of 10 m -> 1 M of 20 m
+  // (it crashed the phone, tools/PLAN_MINNE.md); the other lakes: the depth grid itself. The depth (lodet) stays exact.
+  var GRID_MAX = 1.5e6, workGridC = null;
+  function gridStep(){ for (var k = 1; (DEPTH_W / k) * (DEPTH_H / k) > GRID_MAX; k *= 2); return k; }
+  function workGrid(){              // -> { g (like the depth grid: depth steps, 252 lake without depth, 255 land), W, H, k }
+    if (workGridC) return workGridC;
+    var g = loadDepthGrid(); if (!g) return null;
+    var k = gridStep();
+    if (k === 1) return (workGridC = { g: g, W: DEPTH_W, H: DEPTH_H, k: 1 });
+    var W = Math.ceil(DEPTH_W / k), H = Math.ceil(DEPTH_H / k), o = new Uint8Array(W * H);
+    for (var y = 0; y < H; y++) for (var x = 0; x < W; x++){
+      var n = 0, nl = 0, nw = 0, s = 0;
+      for (var yy = y * k; yy < Math.min(DEPTH_H, y * k + k); yy++) for (var xx = x * k; xx < Math.min(DEPTH_W, x * k + k); xx++){
+        var v = g[yy * DEPTH_W + xx]; n++; if (v !== 255){ nl++; if (v <= 250){ nw++; s += v; } }
+      }
+      // mostly land: land; half or more with depth: their mean depth; else lake without depth
+      o[y * W + x] = nl * 2 < n ? 255 : nw * 2 >= n ? Math.round(s / nw) : 252;
+    }
+    return (workGridC = { g: o, W: W, H: H, k: k });
+  }
   function depthAtImgPx(x, y){
     var g = loadDepthGrid();
     if (!g) return null;

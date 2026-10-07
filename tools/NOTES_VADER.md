@@ -11,6 +11,8 @@ dras (`mapDraggedJustNow()`), så man kan titta på vinden medan man panorerar.
 ## Vind och lä
 - Filter, av som standard (`ffmap_show_wind_v1`). Canvas `#windLayer` i skärmkoordinater.
 - Fetch (öppet vatten uppvinds, ±15°) på ruttnätet, interpolerat till djupnätet och utjämnat ~10 m.
+  En stor sjö (> 1,5 M djupceller, Mälaren) räknar på det grövre `workGrid()` (20 m) och ruttnätet likaså
+  (`rf` ≥ `gridStep()`) – minnet, `tools/PLAN_MINNE.md`. Canvasen är 1 × 1 när lagret är av, högst 2× när det är på (`fitLayer`).
 - Lä = fetch < gräns = 3600/U² (vågformel, kalibrerad efter Filip: 6 m/s → 100 m; "5 cm-vågor"
   var för generöst), 30–400 m; < 1,5 m/s = hela sjön lä.
 - Ritas per skärmpunkt (`drawLeeView`) – inte som förstorad bild, som blev kantig inzoomat.

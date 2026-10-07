@@ -155,10 +155,12 @@ with sync_playwright() as p:
     check('Sibbofjärden: no page errors', not errs, errs)
     b.close()
     # ---- Mälaren (a grid 3x Regnaren's): Kartanalys + zooming in and out stays within memory -- it used ~400 MB and
-    # the iPhone closed the page (2026-10-07); now ~160 MB
+    # the iPhone closed the page (2026-10-07); ~160 MB, then still crashed -> the work grid: 2x2 depth cells (tools/PLAN_MINNE.md)
     b, ctx, pg, errs = new_page(p, cfg=cfg, name='Filip')
     pg.goto('http://localhost:8899/index.html?lake=malaren'); pg.wait_for_timeout(3000)
     pg.click('#anBtn'); pg.wait_for_timeout(1000); pg.click('#anChips button[data-m="depth"]'); pg.wait_for_timeout(5000); pg.click('#anClose'); pg.wait_for_timeout(500)
+    mal = json.load(open('../lakes/malaren/lake.json', encoding='utf-8'))['depth']
+    check('Mälaren: Kartanalys on the work grid -- 2x2 depth cells (~20 m)', pg.evaluate('window.__ffAnalysis().grid') == '%dx%d' % (mal['w'] // 2, mal['h'] // 2), pg.evaluate('window.__ffAnalysis().grid'))
     peak = 0
     for d in [-300] * 10 + [300] * 10:
         pg.mouse.move(195, 400); pg.mouse.wheel(0, d); pg.wait_for_timeout(300)
