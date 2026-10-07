@@ -101,6 +101,10 @@ Alla kommandon körs från repots rot (`E:\github\regnaren-karta`), med `py -3`.
   Sjöar som inte byggts om har kvar det gamla (en JPG per bit med linjerna inbakade) –
   appen klarar båda (`DETAIL.lines` finns/saknas). Appen visar nivån = zoomen avrundad; förra nivån ligger kvar
   tills den nya laddat. Zoomindikatorn: "Zoom 15,3 lager 15".
+  **Halva djupsiffror:** Genesis ritar 8 × 8 rutor åt gången och klipper siffrorna vid de kanterna (var 2 048:e px,
+  globalt, på varje zoom) – syntes som en rak skarv med halva siffror (Mälaren, 2026-10-07). `cut_labels()` i
+  genesis_render.py tar bort varje siffra som rör en sådan kant (båda halvorna; ett litet glapp i linjen, som under
+  alla siffror). Används av både genesis_render och genesis_big.
 - **Samma max zoom för alla sjöar** (beslutat, ej byggt än: 18,6). Varje sjö
   använder sitt högsta lager och förstorar det därifrån.
 - **Varje nivå visar exakt Genesis kurvlager (t_) för den zoomen** – antalet
@@ -328,6 +332,13 @@ Genesis-rutorna läses direkt ur `raw/<id>/z<z>/<lager>/` – sys aldrig ihop (f
    (5 parallellt gick bra). Allt är återupptagbart: klara block hoppas över (ta bort filerna för att göra om).
 Översiktsbilden (zoom 14) = flygfoto överallt i bbox:en, blockens bilder ovanpå. Inget `depth_raw.npz` (bara
 Regnarens används i testerna).
+**Minnet i appen:** allt som räknas för hela sjön (Kartanalys, Vind och lä, rutten) går på `workGrid()` (`js/38-speed-depth.js`),
+högst 1,5 M rutor (`GRID_MAX`); större djupnät slås ihop 2×2 (4×4 …). Mälaren 1 536 × 2 560 räknas som 768 × 1 280 (~20 m);
+blir den större (fler områden) och passerar 6 M djupceller blir det automatiskt 4×4 (~40 m). Översiktsbilden avkodad =
+imgW × imgH × 4 byte hela tiden (Mälaren 63 MB, Regnaren 5 MB) – se `tools/PLAN_MINNE.md`. Därför (sista steget i `finish`,
+eller `… zoom14` för sig): översiktsbilden i **halv storlek** (`map_v<V>h_*.jpg`, 16 MB avkodad; `<img>` får ändå full storlek
+i CSS) + den fulla som **zoom 14-bitar med kurvorna inbakade** (`"baked": true` i levels – inget kurvlager ovanpå) som tar över
+från zoom 13,5, så det är lika skarpt. Den fulla bilden sparas i `raw/<id>/z17/map14_<stil>.jpg`.
 
 ## Namn på kartan (OpenStreetMap)
 

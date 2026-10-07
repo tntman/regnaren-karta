@@ -5,7 +5,7 @@
      and keeps these when it clears its own. Stop = pause; pressing again goes on
      where it stopped (what's already saved is skipped). A new map version makes
      an old download out of date. */
-  var OFF_VER = (LAKE.mapFile.match(/map_(v\d+)_/) || [0, 'v1'])[1];
+  var OFF_VER = (LAKE.mapFile.match(/map_(v\d+h?)_/) || [0, 'v1'])[1];
   var OFF_CACHE = 'ffmap-offline-' + LAKE_ID + '-' + OFF_VER;
   var OFF_KEY = lakeKey('ffmap_offline_v1', 'offline_v1');     // {ver, files, bytes, done}
   var offBtn = document.getElementById('offBtn'), offBar = document.getElementById('offBar'),
@@ -46,6 +46,7 @@
     });
     Object.keys(lineDirs).forEach(function(dir){                // the lines: once per folder, every level
       DETAIL.levels.forEach(function(L){
+        if (L.baked) return;
         for (var r = 0; r < L.rows; r++) for (var c = 0; c < L.cols; c++){
           if (L.have.charAt(r * L.cols + c) === '1')
             list.push(lakeUrl(LAKE_DIR + DETAIL.lines.replace('{z}', L.z).replace('{lines}', dir).replace('{c}', c).replace('{r}', r)));

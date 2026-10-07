@@ -39,7 +39,7 @@ with sync_playwright() as p:
     lakes = pg.eval_on_selector_all('#lakeList .menuItem', 'e=>e.map(x=>x.textContent.trim())')
     check('lake menu lists all lakes, Regnaren first', lakes == ['Regnaren', 'Mälaren', 'Sibbofjärden', 'Sjösjön', 'Vågsfjärden', 'Östra Vitten'], lakes)
     pg.wait_for_function("(document.getElementById('mapImg').getAttribute('src') || '').length > 0", timeout=15000)
-    check('starts on Regnaren (as before)', src() == 'lakes/regnaren/map_v5_s1.jpg', src())
+    check('starts on Regnaren (as before)', src() == 'lakes/regnaren/map_v6_s1.jpg', src())
     check("Regnaren shows only Regnaren's spot", titles(pg) == ['Regnarplatsen'])
     check("Regnaren uses its own position interval (30 s)", pos_interval(pg) == '30/null', pos_interval(pg))
 
@@ -108,7 +108,7 @@ with sync_playwright() as p:
     check('after a reload: still Vågsfjärden', src() == 'lakes/vagsfjarden/map_v4_g1.jpg', src())
     pg.click('#menuBtn'); pg.click('#lakeList .menuItem[data-lake-id="regnaren"]')
     pg.wait_for_load_state('load'); pg.wait_for_timeout(1500)
-    check("back on Regnaren: its map, its style and its spot", src() == 'lakes/regnaren/map_v5_s1.jpg' and titles(pg) == ['Regnarplatsen'], src())
+    check("back on Regnaren: its map, its style and its spot", src() == 'lakes/regnaren/map_v6_s1.jpg' and titles(pg) == ['Regnarplatsen'], src())
     # the same max zoom on every lake: Regnaren too goes to 18,6 and uses its zoom-18 level
     pg.mouse.move(195, 422)
     for i in range(20):
