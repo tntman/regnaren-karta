@@ -328,6 +328,10 @@ Genesis-rutorna läses direkt ur `raw/<id>/z<z>/<lager>/` – sys aldrig ihop (f
    (5 parallellt gick bra). Allt är återupptagbart: klara block hoppas över (ta bort filerna för att göra om).
 Översiktsbilden (zoom 14) = flygfoto överallt i bbox:en, blockens bilder ovanpå. Inget `depth_raw.npz` (bara
 Regnarens används i testerna).
+**Minnet i appen:** allt som räknas för hela sjön (Kartanalys, Vind och lä, rutten) går på `workGrid()` (`js/38-speed-depth.js`),
+högst 1,5 M rutor (`GRID_MAX`); större djupnät slås ihop 2×2 (4×4 …). Mälaren 1 536 × 2 560 räknas som 768 × 1 280 (~20 m);
+blir den större (fler områden) och passerar 6 M djupceller blir det automatiskt 4×4 (~40 m). Översiktsbilden avkodad =
+imgW × imgH × 4 byte hela tiden (Mälaren 63 MB, Regnaren 5 MB) – se `tools/PLAN_MINNE.md`.
 
 ## Namn på kartan (OpenStreetMap)
 
