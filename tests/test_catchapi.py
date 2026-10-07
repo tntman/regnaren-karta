@@ -76,7 +76,7 @@ with sync_playwright() as p:
     check('active competition: live fetched at the start, its 2 catches added (8)', ctx.api.n('bootstrap') == 1 and len(ids) == 8 and 'Henrik' in ids and 'Erika' in ids, (ctx.api.hits, ids))
     check('...the annulled catch and its VOID row not there', 'Magnus' not in ids, ids)
     t = info(pg)
-    check('Fångstdata: live on, every 5 min (heat map off), 2 live catches', 'på – Regnaren 3 pågår' in t and 'var 5:e min' in t and '2 fångster' in t, t)
+    check('Fångstdata: live on, every 2 min (heat map off, Hotzone on), 2 live catches', 'på – Regnaren 3 pågår' in t and 'var 2:a min' in t and '2 fångster' in t, t)
     check('the line under the title: "Live: Regnaren 3"', 'Live: Regnaren 3' in pg.inner_text('#setSum-catch'), pg.inner_text('#setSum-catch'))
     pg.evaluate("document.getElementById('hmBtn').click()"); pg.wait_for_timeout(500)
     pg.evaluate("document.getElementById('menuItemSettings').click()"); pg.wait_for_timeout(300)

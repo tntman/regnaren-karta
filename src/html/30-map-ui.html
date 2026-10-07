@@ -149,6 +149,7 @@
   </div>
   <!-- every time a name is chosen (after the start film, 34-name.js): the way to Hjälp -->
   <div id="welcomeNote" class="topNote" role="status"><button type="button" id="welcomeNoteGo" class="tnGo"><span class="tnIc"><img src="ff_logo.svg" alt=""></span><span><b>Välkommen till Fiskfiskarnas Kart app!</b>Tryck här för att komma till hjälpsidan.</span></button><button type="button" id="welcomeNoteClose" class="tnX" aria-label="Stäng">✕</button></div>
+  <div id="hzNote" class="topNote" role="status"><button type="button" id="hzNoteGo" class="tnGo"><span class="tnIc hzIc">🔥</span><span><b id="hzNoteTitle"></b><span id="hzNoteSub"></span></span></button><button type="button" id="hzNoteClose" class="tnX" aria-label="Stäng">✕</button></div>
   <div id="wakeNote" role="status"><button type="button" id="wakeNoteClose" aria-label="Stäng">✕</button>
     <b>☀ Håll skärmen tänd är avstängd</b>
     <span>Den håller telefonen vaken medan appen är öppen (drar mer batteri). Du kan slå på den igen i <b>Inställningar → Båten</b>.</span></div>
@@ -270,6 +271,14 @@
         <span class="visLabel">Ledare</span>
         <span class="toggle">
           <input type="checkbox" id="toggleLeader">
+          <span class="toggleTrack"><span class="toggleThumb"></span></span>
+        </span>
+      </label>
+      <label class="visRow">
+        <span class="visSwatch visSwatch--wx"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5" stroke-dasharray="3.5 3"></circle><circle cx="12" cy="12" r="2.6" fill="currentColor"></circle></svg></span>
+        <span class="visLabel">Hotzone</span>
+        <span class="toggle">
+          <input type="checkbox" id="toggleHotzone">
           <span class="toggleTrack"><span class="toggleThumb"></span></span>
         </span>
       </label>

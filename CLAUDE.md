@@ -68,6 +68,7 @@ All text i appen är på svenska. Svara Filip på svenska, kort och tydligt.
 | Snabbmeddelanden | `tools/NOTES_MEDDELANDEN.md` |
 | Väder, vind och lä, blixtar, åskvarning | `tools/NOTES_VADER.md` |
 | Heatmap (fångster: Fiskfiskarnas API, när det hämtas, Fångstdata) | `tools/NOTES_HEATMAP.md` |
+| Hotzone (gränserna, provkörningen på riktiga tävlingar) | `tools/NOTES_HOTZONE.md` |
 | Spår (sparas för evigt i Firestore `tracks`), Spår-menyn, stopp som ringar, Fog of war | `tools/NOTES_SPAR.md` |
 | Båtikoner (valbar ikon för din båt – idé, förslagsblad, ej byggt) | `tools/boaticons.md` |
 | Testläget (= Demo Mode: egen testdatabas, admin styr en låtsastävling) | `tools/NOTES_TESTLAGE.md` |
@@ -158,6 +159,10 @@ Uppdatera rätt anteckning när något ändras.
   välkomna; **Fortsätt** gör det man höll på med, **Demo Mode** öppnar Avancerat. Aldrig i Demo Mode, för upplåst admin eller när appen
   inte vet (ingen kopia/API-fel). Admins "Tävlingslåset av för alla" borttaget (`config/<sjö>.lockOff` läses inte längre). Grindarna i
   knapparnas handlers (24-boats.js). Testerna: notisen av i testwebbläsaren (`window.__ffNoLock`, fakefb) utom med `cfg={'lock': True}` (test_lock.py).
+- **Hotzone** (Filter → Lager `#toggleHotzone`, på som standard, `js/70-hotzone.js`, `css/77-hotzone.css`, `tools/NOTES_HOTZONE.md`): under en pågående
+  tävling = 4 fiskar inom 200 m senaste timmen (vem som helst) → röd streckad ring som andas, 🔥 antal; lever så länge det nappar (fisk inom en timme).
+  Nytt ställe → notis överst (`#hzNote`, `.topNote`: art, närmaste OSM-namn, avstånd, tryck = dit), högst en per 45 min (`ffmap_hotzone_note_v1`/`lakeKey`,
+  överlever omladdning). Live-fångsterna hämtas var 2:a min när den är på. Gränserna provkörda på riktiga tävlingar (Filip 2026-10-07).
 - **Kraschlogg** (Inställningar → Avancerat → Senaste krasch, `js/91-crashlog.js`): en rad om vad appen gör sparas i localStorage var 2:a
   sekund; stängdes sidan inte rent (pagehide) visas raden vid nästa start. Rader samlas i `tools/KRASCHLOGG.md`.
 - **Minnesbudget** (`tools/PLAN_MINNE.md`): beräkningar för hela sjön på `workGrid()` (≤ 1,5 M rutor, Mälaren 20 m), skärmlager via

@@ -1799,6 +1799,15 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   /* your latest catch, first in the quick messages: a plain edge like the others, the species' colour sweeping through the text (.mT.sp, 75-messages.css) */
   #msgPop .msgFish{display:inline-flex;align-items:center;gap:6px;}
   #msgPop .msgFish small{font-weight:400;color:var(--text-muted);}
+  /* ================= Hotzone (js/70-hotzone.js): a red dashed ring that breathes + 🔥 count; the note at the top ================= */
+  #hzLayer{position:absolute;inset:0;z-index:15;pointer-events:none;overflow:hidden;}
+  .hzZ{position:absolute;left:0;top:0;}
+  .hzRing{position:absolute;inset:0;border-radius:50%;border:2px dashed #FF3B3B;animation:hzBreathe 3s ease-in-out infinite;}
+  @keyframes hzBreathe{0%,100%{transform:scale(.94);opacity:.55}50%{transform:scale(1.04);opacity:1}}
+  .hzTag{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);height:19px;padding:0 6px;border-radius:10px;white-space:nowrap;
+    background:#FF3B3B;color:#fff;font-weight:700;font-size:11px;line-height:19px;box-shadow:0 1px 5px rgba(0,0,0,.5);}
+  @media (prefers-reduced-motion: reduce){ .hzRing{animation:none;} }
+  .tnIc.hzIc{background:rgba(255,59,59,.18);font-size:24px;}
   /* ================= bottom panels (Kartanalys, a message, a spot): see tools/UI.md ================= */
   /* ---- panels that can be dragged smaller: the grip always drags; once smaller, the rest scrolls ---- */
   #anPanel, #wpSheet, #msgCard, #hmPanel, #hmCard, #pfCard, #trkPanel{touch-action:pan-y;}
@@ -2199,6 +2208,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   <div id="osmNames" aria-hidden="true"></div>
   <canvas id="fogLayer" aria-hidden="true"></canvas>
   <div id="anLabels"></div>
+  <div id="hzLayer" aria-hidden="true"></div>
   <div id="boatsLayer"></div>
   <div id="msgLayer"></div>
   <div id="probe" aria-live="polite"><div class="pbRip pbRip2"></div><div class="pbRip"></div><div class="pbLine"></div><div class="pbWt"><svg viewBox="0 0 16 22" width="9" height="12"><path d="M8 1.5c1 0 1.6.8 1.6 1.7v1.6c3 1.4 4.9 5.2 4.9 9.2 0 3.9-2.9 6.5-6.5 6.5S1.5 17.9 1.5 14c0-4 1.9-7.8 4.9-9.2V3.2c0-.9.6-1.7 1.6-1.7z" fill="#FFB23F" stroke="#1C212C" stroke-width="2"></path></svg></div><div class="pbTag"><span class="pbD" id="probeDepth"></span><span class="pbDiv"></span><span class="pbK" id="probeDist"><svg viewBox="0 0 24 24" width="9" height="9"><path d="M12 3l7 17-7-4-7 4z" fill="#FFB23F"></path></svg><span id="probeDistTxt"></span></span><span class="pbDiv pbDivT"></span><span class="pbT" id="probeTime"></span></div></div>
@@ -2849,6 +2859,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   </div>
   <!-- every time a name is chosen (after the start film, 34-name.js): the way to Hjälp -->
   <div id="welcomeNote" class="topNote" role="status"><button type="button" id="welcomeNoteGo" class="tnGo"><span class="tnIc"><img src="ff_logo.svg" alt=""></span><span><b>Välkommen till Fiskfiskarnas Kart app!</b>Tryck här för att komma till hjälpsidan.</span></button><button type="button" id="welcomeNoteClose" class="tnX" aria-label="Stäng">✕</button></div>
+  <div id="hzNote" class="topNote" role="status"><button type="button" id="hzNoteGo" class="tnGo"><span class="tnIc hzIc">🔥</span><span><b id="hzNoteTitle"></b><span id="hzNoteSub"></span></span></button><button type="button" id="hzNoteClose" class="tnX" aria-label="Stäng">✕</button></div>
   <div id="wakeNote" role="status"><button type="button" id="wakeNoteClose" aria-label="Stäng">✕</button>
     <b>☀ Håll skärmen tänd är avstängd</b>
     <span>Den håller telefonen vaken medan appen är öppen (drar mer batteri). Du kan slå på den igen i <b>Inställningar → Båten</b>.</span></div>
@@ -2970,6 +2981,14 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
         <span class="visLabel">Ledare</span>
         <span class="toggle">
           <input type="checkbox" id="toggleLeader">
+          <span class="toggleTrack"><span class="toggleThumb"></span></span>
+        </span>
+      </label>
+      <label class="visRow">
+        <span class="visSwatch visSwatch--wx"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5" stroke-dasharray="3.5 3"></circle><circle cx="12" cy="12" r="2.6" fill="currentColor"></circle></svg></span>
+        <span class="visLabel">Hotzone</span>
+        <span class="toggle">
+          <input type="checkbox" id="toggleHotzone">
           <span class="toggleTrack"><span class="toggleThumb"></span></span>
         </span>
       </label>
@@ -3779,6 +3798,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     if (hmCanvas) hmDraw();                  // (Heatmap, further down)
     if (namesEl) namesDraw();                // (Namn, further down)
     if (fogEl) fogDraw();                    // (Fog of war, further down)
+    if (hzEl) hzDraw();                      // (Hotzone, further down)
     if (msgLayerEl) renderMessages();         // (quick messages, further down)
     renderTrack();
     renderProbe();
@@ -11043,7 +11063,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
      is one, must not say it's another lake (a lake next door inside the same map). */
   var CATCH_API = 'https://fiskfiskarna.se/api/';
   var CATCH_REAL_KEY = lakeKey('ffmap_catches_v1', 'catches_v1'), CATCH_CACHE_KEY = testKey(CATCH_REAL_KEY), CATCH_NET_KEY = 'ffmap_catchnet_v1';
-  var CATCH_HOUR = 3600e3, CATCH_DAY = 864e5, CATCH_LIVE_SLOW = 300e3, CATCH_LIVE_FAST = 30e3;
+  var CATCH_HOUR = 3600e3, CATCH_DAY = 864e5, CATCH_LIVE_SLOW = 300e3, CATCH_LIVE_HZ = 120e3, CATCH_LIVE_FAST = 30e3;
   var catchData = null, catchLoading = false, catchErr = null, catchVer = 0, catchListeners = [];
   var catchHist = null, catchLive = null, catchLiveTimer = null;   // (catchHist: { at, list, comps, total })
   function catchesChanged(){ catchVer++; catchListeners.forEach(function(f){ try { f(); } catch(e){} }); }
@@ -11182,7 +11202,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     var c = catchLiveComp();
     if (!c){ if (catchLive){ catchLive = null; catchMerge(); } return; }
     if (document.visibilityState === 'hidden' || (catchLive && catchLive.loading)) return;
-    var last = catchLive && catchLive.comp === c.id ? catchLive.at : 0, rate = catchLiveFast() ? CATCH_LIVE_FAST : CATCH_LIVE_SLOW;
+    var last = catchLive && catchLive.comp === c.id ? catchLive.at : 0, rate = catchLiveFast() ? CATCH_LIVE_FAST : hzOn ? CATCH_LIVE_HZ : CATCH_LIVE_SLOW;   // (hzOn: Hotzone, 70-hotzone.js)
     var wait = opening && Date.now() - last > 60e3 ? 0 : last + rate - Date.now();
     if (wait > 0){ catchLiveTimer = setTimeout(catchLiveTick, wait); return; }
     if (!catchLive || catchLive.comp !== c.id) catchLive = { comp: c.id, name: c.name, at: 0, list: [], all: [] };
@@ -11238,7 +11258,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
       (!comps.length && !done ? '<div class="ctRow"><span>Inga ännu</span></div>' : '') +
       '<div class="ctHead">Live</div>' +
       (c ? row('Status', 'på – ' + escHtml(c.name || c.id) + ' pågår') +
-           row('Takt', catchLiveFast() ? 'var 30:e s (heatmapen är på)' : 'var 5:e min') +
+           row('Takt', catchLiveFast() ? 'var 30:e s (heatmapen är på)' : hzOn ? 'var 2:a min (Hotzone är på)' : 'var 5:e min') +
            row('Senast hämtad', L && L.at ? catchClock(L.at) + ':' + pad2(new Date(L.at).getSeconds()) + ' · ' + L.list.length + ' fångster' : 'hämtar…')
          : row('Status', 'av – ingen tävling pågår')) +
       '<div class="ctHead">Idag</div>' +
@@ -11997,6 +12017,100 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     leadRender(); renderBoats();
   });
   window.__ffLeader = function(){ return { on: leadOn, list: leadList.slice(), shown: !leadPill.hidden }; };   // (for the tests)
+  /* ================= "Hotzone" (Filter, Lager) -- on by default =================
+     While a competition is going on on this lake: where it bites right now. A spot is hot when 4 fish have been
+     caught within 200 m in the last hour (whoever caught them); it lives as long as it keeps biting (a catch within
+     the hour). Every hot spot gets a red dashed ring that breathes, with 🔥 and the count of the last hour. A new hot
+     spot gives a note at the top (species, the nearest place name, how far) -- at most one note per 45 min; a spot
+     that turns hot during the pause only gets its ring. Data: the live catches in the lake (catchLive.list,
+     66-catches.js), fetched every 2 min while this is on. Thresholds tried on the real catches: tools/NOTES_HOTZONE.md. */
+  var HZ_KEY = 'ffmap_hotzone_v1', HZ_NOTE_KEY = lakeKey('ffmap_hotzone_note_v1', 'hotzone_note_v1');
+  var HZ_R = 200, HZ_N = 4, HZ_WIN = 3600e3, HZ_PAUSE = 45 * 60e3, HZ_SHOW = 10e3;
+  var HZ_PL = { abborre: 'abborrar', gadda: 'gäddor', gos: 'gösar' };
+  var hzOn = true;   // (on unless you switched it off: '0')
+  try { hzOn = localStorage.getItem(HZ_KEY) !== '0'; } catch(e){}
+  var hzEl = document.getElementById('hzLayer'), hzNote = document.getElementById('hzNote'), toggleHzEl = document.getElementById('toggleHotzone');
+  var hzZones = [], hzNoteZone = null, hzNoteTimer = null, hzTick = null;
+  // which spots have had their say: { at: the last note, ids: { zoneId: last seen } } -- kept over a reload/rotation
+  var hzSaid = { at: 0, ids: {} };
+  try { hzSaid = Object.assign(hzSaid, JSON.parse(localStorage.getItem(HZ_NOTE_KEY) || '{}')); } catch(e){}
+  function hzM(a, b){ return haversineKm(a.lat, a.lon, b.lat, b.lon) * 1000; }
+
+  // the hot spots now: catches in time order; one that makes 4 within 200 m in the hour starts a spot (centred on it),
+  // later ones within 200 m of a living spot keep it alive. (ponytail: O(n²) over a day's catches -- a few hundred at most)
+  function hzCompute(now){
+    var L = (catchLive && catchLiveComp() ? catchLive.list : []).filter(function(c){ return c.lat != null; }).slice().sort(function(a, b){ return a.t - b.t; });
+    var zones = [];
+    L.forEach(function(c, i){
+      var z = zones.filter(function(z){ return c.t - z.last <= HZ_WIN && hzM(z, c) <= HZ_R; })[0];
+      if (z){ z.last = c.t; return; }
+      var near = L.slice(0, i + 1).filter(function(x){ return c.t - x.t <= HZ_WIN && hzM(x, c) <= HZ_R; });
+      if (near.length >= HZ_N) zones.push({ id: c.id, lat: c.lat, lon: c.lon, start: c.t, last: c.t });
+    });
+    return zones.filter(function(z){ return now - z.last <= HZ_WIN; }).map(function(z){
+      z.fish = L.filter(function(x){ return now - x.t <= HZ_WIN && x.t <= now && hzM(x, z) <= HZ_R; });
+      z.n = z.fish.length;
+      return z;
+    });
+  }
+  function hzUpdate(){
+    clearTimeout(hzTick); hzTick = null;
+    var now = Date.now();
+    hzZones = hzOn ? hzCompute(now) : [];
+    if (hzZones.length) hzTick = setTimeout(hzUpdate, 60e3);   // (a spot dies an hour after its last fish, new data or not)
+    // new spots, newest first: the first gets the note if the pause is over; the rest only their rings
+    hzZones.filter(function(z){ return !hzSaid.ids[z.id]; }).sort(function(a, b){ return b.start - a.start; }).forEach(function(z){
+      if (now - hzSaid.at >= HZ_PAUSE){ hzSaid.at = now; hzShowNote(z); }
+      hzSaid.ids[z.id] = now;
+    });
+    var alive = {}; hzZones.forEach(function(z){ alive[z.id] = 1; hzSaid.ids[z.id] = now; });
+    // (spots not seen for 2 h: forgotten -- not at once, the live catches come a moment after a start)
+    Object.keys(hzSaid.ids).forEach(function(k){ if (now - hzSaid.ids[k] > 2 * HZ_WIN) delete hzSaid.ids[k]; });
+    try { localStorage.setItem(HZ_NOTE_KEY, JSON.stringify(hzSaid)); } catch(e){}
+    if (hzNoteZone && !alive[hzNoteZone.id]) hzHideNote();
+    hzEl.innerHTML = hzZones.map(function(z){ return '<div class="hzZ" data-id="' + escHtml(z.id) + '"><div class="hzRing"></div><div class="hzTag">\u{1F525} ' + z.n + '</div></div>'; }).join('');
+    hzDraw();
+  }
+  function hzDraw(){
+    Array.prototype.forEach.call(hzEl.children, function(el, i){
+      var z = hzZones[i]; if (!z) return;
+      var c = latLonToImgPx(z.lat, z.lon), e = latLonToImgPx(z.lat + HZ_R / 111320, z.lon), r = Math.abs(c.y - e.y) * scale;
+      el.style.transform = 'translate(' + (originX + c.x * scale - r).toFixed(1) + 'px,' + (originY + c.y * scale - r).toFixed(1) + 'px)';
+      el.style.width = el.style.height = (2 * r).toFixed(1) + 'px';
+    });
+  }
+
+  // the note: "Hotzone: 4 abborrar senaste timmen" / "vid Storön · 800 m bort"
+  function hzText(z){
+    var by = {}; z.fish.forEach(function(c){ by[c.sp] = (by[c.sp] || 0) + 1; });
+    var sp = Object.keys(by), what = sp.length === 1 ? HZ_PL[sp[0]] : 'fiskar';
+    var name = null, best = 1500;   // (the nearest place name within 1.5 km)
+    (LAKE.names || []).forEach(function(n){ var d = hzM(z, { lat: n[0], lon: n[1] }); if (d < best){ best = d; name = n[2]; } });
+    var far = lastOwnLatLon ? hzM(z, lastOwnLatLon) : null;
+    var where = [name ? 'vid ' + name : '', far == null ? '' : far < 1000 ? Math.round(far / 50) * 50 + ' m bort' : (far / 1000).toFixed(1).replace('.', ',') + ' km bort'].filter(Boolean).join(' · ');
+    return { title: 'Hotzone: ' + z.n + ' ' + what + ' senaste timmen', sub: (where ? where + ' · ' : '') + 'tryck för att åka dit' };
+  }
+  function hzShowNote(z){
+    var t = hzText(z);
+    document.getElementById('hzNoteTitle').textContent = t.title;
+    document.getElementById('hzNoteSub').textContent = t.sub;
+    hzNoteZone = z; hzNote.classList.add('show');
+    clearTimeout(hzNoteTimer); hzNoteTimer = setTimeout(hzHideNote, HZ_SHOW);
+  }
+  function hzHideNote(){ clearTimeout(hzNoteTimer); hzNote.classList.remove('show'); hzNoteZone = null; }
+  document.getElementById('hzNoteGo').addEventListener('click', function(){ var z = hzNoteZone; hzHideNote(); if (z) centerOnWaypoint(z); });
+  document.getElementById('hzNoteClose').addEventListener('click', hzHideNote);
+
+  catchListeners.push(hzUpdate);
+  toggleHzEl.checked = hzOn;
+  toggleHzEl.addEventListener('change', function(){
+    hzOn = toggleHzEl.checked;
+    try { localStorage.setItem(HZ_KEY, hzOn ? '1' : '0'); } catch(e){}
+    if (!hzOn) hzHideNote();
+    hzUpdate(); catchLiveTick();
+  });
+  window.__ffHotzone = function(){ hzUpdate(); return { on: hzOn, zones: hzZones.map(function(z){ return { n: z.n, lat: z.lat, lon: z.lon }; }),
+    note: hzNote.classList.contains('show') ? document.getElementById('hzNoteTitle').textContent + ' | ' + document.getElementById('hzNoteSub').textContent : null }; };   // (for the tests)
   /* ---------------- init ---------------- */
   var appStarted = false; // true once geolocation + Firebase have been started for this page load
   function continueBootAfterName(){

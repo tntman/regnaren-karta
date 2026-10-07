@@ -33,6 +33,7 @@ specificitet.
 | `76-profiles.css` | Profilrutan, länkade namn (`.pfLink`), "Bara Filip ✕" i heatmapen, fångstfoton, fångstvalet i snabbmeddelanden (snurrande kant i artens färg) |
 | `73-names.css` | Namn: OSM-namnen på kartan (vit prick + text) |
 | `75-messages.css` | snabbmeddelanden (knappen, valen, egen text, bubblorna, rutan) |
+| `77-hotzone.css` | Hotzone: ringen som andas, 🔥-skylten, notisens ikon |
 | `80-panels.css` | bottenpanelerna: greppremsan, dra mindre / skrolla (Kartanalys, meddelande, plats) |
 | `85-touch.css` | stora tryckytor i bottenrutorna (blöta fingrar): chips 40, kategorirad 42, knapprader 46 px – kartans egna knappar orörda; läsbar småtext i rutorna (≥ 11 px), Inställningar som spalt på bred skärm, fokusring, "Reducera rörelse" för panelernas rörelser |
 | `90-buttons.css` | de fyra knapparna nere till höger i 2 × 2 (sist: bestämmer storlek/plats över allt ovan) |
@@ -87,6 +88,7 @@ specificitet.
 | `66-catches.js` | fångsterna: format, hämtning från Fiskfiskarnas API (historik + live), kopian, Inställningar → Fångstdata; sist tävlingsnotisen (`compNote(then)`: ingen tävling nära → rutan en gång per dygn, "Fortsätt" gör det man höll på med) |
 | `67-profiles.js` | Profiler: fiskarens ruta (`#pfCard`) ur API:ets anglers/anglerStats/dashboard/results/records, Profil i menyn, foton (`catchImg`) |
 | `69-leader.js` | Ledare (Filter → Lager, av som standard): live-ställningen under väderchipet + krona efter ledarens namn på båten (`leadCrownFor`, `24-boats.js`) |
+| `70-hotzone.js` | Hotzone (Filter → Lager, på som standard): under tävling 4 fiskar inom 200 m på en timme = röd streckad ring med 🔥 antal (`#hzLayer`) + notis överst (`#hzNote`), högst en per 45 min; live var 2:a min (`CATCH_LIVE_HZ`, `66-catches.js`). `tools/NOTES_HOTZONE.md` |
 | `68-heatmap.js` | Heatmap: ritning (värme, per art, rutor, prickar), bottenrutan, fångstrutan, tryck på kartan; Strandlinje på vanliga kartan (`shoreDraw`, Inställningar → Kartan) |
 | `90-boot.js` | start (`boot()`) |
 | `91-crashlog.js` | Kraschlogg (Inställningar → Avancerat → Senaste krasch): en rad om vad appen gör skrivs i localStorage; inte stängd rent (`pagehide`) = krasch, visas vid nästa start |

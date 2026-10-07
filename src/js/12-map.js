@@ -233,6 +233,7 @@
     if (hmCanvas) hmDraw();                  // (Heatmap, further down)
     if (namesEl) namesDraw();                // (Namn, further down)
     if (fogEl) fogDraw();                    // (Fog of war, further down)
+    if (hzEl) hzDraw();                      // (Hotzone, further down)
     if (msgLayerEl) renderMessages();         // (quick messages, further down)
     renderTrack();
     renderProbe();

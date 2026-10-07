@@ -44,6 +44,10 @@ spåren, Ledare, Kompass, Namn, Fog of war, tävlingslåset, Storlek/När, start
 - [ ] 2026-10-07 – Kartanalys på Mälaren räknar på 20 m-rutor (stora sjöar), så små grynnor/hålor kan saknas där. Kartanalys-avsnittet:
   en mening om det (ÄNDRAT)
 
+- [ ] 2026-10-07 – Hotzone (NY): under tävling röd ring där 4 fiskar tagits inom 200 m senaste timmen, 🔥 antal, notis överst
+  (högst en per 45 min, tryck = dit). Filter → Lager → Hotzone. Avsnitt Tävlingarna/Filter + animering (ring som andas, notisen).
+  Nyhet: "Hotzone: se var det nappar just nu under tävlingen" (NY)
+
 <!-- mall:
 - [ ] ÅÅÅÅ-MM-DD – Vad som ändrats. Hjälp: avsnitt X (text) + animering `namn`. Nyhet: "…" (NYTT/BÄTTRE/FIXAT)
 -->

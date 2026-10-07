@@ -12,7 +12,7 @@
      is one, must not say it's another lake (a lake next door inside the same map). */
   var CATCH_API = 'https://fiskfiskarna.se/api/';
   var CATCH_REAL_KEY = lakeKey('ffmap_catches_v1', 'catches_v1'), CATCH_CACHE_KEY = testKey(CATCH_REAL_KEY), CATCH_NET_KEY = 'ffmap_catchnet_v1';
-  var CATCH_HOUR = 3600e3, CATCH_DAY = 864e5, CATCH_LIVE_SLOW = 300e3, CATCH_LIVE_FAST = 30e3;
+  var CATCH_HOUR = 3600e3, CATCH_DAY = 864e5, CATCH_LIVE_SLOW = 300e3, CATCH_LIVE_HZ = 120e3, CATCH_LIVE_FAST = 30e3;
   var catchData = null, catchLoading = false, catchErr = null, catchVer = 0, catchListeners = [];
   var catchHist = null, catchLive = null, catchLiveTimer = null;   // (catchHist: { at, list, comps, total })
   function catchesChanged(){ catchVer++; catchListeners.forEach(function(f){ try { f(); } catch(e){} }); }
@@ -151,7 +151,7 @@
     var c = catchLiveComp();
     if (!c){ if (catchLive){ catchLive = null; catchMerge(); } return; }
     if (document.visibilityState === 'hidden' || (catchLive && catchLive.loading)) return;
-    var last = catchLive && catchLive.comp === c.id ? catchLive.at : 0, rate = catchLiveFast() ? CATCH_LIVE_FAST : CATCH_LIVE_SLOW;
+    var last = catchLive && catchLive.comp === c.id ? catchLive.at : 0, rate = catchLiveFast() ? CATCH_LIVE_FAST : hzOn ? CATCH_LIVE_HZ : CATCH_LIVE_SLOW;   // (hzOn: Hotzone, 70-hotzone.js)
     var wait = opening && Date.now() - last > 60e3 ? 0 : last + rate - Date.now();
     if (wait > 0){ catchLiveTimer = setTimeout(catchLiveTick, wait); return; }
     if (!catchLive || catchLive.comp !== c.id) catchLive = { comp: c.id, name: c.name, at: 0, list: [], all: [] };
@@ -207,7 +207,7 @@
       (!comps.length && !done ? '<div class="ctRow"><span>Inga ännu</span></div>' : '') +
       '<div class="ctHead">Live</div>' +
       (c ? row('Status', 'på – ' + escHtml(c.name || c.id) + ' pågår') +
-           row('Takt', catchLiveFast() ? 'var 30:e s (heatmapen är på)' : 'var 5:e min') +
+           row('Takt', catchLiveFast() ? 'var 30:e s (heatmapen är på)' : hzOn ? 'var 2:a min (Hotzone är på)' : 'var 5:e min') +
            row('Senast hämtad', L && L.at ? catchClock(L.at) + ':' + pad2(new Date(L.at).getSeconds()) + ' · ' + L.list.length + ' fångster' : 'hämtar…')
          : row('Status', 'av – ingen tävling pågår')) +
       '<div class="ctHead">Idag</div>' +

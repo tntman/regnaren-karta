@@ -1,0 +1,9 @@
+  /* ================= Hotzone (js/70-hotzone.js): a red dashed ring that breathes + 🔥 count; the note at the top ================= */
+  #hzLayer{position:absolute;inset:0;z-index:15;pointer-events:none;overflow:hidden;}
+  .hzZ{position:absolute;left:0;top:0;}
+  .hzRing{position:absolute;inset:0;border-radius:50%;border:2px dashed #FF3B3B;animation:hzBreathe 3s ease-in-out infinite;}
+  @keyframes hzBreathe{0%,100%{transform:scale(.94);opacity:.55}50%{transform:scale(1.04);opacity:1}}
+  .hzTag{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);height:19px;padding:0 6px;border-radius:10px;white-space:nowrap;
+    background:#FF3B3B;color:#fff;font-weight:700;font-size:11px;line-height:19px;box-shadow:0 1px 5px rgba(0,0,0,.5);}
+  @media (prefers-reduced-motion: reduce){ .hzRing{animation:none;} }
+  .tnIc.hzIc{background:rgba(255,59,59,.18);font-size:24px;}
