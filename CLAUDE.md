@@ -160,6 +160,8 @@ Uppdatera rätt anteckning när något ändras.
   knapparnas handlers (24-boats.js). Testerna: notisen av i testwebbläsaren (`window.__ffNoLock`, fakefb) utom med `cfg={'lock': True}` (test_lock.py).
 - **Kraschlogg** (Inställningar → Avancerat → Senaste krasch, `js/91-crashlog.js`): en rad om vad appen gör sparas i localStorage var 2:a
   sekund; stängdes sidan inte rent (pagehide) visas raden vid nästa start. Rader samlas i `tools/KRASCHLOGG.md`.
+- **Minnesbudget** (`tools/PLAN_MINNE.md`): beräkningar för hela sjön på `workGrid()` (≤ 1,5 M rutor, Mälaren 20 m), skärmlager via
+  `fitLayer` (1x1 när av, mjuka högst 2×). Mälaren kraschade iPhone av minnesbrist 2026-10-07.
 - **Strandlinje** (Inställningar → Kartan `#toggleShore`, på som standard, `ffmap_shore_v1`): sjöns kant som tunn vit linje på vanliga kartan,
   samma som Heatmap/Kartanalys ritar (`hmShoreLayer`, `js/68-heatmap.js`); döljs när de visas (de har sin egen).
 - **Startfilm** (`js/35-splash.js`, `tools/PLAN_SPLASH.md`): 3D-loggan 3,5 s **varje gång ett namn väljs** ("Vem är du?": ny telefon,

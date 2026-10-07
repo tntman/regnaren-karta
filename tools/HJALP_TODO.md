@@ -41,6 +41,9 @@ spåren, Ledare, Kompass, Namn, Fog of war, tävlingslåset, Storlek/När, start
   Demo Mode (rad 20), Fiskeplatser (142), Tävlingarna (181), Tips (332). Nyhet: "Kartan är öppen hela året – mellan tävlingarna
   kommer bara en påminnelse" (ÄNDRAT)
 
+- [ ] 2026-10-07 – Kartanalys på Mälaren räknar på 20 m-rutor (stora sjöar), så små grynnor/hålor kan saknas där. Kartanalys-avsnittet:
+  en mening om det (ÄNDRAT)
+
 <!-- mall:
 - [ ] ÅÅÅÅ-MM-DD – Vad som ändrats. Hjälp: avsnitt X (text) + animering `namn`. Nyhet: "…" (NYTT/BÄTTRE/FIXAT)
 -->
