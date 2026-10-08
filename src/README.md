@@ -56,7 +56,7 @@ specificitet.
 | `22-filter.js` | Filter |
 | `24-boats.js` | båtarna (andras positioner), platsens ruta öppna/spara |
 | `26-sync.js` | dra-för-att-stänga platsens ruta, offline-rad, Firebase-räkning, `config/<lake>` |
-| `28-menu.js` | meny, byta sjö |
+| `28-menu.js` | meny, byta sjö, Loggen (listan + filtret överst: sök, Alla/Mina/Andras, typprickarna – `ffmap_log_filter_v1`, bara listan) |
 | `30-help.js` | Hjälp, `HELP_NEWS` |
 | `32-demo.js` | Demo Mode = testläget (på/av = omladdning in i testdatabasen, `TEST_MODE` i `10-core.js`) |
 | `33-avatars.js` | profilbilderna (`AVATARS`, genereras av `tools/make_avatars.py` ur `tools/fiskare/`) |

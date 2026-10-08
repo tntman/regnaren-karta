@@ -47,6 +47,17 @@
         <div class="sub">Alla sparade fiskeplatser</div>
       </div>
     </div>
+    <div id="logFilter">
+      <label id="logSearchBox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l4.5 4.5"></path></svg>
+        <input type="search" id="logSearch" placeholder="Sök plats eller person" autocomplete="off" enterkeyhint="search" aria-label="Sök plats eller person"></label>
+      <div class="segmented" id="logWhoSeg" role="radiogroup" aria-label="Vems platser">
+        <button type="button" data-who="all" role="radio">Alla</button>
+        <button type="button" data-who="mine" role="radio">Mina</button>
+        <button type="button" data-who="others" role="radio">Andras</button>
+      </div>
+      <div id="logTypes"></div>
+      <div id="logCount" hidden></div>
+    </div>
     <div id="logList"></div>
   </div>
 

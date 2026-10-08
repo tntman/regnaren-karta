@@ -193,6 +193,16 @@
   #logBackBtn svg,#settingsBackBtn svg{width:18px;height:18px;}
   #logHeaderText{flex:1 1 auto;}
   #logHeaderText .sub{margin-top:1px;}
+  /* the Logg's filter: search, Alla/Mina/Andras, the types as Filter's dots, "Visar 8 av 10" */
+  #logFilter{flex:0 0 auto;padding:10px 14px 8px;border-bottom:1px solid rgba(255,255,255,.08);}
+  #logSearchBox{display:flex;align-items:center;gap:8px;height:38px;padding:0 11px;border-radius:10px;background:rgba(255,255,255,.07);color:var(--text-muted);}
+  #logSearchBox svg{width:17px;height:17px;flex:none;}
+  #logSearch{flex:1;min-width:0;border:none;background:none;outline:none;color:var(--offwhite);font:inherit;font-size:16px;}   /* (16 px: iOS doesn't zoom in) */
+  #logSearch::placeholder{color:var(--text-muted);}
+  #logWhoSeg{margin-top:9px;}
+  #logTypes{display:flex;gap:2px;justify-content:space-between;margin-top:9px;}
+  #logCount{margin-top:7px;font-size:12px;color:var(--text-muted);}
+  #logCount[hidden]{display:none;}
   #logList{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px 14px calc(env(safe-area-inset-bottom,0px) + 20px);}
 
   #settingsView{

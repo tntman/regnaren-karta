@@ -22,6 +22,7 @@
         admin: document.getElementById('adminBody').scrollTop
       };
       st.menu = menuPanel.classList.contains('show');
+      st.logQ = logQ;   // (the Logg search, 28-menu.js)
       st.an = anPanel.classList.contains('show');
       if (hmOn) st.hm = { panel: hmPanel.classList.contains('show'), card: hmCardList && hmCard.classList.contains('show') ? { ids: hmCardList.map(function(c){ return c.id; }), i: hmCardI } : null };
       if (helpView.classList.contains('show')) st.help = helpLastPlace || helpPlace();
@@ -56,6 +57,7 @@
         return; // nothing else is open before you've picked a name
       }
       var sc = r.scroll || {};
+      if (r.logQ){ logQ = logSearch.value = r.logQ; }
       if (r.view === 'log'){
         showLogView();
         pendingLogScroll = sc.log || null;

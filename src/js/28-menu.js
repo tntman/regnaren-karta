@@ -68,12 +68,44 @@
     return dd + ' · ' + tt;
   }
 
+  /* ---- the filter on top (only the list -- the map keeps Filter's choices): search (name or who), Alla/Mina/Andras,
+     the types as Filter's dots (filled = shown). Who + types are kept (ffmap_log_filter_v1); the search only over a rotation. */
+  var LOG_FILTER_KEY = 'ffmap_log_filter_v1', logF = { who: 'all', hidden: [] }, logQ = '';
+  try { Object.assign(logF, JSON.parse(localStorage.getItem(LOG_FILTER_KEY) || '{}')); } catch(e){}
+  var logSearch = document.getElementById('logSearch'), logWhoSeg = document.getElementById('logWhoSeg'), logTypesEl = document.getElementById('logTypes'), logCountEl = document.getElementById('logCount');
+  var LOG_SHORT = { mark: 'Mark', abborre: 'Abb', gadda: 'Gädda', gos: 'Gös', meet: 'Träff', hem: 'Hem', fara: 'Fara' };
+  logTypesEl.innerHTML = Object.keys(WP_TYPES).map(function(t){
+    return '<label class="visDot" title="' + WP_TYPES[t].label + '"><input type="checkbox" data-type="' + t + '"' + (logF.hidden.indexOf(t) < 0 ? ' checked' : '') + ' aria-label="' + WP_TYPES[t].label + '">' +
+      '<span class="visSwatch ws-' + t + '">' + wpIconSvg(t) + '</span><span class="visDotL">' + (LOG_SHORT[t] || WP_TYPES[t].label) + '</span></label>';
+  }).join('');
+  function logSeg(){ Array.prototype.forEach.call(logWhoSeg.children, function(b){ var on = b.getAttribute('data-who') === logF.who; b.classList.toggle('active', on); b.setAttribute('aria-checked', on); }); }
+  function logSave(){ try { localStorage.setItem(LOG_FILTER_KEY, JSON.stringify(logF)); } catch(e){} }
+  logSeg();
+  logWhoSeg.addEventListener('click', function(e){ var b = e.target.closest('button'); if (!b) return; logF.who = b.getAttribute('data-who'); logSeg(); logSave(); renderLogList(); });
+  logTypesEl.addEventListener('change', function(e){
+    var t = e.target.getAttribute('data-type'); if (!t) return;
+    logF.hidden = logF.hidden.filter(function(x){ return x !== t; }).concat(e.target.checked ? [] : [t]); logSave(); renderLogList();
+  });
+  logSearch.addEventListener('input', function(){ logQ = logSearch.value; renderLogList(); });
+  logSearch.addEventListener('keydown', function(e){ if (e.key === 'Enter') logSearch.blur(); });
+  function logPlain(s){ return String(s || '').toLowerCase().replace(/[åä]/g, 'a').replace(/ö/g, 'o'); }
+  function logShows(wp){
+    var mine = isMine(wp), q = logPlain(logQ).trim();
+    if (logF.who === 'mine' ? !mine : logF.who === 'others' ? mine : false) return false;
+    if (logF.hidden.indexOf(wpType(wp)) >= 0) return false;
+    return !q || logPlain(wp.name || 'Fiskeplats').indexOf(q) >= 0 || logPlain(mine ? 'du ' + userName : wp.by).indexOf(q) >= 0;
+  }
+
   function renderLogList(){
-    var sorted = waypoints.filter(function(w){ return !isExpired(w) && !isUndoPending(w.id); }).sort(function(a,b){ return (b.createdAt||0) - (a.createdAt||0); });
-    if (!sorted.length){
+    var all = waypoints.filter(function(w){ return !isExpired(w) && !isUndoPending(w.id); }).sort(function(a,b){ return (b.createdAt||0) - (a.createdAt||0); });
+    var sorted = all.filter(logShows);
+    logCountEl.hidden = sorted.length === all.length;
+    logCountEl.textContent = 'Visar ' + sorted.length + ' av ' + all.length;
+    if (!all.length){
       logList.innerHTML = '<div id="logEmpty">Inga fiskeplatser sparade än.<br>Håll ner fingret på kartan för att lägga till en.</div>';
       return;
     }
+    if (!sorted.length){ logList.innerHTML = '<div id="logEmpty">Inga platser med det här filtret.</div>'; return; }
     var html = sorted.map(function(wp){
       var mine = isMine(wp);
       var whoRaw = mine ? 'Du' : (wp.by || 'Lagkompis');

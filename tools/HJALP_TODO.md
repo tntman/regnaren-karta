@@ -48,6 +48,9 @@ spåren, Ledare, Kompass, Namn, Fog of war, tävlingslåset, Storlek/När, start
   (högst en per 45 min, tryck = dit). Filter → Lager → Hotzone. Avsnitt Tävlingarna/Filter + animering (ring som andas, notisen).
   Nyhet: "Hotzone: se var det nappar just nu under tävlingen" (NY)
 
+- [ ] 2026-10-08 – Loggen har filter: sök plats/person, Alla/Mina/Andras, typprickarna (bara listan). Avsnitt "Spår & loggen" + bild
+  (help/logg.webp). Nyhet: "Loggen: sök och filtrera platserna" (ÄNDRAT)
+
 <!-- mall:
 - [ ] ÅÅÅÅ-MM-DD – Vad som ändrats. Hjälp: avsnitt X (text) + animering `namn`. Nyhet: "…" (NYTT/BÄTTRE/FIXAT)
 -->

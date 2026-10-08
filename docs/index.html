@@ -595,6 +595,16 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   #logBackBtn svg,#settingsBackBtn svg{width:18px;height:18px;}
   #logHeaderText{flex:1 1 auto;}
   #logHeaderText .sub{margin-top:1px;}
+  /* the Logg's filter: search, Alla/Mina/Andras, the types as Filter's dots, "Visar 8 av 10" */
+  #logFilter{flex:0 0 auto;padding:10px 14px 8px;border-bottom:1px solid rgba(255,255,255,.08);}
+  #logSearchBox{display:flex;align-items:center;gap:8px;height:38px;padding:0 11px;border-radius:10px;background:rgba(255,255,255,.07);color:var(--text-muted);}
+  #logSearchBox svg{width:17px;height:17px;flex:none;}
+  #logSearch{flex:1;min-width:0;border:none;background:none;outline:none;color:var(--offwhite);font:inherit;font-size:16px;}   /* (16 px: iOS doesn't zoom in) */
+  #logSearch::placeholder{color:var(--text-muted);}
+  #logWhoSeg{margin-top:9px;}
+  #logTypes{display:flex;gap:2px;justify-content:space-between;margin-top:9px;}
+  #logCount{margin-top:7px;font-size:12px;color:var(--text-muted);}
+  #logCount[hidden]{display:none;}
   #logList{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px 14px calc(env(safe-area-inset-bottom,0px) + 20px);}
 
   #settingsView{
@@ -2263,6 +2273,17 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
         <div class="kicker">Logg</div>
         <div class="sub">Alla sparade fiskeplatser</div>
       </div>
+    </div>
+    <div id="logFilter">
+      <label id="logSearchBox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l4.5 4.5"></path></svg>
+        <input type="search" id="logSearch" placeholder="Sök plats eller person" autocomplete="off" enterkeyhint="search" aria-label="Sök plats eller person"></label>
+      <div class="segmented" id="logWhoSeg" role="radiogroup" aria-label="Vems platser">
+        <button type="button" data-who="all" role="radio">Alla</button>
+        <button type="button" data-who="mine" role="radio">Mina</button>
+        <button type="button" data-who="others" role="radio">Andras</button>
+      </div>
+      <div id="logTypes"></div>
+      <div id="logCount" hidden></div>
     </div>
     <div id="logList"></div>
   </div>
@@ -5666,12 +5687,44 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     return dd + ' · ' + tt;
   }
 
+  /* ---- the filter on top (only the list -- the map keeps Filter's choices): search (name or who), Alla/Mina/Andras,
+     the types as Filter's dots (filled = shown). Who + types are kept (ffmap_log_filter_v1); the search only over a rotation. */
+  var LOG_FILTER_KEY = 'ffmap_log_filter_v1', logF = { who: 'all', hidden: [] }, logQ = '';
+  try { Object.assign(logF, JSON.parse(localStorage.getItem(LOG_FILTER_KEY) || '{}')); } catch(e){}
+  var logSearch = document.getElementById('logSearch'), logWhoSeg = document.getElementById('logWhoSeg'), logTypesEl = document.getElementById('logTypes'), logCountEl = document.getElementById('logCount');
+  var LOG_SHORT = { mark: 'Mark', abborre: 'Abb', gadda: 'Gädda', gos: 'Gös', meet: 'Träff', hem: 'Hem', fara: 'Fara' };
+  logTypesEl.innerHTML = Object.keys(WP_TYPES).map(function(t){
+    return '<label class="visDot" title="' + WP_TYPES[t].label + '"><input type="checkbox" data-type="' + t + '"' + (logF.hidden.indexOf(t) < 0 ? ' checked' : '') + ' aria-label="' + WP_TYPES[t].label + '">' +
+      '<span class="visSwatch ws-' + t + '">' + wpIconSvg(t) + '</span><span class="visDotL">' + (LOG_SHORT[t] || WP_TYPES[t].label) + '</span></label>';
+  }).join('');
+  function logSeg(){ Array.prototype.forEach.call(logWhoSeg.children, function(b){ var on = b.getAttribute('data-who') === logF.who; b.classList.toggle('active', on); b.setAttribute('aria-checked', on); }); }
+  function logSave(){ try { localStorage.setItem(LOG_FILTER_KEY, JSON.stringify(logF)); } catch(e){} }
+  logSeg();
+  logWhoSeg.addEventListener('click', function(e){ var b = e.target.closest('button'); if (!b) return; logF.who = b.getAttribute('data-who'); logSeg(); logSave(); renderLogList(); });
+  logTypesEl.addEventListener('change', function(e){
+    var t = e.target.getAttribute('data-type'); if (!t) return;
+    logF.hidden = logF.hidden.filter(function(x){ return x !== t; }).concat(e.target.checked ? [] : [t]); logSave(); renderLogList();
+  });
+  logSearch.addEventListener('input', function(){ logQ = logSearch.value; renderLogList(); });
+  logSearch.addEventListener('keydown', function(e){ if (e.key === 'Enter') logSearch.blur(); });
+  function logPlain(s){ return String(s || '').toLowerCase().replace(/[åä]/g, 'a').replace(/ö/g, 'o'); }
+  function logShows(wp){
+    var mine = isMine(wp), q = logPlain(logQ).trim();
+    if (logF.who === 'mine' ? !mine : logF.who === 'others' ? mine : false) return false;
+    if (logF.hidden.indexOf(wpType(wp)) >= 0) return false;
+    return !q || logPlain(wp.name || 'Fiskeplats').indexOf(q) >= 0 || logPlain(mine ? 'du ' + userName : wp.by).indexOf(q) >= 0;
+  }
+
   function renderLogList(){
-    var sorted = waypoints.filter(function(w){ return !isExpired(w) && !isUndoPending(w.id); }).sort(function(a,b){ return (b.createdAt||0) - (a.createdAt||0); });
-    if (!sorted.length){
+    var all = waypoints.filter(function(w){ return !isExpired(w) && !isUndoPending(w.id); }).sort(function(a,b){ return (b.createdAt||0) - (a.createdAt||0); });
+    var sorted = all.filter(logShows);
+    logCountEl.hidden = sorted.length === all.length;
+    logCountEl.textContent = 'Visar ' + sorted.length + ' av ' + all.length;
+    if (!all.length){
       logList.innerHTML = '<div id="logEmpty">Inga fiskeplatser sparade än.<br>Håll ner fingret på kartan för att lägga till en.</div>';
       return;
     }
+    if (!sorted.length){ logList.innerHTML = '<div id="logEmpty">Inga platser med det här filtret.</div>'; return; }
     var html = sorted.map(function(wp){
       var mine = isMine(wp);
       var whoRaw = mine ? 'Du' : (wp.by || 'Lagkompis');
@@ -12313,6 +12366,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
         admin: document.getElementById('adminBody').scrollTop
       };
       st.menu = menuPanel.classList.contains('show');
+      st.logQ = logQ;   // (the Logg search, 28-menu.js)
       st.an = anPanel.classList.contains('show');
       if (hmOn) st.hm = { panel: hmPanel.classList.contains('show'), card: hmCardList && hmCard.classList.contains('show') ? { ids: hmCardList.map(function(c){ return c.id; }), i: hmCardI } : null };
       if (helpView.classList.contains('show')) st.help = helpLastPlace || helpPlace();
@@ -12347,6 +12401,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
         return; // nothing else is open before you've picked a name
       }
       var sc = r.scroll || {};
+      if (r.logQ){ logQ = logSearch.value = r.logQ; }
       if (r.view === 'log'){
         showLogView();
         pendingLogScroll = sc.log || null;

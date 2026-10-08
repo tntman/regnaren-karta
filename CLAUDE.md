@@ -159,6 +159,8 @@ Uppdatera rätt anteckning när något ändras.
   välkomna; **Fortsätt** gör det man höll på med, **Demo Mode** öppnar Avancerat. Aldrig i Demo Mode, för upplåst admin eller när appen
   inte vet (ingen kopia/API-fel). Admins "Tävlingslåset av för alla" borttaget (`config/<sjö>.lockOff` läses inte längre). Grindarna i
   knapparnas handlers (24-boats.js). Testerna: notisen av i testwebbläsaren (`window.__ffNoLock`, fakefb) utom med `cfg={'lock': True}` (test_lock.py).
+- **Loggen** (menyn → Logg, `js/28-menu.js`): alla platser, nyast först. Filter överst (2026-10-08): sök (namn eller person, "du" = dina),
+  Alla/Mina/Andras, typerna som Filters prickar (även Fara). Gäller bara listan, inte kartan. Vem + typer sparas (`ffmap_log_filter_v1`), sökningen bara över vridning.
 - **Hotzone** (Filter → Lager `#toggleHotzone`, på som standard, `js/70-hotzone.js`, `css/77-hotzone.css`, `tools/NOTES_HOTZONE.md`): under en pågående
   tävling = 4 fiskar inom 200 m senaste timmen (vem som helst) → röd streckad ring som andas, 🔥 antal; lever så länge det nappar (fisk inom en timme).
   Nytt ställe → notis överst (`#hzNote`, `.topNote`: art, närmaste OSM-namn, avstånd, tryck = dit), högst en per 45 min (`ffmap_hotzone_note_v1`/`lakeKey`,
