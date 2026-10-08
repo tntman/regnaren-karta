@@ -130,7 +130,7 @@ with sync_playwright() as p:
 html = open(os.path.join(os.path.dirname(HELP), 'index.html'), encoding='utf-8').read()
 want = re.findall(r'src="help/([a-z]+)\.webp"', html)
 missing = [w for w in want if not os.path.exists(os.path.join(HELP, w + '.webp'))]
-check('all %d animations exist in docs/help/' % len(want), len(want) == 19 and not missing, missing)
+check('all %d animations exist in docs/help/' % len(want), len(want) == 20 and not missing, missing)
 from PIL import Image
 wrong = [w for w in want if w not in missing and ('width="%d" height="%d" src="help/%s.webp"' % (Image.open(os.path.join(HELP, w + '.webp')).size + (w,))) not in html]
 check('the page has the size of each animation (no jumping while they load; tools/help_anim.py writes them)', not wrong, wrong)

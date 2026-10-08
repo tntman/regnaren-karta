@@ -119,14 +119,15 @@ def set_size_in_page(name, w, h):
     if s2 != s:
         with open(p, 'w', encoding='utf-8') as f: f.write(s2)   # (text mode: keeps the file's CRLF on Windows)
 
-def open_app(p, geo=ME, spots=SPOTS, boats=BOATS, wind=(3.2, 225), fmi=None, name='Filip', catches=None):
+def open_app(p, geo=ME, spots=SPOTS, boats=BOATS, wind=(3.2, 225), fmi=None, name='Filip', catches=None, api=None, init=None):
     b = p.chromium.launch(**fakefb.LAUNCH)
     ctx = b.new_context(viewport={'width': 390, 'height': 844}, device_scale_factor=2, has_touch=True, is_mobile=True,
                         geolocation={'latitude': geo[0], 'longitude': geo[1], 'accuracy': 6}, permissions=['geolocation'])
     cfg = {'waypoints': spots, 'positions': boats}
     ctx.add_init_script('window.__fakeCfg = ' + json.dumps(cfg) + ';')
     # the competitions' catches: Fiskfiskarnas API, made up (fakefb)
-    ctx.api = fakefb.FakeApi({'heatmap': [fakefb.api_row(*r) for r in catches]} if catches else {})
+    ctx.api = fakefb.FakeApi(api or ({'heatmap': [fakefb.api_row(*r) for r in catches]} if catches else {}))   # (api: a competition going on -- Hotzone)
+    if init: ctx.add_init_script(init)
     ctx.route('**/fiskfiskarna.se/**', ctx.api.handle)
     # Inställningar as a new user sees it: every section closed (the tests open them all -- fakefb)
     ctx.add_init_script("try { localStorage.setItem('ffmap_settings_open_v1', '[]'); } catch(e){}")
@@ -387,7 +388,16 @@ def s_logg(p):
     tap_el(pg, rec, '#trkClose', after=900)
     tap_el(pg, rec, '#menuBtn', after=700)
     tap_el(pg, rec, '#menuItemLog', after=1400)
+    tap_el(pg, rec, '#logWhoSeg button[data-who="mine"]', after=1300)   # the filter: Mina, then Andras
+    tap_el(pg, rec, '#logWhoSeg button[data-who="others"]', after=1300)
+    tap_el(pg, rec, '#logWhoSeg button[data-who="all"]', after=700)
+    tap_el(pg, rec, '#logTypes label:has(input[data-type="abborre"])', after=1300)   # a type's dot off and on
+    tap_el(pg, rec, '#logTypes label:has(input[data-type="abborre"])', after=800)
+    tap_el(pg, rec, '#logSearch', after=300)
+    typ(pg, rec, '#logSearch', 'gös'); rec.hold(1200)                    # search
+    pg.evaluate("document.activeElement.blur()"); rec.hold(400)
     tap_el(pg, rec, '.logItem:has-text("Gösgropen")', after=2400)
+    pg.evaluate("document.getElementById('logSearch').value = ''")
     rec.save('logg'); b.close()
 
 def s_installningar(p):
@@ -426,7 +436,10 @@ def s_analys(p):
     tap_el(pg, rec, '#anCatSeg button[data-cat="rule"]', after=800)    # another tab takes over: Kartdata off
     tap_el(pg, rec, '#anPanel button[data-m="gos"]', after=1800)
     tap_el(pg, rec, '#anCatSeg button[data-cat="data"]', after=600)    # Fångster: where abborre was caught
-    tap_el(pg, rec, '#anDataChips button:not([disabled])', after=2400)
+    tap_el(pg, rec, '#anDataChips button:not([disabled])', after=2000)
+    tap_el(pg, rec, '#anScale', after=2200)                            # Skala: coloured by how strongly it matches
+    tap_el(pg, rec, '#anCatSeg button[data-cat="now"]', after=2600)    # Fiska nu: five tips with %
+    tap_el(pg, rec, '#anScale', after=900)                             # (Skala off again)
     tap_el(pg, rec, '#anCatSeg button[data-cat="map"]', after=1700)    # back: Djup + Branta kanter again
     tap_el(pg, rec, '#anClose', after=1500)                            # the "Kartanalys" pill under the weather
     rec.save('analys'); b.close()
@@ -488,10 +501,33 @@ def s_installera(p):
     while not pg.evaluate('!!window.done'): rec.snap()
     rec.save('installera', last=2400); b.close()
 
+def s_hotzone(p):
+    """Hotzone (Tävlingarna): a competition going on; one hot spot already breathing (its note long gone); 4 fish
+    near B1 -> a new ring + the note at the top; tap it -> the map goes there"""
+    def ms(minutes): return int((time.time() - minutes * 60) * 1000)
+    def row(m, at, k, who, sp='abborre'):
+        return dict(fakefb.api_row(ms(m), 'reg9', who, sp, 30 + k, round(at[0] + 0.00018 * (k % 3 - 1), 6), round(at[1] + 0.0003 * (k % 2), 6)), approved=True)
+    old = [row(50 - 6 * k, P['E1'], k, ['Calle', 'Pia', 'Olle'][k % 3]) for k in range(5)]
+    new = [row(30 - 7 * k, P['B1'], k, ['Olle', 'Calle', 'Pia', 'Calle'][k], 'gadda' if k == 1 else 'abborre') for k in range(4)]
+    comps = [{'competition_id': 'reg9', 'competition_name': 'Regnaren 9', 'date': time.strftime('%Y-%m-%d'), 'status': 'active', 'water': 'Regnaren'}]
+    zid = '|'.join([str(fakefb_ms(old[3]['timestamp'])), old[3]['name'], 'abborre', '33'])   # (the spot by E1 = its 4th fish: already told)
+    init = "try { localStorage.setItem('ffmap_hotzone_note_v1', JSON.stringify({ at: Date.now() - 50 * 60e3, ids: { '%s': Date.now() } })); } catch(e){}" % zid
+    b, ctx, pg = open_app(p, api={'heatmap': [], 'competitions': comps, 'live': {'reg9': old + new[:3]}}, init=init)
+    for r in old + new: check_water(pg, (r['lat'], r['lng']))
+    m = mix(P['E1'], P['B1'], 0.5); bring(pg, m, (195, 430)); zoom_at(pg, m, -1); bring(pg, m, (195, 400))   # (zoom, then one real drag -- a drag of 0 px is a tap: the lead)
+    rec = Rec(pg); rec.hold(2600)                                      # the spot by E1: a red ring that breathes, 🔥 5
+    ctx.api.live = {'reg9': old + new}; pg.evaluate("document.getElementById('ctFetch').click()"); rec.hold(3200)   # the 4th fish by B1: a new ring + the note
+    tap_el(pg, rec, '#hzNoteGo', after=3000)                           # tap the note: the map goes there
+    rec.save('hotzone'); b.close()
+
+def fakefb_ms(iso):   # the API's timestamp -> ms (as the app's Date.parse)
+    import datetime
+    return int(datetime.datetime.strptime(iso, '%Y-%m-%dT%H:%M:%S.%fZ').replace(tzinfo=datetime.timezone.utc).timestamp() * 1000)
+
 SCENES = [('installera', s_installera), ('kartan', s_kartan), ('kartlagen', s_kartlagen), ('position', s_position),
           ('lodet', s_lodet), ('platser', s_platser), ('andra', s_andra), ('fara', s_fara), ('batar', s_batar), ('mat', s_mat),
           ('vader', s_vader), ('blixtar', s_blixtar), ('filter', s_filter), ('logg', s_logg), ('installningar', s_installningar),
-          ('analys', s_analys), ('heatmap', s_heatmap), ('akhit', s_akhit), ('meddelanden', s_meddelanden)]
+          ('analys', s_analys), ('heatmap', s_heatmap), ('akhit', s_akhit), ('meddelanden', s_meddelanden), ('hotzone', s_hotzone)]
 
 if __name__ == '__main__':
     want = sys.argv[1:] or [n for n, f in SCENES]

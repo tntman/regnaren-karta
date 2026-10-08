@@ -17,7 +17,7 @@
       </div>
       <div class="helpCard" id="helpDemo">
         <h3><span>🧪 Demo Mode – prova utan att förstöra något</span></h3>
-        <p>Slå på <b>Demo Mode</b> när du vill testa appen, t.ex. hemma i soffan – eller när kartan är låst mellan tävlingarna. Du får en låtsasposition vid sjön och ser bara andra som också har Demo Mode på. Inget sparas i den riktiga databasen, så fiskeplatser, båtar och meddelanden du provar med syns aldrig för de andra. Slå på och av när du vill; den stängs av själv efter 15 minuter.</p>
+        <p>Slå på <b>Demo Mode</b> när du vill testa appen, t.ex. hemma i soffan. Du får en låtsasposition vid sjön och ser bara andra som också har Demo Mode på. Inget sparas i den riktiga databasen, så fiskeplatser, båtar och meddelanden du provar med syns aldrig för de andra. Slå på och av när du vill; den stängs av själv efter 15 minuter.</p>
         <button type="button" class="helpInstallBtn" id="helpDemoLink">Öppna Demo Mode i Inställningar</button>
       </div>
       <div class="helpSearch"><input type="search" id="helpSearch" placeholder="Sök i hjälpen, t.ex. &quot;filter djup&quot;" aria-label="Sök i hjälpen" autocomplete="off"><div id="helpResults"></div></div>
@@ -139,7 +139,7 @@
           <li><b class="hA">Håll fingret</b> på kartan där platsen ska vara.</li>
           <li>Eller tryck <b class="hA">＋</b> (nere till höger) – platsen hamnar där du är.</li>
           <li>Välj typ: <b>Markering</b> (neutral prick), <b>Abborre</b> (orange), <b>Gädda</b> (grön), <b>Gös</b> (blå) eller <b>Hem</b> (brunt hus – hemmet eller bryggan) – eller Fara/Träffpunkt (se nedan). Skriv ett namn – tangentbordets blå <b>Klar</b> stänger tangentbordet – och tryck <b>Spara</b>. Nålen landar på kartan.</li>
-          <li>Mellan tävlingarna är kartan låst – se <b>Tävlingarna</b>. I Demo Mode går det alltid.</li>
+          <li>Mellan tävlingarna kommer en påminnelse första gången per dygn – se <b>Tävlingarna</b>. <b class="hA">Fortsätt</b> sparar.</li>
         </ul>
         <p class="helpSub">Ändra och ta bort</p>
         <div class="helpAnim"><img loading="lazy" width="432" height="935" src="help/andra.webp" alt="Ändra och ta bort en plats"></div>
@@ -177,10 +177,12 @@
 
       <section class="helpCard" id="help-tavling">
         <h3><span class="hIc">🏆</span>Tävlingarna</h3>
+        <div class="helpAnim"><img loading="lazy" width="432" height="935" src="help/hotzone.webp" alt="Hotzone under en tävling"></div>
         <ul>
-          <li><b>Kartan är låst mellan tävlingarna:</b> platser (även Fara och Träffpunkt) kan bara läggas till, ändras och tas bort från en vecka före till en vecka efter en tävling på sjön – så hålls gruppens karta ren. Annars kommer en ruta som säger när det öppnar, med <b>Öppna Demo Mode</b> om du vill prova.</li>
+          <li><b>Kartan är öppen hela året.</b> Mer än en vecka från en tävling på sjön kommer en påminnelse första gången per dygn du lägger till, ändrar eller tar bort en plats: ingen tävling pågår, när nästa är, och att du som fiskar privat eller är med i en open-tävling är välkommen att använda appen fullt ut. <b class="hA">Fortsätt</b> gör det du höll på med; <b>Demo Mode</b> om du bara vill prova.</li>
           <li>Under en tävling kommer fångsterna <b>live</b> från Fiskfiskarna: i Heatmap (märkt <b>Live</b>), i Kartanalys → Fångster, i båtrutan och i profilerna.</li>
           <li><b>Ledare</b> (Filter → Lager, av från start): ställningen under vädret – de fem bästa och du – och en 👑 efter ledarens namn på kartan. Poäng = de 5 längsta av varje art ihop (godkända fiskar, minst abborre 25, gädda 50 och gös 35 cm), i hela tävlingen även om den fiskas i flera sjöar. <b class="hA">Tryck</b> på ett namn så visar kartan personen.</li>
+          <li><b>Hotzone</b> (Filter → Lager, på från start): där 4 fiskar tagits inom 200 m den senaste timmen får en <b style="color:#FF5A5A">röd ring</b> som andas, med 🔥 och antalet. Ringen finns kvar så länge det nappar där (en fisk inom en timme). Ett nytt hett ställe ger en notis överst – art, närmaste platsnamn och hur långt bort – högst en var 45:e minut. <b class="hA">Tryck</b> på notisen så åker kartan dit.</li>
           <li>Din senaste fisk ligger först bland snabbmeddelandena – skicka den med ett tryck (se Snabbmeddelanden).</li>
           <li><b>Demo Mode</b> (överst i Hjälp): prova allt tillsammans utan att något sparas på riktigt.</li>
         </ul>
@@ -223,17 +225,20 @@
         <h3><span class="hIc">🔎</span>Kartanalys – hitta ställen</h3>
         <div class="helpAnim"><img loading="lazy" width="432" height="935" src="help/analys.webp" alt="Kartanalys"></div>
         <ul>
-          <li><b class="hA">Tryck</b> på kartan med luppen nere till höger. Välj en <b>flik</b> överst – <b>Kartdata</b>, <b>Tumregler</b>, <b>Fångster</b> eller <b>Liknande</b> – och sedan vad du vill hitta. Det som stämmer lyser, resten av kartan tonas ner och blir grå.</li>
+          <li><b class="hA">Tryck</b> på kartan med luppen nere till höger. Välj en <b>flik</b> överst – <b>Kartdata</b>, <b>Tumregler</b>, <b>Fångster</b>, <b>Liknande</b> eller <b>Fiska nu</b> – och sedan vad du vill hitta. Där det stämmer syns den vanliga kartan, resten tonas ner och blir grå.</li>
           <li><b>Byter du flik</b> släcks det som var på och den nya fliken tar över. Varje flik minns sitt val – går du tillbaka kommer det igen.</li>
-          <li><b>Kartdata</b> – den vanliga kartan syns där det stämmer. Tryck på en eller flera; flera = där <b>alla</b> stämmer (de får ett "+"). <b>Djup</b> – ett djupintervall: dra i cirklarna, djupen står under dem och stapeln är mörkare utanför. <b>Branta kanter</b> – där botten sluttar mer än reglaget <b>Lutning över</b>. <b>Grynnor &amp; hålor</b> – grynnor mitt i sjön och gropar: hur mycket en grynna reser sig över den lägsta "sadeln" runt den (grunda hyllor längs land räknas inte); reglagen ställer hur många meter. För en håla markeras bara själva gropen. Etiketten visar djupet – tryck på den för lodet.</li>
+          <li><b>Kartdata</b> – tryck på en eller flera; flera = där <b>alla</b> stämmer (de får ett "+"). <b>Djup</b> – ett djupintervall: dra i cirklarna, djupen står under dem och stapeln är mörkare utanför. <b>Branta kanter</b> – där botten sluttar mer än reglaget <b>Lutning över</b>. <b>Grynnor &amp; hålor</b> – grynnor mitt i sjön och gropar: hur mycket en grynna reser sig över den lägsta "sadeln" runt den (grunda hyllor längs land räknas inte); reglagen ställer hur många meter. För en håla markeras bara själva gropen. Etiketten visar djupet – tryck på den för lodet.</li>
           <li><b>Växter</b> – där ekolodet sett växtlighet. <b>Hård botten</b> – välj hur hård. <b>Vindkant</b> – stränder vinden blåser mot just nu. Ihop med andra räknas de <b>inom … m</b> (eget reglage). Bara Djup har ett djupreglage – lägg till Djup för att begränsa de andra. Blir inget kvar säger raden vilken del som tog bort det sista.</li>
           <li><b>Tumregler:</b> <b>Abborre, Gädda, Gös</b> – förinställda kombinationer. De bygger på vanliga fiskeråd, inte på fångster – se dem som tips.</li>
-          <li><b>Fångster:</b> välj art (antalet står på knappen) – det som liknar platserna där arten togs i gruppens tävlingar lyser (djup, lutning, botten, växter, avstånd från land, grynna/håla). <b>Storlek</b> = bara fiskar mellan två längder. <b>Likhet</b> (Mest likt – Mindre likt) ställer hur mycket som tänds; raden säger t.ex. "Fiska i det tända: 70 % av gäddorna på 15 % av sjön". <b>Tänt</b> eller <b>Skala</b> (hela sjön, starkast där det är mest likt). Stäng av värden du inte vill jämföra – prickarna ●●● visar hur mycket varje värde betyder. Visar var man fått fisk – inte var all fisk finns.</li>
+          <li><b>Fångster:</b> välj art (antalet står på knappen) – det som liknar platserna där arten togs i gruppens tävlingar lyser (djup, lutning, botten, växter, avstånd från land, grynna/håla). <b>Storlek</b> = bara fiskar mellan två längder. <b>Likhet</b> (Mest likt – Mindre likt) ställer hur mycket som tänds; raden säger t.ex. "Fiska i det tända: 70 % av gäddorna på 15 % av sjön". Stäng av värden du inte vill jämföra – prickarna ●●● visar hur mycket varje värde betyder. Visar var man fått fisk – inte var all fisk finns.</li>
           <li><b>Liknande</b> – välj en fiskeplats (eller <b>🔎 Liknande</b> i platsens ruta eller i en fångst) och vad som jämförs: djup, lutning, botten, växter, grynna/håla. <b>Bara platsen</b> = det som finns under pinnen; <b>25–100 m</b> = snittet inom den radien (liknande omgivningar). Platsen själv får en rosa ring (<b>Gå till</b> visar den), listan visar de mest lika områdena, bäst först – med <b>Åk hit</b>.</li>
-          <li>Översta raden: resultatet, <b>ⓘ</b> (förklaringen), <b>💡</b> (lyser upp det tända – dubbelt så ljust), <b>↺ Återställ</b> (allt som från början: alla flikars val, reglagen och lampan) och <b>⏻ Stäng av kartanalys</b>.</li>
+          <li><b>Fiska nu</b> – fem tips på var gruppen fått mest fisk vid den här tiden: samma tid på året och samma tid på dygnet (vilket år som helst). <b>Alla</b> eller en art, <b>När</b> = några timmar framåt. Platserna står numrerade på kartan och i en lista med %, arterna, djup, avstånd och <b>Åk hit</b>. % = platsens andel av fångsterna vid den här tiden – inte en riktig chans (ingen loggar timmarna utan napp). Få fångster = bredare fönster, raden säger det.</li>
+          <li><b>Skala</b> (överst, vänster om ⓘ, alla flikar): det som hittas färgas efter hur starkt det stämmer – Djup mitt i intervallet, Branta kanter brantast, Tumregler där regeln stämmer bäst, Liknande och Fångster mest likt, Fiska nu största andelen, flera ihop = den svagaste delen. ⓘ säger vad som är starkast.</li>
+          <li>Översta raden: resultatet, <b>Skala</b>, <b>ⓘ</b> (förklaringen), <b>💡</b> (lyser upp det tända – dubbelt så ljust), <b>↺ Återställ</b> (allt som från början: alla flikars val, reglagen och lampan) och <b>⏻ Stäng av kartanalys</b>.</li>
           <li>När något är på syns skylten <b>Kartanalys</b> under vädret – tryck på den för att öppna rutan. Kartanalys och Heatmap är aldrig på samtidigt.</li>
           <li>Hur mycket resten av kartan tonas ner ställer du i <b>Inställningar → Kartanalys</b>. Dra i strecket överst för att göra panelen mindre (inne i den skrollar du), snärta ner eller tryck <b>✕</b> för att stänga.</li>
           <li><b>Kartanalys</b> i Filter visar/döljer det du valt (valet finns kvar). Kartanalys är avstängd när appen startas.</li>
+          <li>På stora sjöar (Mälaren) räknas Kartanalys i 20 m-rutor för att telefonen ska orka – små grynnor och hålor kan saknas där.</li>
         </ul>
       </section>
 
@@ -292,6 +297,7 @@
           <li><b>Kartanalys</b> och <b>Heatmap</b> – visar/döljer det du valt (valet finns kvar; på/av sker i deras egna rutor).</li>
           <li><b>Fog of war</b> – mörkt överallt utom där du har varit (50 m runt dina spår på sjön).</li>
           <li><b>Ledare</b> – ställningen under en tävling, med 👑 på kartan (se Tävlingarna).</li>
+          <li><b>Hotzone</b> – röda ringar där det nappar just nu under en tävling (se Tävlingarna).</li>
           <li><b>Namn</b> – namn på öar, uddar, vikar och gårdar från OpenStreetMap (utseendet i Inställningar → Kartan).</li>
           <li><b>Kompass</b> – kilen mot dit telefonen pekar och visaren nere till höger (se Din position).</li>
           <li><b>Djup</b> under båten, <b>Andras 50 % / 100 %</b>, <b>Strandlinje</b> och <b>Håll skärmen tänd</b> finns i Inställningar.</li>
@@ -304,6 +310,7 @@
         <div class="helpAnim"><img loading="lazy" width="432" height="935" src="help/logg.webp" alt="Loggen och spårmenyn"></div>
         <ul>
           <li><b>Logg</b> i menyn: alla fiskeplatser, nyast först. <b class="hA">Tryck</b> för att hoppa dit på kartan.</li>
+          <li>Överst i loggen: <b>sök</b> på platsens namn eller person ("du" = dina), <b>Alla / Mina / Andras</b> och typerna som prickar (ifylld = visas). Filtret gäller bara listan – kartan visar det Filter säger. "Visar 5 av 7" när något är bortfiltrerat.</li>
           <li><b>Spåret</b> – linjen efter din båt – sparas för varje sjö och finns kvar. Bara det du kör på sjön sparas (inte promenader eller bilresor nära sjön), och det går inte att sudda.</li>
           <li><b>Spårmenyn</b> (<b class="hA">tryck på Spår-ikonen</b> i Filter, eller Inställningar → Båten → Spår): dina spår och en annan persons (rullgardinen), hur långt tillbaka (I dag, 7 dagar, 30 dagar, Allt), streckad eller hel linje, färg, synlighet och <b>Stopp som ringar</b> – en ring där du legat still, med tiden (välj minsta tid).</li>
           <li><b>Fog of war</b> (Filter) gör kartan mörk utom där du har varit. I Demo Mode är spåret tillfälligt och sparas inte.</li>
@@ -329,7 +336,6 @@
           <li><b>Ingen GPS?</b> Tillåt plats för Safari/Chrome/appen i telefonens inställningar.</li>
           <li><b>Ser något gammalt ut?</b> Stäng appen helt och öppna igen.</li>
           <li><b>Utan nät</b> fungerar kartan om sjön är nedladdad (Inställningar → Offline). En röd skylt under vädret säger <b>Offline</b>; platser du sparar skickas när nätet är tillbaka – då blir skylten grön en stund: <b style="color:#7fd88a">Täckning igen</b>.</li>
-          <li><b>Går det inte att lägga till en plats?</b> Kartan är låst mellan tävlingarna – rutan säger när den öppnar. Prova i Demo Mode.</li>
           <li><b>Gammal ikon på hemskärmen?</b> Ta bort appen från hemskärmen och lägg till den igen.</li>
           <li>Appen måste vara öppen för att din båt ska synas för de andra.</li>
         </ul>

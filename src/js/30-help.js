@@ -5,6 +5,13 @@
      made by tools/help_anim.py (docs/help/*.webp; one that's missing is just left out). */
   // newest first. t: 'new' (NYTT), 'better' (BÄTTRE), 'fixed' (FIXAT)
   var HELP_NEWS = [
+    { d: '2026-10-08', t: 'new',    x: '<b>Loggen</b>: sök på plats eller person, och filtrera på Mina/Andras och typerna' },
+    { d: '2026-10-07', t: 'new',    x: '<b>Hotzone</b>: röda ringar där det nappar just nu under tävlingen – och en notis när ett nytt ställe blir hett' },
+    { d: '2026-10-07', t: 'better', x: 'Kartan är öppen hela året – mellan tävlingarna kommer bara en påminnelse' },
+    { d: '2026-10-07', t: 'new',    x: 'Kartanalys: <b>Fiska nu</b> – fem tips på var det nappat mest vid den här tiden' },
+    { d: '2026-10-07', t: 'fixed',  x: 'Kartanalys kraschar inte längre på <b>Mälaren</b>' },
+    { d: '2026-10-06', t: 'new',    x: 'Kartanalys: <b>Skala</b> – se var det stämmer starkast, i alla flikar' },
+    { d: '2026-10-06', t: 'better', x: 'Kartanalys färgar inte kartan – det som stämmer syns som vanligt, resten tonas ner' },
     { d: '2026-10-06', t: 'better', x: 'Kartanalys: <b>💡 lys upp</b> det tända, flikarna minns sina val, ↺ nollställer allt, djupen under reglaget' },
     { d: '2026-10-06', t: 'better', x: 'Platsens ruta lägger sig ovanför tangentbordet (blå <b>Klar</b>), dina egna platser öppnas utan tangentbord; alla reglage ser likadana ut' },
     { d: '2026-10-06', t: 'new',    x: 'Ny <b>appikon</b> – ta bort appen från hemskärmen och lägg till den igen för att se den' },

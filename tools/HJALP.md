@@ -38,22 +38,22 @@ animeringarna igen.
 | Fiskeplatser och markeringar (`help-platser`) | `platser` (lägg till), `andra` (ändra/ta bort) | `s_platser`, `s_andra` |
 | Fara & Träffpunkt (`help-fara`) | `fara` | `s_fara` |
 | Båtarna och profilerna (`help-batar`) | `batar` | `s_batar` |
-| Tävlingarna (`help-tavling`): tävlingslåset, live, Ledare, senaste fisk, Demo Mode | – (bara text) | – |
+| Tävlingarna (`help-tavling`): påminnelsen mellan tävlingarna, live, Hotzone, Ledare, senaste fisk, Demo Mode | `hotzone` (en ring som andas, en ny + notisen → tryck = dit) | `s_hotzone` (pågående tävling via `open_app(api=…)`, notisen för det första stället redan "sagd" via `init`) |
 | Mätverktyget (`help-mat`) | `mat` | `s_mat` |
 | Väder, vind & lä (`help-vader`) | `vader` | `s_vader` |
 | Blixtar (`help-blixtar`) | `blixtar` | `s_blixtar` |
-| Kartanalys (`help-analys`) | `analys` (Djup + dra, 💡, + Branta kanter, Tumregler tar över, Fångster, tillbaka till Kartdata) | `s_analys` |
+| Kartanalys (`help-analys`) | `analys` (Djup + dra, 💡, + Branta kanter, Tumregler tar över, Fångster, Skala, Fiska nu, tillbaka till Kartdata) | `s_analys` |
 | Heatmap (`help-heatmap`) | `heatmap` (knappen överst, fyra stilar, När, tryck på en fångst) | `s_heatmap` (låtsasfångster `catch_rows()` via fakefb:s Fiskfiskarna-API, bara på vattnet: `water_catches()`) |
 | Åk hit (`help-akhit`) | `akhit` | `s_akhit` |
 | Snabbmeddelanden (`help-meddelanden`) | `meddelanden` (skicka + Calle och Pia i samma båt = en bubbla → tryck på Calles rad → rutan → Åk hit) | `s_meddelanden` |
 | Filter (`help-filter`) | `filter` | `s_filter` |
-| Spåren och loggen (`help-logg`) | `logg` (Filter → Spår-ikonen = spårmenyn, sedan Logg) | `s_logg` |
+| Spåren och loggen (`help-logg`) | `logg` (Filter → Spår-ikonen = spårmenyn, sedan Logg: Mina/Andras, en typ av/på, sök "gös") | `s_logg` |
 | Inställningar (`help-installningar`) – även Håll skärmen tänd | `installningar` (avsnitten; som "Calle" – Filip har Admin-raden) | `s_installningar` |
 | Tips & felsökning (`help-tips`) | – (bara text) | – |
 | Om appen (`help-om`) | – (källor + version) | – |
 
 Admin står medvetet INTE i Hjälp (bara Filip). Demo Mode står med sedan 2026-10-04 (rutan överst, Tävlingarna,
-Inställningar) – det är dit tävlingslåset skickar folk.
+Inställningar) – det är dit tävlingspåminnelsen skickar den som bara vill prova.
 
 ---
 
@@ -78,7 +78,7 @@ Filip väljer det (påminn honom när listan har ≥ 5 rader eller är > 1 vecka
    korta punkter. `<b class="hA">…</b>` = orange (det man ska göra, t.ex. "Tryck").
    Flera animeringar i ett avsnitt: rubrik över varje med `<p class="helpSub">…</p>`.
 2. Lägg till en länk i innehållsförteckningen `#helpToc`: `<a href="#help-…"><span>EMOJI</span>Titel</a>`.
-   (Håll antalet jämnt – två kolumner, nu 22. test_help räknar länkarna och animeringarna (19): uppdatera siffrorna.)
+   (Håll antalet jämnt – två kolumner, nu 22. test_help räknar länkarna och animeringarna (20): uppdatera siffrorna.)
 3. Animering: `<div class="helpAnim"><img loading="lazy" src="help/NAMN.webp" alt="…"></div>`
    och en scen i `tools/help_anim.py` (se nedan). Verktyget skriver in `width`/`height`.
 4. Uppdatera tabellen i avsnitt 2 här, och antalet animeringar i test_help.

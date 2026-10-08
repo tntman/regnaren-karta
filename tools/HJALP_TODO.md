@@ -13,43 +13,13 @@ I stället skrivs det som behöver ändras upp här, och Filip väljer när allt
 - Vid en Hjälp-omgång: gör allt i listan (texter, `HELP_NEWS`, animeringar som påverkas –
   `py -3 tools/help_anim.py <namn>`, bygg, testa), flytta raderna till "Klart" med datum.
 
-**Senaste Hjälp-omgång:** 2026-10-06 (omgång 4: allt sedan 2026-09-30 – ny design, Kom igång, Tävlingarna, profiler,
+**Senaste Hjälp-omgång:** 2026-10-08 (omgång 5: Kartanalys Skala/Fiska nu, låset → påminnelse, Hotzone, Loggens filter).
+Föregående: 2026-10-06 (omgång 4: allt sedan 2026-09-30 – ny design, Kom igång, Tävlingarna, profiler,
 spåren, Ledare, Kompass, Namn, Fog of war, tävlingslåset, Storlek/När, startfilmen, Mälaren och Östra Vitten m.m.).
 
 ---
 
 ## Att göra
-
-- [ ] 2026-10-06 – Kartanalys färgar inte kartan: Tumregler, Liknande och Fångster "Tänt" visar bara kartan genom masken,
-  som Kartdata (färg bara med Skala-knappen, raden nedan). Hjälp: Kartanalys (Kartdata-radens "den vanliga kartan syns
-  där det stämmer" gäller nu alla flikar) + animering `analys` (Tumregler Gös visas i blått). Nyhet: "Kartanalys färgar
-  inte kartan – det som stämmer syns som vanligt, resten tonas ner" (BÄTTRE)
-
-- [ ] 2026-10-06 – Kartanalys: knappen **Skala** (vänster om ⓘ) för alla lägen – det som hittas i färg efter hur starkt det
-  stämmer (Djup: mitt i intervallet, Branta kanter: brantast, Tumregler: där regeln stämmer bäst, Liknande/Fångster: mest likt,
-  kombinerat: den svagaste delen). Fångsters egna Tänt/Skala är borta, Likhet styr ytan. Fångster-raden kortare ("Fiska i
-  det tända: 70 % av gäddorna på 15 % av sjön"). Hjälp: Kartanalys (översta raden: Skala; Fångster-raden utan Tänt/Skala) +
-  animering `analys` (visa Skala). Nyhet: "Kartanalys: Skala – se var det stämmer starkast, i alla lägen" (NYTT)
-
-- [ ] 2026-10-07 – Kartanalys: ny flik **Fiska nu** (till höger om Liknande) – var gruppen fått mest fisk vid den här tiden
-  (samma tid på året och dygnet), 5 platser med % på kartan och i en lista, Alla/art, "När" några timmar framåt, Åk hit. Hjälp:
-  Kartanalys (ny del Fiska nu: vad % betyder) + animering `analys` (visa Fiska nu). Nyhet: "Kartanalys: Fiska nu – fem tips på
-  var det nappat mest vid den här tiden" (NYTT)
-
-- [ ] 2026-10-07 – Tävlingslåset borta: platser kan alltid ändras. Mellan tävlingarna en notis första gången per dygn (ingen
-  tävling nu, nästa tävling, Demo Mode, privat fiske/open välkomna, Fortsätt). Hjälp säger fortfarande "kartan är låst" – rätta:
-  Demo Mode (rad 20), Fiskeplatser (142), Tävlingarna (181), Tips (332). Nyhet: "Kartan är öppen hela året – mellan tävlingarna
-  kommer bara en påminnelse" (ÄNDRAT)
-
-- [ ] 2026-10-07 – Kartanalys på Mälaren räknar på 20 m-rutor (stora sjöar), så små grynnor/hålor kan saknas där. Kartanalys-avsnittet:
-  en mening om det (ÄNDRAT)
-
-- [ ] 2026-10-07 – Hotzone (NY): under tävling röd ring där 4 fiskar tagits inom 200 m senaste timmen, 🔥 antal, notis överst
-  (högst en per 45 min, tryck = dit). Filter → Lager → Hotzone. Avsnitt Tävlingarna/Filter + animering (ring som andas, notisen).
-  Nyhet: "Hotzone: se var det nappar just nu under tävlingen" (NY)
-
-- [ ] 2026-10-08 – Loggen har filter: sök plats/person, Alla/Mina/Andras, typprickarna (bara listan). Avsnitt "Spår & loggen" + bild
-  (help/logg.webp). Nyhet: "Loggen: sök och filtrera platserna" (ÄNDRAT)
 
 <!-- mall:
 - [ ] ÅÅÅÅ-MM-DD – Vad som ändrats. Hjälp: avsnitt X (text) + animering `namn`. Nyhet: "…" (NYTT/BÄTTRE/FIXAT)
@@ -58,6 +28,11 @@ spåren, Ledare, Kompass, Namn, Fog of war, tävlingslåset, Storlek/När, start
 ---
 
 ## Klart
+
+- 2026-10-08 – Hjälp-omgång 5 (7 rader): Kartanalys (ingen färgning – kartan syns där det stämmer, **Skala** i alla flikar,
+  ny flik **Fiska nu**, Fångster utan Tänt/Skala, Mälaren räknas i 20 m-rutor); tävlingslåset borta → påminnelsen (Demo
+  Mode-rutan, Fiskeplatser, Tävlingarna, Tips); **Hotzone** (Tävlingarna + Filter, ny animering `hotzone` – nu 20);
+  Loggens filter (Spår & loggen). 7 nyhetsrader. Inspelade igen: `analys` (Skala, Fiska nu), `logg` (filtret), `filter`.
 
 - 2026-10-06 – Hjälp-omgång 4 (≈ 40 rader sedan 2026-09-30): två nya avsnitt utan animering, **Kom igång** (Vem är du?,
   startfilmen, välkomstrutan, menyn med din bild) och **Tävlingarna** (tävlingslåset, live-fångster, Ledare, senaste fisk,
