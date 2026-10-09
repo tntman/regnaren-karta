@@ -59,6 +59,7 @@
   function saveUserName(v){
     userName = canonicalName(v).slice(0, 24);
     try { localStorage.setItem(USER_NAME_KEY, userName); } catch(e){}
+    if (typeof pbShow === 'function') pbShow();   // (a PB that came before the name: yours or someone else's -- 71-pb.js)
   }
 
   var selectedRosterName = null;

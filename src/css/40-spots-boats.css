@@ -294,12 +294,12 @@
   .modalTitle{font-weight:700;font-size:18px;color:var(--offwhite);margin-bottom:6px;}
   .modalDesc{font-size:12.5px;color:var(--text-muted);line-height:1.4;margin-bottom:14px;}
   .modalError{color:var(--danger);font-size:12px;margin:-8px 0 4px;}
-  #boatInfoBackdrop, #lockBackdrop, #msgBackdrop{
+  #boatInfoBackdrop, #lockBackdrop, #msgBackdrop, #pbBackdrop{
     position:fixed;inset:0;background:rgba(4,4,6,.6);z-index:40;
     opacity:0;pointer-events:none;transition:opacity .22s ease;
   }
-  #boatInfoBackdrop.show, #lockBackdrop.show, #msgBackdrop.show{opacity:1;pointer-events:auto;}
-  #boatInfoModal, #lockCard, #msgCard{
+  #boatInfoBackdrop.show, #lockBackdrop.show, #msgBackdrop.show, #pbBackdrop.show{opacity:1;pointer-events:auto;}
+  #boatInfoModal, #lockCard, #msgCard, #pbCard{
     position:fixed;left:50%;top:50%;z-index:41;
     transform:translate(-50%,-50%) scale(.94);
     opacity:0;pointer-events:none;transition:opacity .22s ease, transform .22s ease;
@@ -308,7 +308,7 @@
     border-radius:16px;padding:18px 18px 16px;
     box-shadow:0 12px 32px rgba(0,0,0,.5);
   }
-  #boatInfoModal.show, #lockCard.show, #msgCard.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1);}
+  #boatInfoModal.show, #lockCard.show, #msgCard.show, #pbCard.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1);}
   #boatInfoModal .modalDesc{margin-bottom:12px;}
   #boatInfoModal .sheetRow, #lockCard .sheetRow{flex-wrap:nowrap;}       /* the buttons share the width, not huddled to the right */
   #boatInfoModal .sheetRow button, #lockCard .sheetRow button{flex:1;}

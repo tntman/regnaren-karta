@@ -1,0 +1,19 @@
+  /* ================= PB (js/71-pb.js): your card, the others' note, the confetti, the bubble's rainbow edge ================= */
+  #pbCard{text-align:center;}
+  #pbCard .pbBig{font-size:40px;line-height:1;margin-bottom:6px;}
+  #pbCard .pbFish{display:inline-flex;align-items:center;gap:7px;margin:8px 0 2px;padding:5px 12px;border-radius:14px;font-weight:700;font-size:15px;
+    background:color-mix(in srgb,var(--sp) 18%,transparent);color:color-mix(in srgb,var(--sp) 70%,#fff);}
+  #pbCard .pbDot{width:8px;height:8px;border-radius:50%;background:var(--sp);}
+  #pbCard button{display:block;width:100%;margin-top:8px;}
+  #pbCard .pbNote{margin-top:10px;font-size:11.5px;color:var(--text-muted);}
+  #pbNote{z-index:32;}   /* (the same card and place as Hotzone's note -- on top of it) */
+  #pbNote .tnGo{cursor:default;}
+  .tnIc.pbIc{background:rgba(255,210,63,.16);font-size:24px;}
+  #pbNoteSub{color:var(--text-muted);}
+  #pbConf{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:60;}
+  #pbConf[hidden]{display:none;}
+  .msgBub.pb{border:2px solid transparent;background:linear-gradient(#fff,#fff) padding-box,
+    linear-gradient(90deg,#ff4d6d,#ffb23f,#ffe14d,#34c759,#3a86ff,#a259ff,#ff4d6d) 0 0/300% 100% border-box;animation:pbSweep 2.4s linear infinite;}
+  .msgBub.pb.mine{background:linear-gradient(#FFE7B8,#FFE7B8) padding-box,linear-gradient(90deg,#ff4d6d,#ffb23f,#ffe14d,#34c759,#3a86ff,#a259ff,#ff4d6d) 0 0/300% 100% border-box;}
+  @keyframes pbSweep{to{background-position:0 0,300% 0;}}
+  @media (prefers-reduced-motion: reduce){ .msgBub.pb{animation:none;} }

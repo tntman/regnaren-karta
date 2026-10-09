@@ -140,7 +140,7 @@
       var updatedMs = (d.updatedAt && d.updatedAt.toMillis) ? d.updatedAt.toMillis() : now;
       raw.push({ docId: doc.id, uid: d.uid || doc.id, name: d.name || '', lat: d.lat, lon: d.lon, updatedAt: updatedMs });
       if (d.uid === myUid){               // that's you -- your own big GPS dot already shows it
-        if (d.msg && d.msgAt && (!ownMsg || d.msgAt >= ownMsg.at)) ownMsg = { text: d.msg, at: d.msgAt, sp: d.msgSp, img: d.msgImg };   // (your quick message, after a reload)
+        if (d.msg && d.msgAt && (!ownMsg || d.msgAt >= ownMsg.at)) ownMsg = { text: d.msg, at: d.msgAt, sp: d.msgSp, img: d.msgImg, pb: !!d.msgPb };   // (your quick message, after a reload)
         else if (!d.msg && ownMsg && d.msgAt === 0) ownMsg = null;
         return;
       }
@@ -148,7 +148,7 @@
       var pv = boatPositions[doc.id], spd = pv ? pv.spd || 0 : 0, dt = pv ? (updatedMs - pv.updatedAt) / 1000 : 0;
       if (dt >= 5 && dt <= 300) spd = Math.min(15, haversineKm(pv.lat, pv.lon, d.lat, d.lon) * 1000 / dt);
       else if (dt > 300) spd = 0;
-      fresh[doc.id] = { lat: d.lat, lon: d.lon, name: d.name || '', uid: d.uid, updatedAt: updatedMs, spd: spd, msg: d.msg || null, msgAt: d.msgAt || 0, msgSp: d.msgSp || null, msgImg: d.msgImg || null };
+      fresh[doc.id] = { lat: d.lat, lon: d.lon, name: d.name || '', uid: d.uid, updatedAt: updatedMs, spd: spd, msg: d.msg || null, msgAt: d.msgAt || 0, msgSp: d.msgSp || null, msgImg: d.msgImg || null, msgPb: !!d.msgPb };
     });
     boatPositions = fresh;
     allPositions = raw;

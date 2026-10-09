@@ -21,6 +21,9 @@ spåren, Ledare, Kompass, Namn, Fog of war, tävlingslåset, Storlek/När, start
 
 ## Att göra
 
+- [ ] 2026-10-09 – PB under tävling (NY): din ruta "Grattis till ditt PB!" + Skicka snabbmess (regnbågskant), de andra får en notis överst och
+  konfetti (1 h, ✕ = tonar ut). Hjälp: Tävlingarna + Snabbmeddelanden (PB-bubblan). Nyhet: "PB: konfetti när någon slår sitt personbästa" (NY)
+
 <!-- mall:
 - [ ] ÅÅÅÅ-MM-DD – Vad som ändrats. Hjälp: avsnitt X (text) + animering `namn`. Nyhet: "…" (NYTT/BÄTTRE/FIXAT)
 -->

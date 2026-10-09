@@ -20,3 +20,7 @@ Kod: `src/js/64-messages.js`, CSS i `src/css/75-messages.css`. Test: `tests/test
 Under en pågående tävling ligger din senaste godkända live-fångst först i valen (`#msgFishBtn`, "Gädda 78 cm · 14:32"),
 skickas för hand. Positionen får `msgSp` (art → kantens färg: gädda #35D24A, abborre #FF7A1A, gös #3A86FF) och `msgImg`
 (fotot, visas i `#msgCard` – bara `res.cloudinary.com`-adresser). Namnet i rutan öppnar profilen (`js/67-profiles.js`).
+
+## PB-meddelandet (2026-10-09)
+"PB! Gädda 92 🎉" från PB-rutan (`js/71-pb.js`): som fångstmeddelandet (artens färg, bilden) + `msgPb: true` i positions-dokumentet →
+bubblan får klassen `pb`: tunn regnbågskant som sveper (`css/78-pb.css`) medan meddelandet är färskt (3 min). Ett vanligt meddelande sätter `msgPb: false`.

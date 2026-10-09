@@ -165,6 +165,11 @@ Uppdatera rätt anteckning när något ändras.
   tävling = 4 fiskar inom 200 m senaste timmen (vem som helst) → röd streckad ring som andas, 🔥 antal; lever så länge det nappar (fisk inom en timme).
   Nytt ställe → notis överst (`#hzNote`, `.topNote`: art, närmaste OSM-namn, avstånd, tryck = dit), högst en per 45 min (`ffmap_hotzone_note_v1`/`lakeKey`,
   överlever omladdning). Live-fångsterna hämtas var 2:a min när den är på. Gränserna provkörda på riktiga tävlingar (Filip 2026-10-07).
+- **PB** (`js/71-pb.js`, `css/78-pb.css`, Filip 2026-10-09): under en pågående tävling räknar varje telefon live-fångsterna (`catchLive.all`):
+  godkänd fisk längre än personens längsta tidigare av arten (profilens TOP – inte om kopian hämtats efter fångsten och är lika lång –, historiken,
+  tidigare i tävlingen) = PB; första fisken av en art räknas inte. Bara senaste timmen, en gång var (`ffmap_pb_v1`, överlever omladdning).
+  Din: rutan "Grattis till ditt PB!" + **Skicka snabbmess med PB-fisken** ("PB! Gädda 92 🎉", `msgPb` i positions → `.msgBub.pb` regnbågskant), konfetti tills
+  rutan stängs. Andras: notis överst `#pbNote` (`.topNote`, samma storlek och plats som Hotzones, ovanpå den) + konfetti i 1 h; ✕ = tonar ut på 30 s.
 - **Kraschlogg** (Inställningar → Avancerat → Senaste krasch, `js/91-crashlog.js`): en rad om vad appen gör sparas i localStorage var 2:a
   sekund; stängdes sidan inte rent (pagehide) visas raden vid nästa start. Rader samlas i `tools/KRASCHLOGG.md`.
 - **Minnesbudget** (`tools/PLAN_MINNE.md`): beräkningar för hela sjön på `workGrid()` (≤ 1,5 M rutor, Mälaren 20 m), skärmlager via

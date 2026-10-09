@@ -70,13 +70,13 @@
     addUsage('w', 1);
     try {
       posCol.doc(posDocId(myUid)).set({ lat: ll.lat, lon: ll.lon, name: userName || '', uid: myUid, lake: LAKE_ID, msg: text, msgAt: at,
-        msgSp: (fish && fish.sp) || null, msgImg: (fish && fish.img) || null,   // (a catch: its species' colour, its photo)
+        msgSp: (fish && fish.sp) || null, msgImg: (fish && fish.img) || null, msgPb: !!(fish && fish.pb),   // (a catch: its species' colour, its photo; a PB: the rainbow edge, 71-pb.js)
         updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true }).catch(function(e){ console.warn('meddelande', e); });
     } catch(e){ console.warn('meddelande', e); }
   }
   function sendMsg(text, fish){
     if (!(lastOwnLatLon && lastFix && lastFix.onMap)){ showMsgToast('Snabbmeddelanden fungerar när du är vid sjön.'); return; }
-    ownMsg = { text: text, at: Date.now(), sp: fish && fish.sp, img: fish && fish.img };
+    ownMsg = { text: text, at: Date.now(), sp: fish && fish.sp, img: fish && fish.img, pb: !!(fish && fish.pb) };
     writeMsg(text, ownMsg.at, fish);
     renderMessages();
     showMsgToast('Syns i 7 minuter, tryck på meddelandet för att ta bort.');
@@ -94,11 +94,11 @@
   function renderMessages(){
     if (!msgLayerEl) return;
     var now = Date.now(), items = [];
-    if (ownMsg && now - ownMsg.at < MSG_MS && lastOwnLatLon) items.push({ key: 'me', mine: true, text: ownMsg.text, who: 'du', at: ownMsg.at, sp: MSG_SP_COL[ownMsg.sp] && ownMsg.sp, img: msgImgOk(ownMsg.img), lat: lastOwnLatLon.lat, lon: lastOwnLatLon.lon, t: now, spd: 0 });
+    if (ownMsg && now - ownMsg.at < MSG_MS && lastOwnLatLon) items.push({ key: 'me', mine: true, text: ownMsg.text, who: 'du', at: ownMsg.at, sp: MSG_SP_COL[ownMsg.sp] && ownMsg.sp, img: msgImgOk(ownMsg.img), pb: ownMsg.pb, lat: lastOwnLatLon.lat, lon: lastOwnLatLon.lon, t: now, spd: 0 });
     Object.keys(boatPositions || {}).forEach(function(id){
       var b = boatPositions[id];
       if (!b.msg || !b.msgAt || now - b.msgAt >= MSG_MS || msgHidden[id + '@' + b.msgAt]) return;
-      items.push({ key: id + '@' + b.msgAt, mine: false, text: b.msg, who: b.name, at: b.msgAt, sp: MSG_SP_COL[b.msgSp] && b.msgSp, img: msgImgOk(b.msgImg), lat: b.lat, lon: b.lon, t: b.updatedAt, spd: b.spd });
+      items.push({ key: id + '@' + b.msgAt, mine: false, text: b.msg, who: b.name, at: b.msgAt, sp: MSG_SP_COL[b.msgSp] && b.msgSp, img: msgImgOk(b.msgImg), pb: b.msgPb, lat: b.lat, lon: b.lon, t: b.updatedAt, spd: b.spd });
     });
     // the same boat (as for the boat pins: sameBoatM) = one bubble; newest first
     items.sort(function(a, b){ return b.at - a.at; });
@@ -114,7 +114,7 @@
       keep[gk] = 1;
       var el = null; Array.prototype.forEach.call(msgLayerEl.children, function(c){ if (c.getAttribute('data-k') === gk) el = c; });
       if (!el){ el = document.createElement('div'); el.setAttribute('data-k', gk); msgLayerEl.appendChild(el); }
-      el.className = 'msgBub' + (g.items.length === 1 && g.items[0].mine ? ' mine' : '') + (g.items.length > 1 ? ' multi' : '');
+      el.className = 'msgBub' + (g.items.length === 1 && g.items[0].mine ? ' mine' : '') + (g.items.length > 1 ? ' multi' : '') + (g.items.some(function(it){ return it.pb && now - it.at < MSG_FADE_MS; }) ? ' pb' : '');   // (a fresh PB: the rainbow edge)
       var html = g.items.map(function(it){
         return '<div class="mLine' + (it.mine ? ' mine' : '') + '" data-k="' + escHtml(it.key.replace(/"/g, '')) + '"><span class="mT' + msgKind(it, now) + '">' + escHtml(it.text) + '</span><small>' + escHtml(it.who || '') + '</small></div>';
       }).join('');

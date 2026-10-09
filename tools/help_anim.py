@@ -506,11 +506,11 @@ def s_hotzone(p):
     near B1 -> a new ring + the note at the top; tap it -> the map goes there"""
     def ms(minutes): return int((time.time() - minutes * 60) * 1000)
     def row(m, at, k, who, sp='abborre'):
-        return dict(fakefb.api_row(ms(m), 'reg9', who, sp, 30 + k, round(at[0] + 0.00018 * (k % 3 - 1), 6), round(at[1] + 0.0003 * (k % 2), 6)), approved=True)
+        return dict(fakefb.api_row(ms(m), 'reg9', who, sp, 60 - k, round(at[0] + 0.00018 * (k % 3 - 1), 6), round(at[1] + 0.0003 * (k % 2), 6)), approved=True)
     old = [row(50 - 6 * k, P['E1'], k, ['Calle', 'Pia', 'Olle'][k % 3]) for k in range(5)]
     new = [row(30 - 7 * k, P['B1'], k, ['Olle', 'Calle', 'Pia', 'Calle'][k], 'gadda' if k == 1 else 'abborre') for k in range(4)]
     comps = [{'competition_id': 'reg9', 'competition_name': 'Regnaren 9', 'date': time.strftime('%Y-%m-%d'), 'status': 'active', 'water': 'Regnaren'}]
-    zid = '|'.join([str(fakefb_ms(old[3]['timestamp'])), old[3]['name'], 'abborre', '33'])   # (the spot by E1 = its 4th fish: already told)
+    zid = '|'.join([str(fakefb_ms(old[3]['timestamp'])), old[3]['name'], 'abborre', '57'])   # (the spot by E1 = its 4th fish: already told)
     init = "try { localStorage.setItem('ffmap_hotzone_note_v1', JSON.stringify({ at: Date.now() - 50 * 60e3, ids: { '%s': Date.now() } })); } catch(e){}" % zid
     b, ctx, pg = open_app(p, api={'heatmap': [], 'competitions': comps, 'live': {'reg9': old + new[:3]}}, init=init)
     for r in old + new: check_water(pg, (r['lat'], r['lng']))

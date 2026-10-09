@@ -11,7 +11,7 @@ B3 = (58.887269, 15.772629)
 Z0 = (58.887421, 15.775569); Z1 = (58.8858, 15.7835); Z2 = (58.8893, 15.7630)   # (on the water, 500-700 m apart)
 TODAY = datetime.date.today().isoformat()
 def ms_ago(minutes): return int((datetime.datetime.now() - datetime.timedelta(minutes=minutes)).timestamp() * 1000)
-def fish(mins, at, k, who='Calle', sp='abborre'): return dict(fakefb.api_row(ms_ago(mins), 'reg2', who, sp, 30 + k, at[0] + 0.0002 * (k % 3 - 1), at[1] + 0.0003 * (k % 2)), approved=True)
+def fish(mins, at, k, who='Calle', sp='abborre'): return dict(fakefb.api_row(ms_ago(mins), 'reg2', who, sp, 60 - k, at[0] + 0.0002 * (k % 3 - 1), at[1] + 0.0003 * (k % 2)), approved=True)
 comps = [{'competition_id': 'reg2', 'competition_name': 'Regnaren 2', 'date': TODAY, 'status': 'active', 'water': 'Regnaren'}]
 def hz(pg): return pg.evaluate('window.__ffHotzone()')
 def refetch(ctx, pg, live):

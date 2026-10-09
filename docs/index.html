@@ -1066,12 +1066,12 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   .modalTitle{font-weight:700;font-size:18px;color:var(--offwhite);margin-bottom:6px;}
   .modalDesc{font-size:12.5px;color:var(--text-muted);line-height:1.4;margin-bottom:14px;}
   .modalError{color:var(--danger);font-size:12px;margin:-8px 0 4px;}
-  #boatInfoBackdrop, #lockBackdrop, #msgBackdrop{
+  #boatInfoBackdrop, #lockBackdrop, #msgBackdrop, #pbBackdrop{
     position:fixed;inset:0;background:rgba(4,4,6,.6);z-index:40;
     opacity:0;pointer-events:none;transition:opacity .22s ease;
   }
-  #boatInfoBackdrop.show, #lockBackdrop.show, #msgBackdrop.show{opacity:1;pointer-events:auto;}
-  #boatInfoModal, #lockCard, #msgCard{
+  #boatInfoBackdrop.show, #lockBackdrop.show, #msgBackdrop.show, #pbBackdrop.show{opacity:1;pointer-events:auto;}
+  #boatInfoModal, #lockCard, #msgCard, #pbCard{
     position:fixed;left:50%;top:50%;z-index:41;
     transform:translate(-50%,-50%) scale(.94);
     opacity:0;pointer-events:none;transition:opacity .22s ease, transform .22s ease;
@@ -1080,7 +1080,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     border-radius:16px;padding:18px 18px 16px;
     box-shadow:0 12px 32px rgba(0,0,0,.5);
   }
-  #boatInfoModal.show, #lockCard.show, #msgCard.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1);}
+  #boatInfoModal.show, #lockCard.show, #msgCard.show, #pbCard.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1);}
   #boatInfoModal .modalDesc{margin-bottom:12px;}
   #boatInfoModal .sheetRow, #lockCard .sheetRow{flex-wrap:nowrap;}       /* the buttons share the width, not huddled to the right */
   #boatInfoModal .sheetRow button, #lockCard .sheetRow button{flex:1;}
@@ -1818,6 +1818,25 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     background:#FF3B3B;color:#fff;font-weight:700;font-size:11px;line-height:19px;box-shadow:0 1px 5px rgba(0,0,0,.5);}
   @media (prefers-reduced-motion: reduce){ .hzRing{animation:none;} }
   .tnIc.hzIc{background:rgba(255,59,59,.18);font-size:24px;}
+  /* ================= PB (js/71-pb.js): your card, the others' note, the confetti, the bubble's rainbow edge ================= */
+  #pbCard{text-align:center;}
+  #pbCard .pbBig{font-size:40px;line-height:1;margin-bottom:6px;}
+  #pbCard .pbFish{display:inline-flex;align-items:center;gap:7px;margin:8px 0 2px;padding:5px 12px;border-radius:14px;font-weight:700;font-size:15px;
+    background:color-mix(in srgb,var(--sp) 18%,transparent);color:color-mix(in srgb,var(--sp) 70%,#fff);}
+  #pbCard .pbDot{width:8px;height:8px;border-radius:50%;background:var(--sp);}
+  #pbCard button{display:block;width:100%;margin-top:8px;}
+  #pbCard .pbNote{margin-top:10px;font-size:11.5px;color:var(--text-muted);}
+  #pbNote{z-index:32;}   /* (the same card and place as Hotzone's note -- on top of it) */
+  #pbNote .tnGo{cursor:default;}
+  .tnIc.pbIc{background:rgba(255,210,63,.16);font-size:24px;}
+  #pbNoteSub{color:var(--text-muted);}
+  #pbConf{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:60;}
+  #pbConf[hidden]{display:none;}
+  .msgBub.pb{border:2px solid transparent;background:linear-gradient(#fff,#fff) padding-box,
+    linear-gradient(90deg,#ff4d6d,#ffb23f,#ffe14d,#34c759,#3a86ff,#a259ff,#ff4d6d) 0 0/300% 100% border-box;animation:pbSweep 2.4s linear infinite;}
+  .msgBub.pb.mine{background:linear-gradient(#FFE7B8,#FFE7B8) padding-box,linear-gradient(90deg,#ff4d6d,#ffb23f,#ffe14d,#34c759,#3a86ff,#a259ff,#ff4d6d) 0 0/300% 100% border-box;}
+  @keyframes pbSweep{to{background-position:0 0,300% 0;}}
+  @media (prefers-reduced-motion: reduce){ .msgBub.pb{animation:none;} }
   /* ================= bottom panels (Kartanalys, a message, a spot): see tools/UI.md ================= */
   /* ---- panels that can be dragged smaller: the grip always drags; once smaller, the rest scrolls ---- */
   #anPanel, #wpSheet, #msgCard, #hmPanel, #hmCard, #pfCard, #trkPanel{touch-action:pan-y;}
@@ -1968,7 +1987,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   #wxCard{background:var(--navy);border:none;border-radius:20px;box-shadow:0 18px 50px rgba(0,0,0,.55);}
   .wxTile{background:var(--s2);border:none;border-radius:16px;}
   .wxH{background:var(--s2);}
-  #boatInfoModal, #lockCard, #msgCard, #measurePanel{background:var(--navy);border:none;border-radius:20px;}
+  #boatInfoModal, #lockCard, #msgCard, #pbCard, #measurePanel{background:var(--navy);border:none;border-radius:20px;}
   /* a name that opens the person's profile: a › after it (never underlined) */
   #boatInfoName.pfLink::after, #msgCardWho.pfLink::after, #boatInfoCatches .biWho.pfLink::after, .wpTile.pfLink b::after{content:' ›';color:var(--text-muted);font-weight:400;}
   .setSec, .settingsRow, .adminCard, .helpCard{background:var(--navy);border:none;border-radius:20px;}
@@ -2091,7 +2110,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   @keyframes chipPop{45%{transform:scale(1.07);}}
   .anChips button.on, .typeSeg button.active{animation:chipPop .32s cubic-bezier(.34,1.6,.64,1);}
   /* boat card and the lock card pop in with a little spring */
-  #boatInfoModal, #lockCard, #msgCard{transition:opacity .2s ease,transform .42s cubic-bezier(.34,1.45,.64,1);transform:translate(-50%,-50%) scale(.88);}
+  #boatInfoModal, #lockCard, #msgCard, #pbCard{transition:opacity .2s ease,transform .42s cubic-bezier(.34,1.45,.64,1);transform:translate(-50%,-50%) scale(.88);}
 
   @media (prefers-reduced-motion:reduce){
     #menuPanel.show, #mapTypePop.show, #visMore:not([hidden]), #menuPanel.show > *, #lakeList > *, #mapTypePop.show > *, #visMore .visCol > *, #msgPop.show button, #undoToast.show,
@@ -2880,6 +2899,8 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   </div>
   <!-- every time a name is chosen (after the start film, 34-name.js): the way to Hjälp -->
   <div id="welcomeNote" class="topNote" role="status"><button type="button" id="welcomeNoteGo" class="tnGo"><span class="tnIc"><img src="ff_logo.svg" alt=""></span><span><b>Välkommen till Fiskfiskarnas Kart app!</b>Tryck här för att komma till hjälpsidan.</span></button><button type="button" id="welcomeNoteClose" class="tnX" aria-label="Stäng">✕</button></div>
+  <canvas id="pbConf" aria-hidden="true" hidden></canvas>
+  <div id="pbNote" class="topNote" role="status"><div class="tnGo"><span class="tnIc pbIc">🎉</span><span><b id="pbNoteTitle"></b><span id="pbNoteSub"></span></span></div><button type="button" id="pbNoteClose" class="tnX" aria-label="Stäng">✕</button></div>
   <div id="hzNote" class="topNote" role="status"><button type="button" id="hzNoteGo" class="tnGo"><span class="tnIc hzIc">🔥</span><span><b id="hzNoteTitle"></b><span id="hzNoteSub"></span></span></button><button type="button" id="hzNoteClose" class="tnX" aria-label="Stäng">✕</button></div>
   <div id="wakeNote" role="status"><button type="button" id="wakeNoteClose" aria-label="Stäng">✕</button>
     <b>☀ Håll skärmen tänd är avstängd</b>
@@ -3442,6 +3463,16 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     </div>
   </div>
 
+  <div id="pbBackdrop"></div>
+  <div id="pbCard" role="dialog" aria-labelledby="pbTitle">
+    <div class="pbBig">🎉</div>
+    <div class="modalTitle" id="pbTitle">Grattis till ditt PB!</div>
+    <div class="pbFish"><span class="pbDot"></span><span id="pbFish"></span></div>
+    <div class="modalDesc" id="pbWas"></div>
+    <button id="pbSend" class="btnPrimary" type="button">Skicka snabbmess med PB-fisken</button>
+    <button id="pbClose" class="btnGhost" type="button">Stäng</button>
+    <div class="pbNote">Konfettin slutar när du stänger rutan.</div>
+  </div>
   <div id="lockBackdrop"></div>
   <div id="lockCard" role="dialog" aria-labelledby="lockTitle">
     <div class="modalTitle" id="lockTitle">Ingen tävling pågår</div>
@@ -4991,7 +5022,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
       var updatedMs = (d.updatedAt && d.updatedAt.toMillis) ? d.updatedAt.toMillis() : now;
       raw.push({ docId: doc.id, uid: d.uid || doc.id, name: d.name || '', lat: d.lat, lon: d.lon, updatedAt: updatedMs });
       if (d.uid === myUid){               // that's you -- your own big GPS dot already shows it
-        if (d.msg && d.msgAt && (!ownMsg || d.msgAt >= ownMsg.at)) ownMsg = { text: d.msg, at: d.msgAt, sp: d.msgSp, img: d.msgImg };   // (your quick message, after a reload)
+        if (d.msg && d.msgAt && (!ownMsg || d.msgAt >= ownMsg.at)) ownMsg = { text: d.msg, at: d.msgAt, sp: d.msgSp, img: d.msgImg, pb: !!d.msgPb };   // (your quick message, after a reload)
         else if (!d.msg && ownMsg && d.msgAt === 0) ownMsg = null;
         return;
       }
@@ -4999,7 +5030,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
       var pv = boatPositions[doc.id], spd = pv ? pv.spd || 0 : 0, dt = pv ? (updatedMs - pv.updatedAt) / 1000 : 0;
       if (dt >= 5 && dt <= 300) spd = Math.min(15, haversineKm(pv.lat, pv.lon, d.lat, d.lon) * 1000 / dt);
       else if (dt > 300) spd = 0;
-      fresh[doc.id] = { lat: d.lat, lon: d.lon, name: d.name || '', uid: d.uid, updatedAt: updatedMs, spd: spd, msg: d.msg || null, msgAt: d.msgAt || 0, msgSp: d.msgSp || null, msgImg: d.msgImg || null };
+      fresh[doc.id] = { lat: d.lat, lon: d.lon, name: d.name || '', uid: d.uid, updatedAt: updatedMs, spd: spd, msg: d.msg || null, msgAt: d.msgAt || 0, msgSp: d.msgSp || null, msgImg: d.msgImg || null, msgPb: !!d.msgPb };
     });
     boatPositions = fresh;
     allPositions = raw;
@@ -6291,6 +6322,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   function saveUserName(v){
     userName = canonicalName(v).slice(0, 24);
     try { localStorage.setItem(USER_NAME_KEY, userName); } catch(e){}
+    if (typeof pbShow === 'function') pbShow();   // (a PB that came before the name: yours or someone else's -- 71-pb.js)
   }
 
   var selectedRosterName = null;
@@ -11011,13 +11043,13 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     addUsage('w', 1);
     try {
       posCol.doc(posDocId(myUid)).set({ lat: ll.lat, lon: ll.lon, name: userName || '', uid: myUid, lake: LAKE_ID, msg: text, msgAt: at,
-        msgSp: (fish && fish.sp) || null, msgImg: (fish && fish.img) || null,   // (a catch: its species' colour, its photo)
+        msgSp: (fish && fish.sp) || null, msgImg: (fish && fish.img) || null, msgPb: !!(fish && fish.pb),   // (a catch: its species' colour, its photo; a PB: the rainbow edge, 71-pb.js)
         updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true }).catch(function(e){ console.warn('meddelande', e); });
     } catch(e){ console.warn('meddelande', e); }
   }
   function sendMsg(text, fish){
     if (!(lastOwnLatLon && lastFix && lastFix.onMap)){ showMsgToast('Snabbmeddelanden fungerar när du är vid sjön.'); return; }
-    ownMsg = { text: text, at: Date.now(), sp: fish && fish.sp, img: fish && fish.img };
+    ownMsg = { text: text, at: Date.now(), sp: fish && fish.sp, img: fish && fish.img, pb: !!(fish && fish.pb) };
     writeMsg(text, ownMsg.at, fish);
     renderMessages();
     showMsgToast('Syns i 7 minuter, tryck på meddelandet för att ta bort.');
@@ -11035,11 +11067,11 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   function renderMessages(){
     if (!msgLayerEl) return;
     var now = Date.now(), items = [];
-    if (ownMsg && now - ownMsg.at < MSG_MS && lastOwnLatLon) items.push({ key: 'me', mine: true, text: ownMsg.text, who: 'du', at: ownMsg.at, sp: MSG_SP_COL[ownMsg.sp] && ownMsg.sp, img: msgImgOk(ownMsg.img), lat: lastOwnLatLon.lat, lon: lastOwnLatLon.lon, t: now, spd: 0 });
+    if (ownMsg && now - ownMsg.at < MSG_MS && lastOwnLatLon) items.push({ key: 'me', mine: true, text: ownMsg.text, who: 'du', at: ownMsg.at, sp: MSG_SP_COL[ownMsg.sp] && ownMsg.sp, img: msgImgOk(ownMsg.img), pb: ownMsg.pb, lat: lastOwnLatLon.lat, lon: lastOwnLatLon.lon, t: now, spd: 0 });
     Object.keys(boatPositions || {}).forEach(function(id){
       var b = boatPositions[id];
       if (!b.msg || !b.msgAt || now - b.msgAt >= MSG_MS || msgHidden[id + '@' + b.msgAt]) return;
-      items.push({ key: id + '@' + b.msgAt, mine: false, text: b.msg, who: b.name, at: b.msgAt, sp: MSG_SP_COL[b.msgSp] && b.msgSp, img: msgImgOk(b.msgImg), lat: b.lat, lon: b.lon, t: b.updatedAt, spd: b.spd });
+      items.push({ key: id + '@' + b.msgAt, mine: false, text: b.msg, who: b.name, at: b.msgAt, sp: MSG_SP_COL[b.msgSp] && b.msgSp, img: msgImgOk(b.msgImg), pb: b.msgPb, lat: b.lat, lon: b.lon, t: b.updatedAt, spd: b.spd });
     });
     // the same boat (as for the boat pins: sameBoatM) = one bubble; newest first
     items.sort(function(a, b){ return b.at - a.at; });
@@ -11055,7 +11087,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
       keep[gk] = 1;
       var el = null; Array.prototype.forEach.call(msgLayerEl.children, function(c){ if (c.getAttribute('data-k') === gk) el = c; });
       if (!el){ el = document.createElement('div'); el.setAttribute('data-k', gk); msgLayerEl.appendChild(el); }
-      el.className = 'msgBub' + (g.items.length === 1 && g.items[0].mine ? ' mine' : '') + (g.items.length > 1 ? ' multi' : '');
+      el.className = 'msgBub' + (g.items.length === 1 && g.items[0].mine ? ' mine' : '') + (g.items.length > 1 ? ' multi' : '') + (g.items.some(function(it){ return it.pb && now - it.at < MSG_FADE_MS; }) ? ' pb' : '');   // (a fresh PB: the rainbow edge)
       var html = g.items.map(function(it){
         return '<div class="mLine' + (it.mine ? ' mine' : '') + '" data-k="' + escHtml(it.key.replace(/"/g, '')) + '"><span class="mT' + msgKind(it, now) + '">' + escHtml(it.text) + '</span><small>' + escHtml(it.who || '') + '</small></div>';
       }).join('');
@@ -12177,6 +12209,105 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   });
   window.__ffHotzone = function(){ hzUpdate(); return { on: hzOn, zones: hzZones.map(function(z){ return { n: z.n, lat: z.lat, lon: z.lon }; }),
     note: hzNote.classList.contains('show') ? document.getElementById('hzNoteTitle').textContent + ' | ' + document.getElementById('hzNoteSub').textContent : null }; };   // (for the tests)
+  /* ================= PB (personbästa) under a competition =================
+     Every phone checks the live catches of the competition going on (catchLive.all, all waters): a counted catch longer
+     than that person's longest earlier fish of the species -- in all of Fiskfiskarna's competitions (the profile's TOP,
+     if the copy was fetched before the catch), the history and earlier in this competition -- is a PB. Someone's very
+     first fish of a species is not. Only PBs from the last hour, each once (ffmap_pb_v1).
+     - Yours: a card "Grattis till ditt PB!" with "Skicka snabbmess med PB-fisken" (the bubble gets a rainbow edge, 64-messages.js);
+       confetti until the card is closed.
+     - Someone else's: a note at the top (like Hotzone's) + confetti for an hour; ✕ = the confetti fades over 30 s.
+     Survives a reload/rotation (the state is in localStorage). Filip 2026-10-09. */
+  var PB_KEY = 'ffmap_pb_v1', PB_WIN = 3600e3, PB_FADE = 30;
+  var pbState = { seen: {}, on: null };   // on: { c, prev, mine, until, closed }
+  try { pbState = Object.assign(pbState, JSON.parse(localStorage.getItem(PB_KEY) || '{}')); } catch(e){}
+  var pbCard = document.getElementById('pbCard'), pbBackdrop = document.getElementById('pbBackdrop'), pbNote = document.getElementById('pbNote');
+  var pbCanvas = document.getElementById('pbConf'), pbRun = null;
+  function pbSave(){ try { localStorage.setItem(PB_KEY, JSON.stringify(pbState)); } catch(e){} }
+  function pbCm(v){ return String(v).replace('.', ','); }
+
+  // the longest of this person's species before the catch, or 0 (none)
+  function pbPrev(c, all){
+    var who = catchPlain(c.who), best = 0, P = profStore(), p = P && profKey(P, c.who);
+    // (the profile's TOP: a copy fetched after the catch may already hold it -- equal then = this fish, not an earlier one)
+    if (p && p.top && p.top[c.sp] && (!catchHist || catchHist.at < c.t || p.top[c.sp] !== c.cm)) best = p.top[c.sp];
+    all.forEach(function(x){ if (x.t < c.t && x.sp === c.sp && !x.no && catchPlain(x.who) === who && x.cm > best) best = x.cm; });
+    return best;
+  }
+  function pbCheck(){
+    var now = Date.now(), live = catchLive && catchLiveComp() ? catchLive.all : [];
+    var all = live.concat(catchData ? catchData.comp : []), fresh = null;
+    live.forEach(function(c){
+      if (c.no || !c.who || pbState.seen[c.id] || now - c.t > PB_WIN) return;
+      pbState.seen[c.id] = c.t;
+      var prev = pbPrev(c, all);
+      if (prev && c.cm > prev && (!fresh || c.t > fresh.c.t)) fresh = { c: { id: c.id, t: c.t, who: c.who, sp: c.sp, cm: c.cm, img: c.img || null }, prev: prev };
+    });
+    Object.keys(pbState.seen).forEach(function(k){ if (now - pbState.seen[k] > 2 * PB_WIN) delete pbState.seen[k]; });
+    if (fresh){ fresh.until = fresh.c.t + PB_WIN; pbState.on = fresh; }
+    pbSave(); pbShow();
+  }
+  function pbShow(){
+    var o = pbState.on;
+    if (!o || o.closed || Date.now() > o.until){ pbHide(); return; }
+    o.mine = !!userName && catchPlain(o.c.who) === catchPlain(userName);   // (asked each time: the name may come after the catches)
+    var fish = hmSpName(o.c.sp) + ' ' + pbCm(o.c.cm) + ' cm';
+    pbCard.style.setProperty('--sp', MSG_SP_COL[o.c.sp]);
+    if (o.mine){
+      document.getElementById('pbFish').textContent = fish;
+      document.getElementById('pbWas').textContent = 'Ditt förra bästa: ' + pbCm(o.prev) + ' cm';
+      pbBackdrop.classList.add('show'); pbCard.classList.add('show'); pbNote.classList.remove('show');
+    } else {
+      document.getElementById('pbNoteTitle').textContent = o.c.who + ' fick PB!';
+      document.getElementById('pbNoteSub').textContent = fish + ' · förra bästa ' + pbCm(o.prev) + ' cm';
+      pbBackdrop.classList.remove('show'); pbCard.classList.remove('show'); pbNote.classList.add('show');
+    }
+    pbConfetti(o.mine ? 0 : o.until);
+  }
+  function pbHide(){ pbBackdrop.classList.remove('show'); pbCard.classList.remove('show'); pbNote.classList.remove('show'); }
+  function pbClose(){   // yours: the confetti stops at once; someone else's: it fades over 30 s
+    var o = pbState.on; if (!o) return;
+    o.closed = true; pbSave(); pbHide();
+    if (pbRun) pbRun.fade = o.mine ? 0.01 : PB_FADE;
+  }
+  pbBackdrop.addEventListener('click', pbClose);
+  document.getElementById('pbClose').addEventListener('click', pbClose);
+  document.getElementById('pbSend').addEventListener('click', function(){
+    var o = pbState.on; pbClose();
+    if (o) sendMsg(Array.from('PB! ' + hmSpName(o.c.sp) + ' ' + pbCm(o.c.cm) + ' 🎉').slice(0, MSG_OWN_MAX).join(''), { sp: o.c.sp, img: o.c.img, pb: true });
+  });
+  document.getElementById('pbNoteClose').addEventListener('click', pbClose);
+
+  // the confetti over the whole screen (canvas, never takes a tap); until = stop then (0 = until closed)
+  var PB_COLS = ['#F09A60', '#FFD23F', '#34C759', '#3A86FF', '#FF4D6D', '#ffffff'];
+  function pbConfetti(until){
+    if (pbRun){ if (!pbRun.fade) pbRun.until = until; return; }
+    if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var cx = pbCanvas.getContext('2d'), R = { until: until, fade: 0, alpha: 1, ps: [] }, W = 0, H = 0;
+    function add(y){ R.ps.push({ x: Math.random() * W, y: y, w: 8 + Math.random() * 10, h: 5 + Math.random() * 7, c: PB_COLS[Math.random() * PB_COLS.length | 0],
+      vy: 1.6 + Math.random() * 2.2, vx: -0.6 + Math.random() * 1.2, r: Math.random() * 6, vr: -0.1 + Math.random() * 0.2, sw: Math.random() * 6 }); }
+    function size(){ W = pbCanvas.width = innerWidth * 2; H = pbCanvas.height = innerHeight * 2; }
+    size(); for (var i = 0; i < 70; i++) add(Math.random() * H);
+    pbCanvas.hidden = false; pbRun = R;
+    // ponytail: one canvas redrawn every frame for up to an hour -- fine for ~90 pieces; pause when hidden if battery matters
+    (function tick(){
+      if (pbRun !== R) return;
+      if (W !== innerWidth * 2) size();
+      if (!R.fade && R.until && Date.now() > R.until) R.fade = PB_FADE;
+      if (R.fade){ R.alpha -= 1 / (R.fade * 60); if (R.alpha <= 0){ pbRun = null; cx.clearRect(0, 0, W, H); pbCanvas.hidden = true; return; } }
+      else if (R.ps.length < 90) add(-20);
+      cx.clearRect(0, 0, W, H); cx.globalAlpha = Math.max(0, R.alpha);
+      R.ps.forEach(function(q){
+        q.y += q.vy; q.sw += 0.05; q.x += q.vx + Math.sin(q.sw) * 0.8; q.r += q.vr;
+        cx.save(); cx.translate(q.x, q.y); cx.rotate(q.r); cx.scale(1, Math.abs(Math.cos(q.sw * 1.3))); cx.fillStyle = q.c; cx.fillRect(-q.w / 2, -q.h / 2, q.w, q.h); cx.restore();
+      });
+      R.ps = R.ps.filter(function(q){ return q.y < H + 30; });
+      requestAnimationFrame(tick);
+    })();
+  }
+  catchListeners.push(pbCheck);
+  pbShow();   // (after a reload: a PB that is still going on)
+  window.__ffPb = function(){ return { card: pbCard.classList.contains('show'), note: pbNote.classList.contains('show') ? document.getElementById('pbNoteTitle').textContent + ' | ' + document.getElementById('pbNoteSub').textContent : null, confetti: !!pbRun, fade: pbRun ? pbRun.fade : null, on: pbState.on }; };   // (for the tests)
   /* ---------------- init ---------------- */
   var appStarted = false; // true once geolocation + Firebase have been started for this page load
   function continueBootAfterName(){
