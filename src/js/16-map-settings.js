@@ -132,7 +132,10 @@
     }).join('') +
       // last: the heat map of the catches -- not a map picture: it opens its own panel (68-heatmap.js)
       '<button type="button" class="styleOpt hmOpt' + (hmOn ? ' active' : '') + '" data-heat="1"><span class="hmThumb"></span>' +
-      '<span class="soText"><span class="soName">Heatmap</span><span class="soDesc">' + (hmOn ? 'På · öppnar menyn' : 'Fångster · öppnar meny') + '</span></span><span class="hmArrow">›</span></button>';
+      '<span class="soText"><span class="soName">Heatmap</span><span class="soDesc">' + (hmOn ? 'På · öppnar menyn' : 'Fångster · öppnar meny') + '</span></span><span class="hmArrow">›</span></button>' +
+      // and Under ytan: the bottom in 3D through the camera, full screen (72-ar.js)
+      '<button type="button" class="styleOpt arOpt" data-ar="1"><span class="arThumb"></span>' +
+      '<span class="soText"><span class="soName">Under ytan</span><span class="soDesc">Botten i 3D genom kameran</span></span><span class="hmArrow">›</span></button>';
   }
   mapTypeBtn.addEventListener('pointerdown', function(e){
     e.stopPropagation();
@@ -158,6 +161,7 @@
     var b = e.target.closest ? e.target.closest('.styleOpt') : null;
     if (!b) return;
     if (b.getAttribute('data-heat')){ openMapTypePop(false); hmShowPanel(true); return; }
+    if (b.getAttribute('data-ar')){ openMapTypePop(false); arOpen(); return; }
     var id = b.getAttribute('data-style');
     openMapTypePop(false);
     if (id !== mapStyle) loadMapStyle(id, false);

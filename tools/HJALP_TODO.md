@@ -23,6 +23,9 @@ spåren, Ledare, Kompass, Namn, Fog of war, tävlingslåset, Storlek/När, start
 
 - [ ] 2026-10-09 – PB under tävling (NY): din ruta "Grattis till ditt PB!" + Skicka snabbmess (regnbågskant), de andra får en notis överst och
   konfetti (1 h, ✕ = tonar ut). Hjälp: Tävlingarna + Snabbmeddelanden (PB-bubblan). Nyhet: "PB: konfetti när någon slår sitt personbästa" (NY)
+- [ ] 2026-10-12 – Under ytan (NY): håll kartknappen → "Under ytan" sist = botten i 3D genom kameran (helskärm, reglage nertill, ✕ stänger;
+  dra åt sidan = vrid botten rätt). Demo Mode: långtryck → "Båten hit". Hjälp: Kartan (kartlägen) + Demo Mode, animering `underytan` (ny,
+  utan kamera). Nyhet: "Under ytan: se botten i 3D genom kameran" (NY)
 
 <!-- mall:
 - [ ] ÅÅÅÅ-MM-DD – Vad som ändrats. Hjälp: avsnitt X (text) + animering `namn`. Nyhet: "…" (NYTT/BÄTTRE/FIXAT)

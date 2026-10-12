@@ -15,6 +15,8 @@ Admin, Filip, styr en låtsastävling under **Admin → Testläge**. Rutan syns 
     - Riktig till test: din riktiga båt försvinner för de andra.
     - Test till riktig: testbåten försvinner.
   - Öppen sida (Inställningar) kommer tillbaka som efter en vridning, men utan fart, positionstakt och demokurs från det gamla läget.
+- **Båten hit** (2026-10-12): i Demo Mode har en ny plats (långtryck) knappen "🚤 Båten hit": demobåten flyttas dit och stannar
+  (rörelsen stängs av), ingen plats sparas (`#wpBoat`, `js/24-boats.js`). Bra för att prova Under ytan (`js/72-ar.js`) var som helst.
 - **Telefonens kopior får egna nycklar** (`testKey()`, nyckel + `_test`). Det gäller platserna (`WP_KEY`), synkflaggan, fångstkopian, positionsintervallet, "Åskan har dragit förbi" och användningsräknaren.
   - Inställningar som filter, varningsavstånd och kartläge delas mellan lägena.
 - **Ingen spårsynk i testläget.** `tracksCol` och `trackUsersCol` = null.

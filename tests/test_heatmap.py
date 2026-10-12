@@ -41,7 +41,7 @@ with sync_playwright() as p:
     bb = pg.locator('#mapTypeBtn').bounding_box()
     pg.mouse.move(bb['x'] + 20, bb['y'] + 20); pg.mouse.down(); pg.wait_for_timeout(700); pg.mouse.up(); pg.wait_for_timeout(300)
     opts = pg.eval_on_selector_all('#mapTypePop .styleOpt', 'e => e.map(x => x.textContent)')
-    check('hold the map-style button: "Heatmap" last in the list, "opens a menu"', opts and 'Heatmap' in opts[-1] and 'meny' in opts[-1], opts[-2:])
+    check('hold the map-style button: "Heatmap" last of the map styles (then Under ytan), "opens a menu"', opts and 'Heatmap' in opts[-2] and 'meny' in opts[-2] and 'Under ytan' in opts[-1], opts[-2:])
     check('...the catches fetched once at the start (no copy on the phone yet)', ctx.api.n('dashboard') == 1, ctx.api.hits)
     pg.click('#mapTypePop .hmOpt'); pg.wait_for_timeout(1000)
     h = heat(pg)

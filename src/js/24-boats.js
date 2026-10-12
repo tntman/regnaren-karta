@@ -379,6 +379,7 @@
     showEditingType();
     // "Åk hit" / "Liknande": for a spot that's already there (not one you're just adding)
     document.getElementById('wpGo').hidden = !!isNew;
+    document.getElementById('wpBoat').hidden = !(isNew && demoMode);   // (Demo Mode: put the demo boat here instead, 32-demo.js)
     document.getElementById('wpLike').hidden = !!isNew || wpType(wp) === 'meet' || wpType(wp) === 'fara' || wpType(wp) === 'hem';
     if (!pinEls[wp.id]) renderWaypoints(); // draw it even if a filter (Mina / Andras / type) hides it
     editingWpInfo = { lat: wp.lat, lon: wp.lon, mine: mine, by: wp.by, createdAt: wp.createdAt, admin: !mine && canEdit };
@@ -461,6 +462,12 @@
     closeSheet();
   }
   wpCancelBtn.addEventListener('click', cancelSheet);
+  // Demo Mode: "Båten hit" = the demo boat moves here and stays (the motion goes off); no spot is made
+  document.getElementById('wpBoat').addEventListener('click', function(){
+    var w = editingWpInfo; cancelSheet(); if (!w) return;
+    demoMoveToggle.checked = false; setDemoMovePref(false); stopDemoMotion();
+    setDemoCoords({ lat: w.lat, lon: w.lon }); demoJumped(); onFix(demoLat, demoLon, 8);
+  });
   // Ta bort: the spot disappears at once, but is only really deleted (for everyone) after 6 s -- "Ångra"
   // brings it back. Leaving the app (or turning the phone: a reload) in between deletes it then.
   var undoToast = document.getElementById('undoToast'), undoT = null, undoPending = null;
