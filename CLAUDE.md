@@ -111,7 +111,7 @@ Uppdatera rätt anteckning när något ändras.
 - **Kartbilder = zoomnivåer som på Genesis** (KARTOR.md): kartbilden är zoom 14, högre nivåer
   512-px-bitar i `#detailLayer` (skärmkoordinater – inte i `#world`, som har will-change och skulle
   bli suddig). Lager 14–18, max zoom 18,6 (`MAX_ZOOM`). Fast djupskala, 8 kartlägen.
-- **Djupkurvor och siffror ritas ALDRIG av oss** (Filips krav) – bara Genesis t_-lager.
+- **Djupkurvor och siffror ritas ALDRIG av oss** (Filips krav) – bara Genesis t_-lager. Undantag (Filip 2026-10-12): Under ytans knapp Djuplinjer (3D, av från början).
 - **Djupdata:** `docs/lakes/<id>/depth_v<V>.txt` (byte = djup/steg, 252 = sjö utan djupdata,
   255 land, 251/253 = packade rader). `lakes/<id>/raw/depth_raw.npz` = full upplösning (testerna).
   `isLakeAtImgPx()` = sjö eller land.
@@ -173,7 +173,7 @@ Uppdatera rätt anteckning när något ändras.
 - **Under ytan** (AR, `js/72-ar.js`, `css/79-ar.css`, Filip 2026-10-12): sist i kartlägeslistan (håll kartknappen). Helskärm: botten i 3D (three.js, `nlLib()`)
   så fin som djupdatan (en punkt per ruta, högst 400 × 400) runt dig (GPS; ingen fix = kartans mitt; Demo Mode = demobåten, "Båten hit" i en ny plats ruta) över kamerabilden (`getUserMedia`, av/på; vägrad = mörkt).
   Riktning = `deviceorientation` (iOS: `webkitCompassHeading`, lovet i trycket). Ytan mäts inte: ögat "Ögonhöjd" över vattnet. Reglage nertill (frostat,
-  genomskinligt): Avstånd 100–1000 m, Djup × 1–5, Ögonhöjd; dra åt sidan = vrid botten (kompassfel), allt i `ffmap_ar_v1`. Svepbar överst: ner = minimerad ('Reglage'), upp/tryck = tillbaka; liggande = reglagen i högra hörnet (ringen i mitten syns). ✕ = av. Överlever vridning.
+  genomskinligt): Avstånd 100–1000 m, Djup × 1–5, Ögonhöjd; dra åt sidan = vrid botten (kompassfel), allt i `ffmap_ar_v1`. Knappar överst (`#arChips`): Kamera, Rutnät, Yta (rutnät på vattenytan), Stavar (djupstavar), Lod (rakt under dig), Djuplinjer (av; en linje per meter i shadern – **Filips undantag 2026-10-12** från "vi ritar aldrig djupkurvor", bara här). Djupfärger rött → mörkblått. Svepbar överst: ner = minimerad ('Reglage'), upp/tryck = tillbaka; liggande = reglagen i högra hörnet (ringen i mitten syns). ✕ = av. Överlever vridning.
   Bildvinkeln `AR_FOV` (62°) är en gissning – justera efter prov på sjön. Ikonen i listan = `assets/thumb_ar.png` (renderad en gång med three.js).
 - **Kraschlogg** (Inställningar → Avancerat → Senaste krasch, `js/91-crashlog.js`): en rad om vad appen gör sparas i localStorage var 2:a
   sekund; stängdes sidan inte rent (pagehide) visas raden vid nästa start. Rader samlas i `tools/KRASCHLOGG.md`.

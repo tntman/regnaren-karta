@@ -30,6 +30,14 @@ with sync_playwright() as p:
     pg.wait_for_timeout(800); n = A(pg)['n']
     check('...the bottom as fine as the depth data: one point per cell (Regnaren ~4,9 m: 1200 m = ~243)', 235 <= n <= 250, n)
     pg.screenshot(path='shot_ar.png')
+    on = lambda: {b.get_attribute('data-k'): 'on' in (b.get_attribute('class') or '') for b in pg.query_selector_all('#arChips [data-k]')}
+    check('the switches: grid, surface, sticks, lead on; depth lines off', on() == {'grid': True, 'surf': True, 'sticks': True, 'lod': True, 'iso': False}, on())
+    pg.click('#arChips [data-k=iso]'); pg.click('#arChips [data-k=sticks]'); pg.wait_for_timeout(300)
+    c = A(pg)['cfg']
+    check('...a tap switches one, remembered', c['iso'] is True and c['sticks'] is False and on()['iso'] and not on()['sticks'] and json.loads(pg.evaluate("localStorage.getItem('ffmap_ar_v1')"))['iso'] is True, c)
+    pg.wait_for_timeout(500)
+    check('...the lead off: no "under dig" label', (pg.click('#arChips [data-k=lod]'), pg.wait_for_timeout(400), not pg.is_visible('#arPlumb'))[2])
+    pg.click('#arChips [data-k=lod]'); pg.click('#arChips [data-k=sticks]')
     g = pg.locator('#arCtl .arGrab').bounding_box(); gx, gy = g['x'] + g['width'] / 2, g['y'] + g['height'] / 2
     pg.mouse.move(gx, gy); pg.mouse.down(); pg.mouse.move(gx, gy + 120, steps=6); pg.mouse.up(); pg.wait_for_timeout(400)
     check('the grip: dragged down = only the grip left (the sliders gone), remembered', pg.evaluate("document.getElementById('arCtl').classList.contains('min')") and not pg.is_visible('#arR') and A(pg)['cfg'].get('min') is True)
