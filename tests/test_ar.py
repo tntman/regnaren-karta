@@ -31,10 +31,10 @@ with sync_playwright() as p:
     check('...the bottom as fine as the depth data: one point per cell (Regnaren ~4,9 m: 1200 m = ~243)', 235 <= n <= 250, n)
     pg.screenshot(path='shot_ar.png')
     on = lambda: {b.get_attribute('data-k'): 'on' in (b.get_attribute('class') or '') for b in pg.query_selector_all('#arChips [data-k]')}
-    check('the switches: grid, surface, sticks, lead on; depth lines off', on() == {'grid': True, 'surf': True, 'sticks': True, 'lod': True, 'iso': False}, on())
-    pg.click('#arChips [data-k=iso]'); pg.click('#arChips [data-k=sticks]'); pg.wait_for_timeout(300)
+    check('the switches: grid, surface, shore, sticks, lead on; dots, waves off', on() == {'grid': True, 'surf': True, 'dots': False, 'waves': False, 'shore': True, 'sticks': True, 'lod': True}, on())
+    pg.click('#arChips [data-k=waves]'); pg.click('#arChips [data-k=sticks]'); pg.wait_for_timeout(300)
     c = A(pg)['cfg']
-    check('...a tap switches one, remembered', c['iso'] is True and c['sticks'] is False and on()['iso'] and not on()['sticks'] and json.loads(pg.evaluate("localStorage.getItem('ffmap_ar_v1')"))['iso'] is True, c)
+    check('...a tap switches one, remembered', c['waves'] is True and c['sticks'] is False and on()['waves'] and not on()['sticks'] and json.loads(pg.evaluate("localStorage.getItem('ffmap_ar_v1')"))['waves'] is True, c)
     pg.wait_for_timeout(500)
     check('...the lead off: no "under dig" label', (pg.click('#arChips [data-k=lod]'), pg.wait_for_timeout(400), not pg.is_visible('#arPlumb'))[2])
     pg.click('#arChips [data-k=lod]'); pg.click('#arChips [data-k=sticks]')

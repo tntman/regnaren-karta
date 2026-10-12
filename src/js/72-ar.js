@@ -9,15 +9,15 @@
   // as fine as the depth data (one point per cell: Regnaren ~5 m, Sjösjön ~2 m), at most AR_NMAX points a side
   var AR_CELL = IMG_W / DEPTH_W * WEB_METERS_PER_PX, AR_NMAX = 400;   // ponytail: 400² = 160k points -- the whole radius at once; nearer-finer rings if a phone can't keep up
   var AR_FOV = 62;   // ponytail: one vertical field of view for every phone's camera (portrait); per-model if it's visibly off
-  var arCfg = { cam: true, r: 300, ex: 3, eye: 1, north: 0, grid: true, surf: true, sticks: true, lod: true, iso: false };   // (the last five: the switches in the controls)
+  var arCfg = { cam: true, r: 300, ex: 3, eye: 1, north: 0, grid: true, surf: true, dots: false, waves: false, shore: true, sticks: true, lod: true };   // (from grid: the switches in the controls -- all on trial, Filip 2026-10-12)
   try { arCfg = Object.assign(arCfg, JSON.parse(localStorage.getItem(AR_KEY) || '{}')); } catch(e){}
   var arView = document.getElementById('arView'), arVideo = document.getElementById('arVideo'), arMsg = document.getElementById('arMsg');
   var ar = null;   // { T, r, scene, cam, mesh, lines, at:{px,py,r}, raf } while open
   var arOri = null, arCorr = null, arStream = null;
   function arSave(){ try { localStorage.setItem(AR_KEY, JSON.stringify(arCfg)); } catch(e){} }
 
-  // depth colour: red in the shallows -> orange, yellow, green, cyan, blue -> dark blue (wide apart, so the depth reads at a glance)
-  var AR_COLS = [[0, 0xe8402a], [0.12, 0xf59a2a], [0.25, 0xf2e04a], [0.4, 0x5cd06a], [0.55, 0x2ec4d0], [0.75, 0x2a6ad0], [1, 0x16165e]];
+  // depth colour: light green in the shallows -> blue -> deep violet (prövat 2026-10-12: rött -> mörkblått -- the old ones were better)
+  var AR_COLS = [[0, 0xd8f5a0], [0.2, 0x58d0a8], [0.45, 0x2a9ad0], [0.7, 0x2a5cc0], [1, 0x281c70]];
   function arColor(T, d, max){
     var f = Math.min(1, d / max), i = 1; while (i < AR_COLS.length - 1 && AR_COLS[i][0] < f) i++;
     var a = AR_COLS[i - 1], b = AR_COLS[i];
@@ -70,7 +70,19 @@
     ar.lines = new T.LineSegments(lg, ar.lmat);
     function segs(a, m){ var bg = new T.BufferGeometry(); bg.setAttribute('position', new T.Float32BufferAttribute(a, 3)); return new T.LineSegments(bg, m); }
     ar.surf = segs(sg, ar.smat); ar.sticks = segs(st, ar.stmat);
-    ar.grp = new T.Group(); ar.grp.add(ar.mesh, ar.lines, ar.surf, ar.sticks);   // (the group is scaled by Djup ×: the surface at 0 stays)
+    // the waterline: where the lake meets the land, at the surface (marching squares on the water/land mask) -- it should
+    // sit on the real shore in the camera's picture
+    var wl = [], M = [[], [[3, 0]], [[0, 1]], [[3, 1]], [[1, 2]], [[3, 0], [1, 2]], [[0, 2]], [[3, 2]], [[2, 3]], [[2, 0]], [[0, 1], [2, 3]], [[2, 1]], [[1, 3]], [[1, 0]], [[0, 3]], []];
+    for (j = 0; j < AR_N; j++) for (i = 0; i < AR_N; i++){
+      var qa = j * n + i, cs = ok[qa] | ok[qa + 1] << 1 | ok[qa + n + 1] << 2 | ok[qa + n] << 3;
+      if (!cs || cs === 15) continue;
+      var xa = pos[qa * 3], za = pos[qa * 3 + 2], E = [[xa + h / 2, za], [xa + h, za + h / 2], [xa + h / 2, za + h], [xa, za + h / 2]];   // the cell's edges' middles: top, right, bottom, left
+      M[cs].forEach(function(sgm){ wl.push(E[sgm[0]][0], 0, E[sgm[0]][1], E[sgm[1]][0], 0, E[sgm[1]][1]); });
+    }
+    ar.wline = segs(wl, ar.wmat);
+    var dg = new T.BufferGeometry(); dg.setAttribute('position', new T.Float32BufferAttribute(sg, 3));
+    ar.dots = new T.Points(dg, ar.dmat);   // (Prickar: the surface grid's corners)
+    ar.grp = new T.Group(); ar.grp.add(ar.mesh, ar.lines, ar.surf, ar.sticks, ar.dots, ar.wline);   // (the group is scaled by Djup ×: the surface at 0 stays)
     ar.scene.add(ar.grp);
     ar.scene.fog = new T.Fog(0x0b1830, R * 0.25, R * 1.1);   // (far = darker: the depth reads in 3D)
     ar.at = { px: w.px, py: w.py, r: R, ex: -1 }; ar.n = AR_N;
@@ -112,7 +124,8 @@
     ar.grp.scale.y = arCfg.ex;
     // the lead straight under you, with the depth at its end
     var du = depthAtImgPx(w.px, w.py);
-    ar.lines.visible = arCfg.grid; ar.surf.visible = arCfg.surf; ar.sticks.visible = arCfg.sticks; ar.isoU.value = arCfg.iso ? 1 : 0;
+    ar.lines.visible = arCfg.grid; ar.sticks.visible = arCfg.sticks;
+    ar.surf.visible = arCfg.surf; ar.dots.visible = arCfg.dots; ar.wline.visible = arCfg.shore; ar.surfU.uMode.value = arCfg.waves ? 2 : 0; ar.surfU.uT.value = performance.now() / 1000;
     if (!arCfg.lod) du = null;
     ar.plumb.visible = ar.sinker.visible = du !== null;
     if (du !== null){ ar.plumb.scale.y = Math.max(0.01, du * arCfg.ex); ar.sinker.position.y = -du * arCfg.ex; }
@@ -160,21 +173,23 @@
       var scene = new T.Scene(), cam = new T.PerspectiveCamera(AR_FOV, 1, 0.3, 3000);
       scene.add(new T.HemisphereLight(0xdfefff, 0x101828, 0.9));
       var sun = new T.DirectionalLight(0xffffff, 2.4); sun.position.set(-0.8, 0.6, -0.4); scene.add(sun);
-      var surf = new T.Mesh(new T.CircleGeometry(3000, 64), new T.MeshBasicMaterial({ color: 0x3A86FF, transparent: true, opacity: 0.07, side: T.DoubleSide, depthWrite: false }));
+      // the surface itself: faint flat; Vågor = moving ripples near you (mode 1, clear near / hazy far, tried and left out)
+      var surfU = { uMode: { value: 0 }, uT: { value: 0 } };
+      var surf = new T.Mesh(new T.CircleGeometry(3000, 64), new T.ShaderMaterial({ uniforms: surfU, transparent: true, side: T.DoubleSide, depthWrite: false,
+        vertexShader: 'varying vec3 vP; void main(){ vec4 w = modelMatrix * vec4(position, 1.0); vP = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }',
+        fragmentShader: 'varying vec3 vP; uniform float uMode, uT; void main(){ float d = length(vP.xz); vec3 c = vec3(0.23, 0.53, 1.0); float a = 0.07;' +
+          ' if (uMode > 0.5 && uMode < 1.5){ a = mix(0.02, 0.55, smoothstep(8.0, 350.0, d)); c = mix(vec3(0.75, 0.88, 1.0), c, smoothstep(0.0, 120.0, d)); }' +
+          ' if (uMode > 1.5){ float w = sin(vP.x * 0.9 + uT * 1.3) * sin(vP.z * 0.7 - uT) + sin((vP.x + vP.z) * 0.35 + uT * 0.8) + 0.5 * sin(vP.x * 2.1 - vP.z * 1.7 + uT * 2.0);' +
+          ' a = 0.08 + smoothstep(0.6, 1.6, w) * 0.55 * (1.0 - smoothstep(30.0, 200.0, d)); c = vec3(0.82, 0.93, 1.0); }' +
+          ' gl_FragColor = vec4(c, a); }' }));
       surf.rotation.x = -Math.PI / 2; scene.add(surf);
-      ar = { T: T, r: r, scene: scene, cam: cam, first: true, tq: new T.Quaternion(), ray: new T.Raycaster(), mid: new T.Vector2(0, 0),
+      ar = { T: T, r: r, surfU: surfU, scene: scene, cam: cam, first: true, tq: new T.Quaternion(), ray: new T.Raycaster(), mid: new T.Vector2(0, 0),
              mat: new T.MeshLambertMaterial({ vertexColors: true, transparent: true, opacity: 0.82, side: T.DoubleSide }),
              lmat: new T.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.3, fog: true }),
              smat: new T.LineBasicMaterial({ color: 0xcfe8ff, transparent: true, opacity: 0.4, fog: true }),
-             stmat: new T.LineBasicMaterial({ color: 0xcfe8ff, transparent: true, opacity: 0.32, fog: true }), isoU: { value: 0 } };
-      // Djuplinjer: a thin light line every metre of depth on the bottom (every 5 m stronger), drawn in the shader
-      ar.mat.onBeforeCompile = function(sh){
-        sh.uniforms.uIso = ar.isoU;
-        sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying float vD;').replace('#include <begin_vertex>', '#include <begin_vertex>\nvD = -position.y;');
-        sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying float vD;\nuniform float uIso;')
-          .replace('#include <dithering_fragment>', '#include <dithering_fragment>\nif (uIso > 0.5 && vD > 0.2){ float w = fwidth(vD) * 1.8; float a = 1.0 - smoothstep(0.0, w, min(fract(vD), 1.0 - fract(vD)));' +
-                   ' float b = 1.0 - smoothstep(0.0, w * 1.6, min(fract(vD / 5.0), 1.0 - fract(vD / 5.0)) * 5.0); gl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(1.0), max(a * 0.75, b * 0.95)); }');
-      };
+             dmat: new T.PointsMaterial({ color: 0xdff0ff, size: 3, sizeAttenuation: false, transparent: true, opacity: 0.8, fog: true }),
+             wmat: new T.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9 }),
+             stmat: new T.LineBasicMaterial({ color: 0xcfe8ff, transparent: true, opacity: 0.32, fog: true }) };
       var pg = new T.BufferGeometry(); pg.setAttribute('position', new T.Float32BufferAttribute([0, 0, 0, 0, -1, 0], 3));
       ar.plumb = new T.Line(pg, new T.LineBasicMaterial({ color: 0xF09A60 }));
       ar.sinker = new T.Mesh(new T.SphereGeometry(0.12, 12, 8), new T.MeshBasicMaterial({ color: 0xF09A60 }));
