@@ -171,10 +171,10 @@ Uppdatera rätt anteckning när något ändras.
   Din: rutan "Grattis till ditt PB!" + **Skicka snabbmess med PB-fisken** ("PB! Gädda 92 🎉", `msgPb` i positions → `.msgBub.pb` regnbågskant), konfetti tills
   rutan stängs. Andras: notis överst `#pbNote` (`.topNote`, samma storlek och plats som Hotzones, ovanpå den) + konfetti i 1 h; ✕ = tonar ut på 30 s.
 - **Under ytan** (AR, `js/72-ar.js`, `css/79-ar.css`, Filip 2026-10-12): sist i kartlägeslistan (håll kartknappen). Helskärm: botten i 3D (three.js, `nlLib()`)
-  runt dig (GPS; ingen fix = kartans mitt; Demo Mode = demobåten, "Båten hit" i en ny plats ruta) över kamerabilden (`getUserMedia`, av/på; vägrad = mörkt).
+  så fin som djupdatan (en punkt per ruta, högst 400 × 400) runt dig (GPS; ingen fix = kartans mitt; Demo Mode = demobåten, "Båten hit" i en ny plats ruta) över kamerabilden (`getUserMedia`, av/på; vägrad = mörkt).
   Riktning = `deviceorientation` (iOS: `webkitCompassHeading`, lovet i trycket). Ytan mäts inte: ögat "Ögonhöjd" över vattnet. Reglage nertill (frostat,
   genomskinligt): Avstånd 100–1000 m, Djup × 1–5, Ögonhöjd; dra åt sidan = vrid botten (kompassfel), allt i `ffmap_ar_v1`. ✕ = av. Överlever vridning.
-  Bildvinkeln `AR_FOV` (62°) är en gissning – justera efter prov på sjön.
+  Bildvinkeln `AR_FOV` (62°) är en gissning – justera efter prov på sjön. Ikonen i listan = `assets/thumb_ar.png` (renderad en gång med three.js).
 - **Kraschlogg** (Inställningar → Avancerat → Senaste krasch, `js/91-crashlog.js`): en rad om vad appen gör sparas i localStorage var 2:a
   sekund; stängdes sidan inte rent (pagehide) visas raden vid nästa start. Rader samlas i `tools/KRASCHLOGG.md`.
 - **Minnesbudget** (`tools/PLAN_MINNE.md`): beräkningar för hela sjön på `workGrid()` (≤ 1,5 M rutor, Mälaren 20 m), skärmlager via

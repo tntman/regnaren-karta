@@ -27,6 +27,8 @@ with sync_playwright() as p:
     check('the depth straight ahead, and it changes when the phone turns', d1.endswith('bort') and ' m' in d1 and d1 != d2, (d1, d2))
     pg.fill('#arR', '600'); pg.dispatch_event('#arR', 'input'); pg.wait_for_timeout(300)
     check('Avstånd: shown and remembered', pg.inner_text('#arRVal') == '600 m' and json.loads(pg.evaluate("localStorage.getItem('ffmap_ar_v1')"))['r'] == 600)
+    pg.wait_for_timeout(800); n = A(pg)['n']
+    check('...the bottom as fine as the depth data: one point per cell (Regnaren ~4,9 m: 1200 m = ~243)', 235 <= n <= 250, n)
     pg.screenshot(path='shot_ar.png')
     pg.click('#arClose'); pg.wait_for_timeout(300)
     check('✕ closes it all', not A(pg)['open'] and not pg.is_visible('#arView'))

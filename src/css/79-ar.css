@@ -1,6 +1,6 @@
   /* ---- Under ytan (AR, js/72-ar.js): last in the map-style list (hold the map button) + the full-screen view ---- */
   #mapTypePop .styleOpt.arOpt{border-color:rgba(88,208,168,.6);}
-  .arThumb{width:64px;height:38px;border-radius:8px;flex:0 0 auto;background:linear-gradient(170deg,#7fa7cc 0 30%,#2c3b2c 30% 36%,#58d0a8 36%,#2a9ad0 62%,#281c70);}
+  .arThumb{width:64px;height:38px;border-radius:8px;flex:0 0 auto;background:#1C212C url(thumb_ar.png) center/100% 100% no-repeat;}   /* (a block of lake bottom in 3D, rendered once with three.js) */
   .arOpt .soDesc{display:block;}
   #arView{position:fixed;inset:0;z-index:70;background:radial-gradient(120% 80% at 50% 20%,#1d2a40,#0a0d14);display:none;overflow:hidden;touch-action:none;}
   #arView.show{display:block;}

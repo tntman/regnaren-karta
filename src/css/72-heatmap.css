@@ -14,7 +14,7 @@
   /* in the map-style list: last, a bit special (opens a menu) */
   #mapTypePop .styleOpt.hmOpt{border-color:rgba(255,122,26,.65);}
   #mapTypePop .styleOpt.hmOpt.active{border-color:#FF7A1A;background:rgba(255,122,26,.14);}
-  .hmThumb{width:64px;height:38px;border-radius:8px;flex:0 0 auto;background:radial-gradient(circle at 35% 55%,#fff5c8 0,#ffbe46 12%,#f56e3c 24%,#be288c 36%,rgba(90,20,130,.7) 48%,#1C212C 64%),#1C212C;}
+  .hmThumb{width:64px;height:38px;border-radius:8px;flex:0 0 auto;background:#1C212C url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 38'><defs><radialGradient id='h'><stop offset='0' stop-color='%23fff5c8'/><stop offset='.22' stop-color='%23ffbe46'/><stop offset='.45' stop-color='%23f56e3c'/><stop offset='.7' stop-color='%23be288c' stop-opacity='.75'/><stop offset='1' stop-color='%235a1482' stop-opacity='0'/></radialGradient></defs><path d='M6 24C5 15 13 8 24 9s20-4 29 1 6 15-2 19-18 3-28 3S7 31 6 24Z' fill='%23243a52' stroke='%23ffffff' stroke-opacity='.35' stroke-width='.8'/><circle cx='22' cy='20' r='11' fill='url(%23h)'/><circle cx='42' cy='15' r='7.5' fill='url(%23h)'/><circle cx='46' cy='26' r='5' fill='url(%23h)'/></svg>") center/100% 100% no-repeat;}   /* (a lake with three hot spots, all inside) */
   .hmOpt .soDesc{display:block;}
   .hmArrow{font-size:18px;color:#FF7A1A;flex:0 0 auto;padding:0 3px;}
   #hmPanel{position:absolute;left:0;right:0;bottom:0;z-index:26;background:var(--navy);border-top:1px solid rgba(255,255,255,.14);border-radius:18px 18px 0 0;

@@ -5,7 +5,9 @@
      in the tap like the compass, 53-compass.js; Demo Mode: the demo boat -- "Båten hit" in a new spot's sheet puts it there). The water's surface is not measured: depths count from it and the eye is
      "Ögonhöjd" above it (1 m, sitting in a boat). A drag sideways turns the bottom (the compass can be 10-20 degrees off),
      remembered. Settings (ffmap_ar_v1): camera, Avstånd 100-1000 m, Djup × 1-5, Ögonhöjd 0,5-3 m. Filip 2026-10-12. */
-  var AR_KEY = 'ffmap_ar_v1', AR_N = 128;
+  var AR_KEY = 'ffmap_ar_v1';
+  // as fine as the depth data (one point per cell: Regnaren ~5 m, Sjösjön ~2 m), at most AR_NMAX points a side
+  var AR_CELL = IMG_W / DEPTH_W * WEB_METERS_PER_PX, AR_NMAX = 400;   // ponytail: 400² = 160k points -- the whole radius at once; nearer-finer rings if a phone can't keep up
   var AR_FOV = 62;   // ponytail: one vertical field of view for every phone's camera (portrait); per-model if it's visibly off
   var arCfg = { cam: true, r: 300, ex: 3, eye: 1, north: 0 };
   try { arCfg = Object.assign(arCfg, JSON.parse(localStorage.getItem(AR_KEY) || '{}')); } catch(e){}
@@ -25,9 +27,10 @@
     if (lastFix && lastFix.onMap) return { px: lastFix.px, py: lastFix.py, gps: true };
     return { px: (innerWidth / 2 - originX) / scale, py: (innerHeight / 2 - originY) / scale, gps: false };
   }
-  // the bottom: AR_N x AR_N points over 2r x 2r around you; x = east, z = south, y = -depth (the mesh is scaled by Djup ×)
+  // the bottom: N x N points over 2r x 2r around you; x = east, z = south, y = -depth (the mesh is scaled by Djup ×)
   function arBuild(){
-    var T = ar.T, w = arWhere(), R = arCfg.r, n = AR_N + 1, k = 2 * R / AR_N / WEB_METERS_PER_PX;
+    var T = ar.T, w = arWhere(), R = arCfg.r, AR_N = Math.max(64, Math.min(AR_NMAX, Math.round(2 * R / AR_CELL))), n = AR_N + 1, k = 2 * R / AR_N / WEB_METERS_PER_PX;
+    var gl = Math.max(1, Math.round(20 / (2 * R / AR_N)));   // a grid line every ~20 m
     var pos = new Float32Array(n * n * 3), col = new Float32Array(n * n * 3), ok = new Uint8Array(n * n), max = LAKE.depth.max || 20;
     for (var j = 0; j < n; j++) for (var i = 0; i < n; i++){
       var q = j * n + i, d = depthAtImgPx(w.px + (i - AR_N / 2) * k, w.py + (j - AR_N / 2) * k);
@@ -39,8 +42,8 @@
       var a = j * n + i, b = a + 1, c2 = a + n, d2 = c2 + 1;
       if (ok[a] && ok[b] && ok[c2]) idx.push(a, c2, b);
       if (ok[b] && ok[c2] && ok[d2]) idx.push(b, c2, d2);
-      if (i % 4 === 0 && ok[a] && ok[c2]) ln.push(a, c2);   // the grid: every 4th row and column
-      if (j % 4 === 0 && ok[a] && ok[b]) ln.push(a, b);
+      if (i % gl === 0 && ok[a] && ok[c2]) ln.push(a, c2);   // the grid
+      if (j % gl === 0 && ok[a] && ok[b]) ln.push(a, b);
     }
     if (ar.mesh){ ar.scene.remove(ar.mesh, ar.lines); ar.mesh.geometry.dispose(); ar.lines.geometry.dispose(); }
     var g = new T.BufferGeometry();
@@ -51,7 +54,7 @@
     ar.lines = new T.LineSegments(lg, ar.lmat);
     ar.scene.add(ar.mesh, ar.lines);
     ar.scene.fog = new T.Fog(0x0b1830, R * 0.25, R * 1.1);   // (far = darker: the depth reads in 3D)
-    ar.at = { px: w.px, py: w.py, r: R, ex: -1 };
+    ar.at = { px: w.px, py: w.py, r: R, ex: -1 }; ar.n = AR_N;
     arMsg.textContent = w.gps ? '' : 'Ingen GPS – visar från kartans mitt';
     if (!idx.length) arMsg.textContent = 'Ingen djupdata här';
   }
@@ -96,6 +99,7 @@
     if (ar.w !== W || ar.h !== H){ ar.w = W; ar.h = H; ar.r.setSize(W, H, false); ar.cam.aspect = W / H; ar.cam.fov = W > H ? AR_FOV * H / W * 1.3 : AR_FOV; ar.cam.updateProjectionMatrix(); }
     ar.r.render(ar.scene, ar.cam);
     // the depth straight ahead: where the middle of the screen meets the bottom
+    var now = Date.now(); if (now - (ar.rayAt || 0) < 250) return; ar.rayAt = now;   // (4 times a second: the mesh is big)
     ar.ray.setFromCamera(ar.mid, ar.cam);
     var hit = ar.ray.intersectObject(ar.mesh)[0];
     document.getElementById('arDepth').textContent = hit ? fmtDepth(-hit.point.y / arCfg.ex) + ' m' + (hit.distance > 1 ? ' · ' + Math.round(Math.hypot(hit.point.x, hit.point.z)) + ' m bort' : '') : '';
@@ -162,4 +166,4 @@
   arCv.addEventListener('pointermove', function(e){ if (arDrag){ arCfg.north = (arDrag.n + (e.clientX - arDrag.x) / innerWidth * 60 + 360) % 360; arUi(); } });
   arCv.addEventListener('pointerup', function(){ if (arDrag){ arDrag = null; arSave(); } });
   document.addEventListener('visibilitychange', function(){ if (ar && ar.r) arCamera(!document.hidden && arCfg.cam); });
-  window.__ffAr = function(o){ if (o) arOri = o; var w = arWhere(); return { open: !!ar, at: imgPxToLatLon(w.px, w.py), gps: w.gps, ready: !!(ar && ar.mesh), depth: document.getElementById('arDepth').textContent, msg: arMsg.textContent, cfg: arCfg, cam: arView.classList.contains('cam') }; };   // (for the tests)
+  window.__ffAr = function(o){ if (o) arOri = o; var w = arWhere(); return { open: !!ar, at: imgPxToLatLon(w.px, w.py), gps: w.gps, ready: !!(ar && ar.mesh), depth: document.getElementById('arDepth').textContent, msg: arMsg.textContent, cfg: arCfg, n: ar && ar.n, cam: arView.classList.contains('cam') }; };   // (for the tests)
