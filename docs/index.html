@@ -1853,6 +1853,14 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   #arMsg{position:absolute;left:16px;right:70px;top:calc(env(safe-area-inset-top,0px) + 22px);color:#fff;font-size:13px;text-shadow:0 1px 3px rgba(0,0,0,.7);pointer-events:none;}
   #arCtl{position:absolute;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);padding:10px 14px;border-radius:18px;border:1px solid rgba(255,255,255,.14);
     background:rgba(20,24,34,.38);-webkit-backdrop-filter:var(--frost);backdrop-filter:var(--frost);color:var(--offwhite);font-size:13px;max-width:460px;margin:0 auto;}
+  /* the grip: drag down = only the grip is left at the bottom; up (or a tap) = the controls again */
+  .arGrab{height:22px;margin:-6px -14px 2px;display:flex;align-items:center;justify-content:center;cursor:grab;touch-action:none;}
+  #arCtl{transition:transform .25s cubic-bezier(.16,1,.3,1);}
+  #arCtl.drag{transition:none;}
+  #arCtl.min{padding-bottom:4px;}
+  #arCtl.min .arRow{display:none;}
+  #arCtl.min .arGrab{margin-bottom:0;gap:10px;}
+  #arCtl.min .arGrab::after{content:'Reglage';font-size:11.5px;opacity:.6;}   /* (so it's clear there's something to pull up) */
   .arRow{display:flex;align-items:center;gap:10px;min-height:34px;}
   .arRow > span:first-child{width:70px;flex:0 0 auto;}
   .arRow input{flex:1 1 auto;min-width:0;}
@@ -1860,6 +1868,10 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   #arCam, #arNorth{border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.08);color:#fff;border-radius:14px;padding:5px 11px;font:600 12.5px inherit;font-family:inherit;cursor:pointer;}
   #arCam.on{border-color:var(--amber);color:var(--amber);background:rgba(240,154,96,.15);}
   .arHint{font-size:11.5px;opacity:.6;margin-left:auto;text-align:right;}
+  /* lying down: the middle of the screen (the ring, the depth) would be under the controls -> they go to the right corner */
+  @media (orientation: landscape){
+    #arCtl{left:auto;right:calc(env(safe-area-inset-right,0px) + 12px);width:min(300px,34vw);margin:0;}
+  }
   /* ================= bottom panels (Kartanalys, a message, a spot): see tools/UI.md ================= */
   /* ---- panels that can be dragged smaller: the grip always drags; once smaller, the rest scrolls ---- */
   #anPanel, #wpSheet, #msgCard, #hmPanel, #hmCard, #pfCard, #trkPanel{touch-action:pan-y;}
@@ -2937,6 +2949,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     <button type="button" id="arClose" aria-label="Stäng">✕</button>
     <div id="arMsg" role="status"></div>
     <div id="arCtl">
+      <div class="arGrab" role="button" tabindex="0" aria-label="Dra ner = minimera, upp eller tryck = visa reglagen"><span class="sheetHandle"></span></div>
       <div class="arRow"><button type="button" id="arCam">📷 Kamera</button><button type="button" id="arNorth" hidden></button><span class="arHint">Dra åt sidan för att vrida botten rätt</span></div>
       <label class="arRow"><span>Avstånd</span><input type="range" class="satSlider" id="arR" min="100" max="1000" step="50"><span class="satVal" id="arRVal"></span></label>
       <label class="arRow"><span>Djup</span><input type="range" class="satSlider" id="arEx" min="1" max="5" step="0.5"><span class="satVal" id="arExVal"></span></label>
@@ -12518,6 +12531,23 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   document.getElementById('arCam').addEventListener('click', function(){ arCfg.cam = !arCfg.cam; arSave(); arUi(); arCamera(arCfg.cam); });
   document.getElementById('arNorth').addEventListener('click', function(){ arCfg.north = 0; arSave(); arUi(); });
   document.getElementById('arClose').addEventListener('click', arClose);
+  // the controls' grip: drag down (or a flick) = minimised to the grip; drag up / a tap = back (arCfg.min, remembered)
+  var arCtl = document.getElementById('arCtl'), arGrab = arCtl.querySelector('.arGrab'), arG = null;
+  function arMin(on){ arCfg.min = on; arSave(); arCtl.classList.toggle('min', on); }
+  arCtl.classList.toggle('min', !!arCfg.min);
+  arGrab.addEventListener('pointerdown', function(e){ arG = { y: e.clientY, t: Date.now(), dy: 0 }; arGrab.setPointerCapture(e.pointerId); arCtl.classList.add('drag'); });
+  arGrab.addEventListener('pointermove', function(e){
+    if (!arG) return; arG.dy = e.clientY - arG.y;
+    arCtl.style.transform = 'translateY(' + (arCfg.min ? Math.min(0, arG.dy) * 0.4 : Math.max(0, arG.dy)) + 'px)';
+  });
+  function arGrabEnd(){
+    if (!arG) return; var g = arG; arG = null; arCtl.classList.remove('drag'); arCtl.style.transform = '';
+    var flick = Date.now() - g.t < 300;
+    if (Math.abs(g.dy) < 6) arMin(!arCfg.min);                          // a tap
+    else if (!arCfg.min && (g.dy > 50 || (flick && g.dy > 20))) arMin(true);
+    else if (arCfg.min && (g.dy < -30 || (flick && g.dy < -10))) arMin(false);
+  }
+  arGrab.addEventListener('pointerup', arGrabEnd); arGrab.addEventListener('pointercancel', arGrabEnd);
   // a drag sideways on the picture turns the bottom (when it doesn't sit over the real shore)
   var arDrag = null, arCv = document.getElementById('arCanvas');
   arCv.addEventListener('pointerdown', function(e){ arDrag = { x: e.clientX, n: arCfg.north }; arCv.setPointerCapture(e.pointerId); });

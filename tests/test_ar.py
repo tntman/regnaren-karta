@@ -30,6 +30,15 @@ with sync_playwright() as p:
     pg.wait_for_timeout(800); n = A(pg)['n']
     check('...the bottom as fine as the depth data: one point per cell (Regnaren ~4,9 m: 1200 m = ~243)', 235 <= n <= 250, n)
     pg.screenshot(path='shot_ar.png')
+    g = pg.locator('#arCtl .arGrab').bounding_box(); gx, gy = g['x'] + g['width'] / 2, g['y'] + g['height'] / 2
+    pg.mouse.move(gx, gy); pg.mouse.down(); pg.mouse.move(gx, gy + 120, steps=6); pg.mouse.up(); pg.wait_for_timeout(400)
+    check('the grip: dragged down = only the grip left (the sliders gone), remembered', pg.evaluate("document.getElementById('arCtl').classList.contains('min')") and not pg.is_visible('#arR') and A(pg)['cfg'].get('min') is True)
+    pg.screenshot(path='shot_ar_min.png')
+    pg.click('#arCtl .arGrab'); pg.wait_for_timeout(400)
+    check('...a tap on it: the sliders back', pg.is_visible('#arR') and not A(pg)['cfg'].get('min'))
+    pg.set_viewport_size({'width': 844, 'height': 390}); pg.wait_for_timeout(800)
+    check('lying down: the controls in the right corner, not over the ring in the middle', pg.evaluate("(() => { const e = document.elementFromPoint(innerWidth / 2, innerHeight / 2 + 25); return !e.closest('#arCtl'); })()") and A(pg)['depth'].endswith('bort'), A(pg)['depth'])
+    pg.set_viewport_size({'width': 390, 'height': 844}); pg.wait_for_timeout(500)
     pg.click('#arClose'); pg.wait_for_timeout(300)
     check('✕ closes it all', not A(pg)['open'] and not pg.is_visible('#arView'))
     check('no page errors', not errs, errs)

@@ -160,6 +160,23 @@
   document.getElementById('arCam').addEventListener('click', function(){ arCfg.cam = !arCfg.cam; arSave(); arUi(); arCamera(arCfg.cam); });
   document.getElementById('arNorth').addEventListener('click', function(){ arCfg.north = 0; arSave(); arUi(); });
   document.getElementById('arClose').addEventListener('click', arClose);
+  // the controls' grip: drag down (or a flick) = minimised to the grip; drag up / a tap = back (arCfg.min, remembered)
+  var arCtl = document.getElementById('arCtl'), arGrab = arCtl.querySelector('.arGrab'), arG = null;
+  function arMin(on){ arCfg.min = on; arSave(); arCtl.classList.toggle('min', on); }
+  arCtl.classList.toggle('min', !!arCfg.min);
+  arGrab.addEventListener('pointerdown', function(e){ arG = { y: e.clientY, t: Date.now(), dy: 0 }; arGrab.setPointerCapture(e.pointerId); arCtl.classList.add('drag'); });
+  arGrab.addEventListener('pointermove', function(e){
+    if (!arG) return; arG.dy = e.clientY - arG.y;
+    arCtl.style.transform = 'translateY(' + (arCfg.min ? Math.min(0, arG.dy) * 0.4 : Math.max(0, arG.dy)) + 'px)';
+  });
+  function arGrabEnd(){
+    if (!arG) return; var g = arG; arG = null; arCtl.classList.remove('drag'); arCtl.style.transform = '';
+    var flick = Date.now() - g.t < 300;
+    if (Math.abs(g.dy) < 6) arMin(!arCfg.min);                          // a tap
+    else if (!arCfg.min && (g.dy > 50 || (flick && g.dy > 20))) arMin(true);
+    else if (arCfg.min && (g.dy < -30 || (flick && g.dy < -10))) arMin(false);
+  }
+  arGrab.addEventListener('pointerup', arGrabEnd); arGrab.addEventListener('pointercancel', arGrabEnd);
   // a drag sideways on the picture turns the bottom (when it doesn't sit over the real shore)
   var arDrag = null, arCv = document.getElementById('arCanvas');
   arCv.addEventListener('pointerdown', function(e){ arDrag = { x: e.clientX, n: arCfg.north }; arCv.setPointerCapture(e.pointerId); });
