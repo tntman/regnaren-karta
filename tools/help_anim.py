@@ -229,11 +229,30 @@ def s_position(p):
     b, ctx, pg = open_app(p)
     zoom_at(pg, ME, 4, (110, 470))
     rec = Rec(pg, Y(250, 844)); rec.hold(800)
-    ll = sail(pg, ctx, rec, ME, P['B1'], metres_max=40, speed=4.5)
-    sail(pg, ctx, rec, ll, P['B4'], metres_max=25, speed=4.5); rec.hold(900)
+    ll = sail(pg, ctx, rec, ME, P['B1'], metres_max=22, speed=4.5)
+    ll = sail(pg, ctx, rec, ll, P['B4'], metres_max=12, speed=4.5); rec.hold(700)
     drag(pg, rec, (200, 380), (300, 250)); rec.hold(600)
-    tap_el(pg, rec, '#locateBtn', after=1800)
+    tap_el(pg, rec, '#locateBtn', after=1200)                       # centres AND follows: the map goes along with the boat
+    ll = sail(pg, ctx, rec, ll, P['B5'], metres_max=15, speed=5.0); rec.hold(700)
     rec.save('position'); b.close()
+
+def s_underytan(p):
+    """hold the map button -> Under ytan last: the bottom in 3D (no camera here); turn the phone, Djup ×, Djupfog"""
+    b, ctx, pg = open_app(p)
+    rec = Rec(pg); rec.hold(500)
+    ori = lambda a, be: pg.evaluate('window.__ffAr({alpha:%f, beta:%f, gamma:0})' % (a, be))
+    ori(100, 62)
+    bb = pg.locator('#mapTypeBtn').bounding_box()
+    press(pg, rec, bb['x'] + 20, bb['y'] + 20, ms=900, after=1200)
+    pg.evaluate("document.querySelector('#mapTypePop .arOpt').scrollIntoView({block:'nearest'})")
+    tap_el(pg, rec, '#mapTypePop .arOpt', after=1800)
+    tap_el(pg, rec, '#arChips [data-k=surf]', after=900)                # Yta off: the bottom clearer
+    for i in range(45): ori(100 + i * 2.4, 62 - i * 0.1); rec.hold(90)   # turning the phone: the bottom follows
+    for v in (3.5, 4, 4.5, 5): pg.evaluate("(() => { const e = document.getElementById('arEx'); e.value = %s; e.dispatchEvent(new Event('input')); })()" % v); rec.hold(450)
+    rec.hold(500)
+    tap_el(pg, rec, '#arChips [data-k=dfog]', after=1700)
+    tap_el(pg, rec, '#arClose', after=1000)
+    rec.save('underytan'); b.close()
 
 def s_lodet(p):
     """tap the map = the lead line (depth, by water, time); the boat moves; tap its box = a marker right there"""
@@ -527,7 +546,8 @@ def fakefb_ms(iso):   # the API's timestamp -> ms (as the app's Date.parse)
 SCENES = [('installera', s_installera), ('kartan', s_kartan), ('kartlagen', s_kartlagen), ('position', s_position),
           ('lodet', s_lodet), ('platser', s_platser), ('andra', s_andra), ('fara', s_fara), ('batar', s_batar), ('mat', s_mat),
           ('vader', s_vader), ('blixtar', s_blixtar), ('filter', s_filter), ('logg', s_logg), ('installningar', s_installningar),
-          ('analys', s_analys), ('heatmap', s_heatmap), ('akhit', s_akhit), ('meddelanden', s_meddelanden), ('hotzone', s_hotzone)]
+          ('analys', s_analys), ('heatmap', s_heatmap), ('akhit', s_akhit), ('meddelanden', s_meddelanden), ('hotzone', s_hotzone),
+          ('underytan', s_underytan)]
 
 if __name__ == '__main__':
     want = sys.argv[1:] or [n for n, f in SCENES]

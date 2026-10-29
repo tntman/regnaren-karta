@@ -13,21 +13,16 @@ I stället skrivs det som behöver ändras upp här, och Filip väljer när allt
 - Vid en Hjälp-omgång: gör allt i listan (texter, `HELP_NEWS`, animeringar som påverkas –
   `py -3 tools/help_anim.py <namn>`, bygg, testa), flytta raderna till "Klart" med datum.
 
-**Senaste Hjälp-omgång:** 2026-10-08 (omgång 5: Kartanalys Skala/Fiska nu, låset → påminnelse, Hotzone, Loggens filter).
-Föregående: 2026-10-06 (omgång 4: allt sedan 2026-09-30 – ny design, Kom igång, Tävlingarna, profiler,
+**Senaste Hjälp-omgång:** 2026-10-29 (omgång 6: PB, Under ytan, GPS-knappen följer).
+Föregående: 2026-10-08 (omgång 5: Kartanalys Skala/Fiska nu, låset → påminnelse, Hotzone, Loggens filter).
+Innan dess: 2026-10-06 (omgång 4: allt sedan 2026-09-30 – ny design, Kom igång, Tävlingarna, profiler,
 spåren, Ledare, Kompass, Namn, Fog of war, tävlingslåset, Storlek/När, startfilmen, Mälaren och Östra Vitten m.m.).
 
 ---
 
 ## Att göra
 
-- [ ] 2026-10-09 – PB under tävling (NY): din ruta "Grattis till ditt PB!" + Skicka snabbmess (regnbågskant), de andra får en notis överst och
-  konfetti (1 h, ✕ = tonar ut). Hjälp: Tävlingarna + Snabbmeddelanden (PB-bubblan). Nyhet: "PB: konfetti när någon slår sitt personbästa" (NY)
-- [ ] 2026-10-12 – Under ytan (NY): håll kartknappen → "Under ytan" sist = botten i 3D genom kameran (helskärm, reglage nertill, ✕ stänger;
-  dra åt sidan = vrid botten rätt; knappar Rutnät/Yta/Stavar/Lod/Djuplinjer, svepbar = minimera). Demo Mode: långtryck → "Båten hit". Hjälp: Kartan (kartlägen) + Demo Mode, animering `underytan` (ny,
-  utan kamera). Nyhet: "Under ytan: se botten i 3D genom kameran" (NY)
-- [ ] 2026-10-29 – GPS-knappen följer båten (knappen vit = följer; dra i kartan = slutar, zoom följer vidare) och hämtar en färsk position
-  (GPS:en startas om – den kunde stanna på iPhone). Hjälp: Kartan/GPS. Nyhet: "GPS-knappen följer båten" (BÄTTRE/FIXAT)
+(tomt)
 
 <!-- mall:
 - [ ] ÅÅÅÅ-MM-DD – Vad som ändrats. Hjälp: avsnitt X (text) + animering `namn`. Nyhet: "…" (NYTT/BÄTTRE/FIXAT)
@@ -36,6 +31,9 @@ spåren, Ledare, Kompass, Namn, Fog of war, tävlingslåset, Storlek/När, start
 ---
 
 ## Klart
+
+- 2026-10-29 – Hjälp-omgång 6 (3 rader): PB (Tävlingarna + Snabbmeddelanden), Under ytan (Kartlägen + Demo Mode, ny animering
+  `underytan`), GPS-knappen följer båten (Din position, animeringen `position` inspelad igen). 4 nyhetsrader.
 
 - 2026-10-08 – Hjälp-omgång 5 (7 rader): Kartanalys (ingen färgning – kartan syns där det stämmer, **Skala** i alla flikar,
   ny flik **Fiska nu**, Fångster utan Tänt/Skala, Mälaren räknas i 20 m-rutor); tävlingslåset borta → påminnelsen (Demo

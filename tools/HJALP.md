@@ -32,8 +32,8 @@ animeringarna igen.
 | Installera appen (`help-installera`) | `installera` | `s_installera` (ritad Safari) |
 | Kom igång (`help-start`): Vem är du?, startfilmen, välkomstrutan, menyn | – (bara text) | – |
 | Kartan (`help-kartan`) | `kartan` | `s_kartan` |
-| Kartlägen (`help-kartlagen`) | `kartlagen` | `s_kartlagen` |
-| Din position (`help-position`) | `position` | `s_position` |
+| Kartlägen (`help-kartlagen`) | `kartlagen`, `underytan` (Under ytan, utan kamera: vrid, Yta av, Djup ×, Djupfog) | `s_kartlagen`, `s_underytan` (orienteringen via `window.__ffAr`) |
+| Din position (`help-position`) | `position` (sikteknappen följer båten) | `s_position` |
 | Lodet (`help-lodet`) | `lodet` (+ tryck på lodets ruta = markering) | `s_lodet` |
 | Fiskeplatser och markeringar (`help-platser`) | `platser` (lägg till), `andra` (ändra/ta bort) | `s_platser`, `s_andra` |
 | Fara & Träffpunkt (`help-fara`) | `fara` | `s_fara` |
@@ -78,7 +78,7 @@ Filip väljer det (påminn honom när listan har ≥ 5 rader eller är > 1 vecka
    korta punkter. `<b class="hA">…</b>` = orange (det man ska göra, t.ex. "Tryck").
    Flera animeringar i ett avsnitt: rubrik över varje med `<p class="helpSub">…</p>`.
 2. Lägg till en länk i innehållsförteckningen `#helpToc`: `<a href="#help-…"><span>EMOJI</span>Titel</a>`.
-   (Håll antalet jämnt – två kolumner, nu 22. test_help räknar länkarna och animeringarna (20): uppdatera siffrorna.)
+   (Håll antalet jämnt – två kolumner, nu 22. test_help räknar länkarna och animeringarna (21): uppdatera siffrorna.)
 3. Animering: `<div class="helpAnim"><img loading="lazy" src="help/NAMN.webp" alt="…"></div>`
    och en scen i `tools/help_anim.py` (se nedan). Verktyget skriver in `width`/`height`.
 4. Uppdatera tabellen i avsnitt 2 här, och antalet animeringar i test_help.

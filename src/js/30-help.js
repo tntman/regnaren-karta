@@ -5,6 +5,10 @@
      made by tools/help_anim.py (docs/help/*.webp; one that's missing is just left out). */
   // newest first. t: 'new' (NYTT), 'better' (BÄTTRE), 'fixed' (FIXAT)
   var HELP_NEWS = [
+    { d: '2026-10-29', t: 'better', x: '<b>GPS-knappen</b> följer båten – kartan åker med tills du drar i den. Trycket hämtar också en färsk position' },
+    { d: '2026-10-29', t: 'fixed',  x: 'GPS:en kunde stanna efter att telefonen varit låst – nu startas den om av sig själv' },
+    { d: '2026-10-12', t: 'new',    x: '<b>Under ytan</b>: se botten i 3D genom kameran (håll kartlägesknappen, sist i listan)' },
+    { d: '2026-10-09', t: 'new',    x: '<b>PB</b>: konfetti när någon slår sitt personbästa under tävlingen' },
     { d: '2026-10-08', t: 'new',    x: '<b>Loggen</b>: sök på plats eller person, och filtrera på Mina/Andras och typerna' },
     { d: '2026-10-07', t: 'new',    x: '<b>Hotzone</b>: röda ringar där det nappar just nu under tävlingen – och en notis när ett nytt ställe blir hett' },
     { d: '2026-10-07', t: 'better', x: 'Kartan är öppen hela året – mellan tävlingarna kommer bara en påminnelse' },

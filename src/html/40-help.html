@@ -17,7 +17,7 @@
       </div>
       <div class="helpCard" id="helpDemo">
         <h3><span>🧪 Demo Mode – prova utan att förstöra något</span></h3>
-        <p>Slå på <b>Demo Mode</b> när du vill testa appen, t.ex. hemma i soffan. Du får en låtsasposition vid sjön och ser bara andra som också har Demo Mode på. Inget sparas i den riktiga databasen, så fiskeplatser, båtar och meddelanden du provar med syns aldrig för de andra. Slå på och av när du vill; den stängs av själv efter 15 minuter.</p>
+        <p>Slå på <b>Demo Mode</b> när du vill testa appen, t.ex. hemma i soffan. Du får en låtsasposition vid sjön och ser bara andra som också har Demo Mode på. Inget sparas i den riktiga databasen, så fiskeplatser, båtar och meddelanden du provar med syns aldrig för de andra. Slå på och av när du vill; den stängs av själv efter 15 minuter. Vill du prova <b>Under ytan</b> på ett visst ställe: håll fingret där, och tryck <b>Båten hit</b> i rutan.</p>
         <button type="button" class="helpInstallBtn" id="helpDemoLink">Öppna Demo Mode i Inställningar</button>
       </div>
       <div class="helpSearch"><input type="search" id="helpSearch" placeholder="Sök i hjälpen, t.ex. &quot;filter djup&quot;" aria-label="Sök i hjälpen" autocomplete="off"><div id="helpResults"></div></div>
@@ -105,6 +105,14 @@
           <li><b>Djupfärger</b> med skuggad botten · <b>Förenklad</b> utan skuggor · <b>Sjökort</b> blå band · <b>Blå relief</b> · <b>C-MAP original</b> med djupsiffror · <b>Vegetation</b> (grönt = växtlighet) · <b>Bottenhårdhet</b> (ljust mjukt → rött hårt).</li>
           <li>Ett kartläge laddas ner första gången du väljer det och sparas sedan i telefonen. För en tur utan täckning: Inställningar → Offline.</li>
         </ul>
+        <p class="helpSub">Under ytan</p>
+        <div class="helpAnim"><img loading="lazy" width="432" height="935" src="help/underytan.webp" alt="Under ytan: botten i 3D"></div>
+        <ul>
+          <li><b>Under ytan</b> (sist i listan): botten i 3D runt dig, genom kameran. <b class="hA">Håll upp telefonen</b> – botten följer med när du vrider den, och mitt i bilden står djupet och hur långt bort det är.</li>
+          <li>Reglagen nertill: <b>Avstånd</b> (hur långt bort botten visas), <b>Djup ×</b> (förstärker formen) och <b>Ögonhöjd</b>. <b class="hA">Dra åt sidan</b> för att vrida botten rätt om kompassen visar fel. Dra ner strecket för att göra rutan liten.</li>
+          <li>Knapparna överst slår på och av delar: kameran, rutnät, ytan, stränder, djupstavar, lodet under dig, djupfog m.m. iPhone frågar om lov för kameran och kompassen första gången. <b>✕</b> stänger.</li>
+          <li>Kompass och GPS har några graders och meters fel – längre bort stämmer det sämre.</li>
+        </ul>
       </section>
 
       <section class="helpCard" id="help-position">
@@ -112,7 +120,7 @@
         <div class="helpAnim"><img loading="lazy" width="432" height="658" src="help/position.webp" alt="Din position på sjön"></div>
         <ul>
           <li>Pilen är du – den pekar åt det håll du åker, med en orange ring som pulserar (kan stängas av i Inställningar → Båten).</li>
-          <li><b class="hA">Sikteknappen</b> nere till höger centrerar kartan på dig.</li>
+          <li><b class="hA">Sikteknappen</b> nere till höger centrerar kartan på dig och <b>följer båten</b> – kartan åker med (knappen blir vit). Dra i kartan så slutar den följa. Trycket hämtar också en färsk GPS-position.</li>
           <li>Nere till vänster: farten i knop och djupet under båten.</li>
           <li><b>Kompass</b> (Filter): en kil från dig mot dit telefonen pekar och en rund visare (N Ö S V) nere till höger. iPhone frågar om lov första gången. Färg, längd och vinkel i Inställningar → Kartan.</li>
           <li>Är du inte vid sjön står det hur långt bort du är – GPS:en startar när du kommer dit.</li>
@@ -183,6 +191,7 @@
           <li>Under en tävling kommer fångsterna <b>live</b> från Fiskfiskarna: i Heatmap (märkt <b>Live</b>), i Kartanalys → Fångster, i båtrutan och i profilerna.</li>
           <li><b>Ledare</b> (Filter → Lager, av från start): ställningen under vädret – de fem bästa och du – och en 👑 efter ledarens namn på kartan. Poäng = de 5 längsta av varje art ihop (godkända fiskar, minst abborre 25, gädda 50 och gös 35 cm), i hela tävlingen även om den fiskas i flera sjöar. <b class="hA">Tryck</b> på ett namn så visar kartan personen.</li>
           <li><b>Hotzone</b> (Filter → Lager, på från start): där 4 fiskar tagits inom 200 m den senaste timmen får en <b style="color:#FF5A5A">röd ring</b> som andas, med 🔥 och antalet. Ringen finns kvar så länge det nappar där (en fisk inom en timme). Ett nytt hett ställe ger en notis överst – art, närmaste platsnamn och hur långt bort – högst en var 45:e minut. <b class="hA">Tryck</b> på notisen så åker kartan dit.</li>
+          <li><b>PB</b>: slår någon sitt personbästa i en art under tävlingen (längre än sin längsta tidigare fisk) blir det konfetti. Ditt eget: rutan "Grattis till ditt PB!" och <b class="hA">Skicka snabbmess med PB-fisken</b>. Andras: en notis överst.</li>
           <li>Din senaste fisk ligger först bland snabbmeddelandena – skicka den med ett tryck (se Snabbmeddelanden).</li>
           <li><b>Demo Mode</b> (överst i Hjälp): prova allt tillsammans utan att något sparas på riktigt.</li>
         </ul>
@@ -275,6 +284,7 @@
           <li><b class="hA">Tryck</b> på pratbubblan längst ner och välj: Fisk!!!, Kommer, Åker in, Mat?, Bajs – eller <b>Egen text</b> (högst 15 tecken, tangentbordets <b>Skicka</b> skickar).</li>
           <li>Under en tävling ligger <b>din senaste fisk</b> först ("Gädda 78 cm · 14:32") – ett tryck skickar den, med fotot om det finns.</li>
           <li>Meddelandet syns vid din båt för alla i <b>7 minuter</b> – de första 3 minuterna i färg (fisken i artens färg, egen text i regnbågens), sedan tonas det ner. En notis säger hur länge det syns, och kartan visar dig.</li>
+          <li>Ett <b>PB</b> skickat från PB-rutan får en regnbågskant (se Tävlingarna).</li>
           <li>Skriver flera i samma båt samlas det i en bubbla – en rad per person, nyast överst.</li>
           <li><b class="hA">Tryck</b> på ett meddelande (eller en rad): när det skrevs och när det försvinner, fotot, <b>➤ Åk hit</b> (lodet på båten) och <b>Dölj för mig</b> – eller <b>Ta bort</b> om det är ditt. Namnet öppnar profilen.</li>
           <li>Fungerar när du är vid sjön.</li>
