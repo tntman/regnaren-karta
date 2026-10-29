@@ -482,7 +482,7 @@
       var p = pointers.values().next().value;
       var dx = p.x - panStart.x, dy = p.y - panStart.y;
       panStart.moved = Math.max(panStart.moved, Math.hypot(dx,dy));
-      if (panStart.moved > 10) cancelLongPress();
+      if (panStart.moved > 10){ cancelLongPress(); if (followGps) setFollow(false); }   // (dragging the map stops following you, 46-gps-track.js)
       originX = panStart.originX + dx;
       originY = panStart.originY + dy;
       clampOrigin();

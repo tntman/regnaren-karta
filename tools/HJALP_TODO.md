@@ -26,6 +26,8 @@ spåren, Ledare, Kompass, Namn, Fog of war, tävlingslåset, Storlek/När, start
 - [ ] 2026-10-12 – Under ytan (NY): håll kartknappen → "Under ytan" sist = botten i 3D genom kameran (helskärm, reglage nertill, ✕ stänger;
   dra åt sidan = vrid botten rätt; knappar Rutnät/Yta/Stavar/Lod/Djuplinjer, svepbar = minimera). Demo Mode: långtryck → "Båten hit". Hjälp: Kartan (kartlägen) + Demo Mode, animering `underytan` (ny,
   utan kamera). Nyhet: "Under ytan: se botten i 3D genom kameran" (NY)
+- [ ] 2026-10-29 – GPS-knappen följer båten (knappen vit = följer; dra i kartan = slutar, zoom följer vidare) och hämtar en färsk position
+  (GPS:en startas om – den kunde stanna på iPhone). Hjälp: Kartan/GPS. Nyhet: "GPS-knappen följer båten" (BÄTTRE/FIXAT)
 
 <!-- mall:
 - [ ] ÅÅÅÅ-MM-DD – Vad som ändrats. Hjälp: avsnitt X (text) + animering `namn`. Nyhet: "…" (NYTT/BÄTTRE/FIXAT)

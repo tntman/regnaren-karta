@@ -31,6 +31,7 @@
       if (pfCard.classList.contains('show')) st.pf = pfName;
       st.wx = wxCard.classList.contains('show');
       st.probe = probe;
+      st.follow = followGps;   // (the GPS button follows you)
       if (editingId && wpSheet.classList.contains('show')){
         st.sheet = { id: editingId, isNew: editingIsNew, name: wpNameInput.value, type: editingType };
       }
@@ -78,6 +79,7 @@
       if (r.an) showAnPanel(true);
       if (r.trk) trkShowPanel(true);
       if (r.ar) arOpen();
+      if (r.follow) setFollow(true);
       if (r.pf) openProfile(r.pf);
       if (r.hm){ if (r.hm.card) hmPendingCard = r.hm.card; hmSetOn(true, r.hm.panel, true); }   // (the card first: the copy may be there at once)
       if (r.sheet && r.sheet.id){

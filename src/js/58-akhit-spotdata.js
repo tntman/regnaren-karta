@@ -13,6 +13,7 @@
     var sc = Math.min((stageW - 2 * side) / Math.max(1, x1 - x0), (stageH - top - bot) / Math.max(1, y1 - y0));
     sc = Math.max(minScale, Math.min(maxScale, Math.min(sc, pts.length > 1 ? sc : Math.max(scale, fitScale * 4.5))));
     var cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+    setFollow(false);
     animateTo(sc, stageW / 2 - cx * sc, top + (stageH - top - bot) / 2 - cy * sc, 600);
   }
 

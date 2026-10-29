@@ -190,6 +190,9 @@ Uppdatera rätt anteckning när något ändras.
   över den (1,2 s). Prövat: svart startbild med blå tona överst – syntes som en kant. Firebase-skripten ligger sist i body (`html/99-firebase.html`)
   så att inget håller upp bilden; iOS-startbilder `assets/launch-*.png` (`tools/launch_images.py`, ny iPhone-storlek läggs till där), Android
   gör sin egen av manifestet. Testerna: fakefb stänger av båda (`__ffNoSplash`, `__ffNoBoot`; opt-in `splash=True`, test_splash) och välkomstrutan (`__ffNoWelcome`; `help_seen=False`).
+- **GPS-knappen följer** (`#locateBtn`, `setFollow`, `js/46-gps-track.js`, Filip 2026-10-29): tryck = centrera + följ (`.tracking`, kartan går med båten);
+  dra i kartan / gå till något annat = slutar, zoom följer vidare, överlever vridning. Trycket hämtar en färsk position och startar om GPS-bevakningen
+  (`refreshGps`) – iOS kan sluta skicka positioner; görs också när appen öppnas igen och efter 30 s utan position (bara om GPS:en fungerat, aldrig efter "nej").
 - **Pushnotiser**: inte gjort (kräver server/Firebase-betalplan).
 
 ## Firestore-regler (aktuella, i Firebase-konsolen)

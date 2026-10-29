@@ -422,8 +422,15 @@
       centerOnFix(true);
     } else {
       updateMarker();
+      // following (the GPS button): the map goes along with the boat -- not while a finger is on it
+      if (followGps && onMap && !pointers.size) animateTo(scale, stageW/2 - lastFix.px * scale, stageH/2 - lastFix.py * scale, 600);
     }
   }
+
+  // The GPS button centres on you AND follows you (the map goes along as you move) until you drag
+  // the map or go to something else (centerOnWaypoint ...). Zooming keeps following.
+  var followGps = false;
+  function setFollow(on){ followGps = !!on; locateBtn.classList.toggle('tracking', followGps); }
 
   function centerOnFix(instant){
     if (!lastFix || !lastFix.onMap) return;
@@ -435,6 +442,7 @@
   }
 
   function centerOnWaypoint(wp){
+    setFollow(false);
     var p = latLonToImgPx(wp.lat, wp.lon);
     var targetScale = Math.max(scale, fitScale * 4.5);
     var tx = stageW/2 - p.x * targetScale;
@@ -443,7 +451,8 @@
   }
 
   locateBtn.addEventListener('click', function(){
-    if (lastFix && lastFix.onMap){ centerOnFix(false); }
+    refreshGps(); // a fresh position now, and the GPS watch started again (iOS sometimes stops sending)
+    if (lastFix && lastFix.onMap){ centerOnFix(false); setFollow(true); }
     else if (lastFix) farAway.classList.add('show');
   });
 
@@ -462,6 +471,7 @@
   });
 
   function handleGpsFix(pos){
+    lastGpsAt = Date.now();
     // right after coming back to the app: ignore a position the phone had
     // cached from before it was put away -- wait for a really fresh one
     if (awaitingFreshFix && pos.timestamp && pos.timestamp < resumedAt - 2000){
@@ -496,7 +506,7 @@
       onFix(demoLat, demoLon, 8);
     } else if ('geolocation' in navigator){
       awaitingFreshFix = true; // (the 2-second share tick waits for it too)
-      navigator.geolocation.getCurrentPosition(handleGpsFix, function(){}, { enableHighAccuracy:true, maximumAge:0, timeout:15000 });
+      refreshGps();
       // safety net: if no fresh position has come within 8 s (poor signal),
       // go on with the latest one the phone has rather than share nothing
       var myResume = resumedAt;
@@ -520,7 +530,16 @@
       return;
     }
     showGpsProblem(); // "Söker GPS-position…" until the first fix (or an error) arrives
-    navigator.geolocation.watchPosition(
+    watchGps();
+  }
+  // iOS sometimes stops sending positions to a watch (after the phone has been locked, or for no
+  // clear reason -- out on the lake the boat stood still on the map until the app was restarted).
+  // So: the watch is started again on coming back to the app, on the GPS button, and when nothing
+  // has come for 30 s (only once GPS has worked, and never after a "no" -- that could ask again).
+  var gpsWatchId = null, lastGpsAt = 0;
+  function watchGps(){
+    if (gpsWatchId != null) navigator.geolocation.clearWatch(gpsWatchId);
+    gpsWatchId = navigator.geolocation.watchPosition(
       handleGpsFix,
       function(err){
         lastGpsErrorCode = err.code;
@@ -529,4 +548,12 @@
       { enableHighAccuracy:true, maximumAge:4000, timeout:20000 }
     );
   }
+  function refreshGps(){
+    if (!('geolocation' in navigator) || gpsWatchId == null || lastGpsErrorCode === 1) return;
+    navigator.geolocation.getCurrentPosition(handleGpsFix, function(){}, { enableHighAccuracy:true, maximumAge:0, timeout:15000 });
+    watchGps();
+  }
+  setInterval(function(){
+    if (lastGpsAt && Date.now() - lastGpsAt > 30000 && document.visibilityState === 'visible'){ lastGpsAt = Date.now(); refreshGps(); }
+  }, 10000);
 

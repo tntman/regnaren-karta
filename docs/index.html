@@ -4158,7 +4158,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
       var p = pointers.values().next().value;
       var dx = p.x - panStart.x, dy = p.y - panStart.y;
       panStart.moved = Math.max(panStart.moved, Math.hypot(dx,dy));
-      if (panStart.moved > 10) cancelLongPress();
+      if (panStart.moved > 10){ cancelLongPress(); if (followGps) setFollow(false); }   // (dragging the map stops following you, 46-gps-track.js)
       originX = panStart.originX + dx;
       originY = panStart.originY + dy;
       clampOrigin();
@@ -8673,8 +8673,15 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
       centerOnFix(true);
     } else {
       updateMarker();
+      // following (the GPS button): the map goes along with the boat -- not while a finger is on it
+      if (followGps && onMap && !pointers.size) animateTo(scale, stageW/2 - lastFix.px * scale, stageH/2 - lastFix.py * scale, 600);
     }
   }
+
+  // The GPS button centres on you AND follows you (the map goes along as you move) until you drag
+  // the map or go to something else (centerOnWaypoint ...). Zooming keeps following.
+  var followGps = false;
+  function setFollow(on){ followGps = !!on; locateBtn.classList.toggle('tracking', followGps); }
 
   function centerOnFix(instant){
     if (!lastFix || !lastFix.onMap) return;
@@ -8686,6 +8693,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   }
 
   function centerOnWaypoint(wp){
+    setFollow(false);
     var p = latLonToImgPx(wp.lat, wp.lon);
     var targetScale = Math.max(scale, fitScale * 4.5);
     var tx = stageW/2 - p.x * targetScale;
@@ -8694,7 +8702,8 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   }
 
   locateBtn.addEventListener('click', function(){
-    if (lastFix && lastFix.onMap){ centerOnFix(false); }
+    refreshGps(); // a fresh position now, and the GPS watch started again (iOS sometimes stops sending)
+    if (lastFix && lastFix.onMap){ centerOnFix(false); setFollow(true); }
     else if (lastFix) farAway.classList.add('show');
   });
 
@@ -8713,6 +8722,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   });
 
   function handleGpsFix(pos){
+    lastGpsAt = Date.now();
     // right after coming back to the app: ignore a position the phone had
     // cached from before it was put away -- wait for a really fresh one
     if (awaitingFreshFix && pos.timestamp && pos.timestamp < resumedAt - 2000){
@@ -8747,7 +8757,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
       onFix(demoLat, demoLon, 8);
     } else if ('geolocation' in navigator){
       awaitingFreshFix = true; // (the 2-second share tick waits for it too)
-      navigator.geolocation.getCurrentPosition(handleGpsFix, function(){}, { enableHighAccuracy:true, maximumAge:0, timeout:15000 });
+      refreshGps();
       // safety net: if no fresh position has come within 8 s (poor signal),
       // go on with the latest one the phone has rather than share nothing
       var myResume = resumedAt;
@@ -8771,7 +8781,16 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
       return;
     }
     showGpsProblem(); // "Söker GPS-position…" until the first fix (or an error) arrives
-    navigator.geolocation.watchPosition(
+    watchGps();
+  }
+  // iOS sometimes stops sending positions to a watch (after the phone has been locked, or for no
+  // clear reason -- out on the lake the boat stood still on the map until the app was restarted).
+  // So: the watch is started again on coming back to the app, on the GPS button, and when nothing
+  // has come for 30 s (only once GPS has worked, and never after a "no" -- that could ask again).
+  var gpsWatchId = null, lastGpsAt = 0;
+  function watchGps(){
+    if (gpsWatchId != null) navigator.geolocation.clearWatch(gpsWatchId);
+    gpsWatchId = navigator.geolocation.watchPosition(
       handleGpsFix,
       function(err){
         lastGpsErrorCode = err.code;
@@ -8780,6 +8799,14 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
       { enableHighAccuracy:true, maximumAge:4000, timeout:20000 }
     );
   }
+  function refreshGps(){
+    if (!('geolocation' in navigator) || gpsWatchId == null || lastGpsErrorCode === 1) return;
+    navigator.geolocation.getCurrentPosition(handleGpsFix, function(){}, { enableHighAccuracy:true, maximumAge:0, timeout:15000 });
+    watchGps();
+  }
+  setInterval(function(){
+    if (lastGpsAt && Date.now() - lastGpsAt > 30000 && document.visibilityState === 'visible'){ lastGpsAt = Date.now(); refreshGps(); }
+  }, 10000);
 
   /* ================= Spår-menyn (bottenruta) =================
      Opens from the Spår icon in Filter (the icon has a small amber dot: it can be tapped) or from
@@ -10464,7 +10491,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     if (g && anRes && anRes.list){ var it = anRes.list[+g.getAttribute('data-go') - 1]; if (it){ showAnPanel(false); startNav(it.nav || 'Liknande #' + it.n, it.x, it.y); } return; }
     var rw = e.target.closest ? e.target.closest('.anList .li[data-row]') : null;   // (Fiska nu: the place into view above the panel)
     if (rw && anRes && anRes.list){ var it2 = anRes.list[+rw.getAttribute('data-row') - 1], s2 = Math.max(scale, fitScale * 3), ty = Math.max(90, anPanel.getBoundingClientRect().top) / 2 + 30;
-      if (it2) animateTo(s2, stageW / 2 - it2.x * s2, ty - it2.y * s2, 500); }
+      if (it2){ setFollow(false); animateTo(s2, stageW / 2 - it2.x * s2, ty - it2.y * s2, 500); } }
   });
   anPanel.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
   sheetSwipe(anPanel, function(){ showAnPanel(false); });
@@ -10803,6 +10830,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     var sc = Math.min((stageW - 2 * side) / Math.max(1, x1 - x0), (stageH - top - bot) / Math.max(1, y1 - y0));
     sc = Math.max(minScale, Math.min(maxScale, Math.min(sc, pts.length > 1 ? sc : Math.max(scale, fitScale * 4.5))));
     var cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+    setFollow(false);
     animateTo(sc, stageW / 2 - cx * sc, top + (stageH - top - bot) / 2 - cy * sc, 600);
   }
 
@@ -12840,6 +12868,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
       if (pfCard.classList.contains('show')) st.pf = pfName;
       st.wx = wxCard.classList.contains('show');
       st.probe = probe;
+      st.follow = followGps;   // (the GPS button follows you)
       if (editingId && wpSheet.classList.contains('show')){
         st.sheet = { id: editingId, isNew: editingIsNew, name: wpNameInput.value, type: editingType };
       }
@@ -12887,6 +12916,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
       if (r.an) showAnPanel(true);
       if (r.trk) trkShowPanel(true);
       if (r.ar) arOpen();
+      if (r.follow) setFollow(true);
       if (r.pf) openProfile(r.pf);
       if (r.hm){ if (r.hm.card) hmPendingCard = r.hm.card; hmSetOn(true, r.hm.panel, true); }   // (the card first: the copy may be there at once)
       if (r.sheet && r.sheet.id){

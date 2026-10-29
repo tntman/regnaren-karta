@@ -799,7 +799,7 @@
     if (g && anRes && anRes.list){ var it = anRes.list[+g.getAttribute('data-go') - 1]; if (it){ showAnPanel(false); startNav(it.nav || 'Liknande #' + it.n, it.x, it.y); } return; }
     var rw = e.target.closest ? e.target.closest('.anList .li[data-row]') : null;   // (Fiska nu: the place into view above the panel)
     if (rw && anRes && anRes.list){ var it2 = anRes.list[+rw.getAttribute('data-row') - 1], s2 = Math.max(scale, fitScale * 3), ty = Math.max(90, anPanel.getBoundingClientRect().top) / 2 + 30;
-      if (it2) animateTo(s2, stageW / 2 - it2.x * s2, ty - it2.y * s2, 500); }
+      if (it2){ setFollow(false); animateTo(s2, stageW / 2 - it2.x * s2, ty - it2.y * s2, 500); } }
   });
   anPanel.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
   sheetSwipe(anPanel, function(){ showAnPanel(false); });
