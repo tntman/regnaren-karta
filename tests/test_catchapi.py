@@ -1,4 +1,4 @@
-# The heat map's catches from Fiskfiskarnas API (made up by fakefb.FakeApi): the history (dashboard.php)
+# The heat map's catches from Fiskfiskarnas API (made up by fakefb.FakeApi): the history (dashboard.php + ?del=fangstlogg with the key)
 # only for this lake, kept on the phone; fetched again only by the rules (no copy / a competition on or
 # due and > 1 h / > 1 day); live (tavling.php bootstrap) while a competition is on, annulled catches gone;
 # the API down -> the copy; Inställningar -> Fångstdata shows it all, "Hämta nu" fetches.
@@ -35,7 +35,8 @@ with sync_playwright() as p:
     t = info(pg)
     check('Fångstdata: 6 in Regnaren, 8 in all, the copy\'s size, next fetch in a day', '6 i Regnaren · 8 totalt' in t and 'kB i telefonen' in t and '(ett dygn)' in t, t)
     check('...competitions: the last one (Regnaren 1), not Vitten\'s; live off', 'Regnaren 1 · 2026-09-26' in t and 'Vitten' not in t and 'av – ingen tävling pågår' in t, t)
-    check('...today: 1 call for the history, some data', 'historik 1 · live 0' in t and '≈ ' in t, t)
+    check('...today: 2 calls for the history (the list + Fångstloggen), some data', 'historik 2 · live 0' in t and '≈ ' in t, t)
+    check('Fångstloggen asked with the map app key (Bearer ffk_...)', ctx.api.auth and all(h.startswith('Bearer ffk_') for h in ctx.api.auth), ctx.api.auth)
     check('the line under the title: "6 fångster · hämtade hh:mm"', pg.inner_text('#setSum-catch').startswith('6 fångster · Hämtade') or '6 fångster · hämtade' in pg.inner_text('#setSum-catch'), pg.inner_text('#setSum-catch'))
     reload(pg)
     check('reload with a fresh copy: not fetched again, the catches still there', ctx.api.n('dashboard') == 1 and n_catches(pg) == 6, (ctx.api.hits, n_catches(pg)))

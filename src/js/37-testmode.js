@@ -25,10 +25,13 @@
   // Fiskfiskarnas API, made up from testState (catchGet, 66-catches.js)
   function testApi(path){
     var c = testState.comp, rows = c ? testState.catches.filter(function(x){ return x.competitionId === c.id; }) : [];
-    if (path.indexOf('dashboard.php') === 0){
+    if (path.indexOf('del=fangstlogg') >= 0){
       var voided = {}; testState.voids.forEach(function(ts){ voided[ts] = 1; });
-      return { heatmap: c && c.status === 'finished' ? rows.filter(function(x){ return x.approved && !voided[x.timestamp]; }) : [],
-               competitions: c ? [{ competition_id: c.id, competition_name: c.name, date: c.date, status: c.status, water: LAKE.name }] : [],
+      return { ok: true, fangster: (c && c.status === 'finished' ? rows.filter(function(x){ return x.approved && !voided[x.timestamp]; }) : [])
+        .map(function(x){ return { t: x.timestamp, tkod: x.competitionId, name: x.name, species: x.species, cm: x.cm, ok: true, lat: x.lat, lng: x.lng, vatten: LAKE.name }; }) };
+    }
+    if (path.indexOf('dashboard.php') === 0){
+      return { competitions: c ? [{ competition_id: c.id, competition_name: c.name, date: c.date, status: c.status, water: LAKE.name }] : [],
                anglers: [], anglerStats: [], dashboard: [], results: [], records: [] };
     }
     if (path.indexOf('action=bootstrap') >= 0)   // (an annulled catch: a VOID row pointing at it, as in the real API)

@@ -7366,10 +7366,13 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   // Fiskfiskarnas API, made up from testState (catchGet, 66-catches.js)
   function testApi(path){
     var c = testState.comp, rows = c ? testState.catches.filter(function(x){ return x.competitionId === c.id; }) : [];
-    if (path.indexOf('dashboard.php') === 0){
+    if (path.indexOf('del=fangstlogg') >= 0){
       var voided = {}; testState.voids.forEach(function(ts){ voided[ts] = 1; });
-      return { heatmap: c && c.status === 'finished' ? rows.filter(function(x){ return x.approved && !voided[x.timestamp]; }) : [],
-               competitions: c ? [{ competition_id: c.id, competition_name: c.name, date: c.date, status: c.status, water: LAKE.name }] : [],
+      return { ok: true, fangster: (c && c.status === 'finished' ? rows.filter(function(x){ return x.approved && !voided[x.timestamp]; }) : [])
+        .map(function(x){ return { t: x.timestamp, tkod: x.competitionId, name: x.name, species: x.species, cm: x.cm, ok: true, lat: x.lat, lng: x.lng, vatten: LAKE.name }; }) };
+    }
+    if (path.indexOf('dashboard.php') === 0){
+      return { competitions: c ? [{ competition_id: c.id, competition_name: c.name, date: c.date, status: c.status, water: LAKE.name }] : [],
                anglers: [], anglerStats: [], dashboard: [], results: [], records: [] };
     }
     if (path.indexOf('action=bootstrap') >= 0)   // (an annulled catch: a VOID row pointing at it, as in the real API)
@@ -11258,7 +11261,8 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
        { id, t (ms), comp, who, sp ('abborre' | 'gadda' | 'gos'), cm, lat, lon, px, py }
      (px/py = its place on this lake's map picture). The heat map (68-heatmap.js) only ever sees
      these. The source: Fiskfiskarnas API (Jonathan, no sign-in to read; tools/NOTES_HEATMAP.md):
-       - history: dashboard.php -> .heatmap (every competition catch with GPS) + .competitions (status);
+       - history: dashboard.php -> .competitions (status) + the profiles, and dashboard.php?del=fangstlogg -> .fangster
+         (every competition catch with GPS; members only since 2026-11 -- the map app has its own key, CATCH_KEY);
          fetched at start / when the heat map is turned on, only when catchHistDue() says so;
        - live:    tavling.php?action=bootstrap -> .catches of a competition going on on this lake:
          when the app opens, then every 5 min (30 s while the heat map is on), only while visible.
@@ -11266,6 +11270,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
      Which lake a catch belongs to: its position (inside that lake's map) -- a lake name, when there
      is one, must not say it's another lake (a lake next door inside the same map). */
   var CATCH_API = 'https://fiskfiskarna.se/api/';
+  var CATCH_KEY = 'ffk_ac4ce2de43582947c973032cfc796555babb26d3';   // (the map app's own key from Jonathan, 2026-11-05: Fångstloggen)
   var CATCH_REAL_KEY = lakeKey('ffmap_catches_v1', 'catches_v1'), CATCH_CACHE_KEY = testKey(CATCH_REAL_KEY), CATCH_NET_KEY = 'ffmap_catchnet_v1';
   var CATCH_HOUR = 3600e3, CATCH_DAY = 864e5, CATCH_LIVE_SLOW = 300e3, CATCH_LIVE_HZ = 120e3, CATCH_LIVE_FAST = 30e3;
   var catchData = null, catchLoading = false, catchErr = null, catchVer = 0, catchListeners = [];
@@ -11327,7 +11332,9 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   function catchGet(path, kind, cb, real){   // (real: the real API also in Demo Mode -- only the profiles, 67-profiles.js)
     if (TEST_MODE && !real){ setTimeout(function(){ cb(null, testApi(path)); }, 0); return; }   // (the test mode: the made-up competition, 37-testmode.js -- never the real API)
     var res;
-    (window.fetch ? fetch(CATCH_API + path, { cache: 'no-store' }) : Promise.reject(new Error('fetch saknas'))).then(function(r){
+    var opt = { cache: 'no-store' };
+    if (path.indexOf('del=fangstlogg') >= 0) opt.headers = { Authorization: 'Bearer ' + CATCH_KEY };
+    (window.fetch ? fetch(CATCH_API + path, opt) : Promise.reject(new Error('fetch saknas'))).then(function(r){
       return r.text().then(function(t){
         var s = catchNet(); s[kind]++; s[kind + 'b'] += (+r.headers.get('content-length')) || t.length;   // (what came over the net: gzip)
         try { localStorage.setItem(CATCH_NET_KEY, JSON.stringify(s)); } catch(e){}
@@ -11372,11 +11379,16 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   function loadHistory(){
     if (catchLoading) return;
     catchLoading = true; catchesChanged();
+    var fail = function(err){ catchLoading = false; catchErr = catchErrOf(err); if (!catchData) catchData = { list: [], comp: [] }; catchesChanged(); };
     catchGet('dashboard.php', 'h', function(err, d){
-      catchLoading = false;
-      if (!err && !(d && Array.isArray(d.heatmap))) err = new Error('oväntat svar');
-      if (err){ catchErr = catchErrOf(err); if (!catchData) catchData = { list: [], comp: [] }; catchesChanged(); return; }
-      catchErr = null;
+      if (!err && !(d && Array.isArray(d.competitions))) err = new Error('oväntat svar');
+      if (err) return fail(err);
+      // the catches: Fångstloggen (with the key) -- the same catches as the old list, in its own names
+      catchGet('dashboard.php?del=fangstlogg', 'h', function(err, f){
+      if (!err && !(f && f.ok && Array.isArray(f.fangster))) err = new Error(f && f.error ? String(f.error) : f && f.ok === false ? 'nyckeln godtas inte' : 'oväntat svar');
+      if (err) return fail(err);
+      catchLoading = false; catchErr = null;
+      d.heatmap = f.fangster.map(function(x){ return { timestamp: x.t, competitionId: x.tkod, name: x.name, species: x.species, cm: x.cm, lat: x.lat, lng: x.lng, lake: x.vatten }; });
       var comps = (d.competitions || []).filter(function(c){ return catchSameWater(c.water || c.location, LAKE); })
           .map(function(c){ return { id: String(c.competition_id), name: c.competition_name || '', date: c.date || '', status: c.status || '' }; });
       var ids = {}; comps.forEach(function(c){ ids[c.id] = 1; });
@@ -11388,6 +11400,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
       try { localStorage.setItem(CATCH_CACHE_KEY, JSON.stringify({ v: 4, at: catchHist.at, total: catchHist.total, comps: catchHist.comps, prof: catchHist.prof, rows: catchPack(catchHist.list), away: catchPack(catchHist.away) })); } catch(e){}
       catchMerge();
       catchLiveTick();
+      });
     });
   }
   // the heat map / Kartanalys want the catches (force: "Hämta nu")

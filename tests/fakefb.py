@@ -247,14 +247,18 @@ FAKE_FIREBASE_JS = r"""
 class FakeApi:
     def __init__(self, cfg):
         self.heatmap = list(cfg.get('heatmap', [])); self.competitions = list(cfg.get('competitions', []))
-        self.live = dict(cfg.get('live', {})); self.down = False; self.hits = []
+        self.live = dict(cfg.get('live', {})); self.down = False; self.hits = []; self.auth = []
         self.prof = {k: cfg.get(k, []) for k in ('anglers', 'anglerStats', 'dashboard', 'results', 'records')}
-    def n(self, what): return len([u for u in self.hits if what in u])
+    def n(self, what): return len([u for u in self.hits if what in u and (what != 'dashboard' or 'del=' not in u)])   # ('dashboard': the list, not Fångstloggen)
     def handle(self, route):
         import json
         url = route.request.url; self.hits.append(url)
         if self.down: return route.abort()
-        if 'dashboard.php' in url: body = dict(self.prof, heatmap=self.heatmap, competitions=self.competitions)
+        if 'del=fangstlogg' in url:   # (Fångstloggen: only with the map app's key -- the catches since 2026-11)
+            self.auth.append(route.request.headers.get('authorization', ''))
+            body = {'ok': True, 'fangster': [{'t': r['timestamp'], 'tkod': r['competitionId'], 'name': r['name'], 'species': r['species'], 'cm': r['cm'],
+                                             'ok': True, 'lat': r['lat'], 'lng': r['lng'], 'vatten': r.get('lake', '')} for r in self.heatmap]}
+        elif 'dashboard.php' in url: body = dict(self.prof, competitions=self.competitions)
         elif 'action=bootstrap' in url:
             cid = __import__('urllib.parse').parse.unquote(url.split('competitionId=')[1].split('&')[0])
             body = {'ok': cid in self.live, 'catches': self.live.get(cid, []), 'participants': []} if cid in self.live else {'ok': False, 'error': 'okänd tävling'}
