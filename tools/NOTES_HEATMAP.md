@@ -38,7 +38,11 @@ bottenrutan, fångstrutan, tryck på kartan), `src/css/72-heatmap.css`, HTML i `
 - **Källa: Fiskfiskarnas API** (Jonathan, `https://fiskfiskarna.se/api/`, ingen inloggning för läsning; CORS tillåter
   `https://tntman.github.io` och `capacitor://localhost` sedan 2026-10-03; `https://karta.fiskfiskarna.se` – nya
   adressen 2026-10-04 – väntar på Jonathan, tills dess blockeras hämtningen där och Fångstdata visar "ingen anslutning"):
-  - **Historik** = `dashboard.php` → `heatmap` (alla fångster med GPS, ~900 st; svaret ~530 kB med all statistik)
+  - **Historik** = `dashboard.php` (tävlingarna + profilerna, ~315 kB) + `dashboard.php?del=fangstlogg` → `fangster` (alla fångster med GPS,
+    ~975 st, ~625 kB, även väder per fångst – används inte än). Sedan 2026-11 är fångsterna bara för medlemmar (`heatmap` borta ur
+    `dashboard.php`); kartappen har en egen nyckel från Jonathan (`CATCH_KEY`, `js/66-catches.js`, `Authorization: Bearer`, 2026-11-05).
+    Nyckeln syns i sidans källkod (webbapp, Filip ok) – byts den: ändra `CATCH_KEY`. Reserv om nyckeln slutar fungera: `tavling.php`
+    bootstrap ger positionerna utan nyckel (ett anrop per tävling, 429 vid många i rad).
     + `competitions`. Bara fångster i **denna** sjö (`catchLakeOf`: inom kartan och sjönamnet säger inte en annan
     sjö – Östra Vitten ligger inom Regnarens kartbild). Tävlingarna på sjön (`catchSameWater`, prefix åt båda
     håll: "Sibbo"/"Sibbofjärden") sparas med `id, name, date, status`.
