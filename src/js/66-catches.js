@@ -45,10 +45,8 @@
   // a lake of the app whose map the place is inside (and whose name doesn't say otherwise)
   function catchLakeOf(c){
     for (var i = 0; i < LAKES.length; i++){
-      var L = LAKES[i], G = L.geo, N = Math.pow(2, G.zoom) * 256;
-      var x = (c.lon + 180) / 360 * N - G.originX, r = c.lat * Math.PI / 180;
-      var y = (1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2 * N - G.originY;
-      if (x < 0 || y < 0 || x >= G.fullW || y >= G.fullW * G.imgH / G.imgW) continue;
+      var L = LAKES[i];
+      if (!lakeMapHas(L, c.lat, c.lon)) continue;   // (28-menu.js)
       if (c.lake && !catchSameWater(c.lake, L)) continue;
       return L.id;
     }
@@ -106,7 +104,7 @@
   function catchReadCopy(){
     if (catchHist) return;
     try { var c = JSON.parse(localStorage.getItem(CATCH_CACHE_KEY) || 'null');
-      if (c && c.v === 4) catchHist = { at: c.at, total: c.total, comps: c.comps || [], prof: c.prof || {}, list: catchUnpack(c.rows), away: catchUnpack(c.away, true) }; } catch(e){}   // (v3: no "away" -> fetched again)
+      if (c && c.v === 4) catchHist = { at: c.at, total: c.total, comps: c.comps || [], all: c.all || [], opens: c.opens || [], prof: c.prof || {}, list: catchUnpack(c.rows), away: catchUnpack(c.away, true) }; } catch(e){}   // (v3: no "away" -> fetched again)
     if (catchHist) catchMerge();
   }
   // the history + the live catches (the same catch once) -> catchData:
@@ -134,12 +132,15 @@
       var comps = (d.competitions || []).filter(function(c){ return catchSameWater(c.water || c.location, LAKE); })
           .map(function(c){ return { id: String(c.competition_id), name: c.competition_name || '', date: c.date || '', status: c.status || '' }; });
       var ids = {}; comps.forEach(function(c){ ids[c.id] = 1; });
+      // every competition (the menu's Tävling list) and the open ones (all year -- Fiskfiskarna Open, Mälaren Open)
+      var allComps = d.competitions.map(function(c){ return { id: String(c.competition_id), name: c.competition_name || '', date: c.date || '', status: c.status || '', water: c.water || c.location || '' }; });
+      var opens = (d.openTavlingar || []).map(function(o){ return { id: String(o.id), name: o.namn || '', serie: o.serie || '', start: o.start || '', slut: o.slut || '', status: o.status === 'aktiv' ? 'active' : 'done', open: true, water: o.serie === 'malaren_open' ? 'Mälaren' : '' }; });
       var all = d.heatmap.map(function(x){ return normCatch(x, true); }).filter(Boolean);
       var here = function(c){ return c.lat != null && catchLakeOf(c) === LAKE_ID; };
-      catchHist = { at: Date.now(), total: d.heatmap.length, prof: profPack(d), comps: comps,   // (profPack: 67-profiles.js)
+      catchHist = { at: Date.now(), total: d.heatmap.length, prof: profPack(d), comps: comps, all: allComps, opens: opens,   // (profPack: 67-profiles.js)
         list: all.filter(here),
         away: all.filter(function(c){ return ids[c.comp] && !here(c); }) };   // (the lake's competitions, caught in another water: the profile)
-      try { localStorage.setItem(CATCH_CACHE_KEY, JSON.stringify({ v: 4, at: catchHist.at, total: catchHist.total, comps: catchHist.comps, prof: catchHist.prof, rows: catchPack(catchHist.list), away: catchPack(catchHist.away) })); } catch(e){}
+      try { localStorage.setItem(CATCH_CACHE_KEY, JSON.stringify({ v: 4, at: catchHist.at, total: catchHist.total, comps: catchHist.comps, all: allComps, opens: opens, prof: catchHist.prof, rows: catchPack(catchHist.list), away: catchPack(catchHist.away) })); } catch(e){}
       catchMerge();
       catchLiveTick();
       });
@@ -152,8 +153,35 @@
     catchLiveTick();
   }
 
-  // --- live (tavling.php bootstrap): a competition going on on this lake, while the app is in view ---
-  function catchLiveComp(){ return catchLakeComps('active')[0] || null; }
+  // --- live (tavling.php bootstrap): the competition you're in (the menu's Tävling), while the app is in view ---
+  // Every competition going on: the lakes' (status active) + the open ones (between their start and end)
+  function catchActiveComps(){
+    if (!catchHist) return [];
+    var d = catchTodayIso();
+    return (catchHist.all && catchHist.all.length ? catchHist.all : catchHist.comps).filter(function(c){ return c.status === 'active'; })
+      .concat((catchHist.opens || []).filter(function(o){ return o.status === 'active' && (!o.start || o.start <= d) && (!o.slut || d <= o.slut); }));
+  }
+  // automatically (Filip 2026-11-05): the one going on on this lake; else the open one -- Mälaren Open on Mälaren,
+  // Fiskfiskarna Open elsewhere (and on Mälaren when there's no Mälaren Open)
+  function catchAutoComp(){
+    var on = catchActiveComps(), lake = catchLakeComps('active')[0];
+    if (lake) return on.filter(function(c){ return c.id === lake.id; })[0] || lake;
+    var serie = function(s){ return on.filter(function(c){ return c.open && c.serie === s; })[0]; };
+    return (LAKE_ID === 'malaren' && serie('malaren_open')) || serie('fiskfiskarna_open') || null;
+  }
+  // chosen yourself (the menu): its id, or '' = automatically -- per phone, Demo Mode its own
+  var COMP_KEY = testKey('ffmap_comp_v1');
+  function compChosen(){ try { return localStorage.getItem(COMP_KEY) || ''; } catch(e){ return ''; } }
+  function compChoose(id){
+    try { if (id) localStorage.setItem(COMP_KEY, id); else localStorage.removeItem(COMP_KEY); } catch(e){}
+    if (catchLive) catchLive.at = 0;
+    catchLiveTick(true); catchMerge();
+  }
+  function catchLiveComp(){
+    var id = compChosen();
+    if (id){ var c = catchActiveComps().filter(function(x){ return x.id === id; })[0]; if (c) return c; }   // (over: automatically again)
+    return catchAutoComp();
+  }
   function catchLiveFast(){ return !!(hmOn || (anSet.mode && anSet.mode.indexOf('c_') === 0)); }
   // (opening: the app just started / came back -> fetch now if the last is > 60 s old)
   function catchLiveTick(opening){
@@ -173,6 +201,7 @@
       else {   // (an annulled catch = the catch + a "VOID" row pointing at it: both go)
         var voided = {}; d.catches.forEach(function(x){ if (x.voidRef) voided[x.voidRef] = 1; });
         L.err = null;
+        L.parts = (d.participants || []).map(function(p){ return catchPlain(p.name); });   // (the menu: "du är med")
         // all: the whole competition, whichever water (Ledare, Senaste fisk); list: only those caught in this lake (the heat map)
         L.all = d.catches.filter(function(x){ return x.displayValue !== 'VOID' && !voided[x.timestamp]; })
           .map(function(x){ return normCatch(x, true); }).filter(Boolean);

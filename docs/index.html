@@ -570,6 +570,38 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   .menuSeparator{height:1px;background:rgba(255,255,255,.12);margin:5px 4px;}
   #lakeList{display:flex;flex-direction:column;gap:2px;width:100%;}
   #lakeList .menuItem{width:100%;box-sizing:border-box;}
+  /* Sjö / Tävling (28-menu.js): two rows at the top, each opening its list (#menuSub) in place of the menu */
+  #menuPanel:has(#lakeList .mnPick){width:min(300px, calc(100vw - 28px));box-sizing:border-box;}
+  #menuSub{display:none;flex-direction:column;gap:2px;width:100%;}
+  #menuPanel.sub > :not(#menuSub){display:none;}
+  #menuPanel.sub #menuSub{display:flex;}
+  .mnPick, .mnRow{width:100%;box-sizing:border-box;}
+  .mnPick{background:rgba(255,255,255,.045);margin-bottom:3px;}
+  .mnPick svg, .mnRow svg{width:17px;height:17px;}
+  .mnT{flex:1;min-width:0;}
+  .mnT b{display:block;font-weight:600;font-size:14.5px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .menuItem--active .mnT b{color:var(--amber);}
+  .mnT small{display:block;font-size:12px;color:var(--text-muted);margin-top:1px;}
+  .mnK{display:block;font-size:10.5px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:1px;}
+  .mnChev{color:var(--text-muted);font-size:20px;line-height:1;}
+  .mnAuto{display:inline-block;font-size:11px;font-weight:600;color:var(--amber);background:rgba(240,154,96,.13);border-radius:999px;padding:1px 7px;margin-left:6px;vertical-align:1px;}
+  .mnHead{display:flex;align-items:center;gap:8px;border:none;background:none;color:#fff;font:inherit;font-size:16px;font-weight:600;padding:6px 6px 8px;cursor:pointer;text-align:left;}
+  .mnHead svg{width:30px;height:30px;padding:6px;box-sizing:border-box;border-radius:10px;background:rgba(255,255,255,.06);color:var(--text-muted);flex:none;}
+  .mnBig{background:rgba(255,255,255,.045);margin-bottom:2px;}
+  .mnSec{font-size:10.5px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;padding:10px 12px 3px;}
+  .mnNote{font-size:12px;color:var(--text-muted);line-height:1.4;padding:8px 12px 4px;}
+  .mnRight{font-size:12.5px;color:var(--text-muted);white-space:nowrap;}
+  .mnSw{flex:none;width:44px;height:26px;border-radius:999px;background:rgba(255,255,255,.18);position:relative;transition:background .2s;}
+  .mnSw::after{content:'';position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .2s;}
+  .mnSw.on{background:var(--amber);}
+  .mnSw.on::after{transform:translateX(18px);}
+  .mnInfo{cursor:default;color:var(--offwhite);}
+  .mnInfo:disabled{opacity:1;}
+  .mnDim{opacity:.5 !important;}
+  .lnIc{color:var(--amber);}
+  .lnIc svg{width:22px;height:22px;}
+  .lnBack{display:block;margin:-4px 12px 12px 60px;padding:7px 14px;border:none;border-radius:999px;background:rgba(255,255,255,.08);color:#fff;font:inherit;font-size:13px;cursor:pointer;}
+  .lnBack[hidden]{display:none;}
 
   #logView{
     position:absolute;inset:0;z-index:32;
@@ -2291,6 +2323,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   </button>
   <div id="menuPanel">
     <div id="lakeList"></div>
+    <div id="menuSub"></div>
     <div class="menuSeparator"></div>
     <button class="menuItem menuItem--active" data-view="map" id="menuItemMap">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3 3 6v15l6-3 6 3 6-3V3l-6 3-6-3z"></path><path d="M9 3v15M15 6v15"></path></svg>
@@ -2938,6 +2971,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   <div id="welcomeNote" class="topNote" role="status"><button type="button" id="welcomeNoteGo" class="tnGo"><span class="tnIc"><img src="ff_logo.svg" alt=""></span><span><b>Välkommen till Fiskfiskarnas Kart app!</b>Tryck här för att komma till hjälpsidan.</span></button><button type="button" id="welcomeNoteClose" class="tnX" aria-label="Stäng">✕</button></div>
   <canvas id="pbConf" aria-hidden="true" hidden></canvas>
   <div id="pbNote" class="topNote" role="status"><div class="tnGo"><span class="tnIc pbIc">🎉</span><span><b id="pbNoteTitle"></b><span id="pbNoteSub"></span></span></div><button type="button" id="pbNoteClose" class="tnX" aria-label="Stäng">✕</button></div>
+  <div id="lakeNote" class="topNote" role="status"><div class="tnGo"><span class="tnIc lnIc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.7-7-11.5A7 7 0 0 1 19 9.5C19 14.3 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.4"></circle></svg></span><span><b id="lakeNoteTitle"></b><span id="lakeNoteSub"></span></span></div><button type="button" id="lakeNoteBack" class="lnBack"></button><button type="button" id="lakeNoteClose" class="tnX" aria-label="Stäng">✕</button></div>
   <div id="hzNote" class="topNote" role="status"><button type="button" id="hzNoteGo" class="tnGo"><span class="tnIc hzIc">🔥</span><span><b id="hzNoteTitle"></b><span id="hzNoteSub"></span></span></button><button type="button" id="hzNoteClose" class="tnX" aria-label="Stäng">✕</button></div>
   <div id="wakeNote" role="status"><button type="button" id="wakeNoteClose" aria-label="Stäng">✕</button>
     <b>☀ Håll skärmen tänd är avstängd</b>
@@ -5736,27 +5770,131 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     var url = location.pathname + location.search.replace(/([?&])lake=[^&]*&?/, '$1').replace(/[?&]$/, '');
     location.replace(url);
   }
-  var lakeListEl = document.getElementById('lakeList');
+  /* ---- Sjö och Tävling: the menu's two top rows (Filip 2026-11-05), each opening its own list (#menuSub) ----
+     Sjö: "Automatiskt" (on from the start, LAKE_AUTO_KEY) = the GPS changes the lake straight away when you're at
+     another lake (lakeAutoCheck -- a real GPS fix, 46-gps-track.js), then a note says so (#lakeNote) with a way back.
+     Choosing a lake yourself turns it off. Tävling: see catchLiveComp (66-catches.js) -- automatically the one going on
+     on this lake, else Mälaren Open on Mälaren / Fiskfiskarna Open elsewhere; or one going on that you choose. */
+  var lakeListEl = document.getElementById('lakeList'), menuSubEl = document.getElementById('menuSub');
   var lakePinSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.7-7-11.5A7 7 0 0 1 19 9.5C19 14.3 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.4"></circle></svg>';
   var lakeCheckSvg = '<svg class="menuItemCheck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>';
-  function renderLakeList(){
-    lakeListEl.innerHTML = LAKES.map(function(lake){
-      var isCurrent = lake.id === LAKE_ID;
-      return '<button class="menuItem' + (isCurrent ? ' menuItem--active' : '') + '" data-lake-id="' + lake.id + '">' +
-        lakePinSvg + lake.name + (isCurrent ? lakeCheckSvg : '') +
-        '</button>';
-    }).join('');
+  var cupSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z"></path><path d="M7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4"></path></svg>';
+  var gpsSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="7"></circle><circle cx="12" cy="12" r="2.5"></circle><path d="M12 2v3M12 19v3M2 12h3M19 12h3"></path></svg>';
+  var backSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>';
+  var AUTO_TAG = '<span class="mnAuto">● auto</span>';
+  var LAKE_AUTO_KEY = 'ffmap_lake_auto_v1', LAKE_SWITCH_KEY = 'ffmap_lake_switched_v1';
+  function lakeAutoOn(){ try { return localStorage.getItem(LAKE_AUTO_KEY) !== '0'; } catch(e){ return true; } }
+  function setLakeAuto(on){ try { localStorage.setItem(LAKE_AUTO_KEY, on ? '1' : '0'); } catch(e){} }
+  // is the place inside this lake's map? (the map covers the lake and a bit of land around it)
+  function lakeMapHas(L, lat, lon){
+    var G = L.geo, N = Math.pow(2, G.zoom) * 256;
+    var x = (lon + 180) / 360 * N - G.originX, r = lat * Math.PI / 180;
+    var y = (1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2 * N - G.originY;
+    return x >= 0 && y >= 0 && x < G.fullW && y < G.fullW * G.imgH / G.imgW;
   }
-  renderLakeList();
+  // a real GPS fix: at another lake (and not at this one) -> that lake, at once
+  function lakeAutoCheck(lat, lon){
+    if (!lakeAutoOn() || window.__ffNoLakeAuto || isNearLake(lat, lon)) return;   // (__ffNoLakeAuto: the test browser, fakefb.py)
+    var L = LAKES.filter(function(l){ return l.id !== LAKE_ID && lakeMapHas(l, lat, lon); })[0];
+    if (!L) return;
+    try { sessionStorage.setItem(LAKE_SWITCH_KEY, JSON.stringify({ from: LAKE_ID, to: L.id, t: Date.now() })); } catch(e){}
+    switchLake(L.id);
+  }
+  function myLatLon(){ return typeof lastRealFix !== 'undefined' && lastRealFix && !demoMode ? lastRealFix : lastOwnLatLon; }
+  function lakeKmTxt(L){
+    var m = myLatLon(); if (!m) return '';
+    if (L.id === LAKE_ID ? isNearLake(m.lat, m.lon) : lakeMapHas(L, m.lat, m.lon)) return 'här';
+    var km = haversineKm(m.lat, m.lon, L.center[0], L.center[1]);
+    return (km < 10 ? km.toFixed(1).replace('.', ',') : Math.round(km)) + ' km';
+  }
+  // "du är med" / "du är inte anmäld": the competition's participants (live), when known
+  function compMeTxt(c){
+    var L = catchLive && catchLive.comp === c.id ? catchLive : null;
+    if (!L || !L.parts || !L.parts.length) return '';
+    return L.parts.indexOf(catchPlain(userName)) >= 0 ? 'du är med' : 'du är inte anmäld';
+  }
+  function compWhenTxt(c){ return c.open ? 'Hela året' + (c.water ? ' · ' + c.water : ' · alla vatten') : 'Pågår' + (c.water ? ' · ' + c.water : ''); }
+  function renderLakeList(){
+    var near = lakeKmTxt(LAKE) === 'här', c = catchLiveComp(), me = c ? compMeTxt(c) : '';
+    lakeListEl.innerHTML =
+      '<button class="menuItem mnPick" data-sub="lake">' + lakePinSvg + '<span class="mnT"><span class="mnK">Sjö</span><b>' + escHtml(LAKE.name) + (lakeAutoOn() ? AUTO_TAG : '') + '</b>' +
+        '<small>' + (near ? 'Du är här' : myLatLon() ? lakeKmTxt(LAKE) + ' bort' : 'Ingen GPS-position') + (lakeAutoOn() ? ' – väljs av GPS:en' : ' – vald av dig') + '</small></span><span class="mnChev">›</span></button>' +
+      '<button class="menuItem mnPick" data-sub="comp">' + cupSvg + '<span class="mnT"><span class="mnK">Tävling</span><b>' + (c ? escHtml(c.name || c.id) + (compChosen() ? '' : AUTO_TAG) : 'Ingen just nu') + '</b>' +
+        '<small>' + (c ? escHtml(compWhenTxt(c)) + (me ? ' · ' + me : '') : catchHist ? 'Ingen tävling pågår' : 'Inte hämtat än') + '</small></span><span class="mnChev">›</span></button>';
+  }
+  function menuSubRow(cls, icon, title, sub, right, attrs){
+    return '<button type="button" class="menuItem mnRow' + cls + '"' + (attrs || '') + '>' + icon + '<span class="mnT"><b>' + title + '</b>' + (sub ? '<small>' + sub + '</small>' : '') + '</span>' + (right || '') + '</button>';
+  }
+  function fmtDay(iso){ var p = iso.split('-'); return (+p[2]) + ' ' + MONTHS_SV[+p[1] - 1]; }
+  function renderMenuSub(which){
+    var h = '<button type="button" class="mnHead" data-back="1">' + backSvg + (which === 'lake' ? 'Välj sjö' : 'Välj tävling') + '</button>';
+    if (which === 'lake'){
+      var auto = lakeAutoOn(), m = myLatLon(), lakes = LAKES.slice();
+      if (m) lakes.sort(function(a, b){ return haversineKm(m.lat, m.lon, a.center[0], a.center[1]) - haversineKm(m.lat, m.lon, b.center[0], b.center[1]); });
+      h += menuSubRow(' mnBig', gpsSvg, 'Automatiskt', 'Byter sjö när du kommer till en annan sjö', '<span class="mnSw' + (auto ? ' on' : '') + '"></span>', ' data-auto="lake"') +
+        '<div class="mnSec">' + (m ? 'Sjöar · närmast först' : 'Sjöar') + '</div>' +
+        lakes.map(function(L){ var cur = L.id === LAKE_ID, km = lakeKmTxt(L);
+          return menuSubRow(cur ? ' menuItem--active' : '', lakePinSvg, escHtml(L.name), km === 'här' ? 'du är här' : '', (km && km !== 'här' ? '<span class="mnRight">' + km + '</span>' : '') + (cur ? lakeCheckSvg : ''), ' data-lake-id="' + L.id + '"'); }).join('') +
+        '<div class="mnNote">Väljer du en sjö själv stängs Automatiskt av tills du slår på det igen.</div>';
+    } else {
+      var chosen = compChosen(), cur = catchLiveComp(), on = catchActiveComps(), comps = (catchHist && catchHist.all) || [];
+      var day = function(c){ return /^\d{4}-\d\d-\d\d$/.test(c.date) ? fmtDay(c.date) : 'datum inte bestämt'; };
+      h += menuSubRow(' mnBig', gpsSvg, 'Automatiskt', 'Den som pågår på sjön du är vid, annars Open', '<span class="mnSw' + (chosen ? '' : ' on') + '"></span>', ' data-auto="comp"') +
+        '<div class="mnSec">Pågår</div>' +
+        (on.length ? on.map(function(c){ var me = cur && cur.id === c.id, t = compMeTxt(c);
+          return menuSubRow(me ? ' menuItem--active' : '', cupSvg, escHtml(c.name || c.id) + (me && !chosen ? AUTO_TAG : ''), escHtml(compWhenTxt(c)) + (t ? ' · ' + t : ''), me ? lakeCheckSvg : '', ' data-comp="' + escHtml(c.id) + '"'); }).join('')
+          : '<div class="mnNote">' + (catchHist ? 'Ingen tävling pågår just nu.' : 'Tävlingarna är inte hämtade än.') + '</div>');
+      var planned = comps.filter(function(c){ return c.status === 'planned'; });
+      var done = comps.filter(function(c){ return c.status === 'done'; }).sort(function(a, b){ return a.date < b.date ? 1 : -1; }).slice(0, 3);
+      if (planned.length) h += '<div class="mnSec">Kommande</div>' + planned.map(function(c){ return menuSubRow(' mnInfo', cupSvg, escHtml(c.name || c.id), escHtml(c.water) + ' · ' + day(c), '', ' disabled'); }).join('');
+      if (done.length) h += '<div class="mnSec">Avslutade</div>' + done.map(function(c){ return menuSubRow(' mnInfo mnDim', cupSvg, escHtml(c.name || c.id), day(c) + ' · ' + escHtml(c.water), '', ' disabled'); }).join('');
+    }
+    menuSubEl.innerHTML = h;
+    menuSubEl.setAttribute('data-which', which);
+    menuPanel.classList.add('sub');
+  }
+  function closeMenuSub(){ menuPanel.classList.remove('sub'); menuSubEl.removeAttribute('data-which'); renderLakeList(); }
   lakeListEl.addEventListener('click', function(e){
-    var btn = e.target.closest ? e.target.closest('.menuItem') : null;
-    if (!btn) return;
-    var id = btn.getAttribute('data-lake-id');
-    var lake = LAKES.filter(function(l){ return l.id === id; })[0];
-    if (!lake) return;
-    if (lake.id === LAKE_ID){ toggleMenu(false); return; }
-    switchLake(lake.id);
+    e.stopPropagation();   // (the rows are drawn again -- the click mustn't count as one outside the menu)
+    var btn = e.target.closest ? e.target.closest('[data-sub]') : null;
+    if (btn) renderMenuSub(btn.getAttribute('data-sub'));
   });
+  menuSubEl.addEventListener('click', function(e){
+    e.stopPropagation();
+    var t = e.target.closest ? e.target.closest('button') : null;
+    if (!t) return;
+    if (t.hasAttribute('data-back')){ closeMenuSub(); return; }
+    var a = t.getAttribute('data-auto');
+    if (a === 'lake'){
+      setLakeAuto(!lakeAutoOn()); renderMenuSub('lake');
+      var m = myLatLon(); if (lakeAutoOn() && m && !demoMode) lakeAutoCheck(m.lat, m.lon);
+      return;
+    }
+    if (a === 'comp'){ var cur = catchLiveComp(); compChoose(compChosen() ? null : cur && cur.id); renderMenuSub('comp'); return; }
+    var lid = t.getAttribute('data-lake-id');
+    if (lid){
+      setLakeAuto(false);
+      if (lid === LAKE_ID){ renderMenuSub('lake'); return; }
+      switchLake(lid); return;
+    }
+    var cid = t.getAttribute('data-comp');
+    if (cid){ compChoose(cid); renderMenuSub('comp'); }
+  });
+  // after the GPS changed the lake: say so, with a way back (that turns Automatiskt off)
+  function lakeSwitchNote(){
+    var v = null;
+    try { v = JSON.parse(sessionStorage.getItem(LAKE_SWITCH_KEY) || 'null'); sessionStorage.removeItem(LAKE_SWITCH_KEY); } catch(e){}
+    if (!v || v.to !== LAKE_ID || Date.now() - v.t > 30000) return;
+    var from = LAKES.filter(function(l){ return l.id === v.from; })[0], note = document.getElementById('lakeNote'), back = document.getElementById('lakeNoteBack');
+    document.getElementById('lakeNoteTitle').textContent = 'Du är vid ' + LAKE.name;
+    document.getElementById('lakeNoteSub').textContent = 'Kartan har bytt sjö automatiskt.';
+    back.hidden = !from; if (from) back.textContent = 'Tillbaka till ' + from.name;
+    back.onclick = function(){ setLakeAuto(false); switchLake(from.id); };
+    document.getElementById('lakeNoteClose').onclick = function(){ note.classList.remove('show'); };
+    note.classList.add('show');
+    setTimeout(function(){ note.classList.remove('show'); }, 12000);
+  }
+  lakeSwitchNote();
 
   /* ---------------- menu (Karta / Logg / Inställningar) ---------------- */
   var menuBtn = document.getElementById('menuBtn');
@@ -5772,6 +5910,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   var demoModeToggle = document.getElementById('demoModeToggle');
 
   function toggleMenu(open){
+    if (open){ menuPanel.classList.remove('sub'); renderLakeList(); }   // (Sjö / Tävling: as they are now)
     menuPanel.classList.toggle('show', open);
   }
   menuBtn.addEventListener('click', function(e){
@@ -8749,6 +8888,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     awaitingFreshFix = false;
     lastGpsErrorCode = null;
     lastRealFix = { lat: pos.coords.latitude, lon: pos.coords.longitude, acc: pos.coords.accuracy, speed: pos.coords.speed, heading: pos.coords.heading };
+    if (!demoMode) lakeAutoCheck(lastRealFix.lat, lastRealFix.lon);   // (at another lake: that lake, at once -- 28-menu.js)
     if (!demoMode) onFix(lastRealFix.lat, lastRealFix.lon, lastRealFix.acc, lastRealFix.speed, lastRealFix.heading);
   }
 
@@ -11303,10 +11443,8 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   // a lake of the app whose map the place is inside (and whose name doesn't say otherwise)
   function catchLakeOf(c){
     for (var i = 0; i < LAKES.length; i++){
-      var L = LAKES[i], G = L.geo, N = Math.pow(2, G.zoom) * 256;
-      var x = (c.lon + 180) / 360 * N - G.originX, r = c.lat * Math.PI / 180;
-      var y = (1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2 * N - G.originY;
-      if (x < 0 || y < 0 || x >= G.fullW || y >= G.fullW * G.imgH / G.imgW) continue;
+      var L = LAKES[i];
+      if (!lakeMapHas(L, c.lat, c.lon)) continue;   // (28-menu.js)
       if (c.lake && !catchSameWater(c.lake, L)) continue;
       return L.id;
     }
@@ -11364,7 +11502,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   function catchReadCopy(){
     if (catchHist) return;
     try { var c = JSON.parse(localStorage.getItem(CATCH_CACHE_KEY) || 'null');
-      if (c && c.v === 4) catchHist = { at: c.at, total: c.total, comps: c.comps || [], prof: c.prof || {}, list: catchUnpack(c.rows), away: catchUnpack(c.away, true) }; } catch(e){}   // (v3: no "away" -> fetched again)
+      if (c && c.v === 4) catchHist = { at: c.at, total: c.total, comps: c.comps || [], all: c.all || [], opens: c.opens || [], prof: c.prof || {}, list: catchUnpack(c.rows), away: catchUnpack(c.away, true) }; } catch(e){}   // (v3: no "away" -> fetched again)
     if (catchHist) catchMerge();
   }
   // the history + the live catches (the same catch once) -> catchData:
@@ -11392,12 +11530,15 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
       var comps = (d.competitions || []).filter(function(c){ return catchSameWater(c.water || c.location, LAKE); })
           .map(function(c){ return { id: String(c.competition_id), name: c.competition_name || '', date: c.date || '', status: c.status || '' }; });
       var ids = {}; comps.forEach(function(c){ ids[c.id] = 1; });
+      // every competition (the menu's Tävling list) and the open ones (all year -- Fiskfiskarna Open, Mälaren Open)
+      var allComps = d.competitions.map(function(c){ return { id: String(c.competition_id), name: c.competition_name || '', date: c.date || '', status: c.status || '', water: c.water || c.location || '' }; });
+      var opens = (d.openTavlingar || []).map(function(o){ return { id: String(o.id), name: o.namn || '', serie: o.serie || '', start: o.start || '', slut: o.slut || '', status: o.status === 'aktiv' ? 'active' : 'done', open: true, water: o.serie === 'malaren_open' ? 'Mälaren' : '' }; });
       var all = d.heatmap.map(function(x){ return normCatch(x, true); }).filter(Boolean);
       var here = function(c){ return c.lat != null && catchLakeOf(c) === LAKE_ID; };
-      catchHist = { at: Date.now(), total: d.heatmap.length, prof: profPack(d), comps: comps,   // (profPack: 67-profiles.js)
+      catchHist = { at: Date.now(), total: d.heatmap.length, prof: profPack(d), comps: comps, all: allComps, opens: opens,   // (profPack: 67-profiles.js)
         list: all.filter(here),
         away: all.filter(function(c){ return ids[c.comp] && !here(c); }) };   // (the lake's competitions, caught in another water: the profile)
-      try { localStorage.setItem(CATCH_CACHE_KEY, JSON.stringify({ v: 4, at: catchHist.at, total: catchHist.total, comps: catchHist.comps, prof: catchHist.prof, rows: catchPack(catchHist.list), away: catchPack(catchHist.away) })); } catch(e){}
+      try { localStorage.setItem(CATCH_CACHE_KEY, JSON.stringify({ v: 4, at: catchHist.at, total: catchHist.total, comps: catchHist.comps, all: allComps, opens: opens, prof: catchHist.prof, rows: catchPack(catchHist.list), away: catchPack(catchHist.away) })); } catch(e){}
       catchMerge();
       catchLiveTick();
       });
@@ -11410,8 +11551,35 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     catchLiveTick();
   }
 
-  // --- live (tavling.php bootstrap): a competition going on on this lake, while the app is in view ---
-  function catchLiveComp(){ return catchLakeComps('active')[0] || null; }
+  // --- live (tavling.php bootstrap): the competition you're in (the menu's Tävling), while the app is in view ---
+  // Every competition going on: the lakes' (status active) + the open ones (between their start and end)
+  function catchActiveComps(){
+    if (!catchHist) return [];
+    var d = catchTodayIso();
+    return (catchHist.all && catchHist.all.length ? catchHist.all : catchHist.comps).filter(function(c){ return c.status === 'active'; })
+      .concat((catchHist.opens || []).filter(function(o){ return o.status === 'active' && (!o.start || o.start <= d) && (!o.slut || d <= o.slut); }));
+  }
+  // automatically (Filip 2026-11-05): the one going on on this lake; else the open one -- Mälaren Open on Mälaren,
+  // Fiskfiskarna Open elsewhere (and on Mälaren when there's no Mälaren Open)
+  function catchAutoComp(){
+    var on = catchActiveComps(), lake = catchLakeComps('active')[0];
+    if (lake) return on.filter(function(c){ return c.id === lake.id; })[0] || lake;
+    var serie = function(s){ return on.filter(function(c){ return c.open && c.serie === s; })[0]; };
+    return (LAKE_ID === 'malaren' && serie('malaren_open')) || serie('fiskfiskarna_open') || null;
+  }
+  // chosen yourself (the menu): its id, or '' = automatically -- per phone, Demo Mode its own
+  var COMP_KEY = testKey('ffmap_comp_v1');
+  function compChosen(){ try { return localStorage.getItem(COMP_KEY) || ''; } catch(e){ return ''; } }
+  function compChoose(id){
+    try { if (id) localStorage.setItem(COMP_KEY, id); else localStorage.removeItem(COMP_KEY); } catch(e){}
+    if (catchLive) catchLive.at = 0;
+    catchLiveTick(true); catchMerge();
+  }
+  function catchLiveComp(){
+    var id = compChosen();
+    if (id){ var c = catchActiveComps().filter(function(x){ return x.id === id; })[0]; if (c) return c; }   // (over: automatically again)
+    return catchAutoComp();
+  }
   function catchLiveFast(){ return !!(hmOn || (anSet.mode && anSet.mode.indexOf('c_') === 0)); }
   // (opening: the app just started / came back -> fetch now if the last is > 60 s old)
   function catchLiveTick(opening){
@@ -11431,6 +11599,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
       else {   // (an annulled catch = the catch + a "VOID" row pointing at it: both go)
         var voided = {}; d.catches.forEach(function(x){ if (x.voidRef) voided[x.voidRef] = 1; });
         L.err = null;
+        L.parts = (d.participants || []).map(function(p){ return catchPlain(p.name); });   // (the menu: "du är med")
         // all: the whole competition, whichever water (Ledare, Senaste fisk); list: only those caught in this lake (the heat map)
         L.all = d.catches.filter(function(x){ return x.displayValue !== 'VOID' && !voided[x.timestamp]; })
           .map(function(x){ return normCatch(x, true); }).filter(Boolean);
@@ -12886,6 +13055,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
         admin: document.getElementById('adminBody').scrollTop
       };
       st.menu = menuPanel.classList.contains('show');
+      if (st.menu && menuPanel.classList.contains('sub')) st.menuSub = menuSubEl.getAttribute('data-which');   // (Sjö / Tävling, 28-menu.js)
       st.logQ = logQ;   // (the Logg search, 28-menu.js)
       st.an = anPanel.classList.contains('show');
       if (hmOn) st.hm = { panel: hmPanel.classList.contains('show'), card: hmCardList && hmCard.classList.contains('show') ? { ids: hmCardList.map(function(c){ return c.id; }), i: hmCardI } : null };
@@ -12938,6 +13108,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
       }
       if (r.help){ showHelpView(r.help.first); helpGoTo(r.help); setTimeout(function(){ helpGoTo(r.help); }, 500); }
       if (r.menu) toggleMenu(true);
+      if (r.menu && r.menuSub) renderMenuSub(r.menuSub);
       if (r.wx) setWxOpen(true);
       if (r.probe && typeof r.probe.x === 'number'){ setProbe(r.probe); probeEl.classList.remove('drop'); }
       if (r.an) showAnPanel(true);

@@ -22,7 +22,10 @@ spåren, Ledare, Kompass, Namn, Fog of war, tävlingslåset, Storlek/När, start
 
 ## Att göra
 
-(tomt)
+- [ ] 2026-11-05 – Sjö och Tävling i menyn (NY): två rader överst. Sjö: Automatiskt = GPS:en byter sjö direkt när du kommer till en
+  annan sjö (notis med "Tillbaka till …"), sjöarna närmast först, välja själv stänger av Automatiskt. Tävling: automatiskt den som pågår på
+  sjön, annars Open (Mälaren Open på Mälaren), "du är med", välja själv; Kommande/Avslutade listade. Hjälp: Kom igång (menyn) + Tävlingarna,
+  ev. animering. Nyhet: "Menyn: sjön byts av sig själv när du kommer dit, och du ser vilken tävling du är med i" (NY)
 
 <!-- mall:
 - [ ] ÅÅÅÅ-MM-DD – Vad som ändrats. Hjälp: avsnitt X (text) + animering `namn`. Nyhet: "…" (NYTT/BÄTTRE/FIXAT)

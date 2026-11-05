@@ -36,8 +36,10 @@ def titles(pg):
 with sync_playwright() as p:
     b, ctx, pg, errs = new_page(p, geo=REG, cfg=cfg, name='Filip')
     src = lambda: pg.get_attribute('#mapImg', 'src')
-    lakes = pg.eval_on_selector_all('#lakeList .menuItem', 'e=>e.map(x=>x.textContent.trim())')
-    check('lake menu lists all lakes, Regnaren first', lakes == ['Regnaren', 'Mälaren', 'Sibbofjärden', 'Sjösjön', 'Vågsfjärden', 'Östra Vitten'], lakes)
+    pg.click('#menuBtn'); pg.click('#lakeList [data-sub="lake"]')   # (the menu's Sjö: the lakes, nearest first -- 28-menu.js)
+    lakes = pg.eval_on_selector_all('#menuSub [data-lake-id]', 'e=>e.map(x=>x.querySelector("b").textContent.trim())')
+    check('lake menu lists all lakes, Regnaren first (you are there)', sorted(lakes) == sorted(['Regnaren', 'Mälaren', 'Sibbofjärden', 'Sjösjön', 'Vågsfjärden', 'Östra Vitten']) and lakes[0] == 'Regnaren', lakes)
+    pg.click('#menuBtn')
     pg.wait_for_function("(document.getElementById('mapImg').getAttribute('src') || '').length > 0", timeout=15000)
     check('starts on Regnaren (as before)', src() == 'lakes/regnaren/map_v6_s1.jpg', src())
     check("Regnaren shows only Regnaren's spot", titles(pg) == ['Regnarplatsen'])
@@ -45,7 +47,7 @@ with sync_playwright() as p:
 
     # ---- switch to Vågsfjärden
     ctx.set_geolocation({'latitude': VAGS[0], 'longitude': VAGS[1], 'accuracy': 5})
-    pg.click('#menuBtn'); pg.click('#lakeList .menuItem[data-lake-id="vagsfjarden"]')
+    pg.click('#menuBtn'); pg.click('#lakeList [data-sub="lake"]'); pg.click('#menuSub [data-lake-id="vagsfjarden"]')
     pg.wait_for_load_state('load'); pg.wait_for_timeout(1500)
     check('switching reloads with the Vågsfjärden map', src() == 'lakes/vagsfjarden/map_v4_s1.jpg' and pg.eval_on_selector('#mapImg', 'e=>e.naturalWidth') == VAGS_W, src())
     check('name kept (no login again)', not pg.evaluate("[].some.call(document.querySelectorAll('.show'), function(e){ return /name/i.test(e.id); })"),
@@ -106,7 +108,7 @@ with sync_playwright() as p:
     # ---- a reload (rotation) keeps the lake; then back to Regnaren
     pg.reload(); pg.wait_for_timeout(1500)
     check('after a reload: still Vågsfjärden', src() == 'lakes/vagsfjarden/map_v4_g1.jpg', src())
-    pg.click('#menuBtn'); pg.click('#lakeList .menuItem[data-lake-id="regnaren"]')
+    pg.click('#menuBtn'); pg.click('#lakeList [data-sub="lake"]'); pg.click('#menuSub [data-lake-id="regnaren"]')
     pg.wait_for_load_state('load'); pg.wait_for_timeout(1500)
     check("back on Regnaren: its map, its style and its spot", src() == 'lakes/regnaren/map_v6_s1.jpg' and titles(pg) == ['Regnarplatsen'], src())
     # the same max zoom on every lake: Regnaren too goes to 18,6 and uses its zoom-18 level

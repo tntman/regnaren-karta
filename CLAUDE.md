@@ -193,6 +193,13 @@ Uppdatera rätt anteckning när något ändras.
 - **GPS-knappen följer** (`#locateBtn`, `setFollow`, `js/46-gps-track.js`, Filip 2026-10-29): tryck = centrera + följ (`.tracking`, kartan går med båten);
   dra i kartan / gå till något annat = slutar, zoom följer vidare, överlever vridning. Trycket hämtar en färsk position och startar om GPS-bevakningen
   (`refreshGps`) – iOS kan sluta skicka positioner; görs också när appen öppnas igen och efter 30 s utan position (bara om GPS:en fungerat, aldrig efter "nej").
+- **Sjö och Tävling i menyn** (`js/28-menu.js`, Filip 2026-11-05): två rader överst, var och en öppnar sin lista (`#menuSub`) i menyns ställe.
+  **Sjö:** Automatiskt (på från start, `ffmap_lake_auto_v1`) = en riktig GPS-position vid en annan sjös karta byter sjö direkt (`lakeAutoCheck`,
+  anropas i `handleGpsFix`; inte i Demo Mode), notis `#lakeNote` med "Tillbaka till …" (stänger av Automatiskt). Välja sjö själv = Automatiskt av.
+  Sjöarna sorteras efter avstånd. **Tävling:** `catchLiveComp()` (`js/66-catches.js`) styr allt live (Hotzone, Ledare, PB, heatmapens Live):
+  vald själv (`ffmap_comp_v1`/`testKey`, bara pågående) eller automatiskt = pågående tävling på sjön, annars Mälaren Open på Mälaren,
+  annars Fiskfiskarna Open (`openTavlingar` ur `dashboard.php`, mellan start och slut). "du är med" = namnet i tävlingens `participants` (live).
+  Kommande och Avslutade visas bara. Testerna: sjöbytet av (`__ffNoLakeAuto`, fakefb), test_lakeauto slår på det.
 - **Pushnotiser**: inte gjort (kräver server/Firebase-betalplan).
 
 ## Firestore-regler (aktuella, i Firebase-konsolen)

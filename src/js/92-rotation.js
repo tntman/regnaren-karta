@@ -22,6 +22,7 @@
         admin: document.getElementById('adminBody').scrollTop
       };
       st.menu = menuPanel.classList.contains('show');
+      if (st.menu && menuPanel.classList.contains('sub')) st.menuSub = menuSubEl.getAttribute('data-which');   // (Sjö / Tävling, 28-menu.js)
       st.logQ = logQ;   // (the Logg search, 28-menu.js)
       st.an = anPanel.classList.contains('show');
       if (hmOn) st.hm = { panel: hmPanel.classList.contains('show'), card: hmCardList && hmCard.classList.contains('show') ? { ids: hmCardList.map(function(c){ return c.id; }), i: hmCardI } : null };
@@ -74,6 +75,7 @@
       }
       if (r.help){ showHelpView(r.help.first); helpGoTo(r.help); setTimeout(function(){ helpGoTo(r.help); }, 500); }
       if (r.menu) toggleMenu(true);
+      if (r.menu && r.menuSub) renderMenuSub(r.menuSub);
       if (r.wx) setWxOpen(true);
       if (r.probe && typeof r.probe.x === 'number'){ setProbe(r.probe); probeEl.classList.remove('drop'); }
       if (r.an) showAnPanel(true);

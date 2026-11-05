@@ -62,6 +62,8 @@ if not getattr(_Browser, '_ffGuarded', False):
         lock = kw.pop('lock', False)
         ctx = block_real_firebase(_orig_new_context(self, *a, **kw))
         ctx.add_init_script(TEST_PIN_JS)
+        # the lake follows the GPS (28-menu.js) -- not in the tests, whose lakes are chosen by hand (test_lakeauto turns it on)
+        ctx.add_init_script("window.__ffNoLakeAuto = true;")
         if not lock:    # the competition lock (66-catches.js) is off in the tests -- test_lock: new_page(cfg={'lock': True})
             ctx.add_init_script("window.__ffNoLock = true;")
         if help_seen:   # Hjälp's news read, and no welcome card after a name -- (test_help, test_splash: help_seen=False)
@@ -247,8 +249,8 @@ FAKE_FIREBASE_JS = r"""
 class FakeApi:
     def __init__(self, cfg):
         self.heatmap = list(cfg.get('heatmap', [])); self.competitions = list(cfg.get('competitions', []))
-        self.live = dict(cfg.get('live', {})); self.down = False; self.hits = []; self.auth = []
-        self.prof = {k: cfg.get(k, []) for k in ('anglers', 'anglerStats', 'dashboard', 'results', 'records')}
+        self.live = dict(cfg.get('live', {})); self.down = False; self.hits = []; self.parts = list(cfg.get('participants', [])); self.auth = []
+        self.prof = {k: cfg.get(k, []) for k in ('anglers', 'anglerStats', 'dashboard', 'results', 'records', 'openTavlingar')}
     def n(self, what): return len([u for u in self.hits if what in u and (what != 'dashboard' or 'del=' not in u)])   # ('dashboard': the list, not Fångstloggen)
     def handle(self, route):
         import json
@@ -261,7 +263,7 @@ class FakeApi:
         elif 'dashboard.php' in url: body = dict(self.prof, competitions=self.competitions)
         elif 'action=bootstrap' in url:
             cid = __import__('urllib.parse').parse.unquote(url.split('competitionId=')[1].split('&')[0])
-            body = {'ok': cid in self.live, 'catches': self.live.get(cid, []), 'participants': []} if cid in self.live else {'ok': False, 'error': 'okänd tävling'}
+            body = {'ok': cid in self.live, 'catches': self.live.get(cid, []), 'participants': self.parts} if cid in self.live else {'ok': False, 'error': 'okänd tävling'}
         else: return route.abort()
         route.fulfill(status=200, content_type='application/json', headers={'Access-Control-Allow-Origin': '*'}, body=json.dumps(body))
 def api_row(t_ms, comp, who, sp, cm, lat, lon, lake='Regnaren'):

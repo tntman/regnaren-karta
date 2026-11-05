@@ -481,6 +481,7 @@
     awaitingFreshFix = false;
     lastGpsErrorCode = null;
     lastRealFix = { lat: pos.coords.latitude, lon: pos.coords.longitude, acc: pos.coords.accuracy, speed: pos.coords.speed, heading: pos.coords.heading };
+    if (!demoMode) lakeAutoCheck(lastRealFix.lat, lastRealFix.lon);   // (at another lake: that lake, at once -- 28-menu.js)
     if (!demoMode) onFix(lastRealFix.lat, lastRealFix.lon, lastRealFix.acc, lastRealFix.speed, lastRealFix.heading);
   }
 
