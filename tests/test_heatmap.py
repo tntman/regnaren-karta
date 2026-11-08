@@ -147,7 +147,9 @@ with sync_playwright() as p:
     pg.mouse.click(xy[0], xy[1]); pg.wait_for_timeout(900)
     card = pg.inner_text('#hmCard')
     check('tap a dot: the catch -- Gädda 74 cm, Erika, 26 sep, place 2 av 5 in Regnaren 1', heat(pg)['card'] and 'Gädda 74 cm' in card and 'Erika' in card and '26/9 13:00' in card and '2 av 5' in card and 'REGNAREN 1' in card, card)
-    check('...the depth there', 'DJUP' in card.upper() and ' m' in pg.inner_text('#hmCardData'), pg.inner_text('#hmCardData'))
+    cut = pg.evaluate("[...document.querySelectorAll('#hmCardData .wpTile b')].slice(1).filter(b => b.scrollWidth > b.clientWidth + 1).map(b => b.textContent)")
+    check('...När, Djup, Plats not cut off ("26/9 13:00" whole)', cut == [], cut)
+    check('...the depth there','DJUP' in card.upper() and ' m' in pg.inner_text('#hmCardData'), pg.inner_text('#hmCardData'))
     check('..."2:a största gäddan i tävlingen" + the others close by', '2:a största gäddan i tävlingen' in card and 'inom 50 m' in card, card)
     pg.screenshot(path='shot_heat_card.png')
     n0 = heat(pg)['card']['n']
