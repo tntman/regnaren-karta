@@ -10,7 +10,7 @@
      Liknande. Not together with Kartanalys (both tone the map down). Off after a restart,
      kept through a rotation. The panel closed: a "Heatmap" pill under the weather chip. */
   var HM_KEY = lakeKey('ffmap_heatmap_v1', 'heatmap_v1');
-  var hmSet = { style: 'heat', sp: 'all', comp: 'all', rad: 70, str: 50, hexM: 60, cnt: 1, big: 1, names: 0, h0: 0, h1: 23, who: '', size: {} };   // (size: "Storlek" per species, sizeRow in 56-analysis.js)   // (who: only one person's catches -- from their profile, 67-profiles.js)
+  var hmSet = { style: 'heat', sp: 'all', comp: 'all', rad: 70, str: 50, hexM: 60, cnt: 1, big: 1, names: 0, dark: 1, h0: 0, h1: 23, who: '', size: {} };   // (size: "Storlek" per species, sizeRow in 56-analysis.js)   // (who: only one person's catches -- from their profile, 67-profiles.js)
   var HM_DEFAULTS = JSON.stringify(hmSet);   // (for "Återställ")
   try { var hsv = JSON.parse(localStorage.getItem(HM_KEY) || 'null'); if (hsv) for (var hk in hsv) hmSet[hk] = hsv[hk]; } catch(e){}
   delete hmSet.cm0; delete hmSet.cm1; delete hmSet.spOn;   // (the first Storlek: one range for all; Per art: its own species toggles)
@@ -130,6 +130,7 @@
     document.getElementById('hmSize').innerHTML = sizeRow(sr, sb, hmSizeKey());
     var rng = function(k, l, min, max, stp){ return '<div class="anRange"><label>' + l + '</label><input type="range" data-r="' + k + '" min="' + min + '" max="' + max + '" step="' + stp + '" value="' + hmSet[k] + '"><output id="hmOut_' + k + '">' + hmOutTxt(k) + '</output></div>'; };
     var tog = function(k, l){ return '<button type="button" data-t="' + k + '" class="' + (hmSet[k] ? 'on' : '') + '">' + (hmSet[k] ? '✓ ' : '') + l + '</button>'; };
+    document.getElementById('hmDark').innerHTML = tog('dark', 'Mörk karta');
     document.getElementById('hmCtl').innerHTML =
       st === 'heat' ? rng('rad', 'Radie', 20, 200, 10) + rng('str', 'Styrka', 0, 100, 5)
       : st === 'species' ? rng('rad', 'Radie', 20, 200, 10)
@@ -266,8 +267,10 @@
     hmCtx.setTransform(dpr, 0, 0, dpr, 0, 0); hmCtx.clearRect(0, 0, W, H);
     hmSatCtx.setTransform(dpr, 0, 0, dpr, 0, 0); hmSatCtx.clearRect(0, 0, W, H);
     // the map toned down and greyed like in Kartanalys (Inställningar "Mörkare")
-    hmSatCtx.fillStyle = 'rgba(128,128,128,' + Math.min(1, anSet.dim + 0.2) + ')'; hmSatCtx.fillRect(0, 0, W, H);
-    hmCtx.fillStyle = 'rgba(6,14,20,' + anSet.dim + ')'; hmCtx.fillRect(0, 0, W, H);
+    if (hmSet.dark){   // ("Mörk karta" off: the map as it is)
+      hmSatCtx.fillStyle = 'rgba(128,128,128,' + Math.min(1, anSet.dim + 0.2) + ')'; hmSatCtx.fillRect(0, 0, W, H);
+      hmCtx.fillStyle = 'rgba(6,14,20,' + anSet.dim + ')'; hmCtx.fillRect(0, 0, W, H);
+    }
     var L = hmVisible(), st = hmSet.style;
     if (st !== 'heat' && st !== 'species' || !L.length) hmDrawShore(W, H);
     if (!L.length) return;

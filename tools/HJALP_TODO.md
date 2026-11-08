@@ -27,7 +27,7 @@ spåren, Ledare, Kompass, Namn, Fog of war, tävlingslåset, Storlek/När, start
   sjön, annars Open (Mälaren Open på Mälaren), "du är med", välja själv; Kommande/Avslutade listade. Hjälp: Kom igång (menyn) + Tävlingarna,
   ev. animering. Nyhet: "Menyn: sjön byts av sig själv när du kommer dit, och du ser vilken tävling du är med i" (NY)
 
-- [ ] 2026-11-08 – GPS-knappen vit, orange när den följer båten; PB-snabbmess syns 14 min (dubbelt); fångstrutan visar När med tid.
+- [ ] 2026-11-08 – GPS-knappen vit, orange när den följer båten; PB-snabbmess syns 14 min (dubbelt); fångstrutan visar När med tid; Heatmap: "Mörk karta" överst i rutan (på som standard, av = kartan som den är).
   Hjälp: Din position (texten + animeringen `position` spelas in igen), Snabbmeddelanden (PB 14 min). Nyhet: "GPS-knappen blir orange när kartan följer båten" (BÄTTRE)
 
 <!-- mall:

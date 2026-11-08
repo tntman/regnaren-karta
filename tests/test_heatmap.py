@@ -49,6 +49,12 @@ with sync_playwright() as p:
     check('...all of them shown, not fetched again (the copy is fresh)', ctx.api.n('dashboard') == 1 and h['n'] == len(ROWS), (ctx.api.hits, h['n']))
     check('...the map toned down + greyed like Kartanalys', pg.is_visible('#hmLayer') and pg.evaluate("getComputedStyle(document.getElementById('hmSat')).mixBlendMode") == 'saturation')
     check('...Värme: coloured heat on the map', coloured(pg) > 200, coloured(pg))
+    sat = "(() => { var c = document.getElementById('hmSat'), d = c.getContext('2d').getImageData(0, 0, 1, 1).data; return d[3]; })()"
+    check('"Mörk karta" first in the panel, on from the start: the map toned down', pg.inner_text('#hmDark').strip() == '✓ Mörk karta' and pg.evaluate(sat) > 0, pg.evaluate(sat))
+    pg.click('#hmDark button'); pg.wait_for_timeout(300)
+    check('...off: the map as it is (still the heat)', 'on' not in pg.get_attribute('#hmDark button', 'class') and pg.evaluate(sat) == 0 and coloured(pg) > 200, pg.evaluate(sat))
+    pg.click('#hmDark button'); pg.wait_for_timeout(300)
+    check('...on again', pg.evaluate(sat) > 0)
     res = pg.inner_text('#hmResult')
     check('the panel: 19 catches, 12 abborre, 6 gädda, 1 gös', '19 fångster' in res and '12 abborre' in res and '6 gädda' in res and '1 gös' in res, res)
     comps = pg.eval_on_selector_all('#hmComp button', 'e => e.map(x => x.textContent)')
