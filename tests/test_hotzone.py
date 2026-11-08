@@ -1,5 +1,5 @@
-# Hotzone (Filter, Lager; on by default): while a competition is on, 4 fish within 200 m in the last hour = a hot spot
-# (a red ring with 🔥 n); a new spot gives a note at the top -- at most one per 45 min; a spot dies an hour after its last fish.
+# Hotzone (Filter, Lager; on by default): while a competition is on, 4 fish in the last hour within 50 m of their middle = a hot spot
+# (a red ring with 🔥 n); a new spot gives a note at the top -- at most one per 45 min; a spot dies 30 min after its last fish.
 from playwright.sync_api import sync_playwright
 import fakefb, json, datetime
 from fakefb import new_page
@@ -24,13 +24,13 @@ with sync_playwright() as p:
     s = hz(pg)
     check('on by default; 3 fish: no hot spot, no note', s['on'] and s['zones'] == [] and s['note'] is None and pg.is_checked('#toggleHotzone'), s)
     live.append(fish(10, Z0, 3, 'Pia')); refetch(ctx, pg, live); s = hz(pg)
-    check('the 4th within 200 m: a hot spot with 4', len(s['zones']) == 1 and s['zones'][0]['n'] == 4, s)
+    check('the 4th within 50 m of their middle: a hot spot with 4', len(s['zones']) == 1 and s['zones'][0]['n'] == 4, s)
     check('...the note: "Hotzone: 4 abborrar senaste timmen", a place name and how far',
           s['note'] and s['note'].startswith('Hotzone: 4 abborrar senaste timmen | vid ') and ' m bort · tryck för att åka dit' in s['note'], s['note'])
     pg.screenshot(path='shot_hotzone_live.png')
     ring = pg.evaluate("(() => { const e = document.querySelector('#hzLayer .hzZ'); const r = e.getBoundingClientRect(); return [r.width, e.textContent]; })()")
-    m400 = pg.evaluate("(() => { const g = window.__ffGeo, a = g.screenOf(%f, %f), b = g.screenOf(%f, %f); return Math.abs(a[1] - b[1]); })()" % (Z0[0], Z0[1], Z0[0] + 400 / 111320, Z0[1]))
-    check('...a ring 400 m across with 🔥 4', abs(ring[0] - m400) < 3 and ring[1] == '\U0001F525 4', (ring, m400))
+    m400 = pg.evaluate("(() => { const g = window.__ffGeo, a = g.screenOf(%f, %f), b = g.screenOf(%f, %f); return Math.abs(a[1] - b[1]); })()" % (Z0[0], Z0[1], Z0[0] + 100 / 111320, Z0[1]))
+    check('...a ring 100 m across with 🔥 4', abs(ring[0] - m400) < 3 and ring[1] == '\U0001F525 4', (ring, m400))
     pg.click('#hzNoteGo'); pg.wait_for_timeout(800)
     c = pg.evaluate("(() => { const e = document.querySelector('#hzLayer .hzZ').getBoundingClientRect(); return [e.left + e.width / 2, e.top + e.height / 2, innerWidth, innerHeight]; })()")
     check('tap on the note: closed, the map goes to the spot', hz(pg)['note'] is None and abs(c[0] - c[2] / 2) < 20 and abs(c[1] - c[3] / 2) < 60, c)
@@ -51,10 +51,16 @@ with sync_playwright() as p:
     check('no page errors', not errs, errs)
     b.close()
 
-    old = [fish(90 - k * 5, Z0, k) for k in range(5)]   # (the last fish 70 min ago)
+    old = [fish(55 - k * 5, Z0, k) for k in range(5)]   # (the last fish 35 min ago)
     b, ctx, pg, errs = new_page(p, geo=B3, cfg={'api': {'heatmap': [], 'competitions': comps, 'live': {'reg2': old}}})
     pg.wait_for_timeout(2500)
-    check('the last fish over an hour ago: the spot is gone', hz(pg)['zones'] == [], hz(pg))
+    check('the last fish over 30 min ago: the spot is gone', hz(pg)['zones'] == [], hz(pg))
+    b.close()
+
+    spread = [fish(20 - k * 3, (Z0[0] + 0.0009 * k, Z0[1]), 1) for k in range(4)]   # (4 fish in a row, 100 m apart)
+    b, ctx, pg, errs = new_page(p, geo=B3, cfg={'api': {'heatmap': [], 'competitions': comps, 'live': {'reg2': spread}}})
+    pg.wait_for_timeout(2500)
+    check('4 fish spread out (100 m apart): no hot spot', hz(pg)['zones'] == [], hz(pg))
     b.close()
 
     planned = [dict(comps[0], status='planned')]

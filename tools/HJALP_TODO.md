@@ -29,6 +29,8 @@ spåren, Ledare, Kompass, Namn, Fog of war, tävlingslåset, Storlek/När, start
 
 - [ ] 2026-11-08 – GPS-knappen vit, orange när den följer båten; PB-snabbmess syns 14 min (dubbelt); fångstrutan visar När med tid; Heatmap: "Mörk karta" överst i rutan (på som standard, av = kartan som den är) – nu en måne uppe bredvid Återställ; Filter: "Namn" heter "Platsnamn" (Kartan + Filter i Hjälp).
   Hjälp: Din position (texten + animeringen `position` spelas in igen), Snabbmeddelanden (PB 14 min). Nyhet: "GPS-knappen blir orange när kartan följer båten" (BÄTTRE)
+- [ ] 2026-11-08 – Hotzone: 4 fiskar senaste timmen inom 50 m från fiskarnas mitt (förr 200 m), ringen 100 m bred och följer mitten,
+  försvinner 30 min efter sista fisken (förr en timme). Hjälp: Tävlingarna (Hotzone-raden). Nyhet: "Hotzone: tätare ställen, ringen visar var det nappar just nu" (BÄTTRE)
 
 <!-- mall:
 - [ ] ÅÅÅÅ-MM-DD – Vad som ändrats. Hjälp: avsnitt X (text) + animering `namn`. Nyhet: "…" (NYTT/BÄTTRE/FIXAT)

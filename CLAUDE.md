@@ -162,7 +162,7 @@ Uppdatera rätt anteckning när något ändras.
 - **Loggen** (menyn → Logg, `js/28-menu.js`): alla platser, nyast först. Filter överst (2026-10-08): sök (namn eller person, "du" = dina),
   Alla/Mina/Andras, typerna som Filters prickar (även Fara). Gäller bara listan, inte kartan. Vem + typer sparas (`ffmap_log_filter_v1`), sökningen bara över vridning.
 - **Hotzone** (Filter → Lager `#toggleHotzone`, på som standard, `js/70-hotzone.js`, `css/77-hotzone.css`, `tools/NOTES_HOTZONE.md`): under en pågående
-  tävling = 4 fiskar inom 200 m senaste timmen (vem som helst) → röd streckad ring som andas, 🔥 antal; lever så länge det nappar (fisk inom en timme).
+  tävling = 4 fiskar senaste timmen inom 50 m från fiskarnas mitt (vem som helst) → röd streckad ring (100 m bred) som andas, 🔥 antal; lever så länge det nappar (fisk inom 30 min), följer fiskarnas mitt (Filip 2026-11-08).
   Nytt ställe → notis överst (`#hzNote`, `.topNote`: art, närmaste OSM-namn, avstånd, tryck = dit), högst en per 45 min (`ffmap_hotzone_note_v1`/`lakeKey`,
   överlever omladdning). Live-fångsterna hämtas var 2:a min när den är på. Gränserna provkörda på riktiga tävlingar (Filip 2026-10-07).
 - **PB** (`js/71-pb.js`, `css/78-pb.css`, Filip 2026-10-09): under en pågående tävling räknar varje telefon live-fångsterna (`catchLive.all`):

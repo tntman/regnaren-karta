@@ -3,7 +3,18 @@
 Kod: `src/js/70-hotzone.js`, `src/css/77-hotzone.css`, `#hzLayer` (10-map.html), `#hzNote` + Filter-raden (30-map-ui.html).
 Test: `tests/test_hotzone.py`.
 
-## Regeln (Filip 2026-10-07)
+## Regeln (Filip 2026-11-08, ersätter 200 m-regeln nedan)
+- **Hett ställe** = 4 fiskar senaste timmen som alla ligger inom **50 m från fiskarnas mitt** (medelpunkten). Ringen = 50 m radie
+  (100 m bred) runt mitten. En ny fisk inom 50 m från mitten håller stället vid liv och flyttar mitten (fiskarna senaste timmen).
+  Stället dör **30 min** efter sista fisken (`HZ_LIVE`). Notisen, pausen 45 min och live-hämtningen som förut.
+- Varför: 200 m runt 4:e fisken gav ringar där fiskarna låg upp till 336 m isär. Provkörning på Fångstloggen (1 039 fångster
+  apr–nov 2026, `dashboard.php?del=fangstlogg`), heta ställen / notiser / längsta avstånd mellan två fiskar i ett ställe:
+  idag 200 m 63 / 54 / 336 m; mitt 100 m 65 / 50 / 184 m; mitt 75 m 60 / 46 / 147 m; **mitt 50 m 61 / 45 / 79 m**.
+  Glesa dagar (Vågsfjärden 23/5, Väringen 5/6 och 7/6: median 58–110 m till närmaste fisk, högst 3–5 fiskar inom 100 m på en timme)
+  får inga ställen med 50 m – det nappade överallt, inget var hett. Heta dagar: 1–16 m till närmaste fisk, 9–48 inom 100 m på en timme.
+  Livslängd med 1 h: median 66 min, men hälften fick sin sista fisk inom 6 min och 22 av 69 ingen alls efter ringen → 30 min.
+
+## Förra regeln (Filip 2026-10-07)
 - Bara under en pågående tävling på sjön (`catchLiveComp()`), live-fångsterna i sjön (`catchLive.list`), alla arter, vem som helst.
 - **Hett ställe** = 4 fiskar inom 200 m senaste timmen. Fångsten som gör den 4:e blir mitten. Lever så länge det nappar inom 200 m
   (fångst inom en timme); dör en timme efter sista fisken (`hzTick` räknar om varje minut).
