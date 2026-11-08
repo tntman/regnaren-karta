@@ -119,6 +119,7 @@
     <div class="grab"><button type="button" id="hmClose" class="gripX" aria-label="Stäng">✕</button></div>
     <div class="pnHead"><div class="pnResCol"><div id="hmResult" class="pnRes"></div><div id="hmLegend"></div></div>
       <button type="button" class="hdBtn pnInfoBtn" aria-label="Förklaring" aria-pressed="false" title="Förklaring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6M12 7.5v.5"></path></svg></button>
+      <button type="button" id="hmDarkBtn" class="hdBtn" data-t="dark" aria-label="Mörk karta" aria-pressed="true" title="Mörk karta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"></path></svg></button>
       <button type="button" id="hmReset" class="hdBtn rsBtn" aria-label="Återställ" title="Återställ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.3-5.6"></path><path d="M4 4v4.5h4.5"></path></svg></button>
       <button type="button" id="hmOff" class="hdBtn pwBtn on" aria-label="Stäng av heatmap" title="Stäng av heatmap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 3v8"></path><path d="M6.6 6.6a7.5 7.5 0 1 0 10.8 0"></path></svg></button></div>
     <div class="pnInfo" hidden></div>
@@ -128,7 +129,6 @@
     <div id="hmSize"></div>
     <div id="hmTime"></div>
     <div id="hmCtl"></div>
-    <div class="anChips" id="hmDark"></div>
   </div>
   <div id="pfCard" role="dialog" aria-label="Profil"><div class="grab"><button type="button" id="pfClose" class="gripX" aria-label="Stäng">✕</button></div>
     <div class="pfHead"><span id="pfAva" class="pfAva"></span><div class="pfWho"><div id="pfName"></div><div id="pfSub"></div></div></div>
