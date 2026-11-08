@@ -1685,6 +1685,8 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   #hmPanel.dragging, #hmCard.dragging{transition:none;}
   #hmPanel .grab{margin:-8px -14px 4px;top:-8px;}
   #hmPanel .anSeg{margin-top:6px;}
+  #hmDark:empty{display:none;}
+  #hmPanel #hmCtl .anChips{flex-wrap:wrap;padding-right:0;-webkit-mask-image:none;mask-image:none;}   /* Prickar: three toggles, on two lines rather than cut off */
   #hmLegend{display:flex;align-items:center;gap:6px;margin-top:3px;font-size:11px;color:var(--text-muted);}   /* (in the top row, under the result) */
   #hmLegend .bar{width:80px;height:6px;border-radius:3px;background:linear-gradient(90deg,rgba(90,20,130,.6),#be288c,#f56e3c,#ffbe46,#fff5c8);}
   #hmLegend:empty{display:none;}
@@ -2944,13 +2946,13 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
       <button type="button" id="hmReset" class="hdBtn rsBtn" aria-label="Återställ" title="Återställ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.3-5.6"></path><path d="M4 4v4.5h4.5"></path></svg></button>
       <button type="button" id="hmOff" class="hdBtn pwBtn on" aria-label="Stäng av heatmap" title="Stäng av heatmap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 3v8"></path><path d="M6.6 6.6a7.5 7.5 0 1 0 10.8 0"></path></svg></button></div>
     <div class="pnInfo" hidden></div>
-    <div class="anChips" id="hmDark"></div>
     <div class="anSeg" id="hmStyleSeg"><button type="button" data-s="heat">Värme</button><button type="button" data-s="species">Per art</button><button type="button" data-s="hex">Rutor</button><button type="button" data-s="dots">Prickar</button></div>
     <div class="anChips" id="hmSp"></div>
     <div class="anChips" id="hmComp"></div>
     <div id="hmSize"></div>
     <div id="hmTime"></div>
     <div id="hmCtl"></div>
+    <div class="anChips" id="hmDark"></div>
   </div>
   <div id="pfCard" role="dialog" aria-label="Profil"><div class="grab"><button type="button" id="pfClose" class="gripX" aria-label="Stäng">✕</button></div>
     <div class="pfHead"><span id="pfAva" class="pfAva"></span><div class="pfWho"><div id="pfName"></div><div id="pfSub"></div></div></div>
@@ -12001,12 +12003,12 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     document.getElementById('hmSize').innerHTML = sizeRow(sr, sb, hmSizeKey());
     var rng = function(k, l, min, max, stp){ return '<div class="anRange"><label>' + l + '</label><input type="range" data-r="' + k + '" min="' + min + '" max="' + max + '" step="' + stp + '" value="' + hmSet[k] + '"><output id="hmOut_' + k + '">' + hmOutTxt(k) + '</output></div>'; };
     var tog = function(k, l){ return '<button type="button" data-t="' + k + '" class="' + (hmSet[k] ? 'on' : '') + '">' + (hmSet[k] ? '✓ ' : '') + l + '</button>'; };
-    document.getElementById('hmDark').innerHTML = tog('dark', 'Mörk karta');
+    document.getElementById('hmDark').innerHTML = st === 'dots' ? '' : tog('dark', 'Mörk karta');   // (last in the panel; Prickar: beside Visa namn)
     document.getElementById('hmCtl').innerHTML =
       st === 'heat' ? rng('rad', 'Radie', 20, 200, 10) + rng('str', 'Styrka', 0, 100, 5)
       : st === 'species' ? rng('rad', 'Radie', 20, 200, 10)
       : st === 'hex' ? '<div class="pnRow2"><div class="anSeg" aria-label="Rutans storlek">' + [30, 60, 120].map(function(m){ return '<button type="button" data-hx="' + m + '" class="' + (hmSet.hexM === m ? 'on' : '') + '">' + m + ' m</button>'; }).join('') + '</div><div class="anChips">' + tog('cnt', 'Visa antal') + '</div></div>'
-      : '<div class="anChips">' + tog('big', 'Större prick = större fisk') + tog('names', 'Visa namn') + '</div>';
+      : '<div class="anChips">' + tog('big', 'Större prick = större fisk') + tog('names', 'Visa namn') + tog('dark', 'Mörk karta') + '</div>';
     rangeFills(document.getElementById('hmCtl'));
     hmRenderTime();
     var res = document.getElementById('hmResult'), all = hmAll();

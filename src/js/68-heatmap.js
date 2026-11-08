@@ -130,12 +130,12 @@
     document.getElementById('hmSize').innerHTML = sizeRow(sr, sb, hmSizeKey());
     var rng = function(k, l, min, max, stp){ return '<div class="anRange"><label>' + l + '</label><input type="range" data-r="' + k + '" min="' + min + '" max="' + max + '" step="' + stp + '" value="' + hmSet[k] + '"><output id="hmOut_' + k + '">' + hmOutTxt(k) + '</output></div>'; };
     var tog = function(k, l){ return '<button type="button" data-t="' + k + '" class="' + (hmSet[k] ? 'on' : '') + '">' + (hmSet[k] ? '✓ ' : '') + l + '</button>'; };
-    document.getElementById('hmDark').innerHTML = tog('dark', 'Mörk karta');
+    document.getElementById('hmDark').innerHTML = st === 'dots' ? '' : tog('dark', 'Mörk karta');   // (last in the panel; Prickar: beside Visa namn)
     document.getElementById('hmCtl').innerHTML =
       st === 'heat' ? rng('rad', 'Radie', 20, 200, 10) + rng('str', 'Styrka', 0, 100, 5)
       : st === 'species' ? rng('rad', 'Radie', 20, 200, 10)
       : st === 'hex' ? '<div class="pnRow2"><div class="anSeg" aria-label="Rutans storlek">' + [30, 60, 120].map(function(m){ return '<button type="button" data-hx="' + m + '" class="' + (hmSet.hexM === m ? 'on' : '') + '">' + m + ' m</button>'; }).join('') + '</div><div class="anChips">' + tog('cnt', 'Visa antal') + '</div></div>'
-      : '<div class="anChips">' + tog('big', 'Större prick = större fisk') + tog('names', 'Visa namn') + '</div>';
+      : '<div class="anChips">' + tog('big', 'Större prick = större fisk') + tog('names', 'Visa namn') + tog('dark', 'Mörk karta') + '</div>';
     rangeFills(document.getElementById('hmCtl'));
     hmRenderTime();
     var res = document.getElementById('hmResult'), all = hmAll();

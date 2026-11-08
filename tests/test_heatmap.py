@@ -50,7 +50,7 @@ with sync_playwright() as p:
     check('...the map toned down + greyed like Kartanalys', pg.is_visible('#hmLayer') and pg.evaluate("getComputedStyle(document.getElementById('hmSat')).mixBlendMode") == 'saturation')
     check('...Värme: coloured heat on the map', coloured(pg) > 200, coloured(pg))
     sat = "(() => { var c = document.getElementById('hmSat'), d = c.getContext('2d').getImageData(0, 0, 1, 1).data; return d[3]; })()"
-    check('"Mörk karta" first in the panel, on from the start: the map toned down', pg.inner_text('#hmDark').strip() == '✓ Mörk karta' and pg.evaluate(sat) > 0, pg.evaluate(sat))
+    check('"Mörk karta" last in the panel, on from the start: the map toned down', pg.inner_text('#hmDark').strip() == '✓ Mörk karta' and pg.evaluate("document.getElementById('hmDark') === document.getElementById('hmPanel').lastElementChild") and pg.evaluate(sat) > 0, pg.evaluate(sat))
     pg.click('#hmDark button'); pg.wait_for_timeout(300)
     check('...off: the map as it is (still the heat)', 'on' not in pg.get_attribute('#hmDark button', 'class') and pg.evaluate(sat) == 0 and coloured(pg) > 200, pg.evaluate(sat))
     pg.click('#hmDark button'); pg.wait_for_timeout(300)
@@ -145,6 +145,8 @@ with sync_playwright() as p:
     pg.click('#hmPill'); pg.wait_for_timeout(400)
     check('the pill opens the panel again', heat(pg)['panel'])
     pg.click('#hmStyleSeg button[data-s="dots"]'); pg.wait_for_timeout(400)
+    chips = pg.eval_on_selector_all('#hmCtl button', 'e => e.map(x => x.textContent)')
+    check('Prickar: Mörk karta beside Visa namn (not twice)', chips[-2:] == ['Visa namn', '✓ Mörk karta'] and not pg.is_visible('#hmDark'), chips)
     pg.screenshot(path='shot_heat_dots.png')
     pg.click('#hmClose'); pg.wait_for_timeout(400)
     gid = [r for r in ROWS if r[3] == 'gadda' and r[4] == 74][0]

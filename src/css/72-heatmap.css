@@ -23,6 +23,8 @@
   #hmPanel.dragging, #hmCard.dragging{transition:none;}
   #hmPanel .grab{margin:-8px -14px 4px;top:-8px;}
   #hmPanel .anSeg{margin-top:6px;}
+  #hmDark:empty{display:none;}
+  #hmPanel #hmCtl .anChips{flex-wrap:wrap;padding-right:0;-webkit-mask-image:none;mask-image:none;}   /* Prickar: three toggles, on two lines rather than cut off */
   #hmLegend{display:flex;align-items:center;gap:6px;margin-top:3px;font-size:11px;color:var(--text-muted);}   /* (in the top row, under the result) */
   #hmLegend .bar{width:80px;height:6px;border-radius:3px;background:linear-gradient(90deg,rgba(90,20,130,.6),#be288c,#f56e3c,#ffbe46,#fff5c8);}
   #hmLegend:empty{display:none;}
