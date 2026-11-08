@@ -5,6 +5,11 @@
      made by tools/help_anim.py (docs/help/*.webp; one that's missing is just left out). */
   // newest first. t: 'new' (NYTT), 'better' (BÄTTRE), 'fixed' (FIXAT)
   var HELP_NEWS = [
+    { d: '2026-11-08', t: 'new',    x: '<b>Sjö och Tävling</b> överst i menyn: sjön byts av sig själv när du kommer dit, och du ser vilken tävling du är med i' },
+    { d: '2026-11-08', t: 'better', x: '<b>Hotzone</b>: tätare ställen (fiskarna inom 50 m från mitten) – ringen visar var det nappar just nu och försvinner 30 min efter sista fisken' },
+    { d: '2026-11-08', t: 'better', x: '<b>GPS-knappen</b> är vit och blir orange när kartan följer båten' },
+    { d: '2026-11-08', t: 'new',    x: 'Heatmap: <b>🌙 Mörk karta</b> av/på överst i rutan · en fångst visar både datum och tid' },
+    { d: '2026-11-08', t: 'better', x: 'Ett <b>PB</b> som snabbmeddelande syns i 14 minuter · "Namn" i Filter heter nu <b>Platsnamn</b>' },
     { d: '2026-10-29', t: 'better', x: '<b>GPS-knappen</b> följer båten – kartan åker med tills du drar i den. Trycket hämtar också en färsk position' },
     { d: '2026-10-29', t: 'fixed',  x: 'GPS:en kunde stanna efter att telefonen varit låst – nu startas den om av sig själv' },
     { d: '2026-10-12', t: 'new',    x: '<b>Under ytan</b>: se botten i 3D genom kameran (håll kartlägesknappen, sist i listan)' },

@@ -13,24 +13,15 @@ I stället skrivs det som behöver ändras upp här, och Filip väljer när allt
 - Vid en Hjälp-omgång: gör allt i listan (texter, `HELP_NEWS`, animeringar som påverkas –
   `py -3 tools/help_anim.py <namn>`, bygg, testa), flytta raderna till "Klart" med datum.
 
-**Senaste Hjälp-omgång:** 2026-10-29 (omgång 6: PB, Under ytan, GPS-knappen följer).
-Föregående: 2026-10-08 (omgång 5: Kartanalys Skala/Fiska nu, låset → påminnelse, Hotzone, Loggens filter).
+**Senaste Hjälp-omgång:** 2026-11-08 (omgång 7: Sjö och Tävling, Hotzone 50 m, GPS-knappen, Mörk karta).
+Föregående: 2026-10-29 (omgång 6: PB, Under ytan, GPS-knappen följer).
+Innan dess: 2026-10-08 (omgång 5: Kartanalys Skala/Fiska nu, låset → påminnelse, Hotzone, Loggens filter).
 Innan dess: 2026-10-06 (omgång 4: allt sedan 2026-09-30 – ny design, Kom igång, Tävlingarna, profiler,
 spåren, Ledare, Kompass, Namn, Fog of war, tävlingslåset, Storlek/När, startfilmen, Mälaren och Östra Vitten m.m.).
 
 ---
 
 ## Att göra
-
-- [ ] 2026-11-05 – Sjö och Tävling i menyn (NY): två rader överst. Sjö: Automatiskt = GPS:en byter sjö direkt när du kommer till en
-  annan sjö (notis med "Tillbaka till …"), sjöarna närmast först, välja själv stänger av Automatiskt. Tävling: automatiskt den som pågår på
-  sjön, annars Open (Mälaren Open på Mälaren), "du är med", välja själv; Kommande/Avslutade listade. Hjälp: Kom igång (menyn) + Tävlingarna,
-  ev. animering. Nyhet: "Menyn: sjön byts av sig själv när du kommer dit, och du ser vilken tävling du är med i" (NY)
-
-- [ ] 2026-11-08 – GPS-knappen vit, orange när den följer båten; PB-snabbmess syns 14 min (dubbelt); fångstrutan visar När med tid; Heatmap: "Mörk karta" överst i rutan (på som standard, av = kartan som den är) – nu en måne uppe bredvid Återställ; Filter: "Namn" heter "Platsnamn" (Kartan + Filter i Hjälp).
-  Hjälp: Din position (texten + animeringen `position` spelas in igen), Snabbmeddelanden (PB 14 min). Nyhet: "GPS-knappen blir orange när kartan följer båten" (BÄTTRE)
-- [ ] 2026-11-08 – Hotzone: 4 fiskar senaste timmen inom 50 m från fiskarnas mitt (förr 200 m), ringen 100 m bred och följer mitten,
-  försvinner 30 min efter sista fisken (förr en timme). Hjälp: Tävlingarna (Hotzone-raden). Nyhet: "Hotzone: tätare ställen, ringen visar var det nappar just nu" (BÄTTRE)
 
 <!-- mall:
 - [ ] ÅÅÅÅ-MM-DD – Vad som ändrats. Hjälp: avsnitt X (text) + animering `namn`. Nyhet: "…" (NYTT/BÄTTRE/FIXAT)
@@ -39,6 +30,10 @@ spåren, Ledare, Kompass, Namn, Fog of war, tävlingslåset, Storlek/När, start
 ---
 
 ## Klart
+
+- 2026-11-08 – Hjälp-omgång 7 (3 rader): Sjö och Tävling i menyn (Kom igång, Kartan, Tävlingarna), GPS-knappen vit/orange
+  (Din position), Hotzone 50 m / 30 min (Tävlingarna), Heatmap 🌙 Mörk karta, PB-meddelanden 14 min, Platsnamn (Kartan, Filter).
+  5 nyhetsrader. Alla 21 animeringar inspelade igen (GPS-knappen vit i alla; Hotzone-ringen mindre, Filter "Platsnamn", Heatmap-månen).
 
 - 2026-10-29 – Hjälp-omgång 6 (3 rader): PB (Tävlingarna + Snabbmeddelanden), Under ytan (Kartlägen + Demo Mode, ny animering
   `underytan`), GPS-knappen följer båten (Din position, animeringen `position` inspelad igen). 4 nyhetsrader.
