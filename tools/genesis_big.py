@@ -51,6 +51,11 @@ class Lake:
         self.blocks = [(bx, by) for by in range(self.nby) for bx in range(self.nbx) if bm[by, bx]]
         print('%s: %d x %d px at z%d, %d of %d blocks in the polygon' % (lake, self.W, self.H, self.DZ, len(self.blocks), self.nbx * self.nby))
 
+    def only(self, STY):
+        """the styles this lake has ("styles" in source.json, e.g. ["s1"] for Gryts Skärgård; default all)"""
+        keep = self.src.get('styles')
+        return [s for s in STY if not keep or s[0] in keep]
+
     def clip_mask(self, z, X0, Y0, w, h, step=1):
         """polygon as bool array over a rect (level-z px, relative to the crop origin), every `step` px"""
         f = 2 ** (self.DZ - z)
@@ -257,11 +262,32 @@ def load_depth(lk, X, Y, w, h):
 # ---------------------------------------------------------------- relief: per block, one brightness scale for the lake
 RMG = 128      # margin (DZ px) round a block for relief, colours, the pieces' PAD and "near water"
 
+@lru_cache(maxsize=1)
+def _sea(path):
+    z = np.load(path); return z['sea'], z['dep']
+
+def sea_crop(lk, X, Y, w, h):
+    """sea_z15.npz (tools/sea_fill.py) over a crop at DZ px: sea (bool), depth (m)"""
+    sea, dep = _sea(os.path.join(lk.D, 'sea_z15.npz')); f = 2 ** (lk.DZ - 15)
+    x0, y0 = int(math.floor(X / f)) - 1, int(math.floor(Y / f)) - 1; cw, ch = w // f + 3, h // f + 3
+    def crop(a):
+        out = np.zeros((ch, cw), np.float32)
+        sx0, sy0 = max(0, x0), max(0, y0); sx1, sy1 = min(a.shape[1], x0 + cw), min(a.shape[0], y0 + ch)
+        if sx1 > sx0 and sy1 > sy0: out[sy0 - y0:sy1 - y0, sx0 - x0:sx1 - x0] = a[sy0:sy1, sx0:sx1]
+        return out
+    def up(a):      # z15 px centres -> DZ px centres, bilinear
+        yy = ((Y + np.arange(h) + .5) / f - .5 - y0).astype(np.float32); xx = ((X + np.arange(w) + .5) / f - .5 - x0).astype(np.float32)
+        return ndimage.map_coordinates(a, np.meshgrid(yy, xx, indexing='ij'), order=1, mode='nearest')
+    return up(crop(sea)) >= 0.5, up(crop(dep))
+
 def block_depth(lk, bx, by):
     """depth with the unmapped parts of the OSM lake filled (genesis_render: depc), water, osm -- block + RMG"""
     X, Y = bx * lk.BS - RMG, by * lk.BS - RMG; w = h = lk.BS + 2 * RMG
     dep, water = load_depth(lk, X, Y, w, h)
     dep0 = np.where(water, dep, 0).astype(np.float32)
+    if lk.src.get('fill') == 'emodnet':      # the sea without Genesis data: OSM coast + EMODnet (tools/sea_fill.py)
+        sea, sdep = sea_crop(lk, X, Y, w, h)
+        add = sea & ~water; dep0[add] = sdep[add]; water = water | sea
     osm = osm_water.mask(lk.id, lk.DZ, lk.gx0 + X, lk.gy0 + Y, w, h)
     if osm is None: osm = np.zeros_like(water)
     unm = osm & ~water; depc = dep0
@@ -329,6 +355,7 @@ def shade(lk, bx, by):
 # ---------------------------------------------------------------- render
 def legend_scale(lk):
     maxd = json.load(open(os.path.join(lk.D, 'depth', 'stats.json')))['max']
+    if lk.src.get('fill') == 'emodnet': maxd = max(maxd, float(_sea(os.path.join(lk.D, 'sea_z15.npz'))[1].max()))
     sc = 2 if maxd <= 20 else 5; DMAX = sc * math.ceil(maxd / sc)
     LMAX = math.ceil(maxd) if maxd <= 20 else 5 * math.ceil(maxd / 5)
     nt = 4 if LMAX % 3 == 0 else 3
@@ -348,7 +375,7 @@ def render(lk, shard=None):
         dep0, depc, water, osm, unm = block_depth(lk, bx, by)
         sh = shade(lk, bx, by)
         if sh is None: sh = np.ones(water.shape, np.float32)
-        STY = R.make_styles(depc, sh, LMAX)
+        STY = lk.only(R.make_styles(depc, sh, LMAX))
         ldirs = sorted({'lines' if s[6] == 'black' else 'lines_w' for s in STY})
         part = {}
         for z in lk.levels:
@@ -424,7 +451,7 @@ def finish(lk, maxd, DMAX, LMAX, TICKS):
     # the map picture: the aerial photo everywhere (zoom 14 tiles), the blocks' pictures on top
     aer = read(lk.id, lk.base, 'a', lk.gx0 // f14, lk.gy0 // f14, mw, mh)
     dummy = np.zeros((8, 8), np.float32)
-    STY = R.make_styles(dummy, np.ones_like(dummy), LMAX)
+    STY = lk.only(R.make_styles(dummy, np.ones_like(dummy), LMAX))
     maps = {s[0]: aer.copy() for s in STY}
     gd = lk.src['grid_div']; cw = lk.BS // gd; gw, gh = lk.nbx * cw, lk.nby * cw
     num = np.zeros((gh, gw), np.float32); den = np.zeros((gh, gw), np.float32); lakef = np.zeros((gh, gw), np.float32)
@@ -469,7 +496,7 @@ def finish(lk, maxd, DMAX, LMAX, TICKS):
         'depth': {'file': 'depth_v%d.txt' % lk.V, 'w': gw, 'h': gh, 'step': step, 'max': DMAX, 'capped': False},
         'bottom': {'file': 'bottom_v%d.txt' % lk.V},
         'legendTicks': TICKS,
-        'contourText': 'Djupkurvor från C-MAP Genesis',
+        'contourText': lk.src.get('contourText', 'Djupkurvor från C-MAP Genesis'),
         'mapFile': 'map_v%d_{style}.jpg' % lk.V,
         'thumbFile': 'thumbs_v%d/{style}.jpg' % lk.V,
         'styles': [dict(id=s[0], name=s[1], desc=s[2], legend=s[3], **s[4], **({} if s[6] == 'black' else {'lines': 'lines_w'})) for s in STY],

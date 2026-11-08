@@ -26,6 +26,9 @@ spåren, Ledare, Kompass, Namn, Fog of war, tävlingslåset, Storlek/När, start
 <!-- mall:
 - [ ] ÅÅÅÅ-MM-DD – Vad som ändrats. Hjälp: avsnitt X (text) + animering `namn`. Nyhet: "…" (NYTT/BÄTTRE/FIXAT)
 -->
+- [ ] 2026-11-08 – Ny sjö: Gryts Skärgård (Valdemarsviken ut till Flisdjupet). Bara Djupfärger; djupet är grovt (EMODnet)
+  utom en liten Genesis-remsa – kurvor bara där. Hjälp: avsnittet om sjöar/kartlägen (att en sjö kan ha färre kartlägen och
+  grovt djup). Nyhet: "Ny karta: Gryts Skärgård – Valdemarsviken ut till Flisdjupet (grovt djup där det inte är lodat)" (NYTT)
 
 ---
 

@@ -1,0 +1,11 @@
+{
+ "name": "Gryts Skärgård – nedladdningsområde (Filips ritning 2026-11-08)",
+ "note": "Valdemarsviken från Käggla/Tryserum ut till Flisdjupet, Backermåla/Fyrudden i norr till Långrådna/Bokö i söder. Hörnen avlästa från Filips röda ruta mot ortnamnen (Nominatim). Alla Fiskfiskarna Open-fångster (58.166–58.180, 16.795–16.815) ligger inom.",
+ "polygon_latlon": [
+  [58.2076, 16.594],
+  [58.1990, 16.940],
+  [58.0630, 16.938],
+  [58.0580, 16.750],
+  [58.0760, 16.583]
+ ]
+}

@@ -91,4 +91,21 @@ with sync_playwright() as p:
     check('Mälaren zoom 15: base + lines as usual', any('/z15/s1/' in x[0] for x in t) and any('/z15/lines/' in x[0] for x in t), t[:6])
     check('Mälaren: no page errors', not errs, errs)
     b.close()
+
+# Gryts Skärgård: only Djupfärger, zoom 14-17, the sea outside Genesis from EMODnet (tools/sea_fill.py)
+GK = json.load(open('../lakes/gryt/lake.json', encoding='utf-8'))
+check('Gryt lake.json: only s1, levels 14-17, EMODnet named', [s['id'] for s in GK['styles']] == ['s1'] and
+      [L['z'] for L in GK['detail']['levels']] == [14, 15, 16, 17] and 'EMODnet' in GK['contourText'], GK['contourText'])
+with sync_playwright() as p:
+    b, ctx, pg, errs = new_page(p, geo=(58.173, 16.805), cfg={}, name='Filip')
+    pg.evaluate("() => localStorage.setItem('ffmap_lake_v1', 'gryt')"); pg.reload(); pg.wait_for_timeout(2500)
+    check('Gryt: the half overview loaded', 'gryt/map_v1h_s1.jpg' in pg.get_attribute('#mapImg', 'src') and
+          pg.evaluate("document.getElementById('mapImg').naturalWidth") * 2 == GK['geo']['imgW'], pg.get_attribute('#mapImg', 'src'))
+    pg.click('#mapTypeBtn'); pg.wait_for_timeout(600)
+    check('Gryt: the map-type button stays on Djupfärger (the only style)', 'map_v1h_s1.jpg' in pg.get_attribute('#mapImg', 'src'))
+    zoom_to(pg, 15)
+    t = pieces(pg)
+    check('Gryt zoom 15: Djupfärger base + lines, all loaded', any('/z15/s1/' in x[0] for x in t) and any('/z15/lines/' in x[0] for x in t) and all(x[2] for x in t), t[:4])
+    check('Gryt: no page errors', not errs, errs)
+    b.close()
 print('\n%d/%d passed' % (sum(results), len(results)))

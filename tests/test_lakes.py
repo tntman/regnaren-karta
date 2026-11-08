@@ -38,7 +38,7 @@ with sync_playwright() as p:
     src = lambda: pg.get_attribute('#mapImg', 'src')
     pg.click('#menuBtn'); pg.click('#lakeList [data-sub="lake"]')   # (the menu's Sjö: the lakes, nearest first -- 28-menu.js)
     lakes = pg.eval_on_selector_all('#menuSub [data-lake-id]', 'e=>e.map(x=>x.querySelector("b").textContent.trim())')
-    check('lake menu lists all lakes, Regnaren first (you are there)', sorted(lakes) == sorted(['Regnaren', 'Mälaren', 'Sibbofjärden', 'Sjösjön', 'Vågsfjärden', 'Östra Vitten']) and lakes[0] == 'Regnaren', lakes)
+    check('lake menu lists all lakes, Regnaren first (you are there)', sorted(lakes) == sorted(['Regnaren', 'Mälaren', 'Gryts Skärgård', 'Sibbofjärden', 'Sjösjön', 'Vågsfjärden', 'Östra Vitten']) and lakes[0] == 'Regnaren', lakes)
     pg.click('#menuBtn')
     pg.wait_for_function("(document.getElementById('mapImg').getAttribute('src') || '').length > 0", timeout=15000)
     check('starts on Regnaren (as before)', src() == 'lakes/regnaren/map_v6_s1.jpg', src())
