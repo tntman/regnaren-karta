@@ -53,9 +53,9 @@
   function renderLakeList(){
     var near = lakeKmTxt(LAKE) === 'här', c = catchLiveComp(), me = c ? compMeTxt(c) : '';
     lakeListEl.innerHTML =
-      '<button class="menuItem mnPick" data-sub="lake">' + lakePinSvg + '<span class="mnT"><span class="mnK">Sjö</span><b>' + escHtml(LAKE.name) + (lakeAutoOn() ? AUTO_TAG : '') + '</b>' +
+      '<button class="menuItem mnPick" data-sub="lake">' + lakePinSvg + '<span class="mnT"><span class="mnK">Sjö' + (lakeAutoOn() ? AUTO_TAG : '') + '</span><b>' + escHtml(LAKE.name) + '</b>' +
         '<small>' + (near ? 'Du är här' : myLatLon() ? lakeKmTxt(LAKE) + ' bort' : 'Ingen GPS-position') + (lakeAutoOn() ? ' – väljs av GPS:en' : ' – vald av dig') + '</small></span><span class="mnChev">›</span></button>' +
-      '<button class="menuItem mnPick" data-sub="comp">' + cupSvg + '<span class="mnT"><span class="mnK">Tävling</span><b>' + (c ? escHtml(c.name || c.id) + (compChosen() ? '' : AUTO_TAG) : 'Ingen just nu') + '</b>' +
+      '<button class="menuItem mnPick" data-sub="comp">' + cupSvg + '<span class="mnT"><span class="mnK">Tävling' + (c && !compChosen() ? AUTO_TAG : '') + '</span><b>' + (c ? escHtml(c.name || c.id) : 'Ingen just nu') + '</b>' +
         '<small>' + (c ? escHtml(compWhenTxt(c)) + (me ? ' · ' + me : '') : catchHist ? 'Ingen tävling pågår' : 'Inte hämtat än') + '</small></span><span class="mnChev">›</span></button>';
   }
   function menuSubRow(cls, icon, title, sub, right, attrs){
@@ -67,11 +67,10 @@
     if (which === 'lake'){
       var auto = lakeAutoOn(), m = myLatLon(), lakes = LAKES.slice();
       if (m) lakes.sort(function(a, b){ return haversineKm(m.lat, m.lon, a.center[0], a.center[1]) - haversineKm(m.lat, m.lon, b.center[0], b.center[1]); });
-      h += menuSubRow(' mnBig', gpsSvg, 'Automatiskt', 'Byter sjö när du kommer till en annan sjö', '<span class="mnSw' + (auto ? ' on' : '') + '"></span>', ' data-auto="lake"') +
+      h += menuSubRow(' mnBig', gpsSvg, 'Automatiskt', 'Byter sjö automatiskt med GPS', '<span class="mnSw' + (auto ? ' on' : '') + '"></span>', ' data-auto="lake"') +
         '<div class="mnSec">' + (m ? 'Sjöar · närmast först' : 'Sjöar') + '</div>' +
         lakes.map(function(L){ var cur = L.id === LAKE_ID, km = lakeKmTxt(L);
-          return menuSubRow(cur ? ' menuItem--active' : '', lakePinSvg, escHtml(L.name), km === 'här' ? 'du är här' : '', (km && km !== 'här' ? '<span class="mnRight">' + km + '</span>' : '') + (cur ? lakeCheckSvg : ''), ' data-lake-id="' + L.id + '"'); }).join('') +
-        '<div class="mnNote">Väljer du en sjö själv stängs Automatiskt av tills du slår på det igen.</div>';
+          return menuSubRow(cur ? ' menuItem--active' : '', lakePinSvg, escHtml(L.name), km === 'här' ? 'du är här' : '', (km && km !== 'här' ? '<span class="mnRight">' + km + '</span>' : '') + (cur ? lakeCheckSvg : ''), ' data-lake-id="' + L.id + '"'); }).join('');
     } else {
       var chosen = compChosen(), cur = catchLiveComp(), on = catchActiveComps(), comps = (catchHist && catchHist.all) || [];
       var day = function(c){ return /^\d{4}-\d\d-\d\d$/.test(c.date) ? fmtDay(c.date) : 'datum inte bestämt'; };

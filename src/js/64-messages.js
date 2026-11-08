@@ -5,6 +5,7 @@
   var MSG_TEXTS = ['Fisk!!! 🎣', 'Kommer 🚤', 'Åker in 🏠', 'Mat? 🍔', 'Bajs 💩'];
   var MSG_OWN_MAX = 15;                // "Egen text": at most 15 characters (an emoji = 1)
   var MSG_MS = 7 * 60000;
+  function msgMs(pb){ return pb ? 2 * MSG_MS : MSG_MS; }   // a PB (the confetti): twice as long
   var MSG_FADE_MS = 3 * 60000;         // the first 3 min: full strength and colours; then it fades (and turns plain black)
   // your latest catch as a message ("Gädda 78 🐟"): first in the choices while a competition is on; the edge spins in the species' colour
   var MSG_SP_COL = { gadda: '#35D24A', abborre: '#FF7A1A', gos: '#3A86FF' };
@@ -79,7 +80,7 @@
     ownMsg = { text: text, at: Date.now(), sp: fish && fish.sp, img: fish && fish.img, pb: !!(fish && fish.pb) };
     writeMsg(text, ownMsg.at, fish);
     renderMessages();
-    showMsgToast('Syns i 7 minuter, tryck på meddelandet för att ta bort.');
+    showMsgToast('Syns i ' + msgMs(ownMsg.pb) / 60000 + ' minuter, tryck på meddelandet för att ta bort.');
     centerOnFix();
   }
   var msgToastT = null;
@@ -94,10 +95,10 @@
   function renderMessages(){
     if (!msgLayerEl) return;
     var now = Date.now(), items = [];
-    if (ownMsg && now - ownMsg.at < MSG_MS && lastOwnLatLon) items.push({ key: 'me', mine: true, text: ownMsg.text, who: 'du', at: ownMsg.at, sp: MSG_SP_COL[ownMsg.sp] && ownMsg.sp, img: msgImgOk(ownMsg.img), pb: ownMsg.pb, lat: lastOwnLatLon.lat, lon: lastOwnLatLon.lon, t: now, spd: 0 });
+    if (ownMsg && now - ownMsg.at < msgMs(ownMsg.pb) && lastOwnLatLon) items.push({ key: 'me', mine: true, text: ownMsg.text, who: 'du', at: ownMsg.at, sp: MSG_SP_COL[ownMsg.sp] && ownMsg.sp, img: msgImgOk(ownMsg.img), pb: ownMsg.pb, lat: lastOwnLatLon.lat, lon: lastOwnLatLon.lon, t: now, spd: 0 });
     Object.keys(boatPositions || {}).forEach(function(id){
       var b = boatPositions[id];
-      if (!b.msg || !b.msgAt || now - b.msgAt >= MSG_MS || msgHidden[id + '@' + b.msgAt]) return;
+      if (!b.msg || !b.msgAt || now - b.msgAt >= msgMs(b.msgPb) || msgHidden[id + '@' + b.msgAt]) return;
       items.push({ key: id + '@' + b.msgAt, mine: false, text: b.msg, who: b.name, at: b.msgAt, sp: MSG_SP_COL[b.msgSp] && b.msgSp, img: msgImgOk(b.msgImg), pb: b.msgPb, lat: b.lat, lon: b.lon, t: b.updatedAt, spd: b.spd });
     });
     // the same boat (as for the boat pins: sameBoatM) = one bubble; newest first
@@ -108,7 +109,7 @@
       if (g) g.items.push(it); else groups.push({ lat: it.lat, lon: it.lon, t: it.t, spd: it.spd, items: [it] });
     });
     var keep = {};
-    function fade(it){ return 1 - 0.55 * Math.min(1, Math.max(0, now - it.at - MSG_FADE_MS) / (MSG_MS - MSG_FADE_MS)); }       // full for 3 min, then fades over the rest
+    function fade(it){ return 1 - 0.55 * Math.min(1, Math.max(0, now - it.at - MSG_FADE_MS) / (msgMs(it.pb) - MSG_FADE_MS)); }       // full for 3 min, then fades over the rest
     groups.forEach(function(g){
       var gk = g.items.map(function(it){ return it.key.replace(/"/g, ''); }).join('|');
       keep[gk] = 1;
@@ -141,14 +142,14 @@
   function openMsgCard(k){
     var it = msgItems[k]; if (!it) return;
     msgCardK = k;
-    var now = Date.now(), age = Math.max(0, now - it.at), left = Math.max(0, MSG_MS - age);
+    var now = Date.now(), age = Math.max(0, now - it.at), left = Math.max(0, msgMs(it.pb) - age);
     document.getElementById('msgCardWho').textContent = it.mine ? 'Du' : String(it.who || '');
     document.getElementById('msgCardTxt').textContent = it.text;
     catchImg(document.getElementById('msgCardImg'), it.img);
     document.getElementById('msgCardWho').classList.toggle('pfLink', !!(it.mine ? userName : it.who));   // (tap: their profile)
     document.getElementById('msgCardWhen').innerHTML = 'Skrivet <b>' + fmtClock(it.at) + '</b> · ' + (age < 60000 ? 'nyss' : Math.round(age / 60000) + ' min sedan');
     document.getElementById('msgCardLeft').innerHTML = 'Försvinner om <b>' + Math.max(1, Math.ceil(left / 60000)) + ' min</b>';
-    document.getElementById('msgCardBar').style.width = (100 * left / MSG_MS).toFixed(1) + '%';
+    document.getElementById('msgCardBar').style.width = (100 * left / msgMs(it.pb)).toFixed(1) + '%';
     document.getElementById('msgCardGo').hidden = !!it.mine;
     document.getElementById('msgCardDrop').textContent = it.mine ? 'Ta bort (för alla)' : 'Dölj för mig';
     msgCard.classList.add('show'); msgBackdrop.classList.add('show');

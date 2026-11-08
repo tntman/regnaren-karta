@@ -181,6 +181,7 @@
   .menuItem--active .mnT b{color:var(--amber);}
   .mnT small{display:block;font-size:12px;color:var(--text-muted);margin-top:1px;}
   .mnK{display:block;font-size:10.5px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:1px;}
+  .mnK .mnAuto{text-transform:none;letter-spacing:0;font-size:10.5px;padding:0 6px;}   /* "SJÖ ● auto" */
   .mnChev{color:var(--text-muted);font-size:20px;line-height:1;}
   .mnAuto{display:inline-block;font-size:11px;font-weight:600;color:var(--amber);background:rgba(240,154,96,.13);border-radius:999px;padding:1px 7px;margin-left:6px;vertical-align:1px;}
   .mnHead{display:flex;align-items:center;gap:8px;border:none;background:none;color:#fff;font:inherit;font-size:16px;font-weight:600;padding:6px 6px 8px;cursor:pointer;text-align:left;}

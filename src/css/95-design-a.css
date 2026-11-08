@@ -65,8 +65,8 @@
 
   /* ---- bottom right: round frosted buttons; "on" = orange icon + ring; Sikte the one fully orange ---- */
   #anBtn.on, #measureBtn.active, #msgBtn.open{background:var(--navy-glass);color:var(--amber);border-color:transparent;box-shadow:inset 0 0 0 1.5px var(--amber),0 0 22px rgba(240,154,96,.35);}
-  #locateBtn{color:var(--on-acc);box-shadow:0 0 0 6px rgba(240,154,96,.14),0 8px 28px var(--glow);}
-  #locateBtn.tracking{box-shadow:0 0 0 6px rgba(255,255,255,.12),0 8px 24px rgba(0,0,0,.4);}
+  #locateBtn{color:var(--on-acc);box-shadow:0 0 0 6px rgba(255,255,255,.12),0 8px 24px rgba(0,0,0,.4);}
+  #locateBtn.tracking{box-shadow:0 0 0 6px rgba(240,154,96,.14),0 8px 28px var(--glow);}
   #addHereBtn .addBadge{border:none;color:var(--on-acc);box-shadow:0 0 12px var(--glow);}
   #msgPop{bottom:calc(var(--bb0) + 2 * var(--bb) + var(--bgap) + 14px);gap:8px;}
   #msgPop button{height:42px;padding:0 16px;border-radius:999px;font-weight:600;}

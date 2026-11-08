@@ -58,6 +58,14 @@ with sync_playwright() as p:
     pg.wait_for_timeout(3000)
     check("someone's PB message: the rainbow edge; an ordinary one not", pg.evaluate("document.querySelectorAll('#msgLayer .msgBub.pb').length") == 1 and pg.evaluate("document.querySelectorAll('#msgLayer .msgBub').length") == 2)
     b.close()
+    # a PB message lasts twice as long (14 min): 10 min old still there, an ordinary one gone
+    b, ctx, pg, errs = new_page(p, geo=B3, name='Filip', cfg={'api': api(), 'positions': [
+        {'uid': 'kalle', 'name': 'Calle', 'lat': B1[0], 'lon': B1[1], 'ageMin': 0, 'msg': 'PB! Gädda 92 🎉', 'msgAgeMin': 10, 'msgSp': 'gadda', 'msgPb': True},
+        {'uid': 'pia', 'name': 'Pia', 'lat': B1[0] + 0.004, 'lon': B1[1], 'ageMin': 0, 'msg': 'Fisk!!!', 'msgAgeMin': 10}]})
+    pg.wait_for_timeout(3000)
+    bubs = pg.evaluate("[...document.querySelectorAll('#msgLayer .msgBub')].map(e => e.textContent)")
+    check('a PB message 10 min old: still shown (14 min); an ordinary one gone (7 min)', len(bubs) == 1 and 'PB!' in bubs[0], bubs)
+    b.close()
 
     b, ctx, pg, errs = new_page(p, geo=B3, name='Filip', cfg={'api': dict(api(), competitions=[dict(comps[0], status='planned')])})
     pg.wait_for_timeout(3000)

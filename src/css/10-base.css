@@ -172,13 +172,13 @@
 
   #locateBtn{          /* (size and place: 90-buttons.css) */
     position:absolute;z-index:22;border-radius:50%;
-    background:var(--amber);color:var(--navy);
+    background:var(--offwhite);color:var(--navy);
     border:none;display:flex;align-items:center;justify-content:center;
     box-shadow:0 5px 16px rgba(0,0,0,.45);
     -webkit-tap-highlight-color:transparent;
   }
   #locateBtn:active{transform:scale(.93);}
-  #locateBtn.tracking{background:var(--offwhite);}
+  #locateBtn.tracking{background:var(--amber);}   /* white; following the boat = orange */
   #locateBtn:disabled{opacity:.4;}
 
   @keyframes spin{to{transform:rotate(360deg);}}
