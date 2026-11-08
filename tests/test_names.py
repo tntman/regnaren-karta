@@ -14,7 +14,7 @@ with sync_playwright() as p:
     check('on at start: layer visible, switch on, names drawn', s['on'] and s['shown'] >= 5 and pg.evaluate("getComputedStyle(document.getElementById('osmNames')).display") == 'block'
           and pg.evaluate("document.getElementById('toggleNames').checked"), s)
     check('Regnaren has its names (islands + places)', s['total'] >= 20, s)
-    check('the Filter row is called Namn, under Lager', 'Namn' in pg.inner_text('#toggleNames >> xpath=ancestor::label'))
+    check('the Filter row is called Platsnamn, under Lager', 'Platsnamn' in pg.inner_text('#toggleNames >> xpath=ancestor::label'))
     lab = pg.evaluate("""() => Array.prototype.filter.call(document.querySelectorAll('.osmN'), e => e.style.display !== 'none').map(e => e.textContent)""")
     check('real names are there (Fårön, Sanda holme), not "bäck"/"flowline"', 'Fårön' in lab and 'Sanda holme' in lab and 'bäck' not in lab and 'flowline' not in lab, lab)
     d = pg.evaluate("""() => { var e = document.querySelector('.osmN'), c = getComputedStyle(e, '::before'); return [c.backgroundColor, getComputedStyle(e).pointerEvents, getComputedStyle(document.getElementById('osmNames')).pointerEvents]; }""")
