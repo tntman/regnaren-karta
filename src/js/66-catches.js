@@ -6,8 +6,8 @@
        - history: dashboard.php -> .competitions (status) + the profiles, and dashboard.php?del=fangstlogg -> .fangster
          (every competition catch with GPS; members only since 2026-11 -- the map app has its own key, CATCH_KEY);
          fetched at start / when the heat map is turned on, only when catchHistDue() says so;
-       - live:    tavling.php?action=bootstrap -> .catches of a competition going on on this lake:
-         when the app opens, then every 5 min (30 s while the heat map is on), only while visible.
+       - live:    the same dashboard.php?del=fangstlogg, only the competition going on (tavling.php was shut down 2026-11):
+         when the app opens, then every 5 min (2 min with Hotzone, 30 s while the heat map is on), only while visible.
      This phone's copy (localStorage) = the lake's catches + its competitions -> offline, between competitions.
      Which lake a catch belongs to: its position (inside that lake's map) -- a lake name, when there
      is one, must not say it's another lake (a lake next door inside the same map). */
@@ -153,7 +153,7 @@
     catchLiveTick();
   }
 
-  // --- live (tavling.php bootstrap): the competition you're in (the menu's Tävling), while the app is in view ---
+  // --- live (Fångstloggen): the competition you're in (the menu's Tävling), while the app is in view ---
   // Every competition going on: the lakes' (status active) + the open ones (between their start and end)
   function catchActiveComps(){
     if (!catchHist) return [];
@@ -214,17 +214,17 @@
     if (wait > 0){ catchLiveTimer = setTimeout(catchLiveTick, wait); return; }
     if (!catchLive || catchLive.comp !== c.id) catchLive = { comp: c.id, name: c.name, at: 0, list: [], all: [] };
     var L = catchLive; L.loading = true;
-    catchGet('tavling.php?action=bootstrap&competitionId=' + encodeURIComponent(c.id), 'l', function(err, d){
+    catchGet('dashboard.php?del=fangstlogg', 'l', function(err, f){
       L.loading = false; L.at = Date.now();
-      if (!err && !(d && d.ok && Array.isArray(d.catches))) err = new Error((d && d.error) || 'oväntat svar');
+      if (!err && !(f && f.ok && Array.isArray(f.fangster))) err = new Error((f && f.error) || 'oväntat svar');
       if (err) L.err = catchErrOf(err);
-      else {   // (an annulled catch = the catch + a "VOID" row pointing at it: both go)
-        var voided = {}; d.catches.forEach(function(x){ if (x.voidRef) voided[x.voidRef] = 1; });
+      else {
         L.err = null;
-        L.parts = (d.participants || []).map(function(p){ return catchPlain(p.name); });   // (the menu: "du är med")
+        // the competition's rows: its code -- an open one has its own (malaren_open_26 for "malarenOpen"), so its name
+        var mine = function(x){ return x.tkod === c.id || (c.open && x.open && catchPlain(x.tav) === catchPlain(c.name)); };
         // all: the whole competition, whichever water (Ledare, Senaste fisk); list: only those caught in this lake (the heat map)
-        L.all = d.catches.filter(function(x){ return x.displayValue !== 'VOID' && !voided[x.timestamp]; })
-          .map(function(x){ return normCatch(x, true); }).filter(Boolean);
+        L.all = f.fangster.filter(mine).map(function(x){ return normCatch({ timestamp: x.t, competitionId: x.tkod, name: x.name, species: x.species, cm: x.cm,
+          lat: x.lat, lng: x.lng, lake: x.vatten, approved: x.ok, imageUrl: x.img }, true); }).filter(Boolean);   // (img: the photo -- Demo Mode's; Fångstloggen has none yet)
         L.list = L.all.filter(function(x){ return x.lat != null && catchLakeOf(x) === LAKE_ID; });
       }
       if (catchLive === L) catchMerge();
@@ -277,6 +277,7 @@
   catchListeners.push(function(){ setSums(); });
   document.getElementById('ctFetch').addEventListener('click', function(){ if (catchLive) catchLive.at = 0; loadCatches(true); });
 
+  window.__ffLive = function(){ return catchLive ? { comp: catchLive.comp, n: catchLive.all.length } : null; };
   window.__ffCatches = function(){ return catchData ? catchData.list.map(function(c){ return { id: c.id, sp: c.sp, cm: c.cm, who: c.who, comp: c.comp }; }) : null; };
 
   /* --- Tävlingsnotisen (was the lock until 2026-10-07, tools/PLAN_TAVLINGSLAS.md): spots can always be added, changed

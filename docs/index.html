@@ -5819,20 +5819,14 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     var km = haversineKm(m.lat, m.lon, L.center[0], L.center[1]);
     return (km < 10 ? km.toFixed(1).replace('.', ',') : Math.round(km)) + ' km';
   }
-  // "du är med" / "du är inte anmäld": the competition's participants (live), when known
-  function compMeTxt(c){
-    var L = catchLive && catchLive.comp === c.id ? catchLive : null;
-    if (!L || !L.parts || !L.parts.length) return '';
-    return L.parts.indexOf(catchPlain(userName)) >= 0 ? 'du är med' : 'du är inte anmäld';
-  }
   function compWhenTxt(c){ return c.open ? 'Hela året' + (c.water ? ' · ' + c.water : ' · alla vatten') : 'Pågår' + (c.water ? ' · ' + c.water : ''); }
   function renderLakeList(){
-    var near = lakeKmTxt(LAKE) === 'här', c = catchLiveComp(), me = c ? compMeTxt(c) : '';
+    var near = lakeKmTxt(LAKE) === 'här', c = catchLiveComp();
     lakeListEl.innerHTML =
       '<button class="menuItem mnPick" data-sub="lake">' + lakePinSvg + '<span class="mnT"><span class="mnK">Sjö' + (lakeAutoOn() ? AUTO_TAG : '') + '</span><b>' + escHtml(LAKE.name) + '</b>' +
         '<small>' + (near ? 'Du är här' : myLatLon() ? lakeKmTxt(LAKE) + ' bort' : 'Ingen GPS-position') + (lakeAutoOn() ? ' – väljs av GPS:en' : ' – vald av dig') + '</small></span><span class="mnChev">›</span></button>' +
       '<button class="menuItem mnPick" data-sub="comp">' + cupSvg + '<span class="mnT"><span class="mnK">Tävling' + (c && !compChosen() ? AUTO_TAG : '') + '</span><b>' + (c ? escHtml(c.name || c.id) : 'Ingen just nu') + '</b>' +
-        '<small>' + (c ? escHtml(compWhenTxt(c)) + (me ? ' · ' + me : '') : catchHist ? 'Ingen tävling pågår' : 'Inte hämtat än') + '</small></span><span class="mnChev">›</span></button>';
+        '<small>' + (c ? escHtml(compWhenTxt(c)) : catchHist ? 'Ingen tävling pågår' : 'Inte hämtat än') + '</small></span><span class="mnChev">›</span></button>';
   }
   function menuSubRow(cls, icon, title, sub, right, attrs){
     return '<button type="button" class="menuItem mnRow' + cls + '"' + (attrs || '') + '>' + icon + '<span class="mnT"><b>' + title + '</b>' + (sub ? '<small>' + sub + '</small>' : '') + '</span>' + (right || '') + '</button>';
@@ -5852,8 +5846,8 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
       var day = function(c){ return /^\d{4}-\d\d-\d\d$/.test(c.date) ? fmtDay(c.date) : 'datum inte bestämt'; };
       h += menuSubRow(' mnBig', gpsSvg, 'Automatiskt', 'Den som pågår på sjön du är vid, annars Open', '<span class="mnSw' + (chosen ? '' : ' on') + '"></span>', ' data-auto="comp"') +
         '<div class="mnSec">Pågår</div>' +
-        (on.length ? on.map(function(c){ var me = cur && cur.id === c.id, t = compMeTxt(c);
-          return menuSubRow(me ? ' menuItem--active' : '', cupSvg, escHtml(c.name || c.id) + (me && !chosen ? AUTO_TAG : ''), escHtml(compWhenTxt(c)) + (t ? ' · ' + t : ''), me ? lakeCheckSvg : '', ' data-comp="' + escHtml(c.id) + '"'); }).join('')
+        (on.length ? on.map(function(c){ var me = cur && cur.id === c.id;
+          return menuSubRow(me ? ' menuItem--active' : '', cupSvg, escHtml(c.name || c.id) + (me && !chosen ? AUTO_TAG : ''), escHtml(compWhenTxt(c)), me ? lakeCheckSvg : '', ' data-comp="' + escHtml(c.id) + '"'); }).join('')
           : '<div class="mnNote">' + (catchHist ? 'Ingen tävling pågår just nu.' : 'Tävlingarna är inte hämtade än.') + '</div>');
       var planned = comps.filter(function(c){ return c.status === 'planned'; });
       var done = comps.filter(function(c){ return c.status === 'done'; }).sort(function(a, b){ return a.date < b.date ? 1 : -1; }).slice(0, 3);
@@ -7523,15 +7517,13 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     var c = testState.comp, rows = c ? testState.catches.filter(function(x){ return x.competitionId === c.id; }) : [];
     if (path.indexOf('del=fangstlogg') >= 0){
       var voided = {}; testState.voids.forEach(function(ts){ voided[ts] = 1; });
-      return { ok: true, fangster: (c && c.status === 'finished' ? rows.filter(function(x){ return x.approved && !voided[x.timestamp]; }) : [])
-        .map(function(x){ return { t: x.timestamp, tkod: x.competitionId, name: x.name, species: x.species, cm: x.cm, ok: true, lat: x.lat, lng: x.lng, vatten: LAKE.name }; }) };
+      return { ok: true, fangster: rows.filter(function(x){ return !voided[x.timestamp] && (x.approved || c.status !== 'finished'); })   // (an annulled catch: gone)
+        .map(function(x){ return { t: x.timestamp, tkod: x.competitionId, tav: c.name, open: false, name: x.name, species: x.species, cm: x.cm, ok: !!x.approved, lat: x.lat, lng: x.lng, vatten: LAKE.name, img: x.imageUrl }; }) };
     }
     if (path.indexOf('dashboard.php') === 0){
       return { competitions: c ? [{ competition_id: c.id, competition_name: c.name, date: c.date, status: c.status, water: LAKE.name }] : [],
                anglers: [], anglerStats: [], dashboard: [], results: [], records: [] };
     }
-    if (path.indexOf('action=bootstrap') >= 0)   // (an annulled catch: a VOID row pointing at it, as in the real API)
-      return { ok: true, catches: rows.concat(testState.voids.map(function(ts){ return { timestamp: ts + '|void', displayValue: 'VOID', voidRef: ts }; })) };
     return {};
   }
   // the strikes of the last 30 min (ltFetch, 52-lightning.js)
@@ -11421,8 +11413,8 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
        - history: dashboard.php -> .competitions (status) + the profiles, and dashboard.php?del=fangstlogg -> .fangster
          (every competition catch with GPS; members only since 2026-11 -- the map app has its own key, CATCH_KEY);
          fetched at start / when the heat map is turned on, only when catchHistDue() says so;
-       - live:    tavling.php?action=bootstrap -> .catches of a competition going on on this lake:
-         when the app opens, then every 5 min (30 s while the heat map is on), only while visible.
+       - live:    the same dashboard.php?del=fangstlogg, only the competition going on (tavling.php was shut down 2026-11):
+         when the app opens, then every 5 min (2 min with Hotzone, 30 s while the heat map is on), only while visible.
      This phone's copy (localStorage) = the lake's catches + its competitions -> offline, between competitions.
      Which lake a catch belongs to: its position (inside that lake's map) -- a lake name, when there
      is one, must not say it's another lake (a lake next door inside the same map). */
@@ -11568,7 +11560,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     catchLiveTick();
   }
 
-  // --- live (tavling.php bootstrap): the competition you're in (the menu's Tävling), while the app is in view ---
+  // --- live (Fångstloggen): the competition you're in (the menu's Tävling), while the app is in view ---
   // Every competition going on: the lakes' (status active) + the open ones (between their start and end)
   function catchActiveComps(){
     if (!catchHist) return [];
@@ -11629,17 +11621,17 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     if (wait > 0){ catchLiveTimer = setTimeout(catchLiveTick, wait); return; }
     if (!catchLive || catchLive.comp !== c.id) catchLive = { comp: c.id, name: c.name, at: 0, list: [], all: [] };
     var L = catchLive; L.loading = true;
-    catchGet('tavling.php?action=bootstrap&competitionId=' + encodeURIComponent(c.id), 'l', function(err, d){
+    catchGet('dashboard.php?del=fangstlogg', 'l', function(err, f){
       L.loading = false; L.at = Date.now();
-      if (!err && !(d && d.ok && Array.isArray(d.catches))) err = new Error((d && d.error) || 'oväntat svar');
+      if (!err && !(f && f.ok && Array.isArray(f.fangster))) err = new Error((f && f.error) || 'oväntat svar');
       if (err) L.err = catchErrOf(err);
-      else {   // (an annulled catch = the catch + a "VOID" row pointing at it: both go)
-        var voided = {}; d.catches.forEach(function(x){ if (x.voidRef) voided[x.voidRef] = 1; });
+      else {
         L.err = null;
-        L.parts = (d.participants || []).map(function(p){ return catchPlain(p.name); });   // (the menu: "du är med")
+        // the competition's rows: its code -- an open one has its own (malaren_open_26 for "malarenOpen"), so its name
+        var mine = function(x){ return x.tkod === c.id || (c.open && x.open && catchPlain(x.tav) === catchPlain(c.name)); };
         // all: the whole competition, whichever water (Ledare, Senaste fisk); list: only those caught in this lake (the heat map)
-        L.all = d.catches.filter(function(x){ return x.displayValue !== 'VOID' && !voided[x.timestamp]; })
-          .map(function(x){ return normCatch(x, true); }).filter(Boolean);
+        L.all = f.fangster.filter(mine).map(function(x){ return normCatch({ timestamp: x.t, competitionId: x.tkod, name: x.name, species: x.species, cm: x.cm,
+          lat: x.lat, lng: x.lng, lake: x.vatten, approved: x.ok, imageUrl: x.img }, true); }).filter(Boolean);   // (img: the photo -- Demo Mode's; Fångstloggen has none yet)
         L.list = L.all.filter(function(x){ return x.lat != null && catchLakeOf(x) === LAKE_ID; });
       }
       if (catchLive === L) catchMerge();
@@ -11692,6 +11684,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   catchListeners.push(function(){ setSums(); });
   document.getElementById('ctFetch').addEventListener('click', function(){ if (catchLive) catchLive.at = 0; loadCatches(true); });
 
+  window.__ffLive = function(){ return catchLive ? { comp: catchLive.comp, n: catchLive.all.length } : null; };
   window.__ffCatches = function(){ return catchData ? catchData.list.map(function(c){ return { id: c.id, sp: c.sp, cm: c.cm, who: c.who, comp: c.comp }; }) : null; };
 
   /* --- Tävlingsnotisen (was the lock until 2026-10-07, tools/PLAN_TAVLINGSLAS.md): spots can always be added, changed

@@ -1,8 +1,8 @@
 # The menu's Sjö and Tävling (28-menu.js, Filip 2026-11-05): two rows at the top, each opening its own list.
 # Tävling automatically = the one going on on this lake, else Mälaren Open on Mälaren / Fiskfiskarna Open elsewhere;
-# one chosen yourself instead; "du är med" from the participants. Sjö automatically = the GPS changes the lake at once
+# one chosen yourself instead. Sjö automatically = the GPS changes the lake at once
 # (a note, "Tillbaka till ..." turns it off); a lake chosen yourself turns it off too.
-import datetime
+import datetime, time
 from playwright.sync_api import sync_playwright
 import fakefb
 from fakefb import new_page
@@ -19,14 +19,15 @@ OPENS = [{'id': 'ffopen27', 'serie': 'fiskfiskarna_open', 'namn': 'Fiskfiskarna 
          {'id': 'malopen', 'serie': 'malaren_open', 'namn': 'Mälaren Open', 'start': '2026-01-01', 'slut': '2099-12-31', 'status': 'aktiv'}]
 COMPS = [comp('regn2', 'Regnaren 2', TODAY, 'active', 'Regnaren'), comp('sibbo7', 'Sibbo 7', 'TBD', 'planned', 'Sibbo'),
          comp('regn1', 'Regnaren 1', '2026-09-25', 'done', 'Regnaren')]
-PARTS = [{'participantId': 'didip', 'name': 'Filip'}, {'participantId': 'calle', 'name': 'Calle'}]
 def menu_rows(pg): return pg.text_content('#lakeList')
 def sub(pg): return pg.text_content('#menuSub')   # (not inner_text: the headings are in capitals on screen)
 def lake_of(pg): return pg.evaluate("localStorage.getItem('ffmap_lake_v1')")
 
 with sync_playwright() as p:
     # ---- Tävling: the one going on on this lake; or one chosen ----
-    api = {'competitions': COMPS, 'openTavlingar': OPENS, 'live': {'regn2': [], 'ffopen27': []}, 'participants': PARTS}
+    # (an open one's catches have their own code in Fångstloggen -- found by the name)
+    OPEN_ROW = dict(fakefb.api_row(int(time.time() * 1000) - 600000, 'fiskfisk_open_27', 'Calle', 'gadda', 70, B3[0], B3[1]), tav='Fiskfiskarna Open 2027', open=True)
+    api = {'competitions': COMPS, 'openTavlingar': OPENS, 'heatmap': [OPEN_ROW], 'live': {'regn2': []}}
     b, ctx, pg, errs = new_page(p, geo=B3, cfg={'api': api}, name='Filip')
     pg.wait_for_timeout(1800)
     check('under the title: the competition (Regnaren 2), title 10 px up', pg.is_visible('#compSub') and pg.inner_text('#compSub') == 'Regnaren 2'
@@ -38,7 +39,6 @@ with sync_playwright() as p:
     pg.click('#menuBtn'); pg.wait_for_timeout(300)
     t = menu_rows(pg)
     check('menu: Sjö = Regnaren (auto, du är här), Tävling = Regnaren 2 (auto)', 'Regnaren' in t and 'Du är här' in t and 'Regnaren 2' in t and t.count('auto') == 2, t)
-    check('...du är med (the participants)', 'du är med' in t, t)
     check('...the other menu rows still there', pg.is_visible('#menuItemLog') and pg.is_visible('#menuItemSettings'))
     pg.click('#lakeList [data-sub="comp"]'); pg.wait_for_timeout(300)
     t = sub(pg)
@@ -47,7 +47,8 @@ with sync_playwright() as p:
     check('...Sibbo 7 coming (datum inte bestämt), Regnaren 1 over', 'Sibbo 7' in t and 'datum inte bestämt' in t and 'Regnaren 1' in t, t)
     pg.click('#menuSub [data-comp="ffopen27"]'); pg.wait_for_timeout(600)
     check('choose Fiskfiskarna Open: chosen (Automatiskt off), its live catches fetched', pg.evaluate("localStorage.getItem('ffmap_comp_v1')") == 'ffopen27'
-          and 'mnSw on' not in pg.inner_html('#menuSub') and ctx.api.n('=ffopen27') >= 1, ctx.api.hits[-3:])
+          and 'mnSw on' not in pg.inner_html('#menuSub') and ctx.api.n('fangstlogg') >= 3, ctx.api.hits[-3:])
+    check('...its catches by its name (own code fiskfisk_open_27)', pg.evaluate('__ffLive()') == {'comp': 'ffopen27', 'n': 1}, pg.evaluate('__ffLive()'))
     check('...the title row follows', pg.inner_text('#compSub') == 'Fiskfiskarna Open 2027', pg.inner_text('#compSub'))
     pg.click('#menuSub [data-auto="comp"]'); pg.wait_for_timeout(400)
     check('Automatiskt on again: Regnaren 2', pg.evaluate("localStorage.getItem('ffmap_comp_v1')") is None and 'Regnaren 2' in pg.inner_text('#menuSub .menuItem--active'))

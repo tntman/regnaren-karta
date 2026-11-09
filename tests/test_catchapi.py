@@ -1,6 +1,6 @@
 # The heat map's catches from Fiskfiskarnas API (made up by fakefb.FakeApi): the history (dashboard.php + ?del=fangstlogg with the key)
 # only for this lake, kept on the phone; fetched again only by the rules (no copy / a competition on or
-# due and > 1 h / > 1 day); live (tavling.php bootstrap) while a competition is on, annulled catches gone;
+# due and > 1 h / > 1 day); live (Fångstloggen again, the competition's rows) while a competition is on, annulled catches gone;
 # the API down -> the copy; Inställningar -> Fångstdata shows it all, "Hämta nu" fetches.
 from playwright.sync_api import sync_playwright
 import fakefb, json, time, datetime
@@ -29,7 +29,7 @@ with sync_playwright() as p:
     # ---- no competition: the history, this lake only, kept ----
     b, ctx, pg, errs = new_page(p, geo=B3, cfg={'api': {'heatmap': HIST, 'competitions': [comp('regnaren1', 'Regnaren 1', '2026-09-26', 'done'), comp('vitten1', 'Vitten 1', TODAY, 'active', 'Östra Vitten')]}}, name='Filip')
     pg.wait_for_timeout(1500)
-    check('start: the history fetched once, no live (no competition on the lake)', ctx.api.n('dashboard') == 1 and ctx.api.n('bootstrap') == 0, ctx.api.hits)
+    check('start: the history fetched once, no live (no competition on the lake)', ctx.api.n('dashboard') == 1 and ctx.api.n('fangstlogg') == 1, ctx.api.hits)
     ids = [c['who'] + c['sp'] for c in pg.evaluate('window.__ffCatches()')]
     check('...6 catches: Regnaren\'s 5 + the one with no lake name; not Östra Vitten / Mälaren inside the map', len(ids) == 6 and 'Pia' + 'gos' in ids and 'Olle' + 'gadda' not in ids, ids)
     t = info(pg)
@@ -74,7 +74,7 @@ with sync_playwright() as p:
     b, ctx, pg, errs = new_page(p, geo=B3, cfg={'api': {'heatmap': HIST, 'competitions': [comp('regnaren3', 'Regnaren 3', TODAY, 'active')], 'live': {'regnaren3': [v1, v2, bad, void]}}}, name='Filip')
     pg.wait_for_timeout(1500)
     ids = [c['who'] for c in pg.evaluate('window.__ffCatches()')]
-    check('active competition: live fetched at the start, its 2 catches added (8)', ctx.api.n('bootstrap') == 1 and len(ids) == 8 and 'Henrik' in ids and 'Erika' in ids, (ctx.api.hits, ids))
+    check('active competition: live fetched at the start, its 2 catches added (8)', ctx.api.n('fangstlogg') == 2 and len(ids) == 8 and 'Henrik' in ids and 'Erika' in ids, (ctx.api.hits, ids))
     check('...the annulled catch and its VOID row not there', 'Magnus' not in ids, ids)
     t = info(pg)
     check('Fångstdata: live on, every 2 min (heat map off, Hotzone on), 2 live catches', 'på – Regnaren 3 pågår' in t and 'var 2:a min' in t and '2 fångster' in t, t)
@@ -85,7 +85,7 @@ with sync_playwright() as p:
     check('...its result line says Live', 'Live' in pg.inner_text('#hmResult'), pg.inner_text('#hmResult'))
     ctx.api.live['regnaren3'] = [v1, v2, bad, void, fakefb.api_row(ms(27, 9, 0), 'regnaren3', 'Calle', 'gos', 50, B4[0], B4[1])]
     pg.wait_for_timeout(31500)
-    check('...30 s later: fetched again, the new live catch there', ctx.api.n('bootstrap') == 2 and n_catches(pg) == 9, (ctx.api.n('bootstrap'), n_catches(pg)))
+    check('...30 s later: fetched again, the new live catch there', ctx.api.n('fangstlogg') == 3 and n_catches(pg) == 9, (ctx.api.n('fangstlogg'), n_catches(pg)))
     check('no page errors (3)', not errs, errs)
     b.close()
 

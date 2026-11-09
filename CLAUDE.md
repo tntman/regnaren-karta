@@ -198,7 +198,7 @@ Uppdatera rätt anteckning när något ändras.
   anropas i `handleGpsFix`; inte i Demo Mode), notis `#lakeNote` med "Tillbaka till …" (stänger av Automatiskt). Välja sjö själv = Automatiskt av.
   Sjöarna sorteras efter avstånd. **Tävling:** `catchLiveComp()` (`js/66-catches.js`) styr allt live (Hotzone, Ledare, PB, heatmapens Live):
   vald själv (`ffmap_comp_v1`/`testKey`, bara pågående) eller automatiskt = pågående tävling på sjön, annars Mälaren Open på Mälaren,
-  annars Fiskfiskarna Open (`openTavlingar` ur `dashboard.php`, mellan start och slut). "du är med" = namnet i tävlingens `participants` (live).
+  annars Fiskfiskarna Open (`openTavlingar` ur `dashboard.php`, mellan start och slut). Live-fångsterna = Fångstloggen filtrerad på tävlingen (tavling.php nedlagt 2026-11, NOTES_HEATMAP.md).
   Ny dag = båda tillbaka till Automatiskt (`autoDaily`, `ffmap_auto_day_v1`, vid start och när appen visas igen). Kommande och Avslutade visas bara. Pågående tävling står i liten text under sjönamnet (`#compSub`, `compSubRender`; titeln 10 px upp, `header.hasComp`; tryck = Välj tävling). Testerna: sjöbytet av (`__ffNoLakeAuto`, fakefb), test_lakeauto slår på det.
 - **Pushnotiser**: inte gjort (kräver server/Firebase-betalplan).
 

@@ -41,8 +41,8 @@ bottenrutan, fångstrutan, tryck på kartan), `src/css/72-heatmap.css`, HTML i `
   - **Historik** = `dashboard.php` (tävlingarna + profilerna, ~315 kB) + `dashboard.php?del=fangstlogg` → `fangster` (alla fångster med GPS,
     ~975 st, ~625 kB, även väder per fångst – används inte än). Sedan 2026-11 är fångsterna bara för medlemmar (`heatmap` borta ur
     `dashboard.php`); kartappen har en egen nyckel från Jonathan (`CATCH_KEY`, `js/66-catches.js`, `Authorization: Bearer`, 2026-11-05).
-    Nyckeln syns i sidans källkod (webbapp, Filip ok) – byts den: ändra `CATCH_KEY`. Reserv om nyckeln slutar fungera: `tavling.php`
-    bootstrap ger positionerna utan nyckel (ett anrop per tävling, 429 vid många i rad).
+    Nyckeln syns i sidans källkod (webbapp, Filip ok) – byts den: ändra `CATCH_KEY`. (`tavling.php` är nedlagt sedan 2026-11:
+    "Använd dashboard.php eller tavling2.php" – tavling2.php svarar "Okänd action", oklart hur den används.)
     + `competitions`. Bara fångster i **denna** sjö (`catchLakeOf`: inom kartan och sjönamnet säger inte en annan
     sjö – Östra Vitten ligger inom Regnarens kartbild). Tävlingarna på sjön (`catchSameWater`, prefix åt båda
     håll: "Sibbo"/"Sibbofjärden") sparas med `id, name, date, status`.
@@ -51,10 +51,11 @@ bottenrutan, fångstrutan, tryck på kartan), `src/css/72-heatmap.css`, HTML i `
   - **När historiken hämtas** (vid start, när appen blir synlig, när heatmapen slås på – `catchHistDue()`):
     1. ingen kopia; 2. en tävling pågår och kopian > 1 h; 3. en planerad tävling med datum ≤ idag och kopian > 1 h;
     4. kopian > 1 dygn. Annars används kopian. Mellan tävlingarna = högst en hämtning per dygn per telefon.
-  - **Live** = `tavling.php?action=bootstrap&competitionId=…` → `catches`, bara när kopian säger att en tävling
-    pågår på sjön och sidan syns. Direkt vid start/synlig (om > 60 s sedan), sedan var 5:e min; var 30:e s när
-    heatmapen eller Kartanalys "Från fångsterna" är på. Annullerade: rad med `displayValue:"VOID"` + `voidRef`
-    (= den annullerade fångstens `timestamp`) – båda tas bort. Slås ihop med historiken på `id`.
+  - **Live** (sedan 2026-11-09, tavling.php nedlagt) = samma `dashboard.php?del=fangstlogg`, bara tävlingens rader: `tkod` = tävlingens id,
+    eller för en open-tävling (egen kod i loggen, t.ex. `malaren_open_26` för `malarenOpen`) `open` + samma namn (`tav`). `ok` = räknas.
+    Ingen filtrering i API:t – hela loggen varje gång (~73 kB gzip). Bara när en tävling pågår och sidan syns. Direkt vid start/synlig
+    (om > 60 s sedan), sedan var 5:e min (2 min med Hotzone); var 30:e s när heatmapen eller Kartanalys "Från fångsterna" är på.
+    Annullerade finns inte i loggen. Loggen har inga foton och ingen deltagarlista ("du är med" i menyn borttaget). Slås ihop med historiken på `id`.
     **Tävling vs sjö (Filips regel 2026-10-05):** `catchLive.all` = hela tävlingen (`competitionId`, alla vatten, även
     utan GPS) → Ledare och Senaste fisk. `catchLive.list` = bara fångster tagna i sjön (`lake` + position) → heatmap,
     Kartanalys. En tävling kan fiskas i flera sjöar (Regnaren 1: 12 fångster i Östra Vitten).

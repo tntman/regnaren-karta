@@ -244,12 +244,12 @@ FAKE_FIREBASE_JS = r"""
 
 # Fiskfiskarnas API, made up: ctx.api (tests change it while they run).
 #   heatmap = dashboard.php's heatmap rows, competitions = its competitions,
-#   live = { competitionId: bootstrap catches }, down = True -> every call fails; hits = the URLs asked for.
+#   live = { competitionId: its catches going on (api_row + approved; a VOID row with voidRef annuls one) } -- in Fångstloggen too, down = True -> every call fails; hits = the URLs asked for.
 #   anglers/anglerStats/dashboard/results/records = the profiles (dashboard.php), as the real API has them.
 class FakeApi:
     def __init__(self, cfg):
         self.heatmap = list(cfg.get('heatmap', [])); self.competitions = list(cfg.get('competitions', []))
-        self.live = dict(cfg.get('live', {})); self.down = False; self.hits = []; self.parts = list(cfg.get('participants', [])); self.auth = []
+        self.live = dict(cfg.get('live', {})); self.down = False; self.hits = []; self.auth = []
         self.prof = {k: cfg.get(k, []) for k in ('anglers', 'anglerStats', 'dashboard', 'results', 'records', 'openTavlingar')}
     def n(self, what): return len([u for u in self.hits if what in u and (what != 'dashboard' or 'del=' not in u)])   # ('dashboard': the list, not Fångstloggen)
     def handle(self, route):
@@ -258,16 +258,16 @@ class FakeApi:
         if self.down: return route.abort()
         if 'del=fangstlogg' in url:   # (Fångstloggen: only with the map app's key -- the catches since 2026-11)
             self.auth.append(route.request.headers.get('authorization', ''))
-            body = {'ok': True, 'fangster': [{'t': r['timestamp'], 'tkod': r['competitionId'], 'name': r['name'], 'species': r['species'], 'cm': r['cm'],
-                                             'ok': True, 'lat': r['lat'], 'lng': r['lng'], 'vatten': r.get('lake', '')} for r in self.heatmap]}
+            void = {r.get('voidRef') for rows in self.live.values() for r in rows}
+            live = [dict(r, competitionId=cid) for cid, rows in self.live.items() for r in rows if r.get('displayValue') != 'VOID' and r['timestamp'] not in void]
+            body = {'ok': True, 'fangster': [{'t': r['timestamp'], 'tkod': r['competitionId'], 'tav': r.get('tav', ''), 'open': r.get('open', False), 'name': r['name'], 'species': r['species'], 'cm': r['cm'],
+                                             'ok': r.get('approved', True), 'lat': r['lat'], 'lng': r['lng'], 'vatten': r.get('lake', ''), 'img': r.get('imageUrl')} for r in self.heatmap + live]}
         elif 'dashboard.php' in url: body = dict(self.prof, competitions=self.competitions)
-        elif 'action=bootstrap' in url:
-            cid = __import__('urllib.parse').parse.unquote(url.split('competitionId=')[1].split('&')[0])
-            body = {'ok': cid in self.live, 'catches': self.live.get(cid, []), 'participants': self.parts} if cid in self.live else {'ok': False, 'error': 'okänd tävling'}
+        elif 'tavling.php' in url: body = {'ok': False, 'error': 'Det här API:t är nedlagt.'}   # (as the real one since 2026-11)
         else: return route.abort()
         route.fulfill(status=200, content_type='application/json', headers={'Access-Control-Allow-Origin': '*'}, body=json.dumps(body))
 def api_row(t_ms, comp, who, sp, cm, lat, lon, lake='Regnaren'):
-    # one row like dashboard.php's heatmap (and bootstrap's catches)
+    # one catch row (dashboard.php's old heatmap names; FakeApi turns it into Fångstloggen's)
     import datetime
     ts = datetime.datetime.utcfromtimestamp(t_ms / 1000.0).strftime('%Y-%m-%dT%H:%M:%S.') + '%03dZ' % (t_ms % 1000)
     return {'timestamp': ts, 'competitionId': comp, 'name': who, 'species': {'gadda': 'Gadda', 'abborre': 'Abborre', 'gos': 'Gos'}.get(sp, sp), 'cm': cm, 'lat': lat, 'lng': lon, 'lake': lake}

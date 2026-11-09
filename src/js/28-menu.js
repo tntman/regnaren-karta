@@ -43,20 +43,14 @@
     var km = haversineKm(m.lat, m.lon, L.center[0], L.center[1]);
     return (km < 10 ? km.toFixed(1).replace('.', ',') : Math.round(km)) + ' km';
   }
-  // "du är med" / "du är inte anmäld": the competition's participants (live), when known
-  function compMeTxt(c){
-    var L = catchLive && catchLive.comp === c.id ? catchLive : null;
-    if (!L || !L.parts || !L.parts.length) return '';
-    return L.parts.indexOf(catchPlain(userName)) >= 0 ? 'du är med' : 'du är inte anmäld';
-  }
   function compWhenTxt(c){ return c.open ? 'Hela året' + (c.water ? ' · ' + c.water : ' · alla vatten') : 'Pågår' + (c.water ? ' · ' + c.water : ''); }
   function renderLakeList(){
-    var near = lakeKmTxt(LAKE) === 'här', c = catchLiveComp(), me = c ? compMeTxt(c) : '';
+    var near = lakeKmTxt(LAKE) === 'här', c = catchLiveComp();
     lakeListEl.innerHTML =
       '<button class="menuItem mnPick" data-sub="lake">' + lakePinSvg + '<span class="mnT"><span class="mnK">Sjö' + (lakeAutoOn() ? AUTO_TAG : '') + '</span><b>' + escHtml(LAKE.name) + '</b>' +
         '<small>' + (near ? 'Du är här' : myLatLon() ? lakeKmTxt(LAKE) + ' bort' : 'Ingen GPS-position') + (lakeAutoOn() ? ' – väljs av GPS:en' : ' – vald av dig') + '</small></span><span class="mnChev">›</span></button>' +
       '<button class="menuItem mnPick" data-sub="comp">' + cupSvg + '<span class="mnT"><span class="mnK">Tävling' + (c && !compChosen() ? AUTO_TAG : '') + '</span><b>' + (c ? escHtml(c.name || c.id) : 'Ingen just nu') + '</b>' +
-        '<small>' + (c ? escHtml(compWhenTxt(c)) + (me ? ' · ' + me : '') : catchHist ? 'Ingen tävling pågår' : 'Inte hämtat än') + '</small></span><span class="mnChev">›</span></button>';
+        '<small>' + (c ? escHtml(compWhenTxt(c)) : catchHist ? 'Ingen tävling pågår' : 'Inte hämtat än') + '</small></span><span class="mnChev">›</span></button>';
   }
   function menuSubRow(cls, icon, title, sub, right, attrs){
     return '<button type="button" class="menuItem mnRow' + cls + '"' + (attrs || '') + '>' + icon + '<span class="mnT"><b>' + title + '</b>' + (sub ? '<small>' + sub + '</small>' : '') + '</span>' + (right || '') + '</button>';
@@ -76,8 +70,8 @@
       var day = function(c){ return /^\d{4}-\d\d-\d\d$/.test(c.date) ? fmtDay(c.date) : 'datum inte bestämt'; };
       h += menuSubRow(' mnBig', gpsSvg, 'Automatiskt', 'Den som pågår på sjön du är vid, annars Open', '<span class="mnSw' + (chosen ? '' : ' on') + '"></span>', ' data-auto="comp"') +
         '<div class="mnSec">Pågår</div>' +
-        (on.length ? on.map(function(c){ var me = cur && cur.id === c.id, t = compMeTxt(c);
-          return menuSubRow(me ? ' menuItem--active' : '', cupSvg, escHtml(c.name || c.id) + (me && !chosen ? AUTO_TAG : ''), escHtml(compWhenTxt(c)) + (t ? ' · ' + t : ''), me ? lakeCheckSvg : '', ' data-comp="' + escHtml(c.id) + '"'); }).join('')
+        (on.length ? on.map(function(c){ var me = cur && cur.id === c.id;
+          return menuSubRow(me ? ' menuItem--active' : '', cupSvg, escHtml(c.name || c.id) + (me && !chosen ? AUTO_TAG : ''), escHtml(compWhenTxt(c)), me ? lakeCheckSvg : '', ' data-comp="' + escHtml(c.id) + '"'); }).join('')
           : '<div class="mnNote">' + (catchHist ? 'Ingen tävling pågår just nu.' : 'Tävlingarna är inte hämtade än.') + '</div>');
       var planned = comps.filter(function(c){ return c.status === 'planned'; });
       var done = comps.filter(function(c){ return c.status === 'done'; }).sort(function(a, b){ return a.date < b.date ? 1 : -1; }).slice(0, 3);
