@@ -57,6 +57,9 @@ with sync_playwright() as p:
     check('Sjö: Automatiskt on, the lakes nearest first, Regnaren "du är här"', 'mnSw on' in pg.inner_html('#menuSub') and t.index('Regnaren') < t.index('Östra Vitten') < t.index('Sibbofjärden') and 'du är här' in t, t)
     pg.click('#menuSub [data-lake-id="vitten"]'); pg.wait_for_load_state('load'); pg.wait_for_timeout(1200)
     check('choose Östra Vitten: that lake, Automatiskt off', lake_of(pg) == 'vitten' and pg.evaluate("localStorage.getItem('ffmap_lake_auto_v1')") == '0')
+    pg.evaluate("localStorage.setItem('ffmap_comp_v1', 'ffopen27'); localStorage.setItem('ffmap_auto_day_v1', 'Mon Jan 01 2001')")
+    pg.reload(); pg.wait_for_timeout(1200)
+    check('a new day: Sjö and Tävling Automatiskt again', pg.evaluate("localStorage.getItem('ffmap_lake_auto_v1')") == '1' and pg.evaluate("localStorage.getItem('ffmap_comp_v1')") is None)
     check('no page errors (1)', not errs, errs)
     b.close()
 

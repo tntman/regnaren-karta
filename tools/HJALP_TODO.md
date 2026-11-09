@@ -30,6 +30,8 @@ spåren, Ledare, Kompass, Namn, Fog of war, tävlingslåset, Storlek/När, start
   flygfoto i övrigt. Hjälp: avsnittet om sjöar/kartlägen (att en sjö kan ha färre kartlägen och sakna djup där inget är lodat).
 - [ ] 2026-11-09 – Tävlingens namn i liten text under sjönamnet uppe till vänster (pågående tävling, tryck = Välj tävling). Hjälp: Kartan /
   Tävlingarna (text). Nyhet: "Pågående tävling syns under sjöns namn – tryck för att byta" (NYTT)
+- [ ] 2026-11-09 – Sjö och Tävling går tillbaka till Automatiskt varje ny dag. Hjälp: Kartan (Sjö) / Tävlingarna (Tävling-raden).
+  Nyhet: "Valt sjö eller tävling själv? Nästa dag väljer appen automatiskt igen" (BÄTTRE)
   Nyhet: "Ny karta: Gryts Skärgård – Valdemarsviken ut till Flisdjupet (flygfoto där Genesis inte har lodat)" (NYTT)
 
 ---

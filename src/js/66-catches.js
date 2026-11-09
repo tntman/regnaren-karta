@@ -177,6 +177,17 @@
     if (catchLive) catchLive.at = 0;
     catchLiveTick(true); catchMerge();
   }
+  // a new day: Sjö and Tävling back to Automatiskt (Filip 2026-11-09) -- at start and when the app comes back
+  function autoDaily(){
+    try {
+      var d = new Date().toDateString(), was = localStorage.getItem('ffmap_auto_day_v1');
+      if (was === d) return;
+      localStorage.setItem('ffmap_auto_day_v1', d);
+      if (!was) return;   // (first time: nothing chosen yet)
+      setLakeAuto(true); localStorage.removeItem(COMP_KEY);
+    } catch(e){}
+  }
+  autoDaily();
   function catchLiveComp(){
     var id = compChosen();
     if (id){ var c = catchActiveComps().filter(function(x){ return x.id === id; })[0]; if (c) return c; }   // (over: automatically again)
@@ -222,6 +233,7 @@
   }
   document.addEventListener('visibilitychange', function(){
     if (document.visibilityState !== 'visible'){ clearTimeout(catchLiveTimer); catchLiveTimer = null; return; }
+    autoDaily();
     if (catchHistDue()) loadHistory();
     catchLiveTick(true);
   });
