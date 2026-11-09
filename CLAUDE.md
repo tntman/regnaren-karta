@@ -199,7 +199,7 @@ Uppdatera rätt anteckning när något ändras.
   Sjöarna sorteras efter avstånd. **Tävling:** `catchLiveComp()` (`js/66-catches.js`) styr allt live (Hotzone, Ledare, PB, heatmapens Live):
   vald själv (`ffmap_comp_v1`/`testKey`, bara pågående) eller automatiskt = pågående tävling på sjön, annars Mälaren Open på Mälaren,
   annars Fiskfiskarna Open (`openTavlingar` ur `dashboard.php`, mellan start och slut). "du är med" = namnet i tävlingens `participants` (live).
-  Kommande och Avslutade visas bara. Testerna: sjöbytet av (`__ffNoLakeAuto`, fakefb), test_lakeauto slår på det.
+  Kommande och Avslutade visas bara. Pågående tävling står i liten text under sjönamnet (`#compSub`, `compSubRender`; titeln 14 px upp, `header.hasComp`; tryck = Välj tävling). Testerna: sjöbytet av (`__ffNoLakeAuto`, fakefb), test_lakeauto slår på det.
 - **Pushnotiser**: inte gjort (kräver server/Firebase-betalplan).
 
 ## Firestore-regler (aktuella, i Firebase-konsolen)

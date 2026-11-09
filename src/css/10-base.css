@@ -186,3 +186,9 @@
   /* "add a fishing spot here" button, shaped exactly like a fishing-spot
      pin (same teardrop, colours and fish as your own pins) with a small
      amber "+" badge, so it's obvious what it creates */
+  /* the competition going on, small under the lake's name; both 14 px up so the header is no taller (66-catches.js) */
+  #compSub{display:block;max-width:62vw;padding:0;margin:1px 0 0;border:0;background:none;pointer-events:auto;cursor:pointer;-webkit-tap-highlight-color:transparent;
+    font:500 12px/15px -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;color:rgba(232,241,245,.72);text-align:left;
+    text-shadow:0 1px 4px rgba(0,0,0,.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  #compSub[hidden]{display:none;}
+  header.hasComp #lakeTitle, header.hasComp #compSub{position:relative;top:-14px;}

@@ -182,6 +182,15 @@
     if (id){ var c = catchActiveComps().filter(function(x){ return x.id === id; })[0]; if (c) return c; }   // (over: automatically again)
     return catchAutoComp();
   }
+  // under the lake's name: the competition going on (tap = the menu's Tävling list, 28-menu.js) -- Filip 2026-11-09
+  var compSubEl = document.getElementById('compSub');
+  function compSubRender(){
+    var c = catchLiveComp();
+    compSubEl.textContent = c ? c.name || c.id : ''; compSubEl.hidden = !c;
+    document.querySelector('header').classList.toggle('hasComp', !!c);
+  }
+  catchListeners.push(compSubRender);
+  compSubEl.addEventListener('click', function(e){ e.stopPropagation(); toggleMenu(true); renderMenuSub('comp'); });
   function catchLiveFast(){ return !!(hmOn || (anSet.mode && anSet.mode.indexOf('c_') === 0)); }
   // (opening: the app just started / came back -> fetch now if the last is > 60 s old)
   function catchLiveTick(opening){

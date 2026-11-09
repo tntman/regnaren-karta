@@ -29,6 +29,11 @@ with sync_playwright() as p:
     api = {'competitions': COMPS, 'openTavlingar': OPENS, 'live': {'regn2': [], 'ffopen27': []}, 'participants': PARTS}
     b, ctx, pg, errs = new_page(p, geo=B3, cfg={'api': api}, name='Filip')
     pg.wait_for_timeout(1800)
+    check('under the title: the competition (Regnaren 2), title 14 px up', pg.is_visible('#compSub') and pg.inner_text('#compSub') == 'Regnaren 2'
+          and pg.evaluate("getComputedStyle(document.getElementById('lakeTitle')).top") == '-14px', pg.inner_text('#compSub'))
+    pg.click('#compSub'); pg.wait_for_timeout(300)
+    check('...tap = the menu, Välj tävling', pg.is_visible('#menuSub') and 'Välj tävling' in sub(pg), sub(pg)[:80])
+    pg.click('#menuSub [data-back]'); pg.wait_for_timeout(200); pg.click('#menuBtn'); pg.wait_for_timeout(300)
     pg.click('#menuBtn'); pg.wait_for_timeout(300)
     t = menu_rows(pg)
     check('menu: Sjö = Regnaren (auto, du är här), Tävling = Regnaren 2 (auto)', 'Regnaren' in t and 'Du är här' in t and 'Regnaren 2' in t and t.count('auto') == 2, t)
@@ -42,6 +47,7 @@ with sync_playwright() as p:
     pg.click('#menuSub [data-comp="ffopen27"]'); pg.wait_for_timeout(600)
     check('choose Fiskfiskarna Open: chosen (Automatiskt off), its live catches fetched', pg.evaluate("localStorage.getItem('ffmap_comp_v1')") == 'ffopen27'
           and 'mnSw on' not in pg.inner_html('#menuSub') and ctx.api.n('=ffopen27') >= 1, ctx.api.hits[-3:])
+    check('...the title row follows', pg.inner_text('#compSub') == 'Fiskfiskarna Open 2027', pg.inner_text('#compSub'))
     pg.click('#menuSub [data-auto="comp"]'); pg.wait_for_timeout(400)
     check('Automatiskt on again: Regnaren 2', pg.evaluate("localStorage.getItem('ffmap_comp_v1')") is None and 'Regnaren 2' in pg.inner_text('#menuSub .menuItem--active'))
     pg.click('#menuSub [data-back]'); pg.wait_for_timeout(300)
@@ -69,6 +75,7 @@ with sync_playwright() as p:
     ctx.add_init_script("window.__ffNoLakeAuto = false;")
     pg.reload(); pg.wait_for_timeout(1500)
     check('at Regnaren: stays', lake_of(pg) == 'regnaren')
+    check('no competition: no row under the title, title where it was', not pg.is_visible('#compSub') and pg.evaluate("getComputedStyle(document.getElementById('lakeTitle')).top") in ('auto', '0px'))
     ctx.set_geolocation({'latitude': SIBBO[0], 'longitude': SIBBO[1], 'accuracy': 8})
     pg.wait_for_timeout(2500); pg.wait_for_load_state('load'); pg.wait_for_timeout(1200)
     check('at Sibbofjärden: the lake changed at once', lake_of(pg) == 'sibbo' and 'Sibbofjärden' in pg.inner_text('#lakeTitle'), lake_of(pg))

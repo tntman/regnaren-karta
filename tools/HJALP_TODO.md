@@ -28,6 +28,8 @@ spåren, Ledare, Kompass, Namn, Fog of war, tävlingslåset, Storlek/När, start
 -->
 - [ ] 2026-11-08 – Ny sjö: Gryts Skärgård (Valdemarsviken ut till Flisdjupet). Bara Djupfärger; djup bara i en liten Genesis-remsa,
   flygfoto i övrigt. Hjälp: avsnittet om sjöar/kartlägen (att en sjö kan ha färre kartlägen och sakna djup där inget är lodat).
+- [ ] 2026-11-09 – Tävlingens namn i liten text under sjönamnet uppe till vänster (pågående tävling, tryck = Välj tävling). Hjälp: Kartan /
+  Tävlingarna (text). Nyhet: "Pågående tävling syns under sjöns namn – tryck för att byta" (NYTT)
   Nyhet: "Ny karta: Gryts Skärgård – Valdemarsviken ut till Flisdjupet (flygfoto där Genesis inte har lodat)" (NYTT)
 
 ---

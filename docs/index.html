@@ -231,6 +231,12 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   /* "add a fishing spot here" button, shaped exactly like a fishing-spot
      pin (same teardrop, colours and fish as your own pins) with a small
      amber "+" badge, so it's obvious what it creates */
+  /* the competition going on, small under the lake's name; both 14 px up so the header is no taller (66-catches.js) */
+  #compSub{display:block;max-width:62vw;padding:0;margin:1px 0 0;border:0;background:none;pointer-events:auto;cursor:pointer;-webkit-tap-highlight-color:transparent;
+    font:500 12px/15px -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;color:rgba(232,241,245,.72);text-align:left;
+    text-shadow:0 1px 4px rgba(0,0,0,.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  #compSub[hidden]{display:none;}
+  header.hasComp #lakeTitle, header.hasComp #compSub{position:relative;top:-14px;}
   /* ---- knot meter (under the scale bar) ---- */
   #speedPill{
     position:absolute;left:14px;bottom:calc(env(safe-area-inset-bottom,0px) + 56px);z-index:20;
@@ -2822,6 +2828,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
 
   <header>
     <div class="kicker" id="lakeTitle">Regnaren</div>
+    <button type="button" id="compSub" hidden aria-label="Tävling – öppna listan"></button>
     <button type="button" id="wxChip" aria-expanded="false" aria-controls="wxCard" aria-label="Väder och vind"></button>
     <button type="button" id="wakeBadge" hidden aria-label="Skärmen hålls tänd – tryck för att stänga av" title="Skärmen hålls tänd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg></button>
     <div id="ltPill" role="status" aria-live="polite"><svg viewBox="0 0 24 24"><path d="M13.5 2 5 13.5h5.5L9 22l9.5-12.5H13z" fill="#FFF08C" stroke="#3a1d00" stroke-width="1.4" stroke-linejoin="round"></path></svg><div><b id="ltPillMain"></b><small id="ltPillSub"></small></div></div>
@@ -11589,6 +11596,15 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     if (id){ var c = catchActiveComps().filter(function(x){ return x.id === id; })[0]; if (c) return c; }   // (over: automatically again)
     return catchAutoComp();
   }
+  // under the lake's name: the competition going on (tap = the menu's Tävling list, 28-menu.js) -- Filip 2026-11-09
+  var compSubEl = document.getElementById('compSub');
+  function compSubRender(){
+    var c = catchLiveComp();
+    compSubEl.textContent = c ? c.name || c.id : ''; compSubEl.hidden = !c;
+    document.querySelector('header').classList.toggle('hasComp', !!c);
+  }
+  catchListeners.push(compSubRender);
+  compSubEl.addEventListener('click', function(e){ e.stopPropagation(); toggleMenu(true); renderMenuSub('comp'); });
   function catchLiveFast(){ return !!(hmOn || (anSet.mode && anSet.mode.indexOf('c_') === 0)); }
   // (opening: the app just started / came back -> fetch now if the last is > 60 s old)
   function catchLiveTick(opening){
