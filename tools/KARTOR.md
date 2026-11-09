@@ -340,16 +340,20 @@ eller `… zoom14` för sig): översiktsbilden i **halv storlek** (`map_v<V>h_*.
 i CSS) + den fulla som **zoom 14-bitar med kurvorna inbakade** (`"baked": true` i levels – inget kurvlager ovanpå) som tar över
 från zoom 13,5, så det är lika skarpt. Den fulla bilden sparas i `raw/<id>/z17/map14_<stil>.jpg`.
 
-### Hav utan Genesis: Gryts Skärgård (2026-11-08)
+### Gryts Skärgård: bara Genesis (2026-11-08/09)
 Genesis har nästan inget där (17 rutor på zoom 17, en remsa i Valdemarsviken, 0–4,7 m; fångstplatserna vid Gryt saknas helt).
-Därför `"fill": "emodnet"` i source.json + `py -3 tools/sea_fill.py gryt` (efter `depth`, före `relief`): **havet** = OpenStreetMaps
-kustlinje (`natural=coastline`, Overpass) ritad som vägg, varje område mellan väggarna som EMODnet mest kallar vatten blir hav
-(EMODnet har några "blöta" fläckar på land – en sådan får inte göra hela fastlandet till hav); **djupet** = EMODnet Bathymetry
-(öppen, ~115 m-rutor, WCS), högst 0,4 m + 6 cm per meter från stranden. Sparas i `raw/gryt/z17/sea_z15.npz`; `block_depth()` lägger
-det där Genesis saknas → djupfärger, relief, djupnätet (lodet, Kartanalys). **Aldrig kurvor eller siffror** – de finns bara i
-Genesis-remsan. Grovt: grund och grynnor syns inte. Bara Djupfärger (`"styles": ["s1"]`, Filips beslut) och zoom 14–17 (zoom 18
-hade bara haft Genesis kurvor i remsan; appen förstorar 17). `contourText` i source.json säger att djupet är från EMODnet.
-Hämtning: `sh tools/gryt_fetch.sh` (polygon `tools/gryt_polygon.json`, Filips ruta: Käggla–Flisdjupet, Backermåla/Fyrudden–Långrådna/Bokö).
+Kartan = Genesis djupfärger + kurvor i remsan, **flygfoto överallt annars** (Filips beslut 2026-11-09). Bara Djupfärger
+(`"styles": ["s1"]` i source.json) och zoom 14–16 med bitar i **hela** rutan (`"cover": "all"` – annars bara nära Genesis vatten,
+och vid fångstplatserna hade man sett den halva översiktsbilden förstorad); zoom 17 överallt hade blivit ~175 MB, appen
+förstorar 16 (en saknad bit på högsta nivån visar översiktsbilden, inte nivån under – därför samma täckning på alla nivåer). Lodet och
+Kartanalys har djup bara i remsan. **Havet som vatten** (Filip 2026-11-09: den vita strandlinjen och rutten runt öar och land):
+`py -3 tools/osm_coast.py gryt` (före render) – OpenStreetMaps kustlinje (`natural=coastline`) som väggar, land ligger alltid till
+vänster om linjen i OSM → varje område mellan väggarna där de flesta punkterna till höger hamnar = hav. `raw/gryt/z17/sea_z15.npz`;
+`block_depth()` tar det som osm_water: vatten utan djup (252) i djupnätet, kartbilden förblir flygfoto. Inget djup. Hämtning: `sh tools/gryt_fetch.sh` (polygon `tools/gryt_polygon.json`,
+Filips ruta: Käggla–Flisdjupet, Backermåla/Fyrudden–Långrådna/Bokö). Fler loggar på Genesis → hämta igen (cachat: bara
+`rm` de tomma rutorna först) och bygg om.
+**Prövat och borttaget (2026-11-08 → 09):** havet utanför Genesis från OpenStreetMaps kustlinje + EMODnet Bathymetry (~115 m,
+grundare mot land). Fungerade, men Filip vill bara ha Genesis-data – ingen annan djupdata på kartorna. Gör inte om.
 
 ## Namn på kartan (OpenStreetMap)
 

@@ -3,7 +3,7 @@
 # only lines -- the z17 base enlarged under them -- so every style gets zoom 18.
 from playwright.sync_api import sync_playwright
 from fakefb import new_page
-import json, re
+import json, re, math
 LK = json.load(open('../lakes/regnaren/lake.json', encoding='utf-8'))
 results = []
 def check(name, cond, info=''):
@@ -92,10 +92,10 @@ with sync_playwright() as p:
     check('Mälaren: no page errors', not errs, errs)
     b.close()
 
-# Gryts Skärgård: only Djupfärger, zoom 14-17, the sea outside Genesis from EMODnet (tools/sea_fill.py)
+# Gryts Skärgård: only Djupfärger, zoom 14-16 (aerial pieces everywhere, "cover": "all"), only Genesis data (aerial photo elsewhere -- Filip 2026-11-09)
 GK = json.load(open('../lakes/gryt/lake.json', encoding='utf-8'))
-check('Gryt lake.json: only s1, levels 14-17, EMODnet named', [s['id'] for s in GK['styles']] == ['s1'] and
-      [L['z'] for L in GK['detail']['levels']] == [14, 15, 16, 17] and 'EMODnet' in GK['contourText'], GK['contourText'])
+check('Gryt lake.json: only s1, levels 14-16, only Genesis', [s['id'] for s in GK['styles']] == ['s1'] and
+      [L['z'] for L in GK['detail']['levels']] == [14, 15, 16] and GK['contourText'] == 'Djupkurvor från C-MAP Genesis', GK['contourText'])
 with sync_playwright() as p:
     b, ctx, pg, errs = new_page(p, geo=(58.173, 16.805), cfg={}, name='Filip')
     pg.evaluate("() => localStorage.setItem('ffmap_lake_v1', 'gryt')"); pg.reload(); pg.wait_for_timeout(2500)
@@ -103,9 +103,13 @@ with sync_playwright() as p:
           pg.evaluate("document.getElementById('mapImg').naturalWidth") * 2 == GK['geo']['imgW'], pg.get_attribute('#mapImg', 'src'))
     pg.click('#mapTypeBtn'); pg.wait_for_timeout(600)
     check('Gryt: the map-type button stays on Djupfärger (the only style)', 'map_v1h_s1.jpg' in pg.get_attribute('#mapImg', 'src'))
-    zoom_to(pg, 15)
+    n = 256 * 2 ** 14; la = math.radians(58.1375)            # the Genesis strip in Valdemarsviken, zoom 15
+    cx = (16.68 + 180) / 360 * n - GK['geo']['originX']; cy = (1 - math.log(math.tan(la) + 1 / math.cos(la)) / math.pi) / 2 * n - GK['geo']['originY']
+    pg.evaluate("([k, v]) => sessionStorage.setItem(k, JSON.stringify(Object.assign(v, {t: Date.now()})))",
+                ['lake_gryt_rotation_view_v1', {'cx': cx, 'cy': cy, 'scale': 2}])
+    pg.reload(); pg.wait_for_timeout(3500)
     t = pieces(pg)
-    check('Gryt zoom 15: Djupfärger base + lines, all loaded', any('/z15/s1/' in x[0] for x in t) and any('/z15/lines/' in x[0] for x in t) and all(x[2] for x in t), t[:4])
+    check('Gryt zoom 15 (Genesis strip): Djupfärger base + lines, all loaded', any('/z15/s1/' in x[0] for x in t) and any('/z15/lines/' in x[0] for x in t) and all(x[2] for x in t), t[:4])
     check('Gryt: no page errors', not errs, errs)
     b.close()
 print('\n%d/%d passed' % (sum(results), len(results)))
