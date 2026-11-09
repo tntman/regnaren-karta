@@ -31,6 +31,7 @@ with sync_playwright() as p:
     pg.wait_for_timeout(1800)
     check('under the title: the competition (Regnaren 2), title 10 px up', pg.is_visible('#compSub') and pg.inner_text('#compSub') == 'Regnaren 2'
           and pg.evaluate("getComputedStyle(document.getElementById('lakeTitle')).top") == '-10px', pg.inner_text('#compSub'))
+    check('...the weather chip 14 px up with it', pg.evaluate("getComputedStyle(document.getElementById('wxChip')).marginTop") == '-2px')
     pg.click('#compSub'); pg.wait_for_timeout(300)
     check('...tap = the menu, Välj tävling', pg.is_visible('#menuSub') and 'Välj tävling' in sub(pg), sub(pg)[:80])
     pg.click('#menuSub [data-back]'); pg.wait_for_timeout(200); pg.click('#menuBtn'); pg.wait_for_timeout(300)
