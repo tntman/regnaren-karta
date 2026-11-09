@@ -29,8 +29,8 @@ with sync_playwright() as p:
     api = {'competitions': COMPS, 'openTavlingar': OPENS, 'live': {'regn2': [], 'ffopen27': []}, 'participants': PARTS}
     b, ctx, pg, errs = new_page(p, geo=B3, cfg={'api': api}, name='Filip')
     pg.wait_for_timeout(1800)
-    check('under the title: the competition (Regnaren 2), title 14 px up', pg.is_visible('#compSub') and pg.inner_text('#compSub') == 'Regnaren 2'
-          and pg.evaluate("getComputedStyle(document.getElementById('lakeTitle')).top") == '-14px', pg.inner_text('#compSub'))
+    check('under the title: the competition (Regnaren 2), title 10 px up', pg.is_visible('#compSub') and pg.inner_text('#compSub') == 'Regnaren 2'
+          and pg.evaluate("getComputedStyle(document.getElementById('lakeTitle')).top") == '-10px', pg.inner_text('#compSub'))
     pg.click('#compSub'); pg.wait_for_timeout(300)
     check('...tap = the menu, Välj tävling', pg.is_visible('#menuSub') and 'Välj tävling' in sub(pg), sub(pg)[:80])
     pg.click('#menuSub [data-back]'); pg.wait_for_timeout(200); pg.click('#menuBtn'); pg.wait_for_timeout(300)
