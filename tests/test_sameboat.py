@@ -22,6 +22,10 @@ with sync_playwright() as p:
     check('both moving 2 m/s, 50 m apart, 20 s between the positions (40 + 40 m): the same boat', r == ['CalleOlle'], r)
     r = pg.evaluate(SET, [P[0], P[1] + 40 * E, 20, P[0] + 300 * N, P[1] + 40 * E, 0])
     check('...but 300 m apart: two boats', r == ['Calle', 'Olle'], r)
+    r = pg.evaluate("""([lat, lon]) => { const d = window.__posDocs; delete d.calle; delete d.olle;
+      d.q = { uid: 'o"hara\\\\x', name: 'O"Hara', lake: 'regnaren', lat: lat, lon: lon, updatedAt: { toMillis: () => Date.now() } };
+      window.__firePos(); window.__firePos(); return Array.from(document.querySelectorAll('.boatName')).map(e => e.textContent); }""", [P[0], P[1]])
+    check('a name with a quote and a backslash in it: one boat, also after the next update', r == ['O"Hara'], r)
     check('no page errors', not errs, errs)
     b.close()
 print('%d/%d passed' % (sum(results), len(results)))

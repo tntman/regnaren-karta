@@ -249,7 +249,10 @@
       lake: LAKE_ID, uid: myUid, name: userName || '', day: day, pts: rec.p, st: packStops(rec.s), n: rec.n || 0,
       lakeDay: LAKE_ID + '_' + day, ownKey: LAKE_ID + '_' + trkSafeUid() + '_' + day,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    }).catch(function(e){ console.warn('spår kunde inte sparas', e && e.code); });
+    }).catch(function(e){
+      console.warn('spår kunde inte sparas', e && e.code);
+      if (trkHist[day] === rec){ delete rec.u; trkUpFail[day] = 1; saveHist(); }   // (refused: not uploaded after all -- tried again at the next start)
+    });
   }
   // who has tracks on this lake: one small doc trackusers/<lake> = { users: { <safe uid>: {u, n} } } -- written once per phone and
   // lake (the first time there is something to share), read once when the Spår panel opens (the "Andras" drop-down)
@@ -273,13 +276,14 @@
     }).catch(function(){ /* keep the member list */ });
   }
   // finished days that aren't uploaded yet (+ today's, at most every 5 min or when the app goes to the background)
+  var trkUpFail = {};
   function flushTrackUploads(force){
     if (!USE_FIREBASE || !tracksCol || !myUid) return;
     registerTrackUser();
     var any = false;
     Object.keys(trkHist).forEach(function(dk){
       var rec = trkHist[dk];
-      if (!rec.u){ rec.u = 1; any = true; uploadTrackDay(dk, rec); }   // (marked first: Firestore keeps the write even offline)
+      if (!rec.u && !trkUpFail[dk]){ rec.u = 1; any = true; uploadTrackDay(dk, rec); }   // (marked first: Firestore keeps the write even offline)
     });
     if (any) saveHist();
     if (trackUploadDirty && (force || Date.now() - lastTrackUpAt >= 5 * 60000)){
@@ -318,7 +322,8 @@
     trkOthersBusy = true; trkOthersMsg = 'Laddar…'; trkRenderPanel();
     tracksCol.where('ownKey', '>=', pre + from).where('ownKey', '<=', pre + '~').get().then(function(snap){
       trkReadDocs(snap, function(id, d){ if (!d.day || d.uid === myUid) return; trkOthers[id] = { uid: d.uid, name: d.name || '', day: d.day, p: d.pts || '', s: unpackStops(d.st) }; });
-      trkOthersFrom[who] = got === undefined ? from : Math.min(got, from); trkOthersAt = Date.now(); trkOthersBusy = false; trkOthersMsg = '';
+      trkOthersFrom[who] = (got === undefined || from < got) ? from : got;   // (date strings: the earliest)
+      trkOthersAt = Date.now(); trkOthersBusy = false; trkOthersMsg = '';
       renderTrack(); trkRenderPanel();
     }).catch(function(e){
       trkOthersBusy = false; trkOthersMsg = (e && e.code === 'permission-denied') ? 'Kunde inte hämta (databasens regler saknar "tracks")' : 'Kunde inte hämta spåren';

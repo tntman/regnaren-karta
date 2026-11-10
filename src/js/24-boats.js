@@ -37,7 +37,7 @@
         seen[c.id] = true;
         var p = latLonToImgPx(c.lat, c.lon);
         var sx = originX + p.x * scale, sy = originY + p.y * scale;
-        var el = boatsLayer.querySelector('[data-cluster="' + c.id + '"]');
+        var el = boatsLayer.querySelector('[data-cluster="' + CSS.escape(c.id) + '"]');   // (the id is made of names: quotes, backslashes)
         if (!el){
           el = document.createElement('div');
           el.setAttribute('data-cluster', c.id);

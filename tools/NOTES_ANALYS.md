@@ -87,7 +87,8 @@ raderas den då (`pagehide`).
   listan = de 5 områden med mest lika ställe (små områden lite lägre). "Gå till" (`#anRefGo`).
 - Räknas i telefonen på djupnätet (`anBase`: lutning, "högre/lägre än runt om" ~28 m, avstånd
   till land) + `docs/lakes/<id>/bottom_v<V>.txt` (vegetation bit 3, hårdhet 1–4 bit 0–2, RLE
-  250 n n; görs av genesis_render, även `grid`) + vinden.
+  250 n n; görs av genesis_render, även `grid`) + vinden. Går bottendatan inte att hämta (täckning): "Kunde inte hämta
+  bottendata" i rutan, nästa val provar igen (`anBottomFail`). Vindkant räknas om när nytt väder kommit (`fetchWeather`).
 - Canvas `#anLayer` per skärmpunkt, etiketter i `#anLabels`. Val per sjö (`lakeKey`).
   `window.__ffGeo`, `__ffAnalysis()` för tester/verktyg.
 

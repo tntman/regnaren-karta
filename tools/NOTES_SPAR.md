@@ -38,6 +38,10 @@ Ett dokument per person, sjö och dag. **Id:** `<sjö>_<uid>_<dag>` (uid = namne
 
 Båda frågorna är intervall på **ett** fält (`>=` och `<=`) – inga sammansatta index behövs.
 
+Uppladdning (`flushTrackUploads`, var 60:e s, när appen göms, vid start): dagen märks `u` innan den skickas (Firestore behåller
+skrivningen även utan nät). **Vägrar databasen** (regler, för stort) tas märket bort igen och dagen provas vid nästa start
+(`trkUpFail`: inte varje minut) – förr såg den uppladdad ut för alltid.
+
 **Regel att lägga till i Firebase-konsolen** (utan den sparas inget, och appen skriver bara en varning i konsolen):
 `tracks: read auth; write kräver lake/uid/day/pts (string) och n (number), pts ≤ 900 000 tecken.`
 

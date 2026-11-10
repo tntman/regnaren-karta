@@ -45,7 +45,9 @@ så länge lagret är på ELLER varningen är på (`ltWatch()`). Stängs varning
 tryck = Inställningar vid varningen). OK-knappen: "OK, jag har sett", hela bredden, minst 48 px.
 Inställningar: Av/5/10/20 km, ljud, vibration; standard 10 km. Nytt nedslag < 5 min och inom
 avståndet → `#ltAlarm` + pip (WebAudio, låses upp vid första tryck) + vibration (finns inte på
-iPhone). Varje nedslag larmar en gång.
+iPhone). Varje nedslag larmar en gång; efter "OK, jag har sett" inte heller efter en omladdning (vridning – `ffmap_lt_ok_v1`
+i sessionStorage, en ny start av appen varnar igen). Ett nedslag utanför avståndet märks inte som larmat: avståndet räknas från
+sjöns mitt tills GPS:en vet var du är, och då kan det vara nära.
 **"Åskan har dragit förbi":** efter en varning sparas det senaste nedslaget inom avståndet
 (`ffmap_lt_clear_v1`, överlever vridning). När en hämtning visar att inget nedslag kommit inom avståndet
 på ett helt fönster (30 min) visas samma ruta i lugnt blått med grön kant (`#ltAlarm.clear`): "✓ Åskan

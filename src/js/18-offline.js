@@ -95,7 +95,7 @@
         var url = new URL(list[i++], location.href).href;
         return offStore.has(url).then(function(hit){
           if (hit) return offStore.size(url).then(function(n){ bytes += n; });
-          return fetch(url).then(function(r){
+          return fetch(url, { headers: { 'X-FF-Offline': '1' } }).then(function(r){   // (sw.js: not into its cache too)
             if (!r.ok) throw new Error(r.status);
             return r.clone().blob().then(function(b){ bytes += b.size; return offStore.put(url, r); });
           });

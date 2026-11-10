@@ -29,6 +29,8 @@ with sync_playwright() as p:
     check('done: "Klar · x MB sparat"', st.startswith('Klar') and pg.inner_text('#offBtn') == 'Ta bort', st)
     cached = pg.evaluate("caches.keys().then(ks => Promise.all(ks.filter(k => k.indexOf('ffmap-offline-regnaren-') === 0).map(k => caches.open(k).then(c => c.keys().then(r => r.length)))))")
     check('all pieces in the offline cache', cached and cached[0] >= total, (cached, total))
+    dup = pg.evaluate("caches.keys().then(ks => Promise.all(ks.filter(k => k.indexOf('ffmap-offline-') !== 0).map(k => caches.open(k).then(c => c.keys().then(r => r.length))))).then(a => [!!navigator.serviceWorker.controller, a.reduce((s, n) => s + n, 0)])")
+    check('...and not a second copy of them in the own cache of sw.js', dup[0] and dup[1] < total / 4, dup)
     # the map with NO network: zoomed in, the pieces come from the phone
     pg.click('#settingsBackBtn'); pg.wait_for_timeout(300)
     pg.evaluate("navigator.serviceWorker.ready"); pg.wait_for_timeout(1500)

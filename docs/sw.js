@@ -98,7 +98,7 @@ self.addEventListener('fetch', function(e){
   e.respondWith(caches.match(req.url).then(function(hit){   // (looks in every cache, the offline ones too)
     if (hit) return hit;
     return fetch(req).then(function(r){
-      if (r && (r.ok || r.type === 'opaque')){
+      if (r && (r.ok || r.type === 'opaque') && !req.headers.get('X-FF-Offline')){   // (the offline download keeps its own copy)
         var copy = r.clone();
         caches.open(CACHE).then(function(c){ c.put(req.url, copy); });
       }

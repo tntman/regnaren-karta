@@ -193,7 +193,8 @@
     if (anBottom || anBottomLoading || !LAKE.bottom || typeof fetch !== 'function') return;
     anBottomLoading = true;
     fetch(lakeUrl(LAKE_DIR + LAKE.bottom.file)).then(function(r){ return r.ok ? r.text() : null; }).then(function(t){
-      anBottomLoading = false; if (!t) return;
+      if (!t){ anBottomFail(); return; }
+      anBottomLoading = false;
       var bin = atob(t.trim()), b = new Uint8Array(DEPTH_W * DEPTH_H), j = 0;
       for (var i = 0; i < bin.length && j < b.length; i++){
         var v = bin.charCodeAt(i);
@@ -214,7 +215,11 @@
       }
       anBottom = b; anCompute();
       if (typeof editingWpInfo !== 'undefined' && editingWpInfo && wpSheet.classList.contains('show')) refreshSheetMeta();
-    }).catch(function(){ anBottomLoading = false; });
+    }).catch(anBottomFail);
+  }
+  function anBottomFail(){   // (no coverage: say so -- the next choice in the panel tries again)
+    anBottomLoading = false;
+    if (anRes && anRes.wait){ anRes = { M: null, n: 0, labels: [], text: 'Kunde inte hämta bottendata (täckning?) – försök igen.' }; anRender(); }
   }
   function anNeedsBottom(m){ return (m && m.indexOf('c_') === 0) || m === 'veg' || m === 'hard' || m === 'similar' || m === 'abborre' || m === 'gadda' || m === 'gos' ||
     (m === 'combo' && (anSet.combo.indexOf('veg') >= 0 || anSet.combo.indexOf('hard') >= 0)); }
@@ -256,6 +261,7 @@
     for (var i = 0; i < A.N; i++) if ((anBottom[i] & 7) >= 3 && A.wat[i]){ hard[i] = 1; any = true; }
     return any ? anNear(hard, A.W, A.H, Math.max(1, Math.round(m / A.cell))) : null;
   }
+  function anUsesWind(){ var m = anSet.mode; return m === 'wind' || m === 'gadda' || (m === 'combo' && anSet.combo.indexOf('wind') >= 0); }
   function anWindEdge(A){
     var w = windNow(), R = routeGrid && routeGrid() ? RT : null;
     if (!w || !R) return null;
@@ -269,9 +275,10 @@
       }
     });
     var out = new Uint8Array(A.N), str = new Float32Array(A.N);   // (str: metres of open water upwind -- "Skala")
+    var kf = gridStep() / R.rf;   // (work-grid cells -> route cells; a big lake: 1)
     for (var y = 0; y < A.H; y++) for (var x = 0; x < A.W; x++){
       var i2 = y * A.W + x; if (!A.wat[i2]) continue;
-      var rx = Math.min(R.w - 1, Math.floor(x / R.rf)), ry = Math.min(R.h - 1, Math.floor(y / R.rf)), ri = ry * R.w + rx;
+      var rx = Math.min(R.w - 1, Math.floor(x * kf)), ry = Math.min(R.h - 1, Math.floor(y * kf)), ri = ry * R.w + rx;
       if (R.water[ri] && up[ri] > 300 && dn[ri] < 60){ out[i2] = 1; str[i2] = up[ri]; }
     }
     return { mask: out, str: str, from: w.from, ms: w.ms };
@@ -804,6 +811,7 @@
   anPanel.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
   sheetSwipe(anPanel, function(){ showAnPanel(false); });
   function anLikeSpot(wp){
+    if (hmOn) hmSetOn(false);                    // (not together with the heat map)
     anSet.mode = 'similar'; anSet.cat = 'similar'; anSet.ref = wp.id; anSave(); anCtlMode = '#';
     if (!anShow){ anShow = true; toggleAnEl.checked = true; try { localStorage.setItem(SHOW_AN_KEY, '1'); } catch(e){} }
     showAnPanel(true); anCompute();

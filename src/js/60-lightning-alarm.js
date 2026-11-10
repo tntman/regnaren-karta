@@ -1,11 +1,13 @@
   /* ================= Åskvarning (lightning alarm) =================
      Settings: Av / 5 / 10 / 20 km (default 10), sound, vibration. A new strike (under
      5 min old) closer than that -> a big red warning, a beep and a buzz (vibration: not
-     on iPhone -- Safari has no vibration). Each strike warns once. */
+     on iPhone -- Safari has no vibration). Each strike warns once; after "OK, jag har sett" not
+     after a reload (turning the phone) either. */
   var LT_ALARM_KEY = 'ffmap_lt_alarm_v1';
   var ltAlarm = { km: 10, sound: true, vib: true };
   try { var la = JSON.parse(localStorage.getItem(LT_ALARM_KEY) || 'null'); if (la) ltAlarm = la; } catch(e){}
-  var ltAlarmed = {}, ltAudio = null;
+  var ltAlarmed = {}, ltAudio = null, LT_OK_KEY = testKey('ffmap_lt_ok_v1'), ltOkT = 0, ltHitT = 0;   // (ltOkT: the newest strike you said OK to)
+  try { ltOkT = ltHitT = +sessionStorage.getItem(LT_OK_KEY) || 0; } catch(e){}
   function ltAlarmSave(){ try { localStorage.setItem(LT_ALARM_KEY, JSON.stringify(ltAlarm)); } catch(e){} ltAlarmUi(); ltTick(); }
   function ltAlarmUi(){
     Array.prototype.forEach.call(document.querySelectorAll('#ltAlarmSeg button'), function(b){ var on = +b.getAttribute('data-km') === ltAlarm.km; b.classList.toggle('active', on); b.setAttribute('aria-checked', on ? 'true' : 'false'); });
@@ -44,11 +46,11 @@
     if (!ltAlarm.km) return;                   // (NOT tied to the map layer: see ltWatch)
     var now = Date.now(), ref = ltRef(), hit = null;
     ltStrikes.forEach(function(s){
-      if (ltAlarmed[s.k]) return;
-      ltAlarmed[s.k] = 1;
-      if (now - s.t > 5 * 60000) return;
+      if (ltAlarmed[s.k] || s.t <= ltOkT || now - s.t > 5 * 60000) return;
       var km = haversineKm(ref.lat, ref.lon, s.lat, s.lon);
-      if (km <= ltAlarm.km && (!hit || km < hit.km)) hit = { km: km, br: ltBearing(ref, s), age: (now - s.t) / 60000, t: s.t };
+      if (km > ltAlarm.km) return;             // (not marked: it may be near enough once the GPS knows where you are)
+      ltAlarmed[s.k] = 1; ltHitT = Math.max(ltHitT, s.t);
+      if (!hit || km < hit.km) hit = { km: km, br: ltBearing(ref, s), age: (now - s.t) / 60000, t: s.t };
     });
     if (!hit){ ltCheckClear(); return; }
     ltClearSet(Math.max(ltClearGet(), hit.t));
@@ -81,5 +83,8 @@
     ltClearSet(0);
     ltShowNote(true, '✓ Åskan har dragit förbi', 'Ingen blixt inom ' + ltAlarm.km + ' km på ' + LT_WIN_MIN + ' min');
   }
-  document.getElementById('ltAlarmOk').addEventListener('click', function(){ document.getElementById('ltAlarm').classList.remove('show'); });
+  document.getElementById('ltAlarmOk').addEventListener('click', function(){
+    document.getElementById('ltAlarm').classList.remove('show');
+    try { sessionStorage.setItem(LT_OK_KEY, String(ltHitT)); } catch(e){}
+  });
 

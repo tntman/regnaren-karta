@@ -126,6 +126,7 @@
       wx = { t: Date.now(), data: data };
       try { localStorage.setItem(WX_KEY, JSON.stringify(wx)); } catch(e){}
       renderWeather();
+      if (anUsesWind()) anCompute();   // (Vindkant: the wind has arrived / turned)
     }).catch(function(){ wxFetching = false; });
   }
   function setWxOpen(open){

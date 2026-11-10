@@ -4808,7 +4808,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
         var url = new URL(list[i++], location.href).href;
         return offStore.has(url).then(function(hit){
           if (hit) return offStore.size(url).then(function(n){ bytes += n; });
-          return fetch(url).then(function(r){
+          return fetch(url, { headers: { 'X-FF-Offline': '1' } }).then(function(r){   // (sw.js: not into its cache too)
             if (!r.ok) throw new Error(r.status);
             return r.clone().blob().then(function(b){ bytes += b.size; return offStore.put(url, r); });
           });
@@ -5032,7 +5032,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
         seen[c.id] = true;
         var p = latLonToImgPx(c.lat, c.lon);
         var sx = originX + p.x * scale, sy = originY + p.y * scale;
-        var el = boatsLayer.querySelector('[data-cluster="' + c.id + '"]');
+        var el = boatsLayer.querySelector('[data-cluster="' + CSS.escape(c.id) + '"]');   // (the id is made of names: quotes, backslashes)
         if (!el){
           el = document.createElement('div');
           el.setAttribute('data-cluster', c.id);
@@ -8664,7 +8664,10 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
       lake: LAKE_ID, uid: myUid, name: userName || '', day: day, pts: rec.p, st: packStops(rec.s), n: rec.n || 0,
       lakeDay: LAKE_ID + '_' + day, ownKey: LAKE_ID + '_' + trkSafeUid() + '_' + day,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    }).catch(function(e){ console.warn('spår kunde inte sparas', e && e.code); });
+    }).catch(function(e){
+      console.warn('spår kunde inte sparas', e && e.code);
+      if (trkHist[day] === rec){ delete rec.u; trkUpFail[day] = 1; saveHist(); }   // (refused: not uploaded after all -- tried again at the next start)
+    });
   }
   // who has tracks on this lake: one small doc trackusers/<lake> = { users: { <safe uid>: {u, n} } } -- written once per phone and
   // lake (the first time there is something to share), read once when the Spår panel opens (the "Andras" drop-down)
@@ -8688,13 +8691,14 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     }).catch(function(){ /* keep the member list */ });
   }
   // finished days that aren't uploaded yet (+ today's, at most every 5 min or when the app goes to the background)
+  var trkUpFail = {};
   function flushTrackUploads(force){
     if (!USE_FIREBASE || !tracksCol || !myUid) return;
     registerTrackUser();
     var any = false;
     Object.keys(trkHist).forEach(function(dk){
       var rec = trkHist[dk];
-      if (!rec.u){ rec.u = 1; any = true; uploadTrackDay(dk, rec); }   // (marked first: Firestore keeps the write even offline)
+      if (!rec.u && !trkUpFail[dk]){ rec.u = 1; any = true; uploadTrackDay(dk, rec); }   // (marked first: Firestore keeps the write even offline)
     });
     if (any) saveHist();
     if (trackUploadDirty && (force || Date.now() - lastTrackUpAt >= 5 * 60000)){
@@ -8733,7 +8737,8 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     trkOthersBusy = true; trkOthersMsg = 'Laddar…'; trkRenderPanel();
     tracksCol.where('ownKey', '>=', pre + from).where('ownKey', '<=', pre + '~').get().then(function(snap){
       trkReadDocs(snap, function(id, d){ if (!d.day || d.uid === myUid) return; trkOthers[id] = { uid: d.uid, name: d.name || '', day: d.day, p: d.pts || '', s: unpackStops(d.st) }; });
-      trkOthersFrom[who] = got === undefined ? from : Math.min(got, from); trkOthersAt = Date.now(); trkOthersBusy = false; trkOthersMsg = '';
+      trkOthersFrom[who] = (got === undefined || from < got) ? from : got;   // (date strings: the earliest)
+      trkOthersAt = Date.now(); trkOthersBusy = false; trkOthersMsg = '';
       renderTrack(); trkRenderPanel();
     }).catch(function(e){
       trkOthersBusy = false; trkOthersMsg = (e && e.code === 'permission-denied') ? 'Kunde inte hämta (databasens regler saknar "tracks")' : 'Kunde inte hämta spåren';
@@ -9243,6 +9248,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
       wx = { t: Date.now(), data: data };
       try { localStorage.setItem(WX_KEY, JSON.stringify(wx)); } catch(e){}
       renderWeather();
+      if (anUsesWind()) anCompute();   // (Vindkant: the wind has arrived / turned)
     }).catch(function(){ wxFetching = false; });
   }
   function setWxOpen(open){
@@ -10050,7 +10056,8 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     if (anBottom || anBottomLoading || !LAKE.bottom || typeof fetch !== 'function') return;
     anBottomLoading = true;
     fetch(lakeUrl(LAKE_DIR + LAKE.bottom.file)).then(function(r){ return r.ok ? r.text() : null; }).then(function(t){
-      anBottomLoading = false; if (!t) return;
+      if (!t){ anBottomFail(); return; }
+      anBottomLoading = false;
       var bin = atob(t.trim()), b = new Uint8Array(DEPTH_W * DEPTH_H), j = 0;
       for (var i = 0; i < bin.length && j < b.length; i++){
         var v = bin.charCodeAt(i);
@@ -10071,7 +10078,11 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
       }
       anBottom = b; anCompute();
       if (typeof editingWpInfo !== 'undefined' && editingWpInfo && wpSheet.classList.contains('show')) refreshSheetMeta();
-    }).catch(function(){ anBottomLoading = false; });
+    }).catch(anBottomFail);
+  }
+  function anBottomFail(){   // (no coverage: say so -- the next choice in the panel tries again)
+    anBottomLoading = false;
+    if (anRes && anRes.wait){ anRes = { M: null, n: 0, labels: [], text: 'Kunde inte hämta bottendata (täckning?) – försök igen.' }; anRender(); }
   }
   function anNeedsBottom(m){ return (m && m.indexOf('c_') === 0) || m === 'veg' || m === 'hard' || m === 'similar' || m === 'abborre' || m === 'gadda' || m === 'gos' ||
     (m === 'combo' && (anSet.combo.indexOf('veg') >= 0 || anSet.combo.indexOf('hard') >= 0)); }
@@ -10113,6 +10124,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     for (var i = 0; i < A.N; i++) if ((anBottom[i] & 7) >= 3 && A.wat[i]){ hard[i] = 1; any = true; }
     return any ? anNear(hard, A.W, A.H, Math.max(1, Math.round(m / A.cell))) : null;
   }
+  function anUsesWind(){ var m = anSet.mode; return m === 'wind' || m === 'gadda' || (m === 'combo' && anSet.combo.indexOf('wind') >= 0); }
   function anWindEdge(A){
     var w = windNow(), R = routeGrid && routeGrid() ? RT : null;
     if (!w || !R) return null;
@@ -10126,9 +10138,10 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
       }
     });
     var out = new Uint8Array(A.N), str = new Float32Array(A.N);   // (str: metres of open water upwind -- "Skala")
+    var kf = gridStep() / R.rf;   // (work-grid cells -> route cells; a big lake: 1)
     for (var y = 0; y < A.H; y++) for (var x = 0; x < A.W; x++){
       var i2 = y * A.W + x; if (!A.wat[i2]) continue;
-      var rx = Math.min(R.w - 1, Math.floor(x / R.rf)), ry = Math.min(R.h - 1, Math.floor(y / R.rf)), ri = ry * R.w + rx;
+      var rx = Math.min(R.w - 1, Math.floor(x * kf)), ry = Math.min(R.h - 1, Math.floor(y * kf)), ri = ry * R.w + rx;
       if (R.water[ri] && up[ri] > 300 && dn[ri] < 60){ out[i2] = 1; str[i2] = up[ri]; }
     }
     return { mask: out, str: str, from: w.from, ms: w.ms };
@@ -10661,6 +10674,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   anPanel.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
   sheetSwipe(anPanel, function(){ showAnPanel(false); });
   function anLikeSpot(wp){
+    if (hmOn) hmSetOn(false);                    // (not together with the heat map)
     anSet.mode = 'similar'; anSet.cat = 'similar'; anSet.ref = wp.id; anSave(); anCtlMode = '#';
     if (!anShow){ anShow = true; toggleAnEl.checked = true; try { localStorage.setItem(SHOW_AN_KEY, '1'); } catch(e){} }
     showAnPanel(true); anCompute();
@@ -11107,11 +11121,13 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   /* ================= Åskvarning (lightning alarm) =================
      Settings: Av / 5 / 10 / 20 km (default 10), sound, vibration. A new strike (under
      5 min old) closer than that -> a big red warning, a beep and a buzz (vibration: not
-     on iPhone -- Safari has no vibration). Each strike warns once. */
+     on iPhone -- Safari has no vibration). Each strike warns once; after "OK, jag har sett" not
+     after a reload (turning the phone) either. */
   var LT_ALARM_KEY = 'ffmap_lt_alarm_v1';
   var ltAlarm = { km: 10, sound: true, vib: true };
   try { var la = JSON.parse(localStorage.getItem(LT_ALARM_KEY) || 'null'); if (la) ltAlarm = la; } catch(e){}
-  var ltAlarmed = {}, ltAudio = null;
+  var ltAlarmed = {}, ltAudio = null, LT_OK_KEY = testKey('ffmap_lt_ok_v1'), ltOkT = 0, ltHitT = 0;   // (ltOkT: the newest strike you said OK to)
+  try { ltOkT = ltHitT = +sessionStorage.getItem(LT_OK_KEY) || 0; } catch(e){}
   function ltAlarmSave(){ try { localStorage.setItem(LT_ALARM_KEY, JSON.stringify(ltAlarm)); } catch(e){} ltAlarmUi(); ltTick(); }
   function ltAlarmUi(){
     Array.prototype.forEach.call(document.querySelectorAll('#ltAlarmSeg button'), function(b){ var on = +b.getAttribute('data-km') === ltAlarm.km; b.classList.toggle('active', on); b.setAttribute('aria-checked', on ? 'true' : 'false'); });
@@ -11150,11 +11166,11 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     if (!ltAlarm.km) return;                   // (NOT tied to the map layer: see ltWatch)
     var now = Date.now(), ref = ltRef(), hit = null;
     ltStrikes.forEach(function(s){
-      if (ltAlarmed[s.k]) return;
-      ltAlarmed[s.k] = 1;
-      if (now - s.t > 5 * 60000) return;
+      if (ltAlarmed[s.k] || s.t <= ltOkT || now - s.t > 5 * 60000) return;
       var km = haversineKm(ref.lat, ref.lon, s.lat, s.lon);
-      if (km <= ltAlarm.km && (!hit || km < hit.km)) hit = { km: km, br: ltBearing(ref, s), age: (now - s.t) / 60000, t: s.t };
+      if (km > ltAlarm.km) return;             // (not marked: it may be near enough once the GPS knows where you are)
+      ltAlarmed[s.k] = 1; ltHitT = Math.max(ltHitT, s.t);
+      if (!hit || km < hit.km) hit = { km: km, br: ltBearing(ref, s), age: (now - s.t) / 60000, t: s.t };
     });
     if (!hit){ ltCheckClear(); return; }
     ltClearSet(Math.max(ltClearGet(), hit.t));
@@ -11187,7 +11203,10 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     ltClearSet(0);
     ltShowNote(true, '✓ Åskan har dragit förbi', 'Ingen blixt inom ' + ltAlarm.km + ' km på ' + LT_WIN_MIN + ' min');
   }
-  document.getElementById('ltAlarmOk').addEventListener('click', function(){ document.getElementById('ltAlarm').classList.remove('show'); });
+  document.getElementById('ltAlarmOk').addEventListener('click', function(){
+    document.getElementById('ltAlarm').classList.remove('show');
+    try { sessionStorage.setItem(LT_OK_KEY, String(ltHitT)); } catch(e){}
+  });
 
   /* ================= Håll skärmen tänd (Wake Lock) -- Filter, off by default ================= */
   var WAKE_KEY = 'ffmap_wakelock_v1';
