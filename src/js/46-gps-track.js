@@ -194,6 +194,15 @@
     if (demoStopsCache.n !== n) demoStopsCache = { n: n, s: findStops(demoTrack.segs) };
     return demoStopsCache.s;
   }
+  // a path on the screen: worked out again only when the zoom or its points are new -- a pan just shifts it
+  function setPath(el, list){
+    var c = el._c;
+    if (!c || c.s !== scale || c.l.length !== list.length || list.some(function(seg, i){ return seg !== c.l[i]; })){
+      c = el._c = { s: scale, l: list, x: originX, y: originY };
+      el.setAttribute('d', pathOfPx(list));
+    }
+    el.setAttribute('transform', 'translate(' + (originX - c.x).toFixed(1) + ' ' + (originY - c.y).toFixed(1) + ')');
+  }
   function trkMineDays(){   // earlier days (not today) inside the chosen range, oldest first
     var from = trkRangeFrom(), td = todayStr();
     return Object.keys(trkHist).filter(function(dk){ return dk >= from && dk !== td; }).sort();
@@ -219,15 +228,14 @@
       }
     }
     stops = stops.filter(function(s){ return s[2] >= c.stopMin; });
-    var d = pathOfPx(mine);
-    trkLineEl.setAttribute('d', d); trkUnderEl.setAttribute('d', d);
+    setPath(trkLineEl, mine); setPath(trkUnderEl, mine);
     trkLineEl.style.stroke = c.color;
     var others = [];
     if (c.who) Object.keys(trkOthers).forEach(function(id){
       var o = trkOthers[id];
       if (o.uid === c.who && o.day >= from) others.push.apply(others, pxSegs('o' + id, o, o.p.length, function(){ return unpackSegs(o.p); }));
     });
-    trkOtherEl.setAttribute('d', pathOfPx(others));
+    setPath(trkOtherEl, others);
     if (!c.stops || !stops.length){ if (trkStopsEl.firstChild) trkStopsEl.textContent = ''; return; }
     var h = '';
     stops.forEach(function(s){
@@ -524,7 +532,7 @@
     }
     renderBoats(); // grey / gone status right away
     if (USE_FIREBASE && posCol){
-      posCol.get({ source: 'server' }).then(function(snap){ countGetReads(snap); applyPositionsSnapshot(snap); }).catch(function(){});
+      posQ.get({ source: 'server' }).then(function(snap){ countGetReads(snap); applyPositionsSnapshot(snap); }).catch(function(){});
     }
   }
 

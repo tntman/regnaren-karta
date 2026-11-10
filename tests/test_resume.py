@@ -1,8 +1,4 @@
 from playwright.sync_api import sync_playwright
-import fakefb
-fakefb.FAKE_FIREBASE_JS = fakefb.FAKE_FIREBASE_JS.replace(
-    "    get: function(){ return Promise.resolve(snapOf(posDocs)); },",
-    "    get: function(){ window.__posGets = (window.__posGets||0) + 1; return Promise.resolve(snapOf(posDocs)); },")
 from fakefb import new_page
 results = []
 def check(name, cond, info=''):

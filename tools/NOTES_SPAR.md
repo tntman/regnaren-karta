@@ -60,7 +60,7 @@ Stopp som ringar (av som standard) + reglage för minsta tid (2–30 min, standa
 
 ## Ritning
 `renderTrack()` ritar i `#trackLayer`: `.trkOther` (andras), `.trkUnder` + `.trkLine` (mina), `.trkStops` (ringar,
-radie 8 + √min·3,4 px, "13 min"). Spåren omräknas till bildpixlar en gång (`trkPx`-cache) – panorering är bara en
+radie 8 + √min·3,4 px, "13 min"). Linjernas `d` räknas om bara vid ny zoom eller nya punkter (`setPath`), en panorering flyttar dem med `translate`. Spåren omräknas till bildpixlar en gång (`trkPx`-cache) – panorering är bara en
 multiplikation.
 
 ## Fog of war (Filter → Lager, av som standard)

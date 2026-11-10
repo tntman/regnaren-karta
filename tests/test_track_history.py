@@ -64,6 +64,13 @@ with sync_playwright() as p:
     for i in range(10):
         la += 10 / 111320.0; ctx.set_geolocation({'latitude': la, 'longitude': lo, 'accuracy': 5}); pg.wait_for_timeout(700)
     check('today is drawn', M(pg, '#trackLayer .trkLine') == 1, M(pg, '#trackLayer .trkLine'))
+    # a pan only shifts the path (it is worked out again when the zoom or the points are new)
+    R = "() => { var e = document.querySelector('#trackLayer .trkLine'), r = e.getBoundingClientRect(); return [e.getAttribute('d'), r.left, r.top, e.getAttribute('transform')]; }"
+    r0 = pg.evaluate(R); pg.mouse.move(60, 300); pg.mouse.down(); pg.mouse.move(100, 330, steps=4); pg.wait_for_timeout(200); r1 = pg.evaluate(R)
+    pg.mouse.move(60, 300, steps=4); pg.mouse.up(); pg.wait_for_timeout(300)
+    check('a pan shifts the track: the same path, moved 40 x 30', r1[0] == r0[0] and abs(r1[1] - r0[1] - 40) < 1 and abs(r1[2] - r0[2] - 30) < 1, (r0[1:], r1[1:]))
+    pg.mouse.wheel(0, -300); pg.wait_for_timeout(300); r2 = pg.evaluate(R); pg.mouse.wheel(0, 300); pg.wait_for_timeout(300)
+    check('a zoom works the path out again', r2[0] != r0[0] and r2[3] == 'translate(0.0 0.0)', r2[3])
     open_panel(pg)
     check('tap the Spår icon in Filter -> the Spår panel opens', pg.is_visible('#trkPanel') and pg.eval_on_selector('#trkPanel', 'e=>e.classList.contains("show")'))
     check('...without switching the Spår toggle', pg.is_checked('#toggleTrack'))

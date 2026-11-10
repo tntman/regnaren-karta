@@ -3956,7 +3956,14 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     });
   }
 
-  function render(){
+  // the spots' and the boats' layers: a full render places every pin and notes where the map was (layerBase);
+  // a frame that only a finger drag asked for then shifts the whole layer (no work and no new style per pin)
+  function layerBase(el){ el._b = { x: originX, y: originY, s: scale }; if (el.style.transform) el.style.transform = ''; }
+  function layerShift(el){
+    var b = el._b; if (!b || b.s !== scale) return false;
+    el.style.transform = 'translate(' + (originX - b.x) + 'px,' + (originY - b.y) + 'px)'; return true;
+  }
+  function render(pan){
     world.style.transform = 'translate(' + originX + 'px,' + originY + 'px) scale(' + scale + ')';
     renderDetail();
     if (windOn && windCanvas){ try { drawWind(); } catch(e){} }   // ("Vind och lä" -- set up further down; never stops the rest)
@@ -3971,18 +3978,19 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     renderProbe();
     updateMarker();
     updateScaleBar();
-    renderWaypoints();
-    renderBoats();
+    if (!(pan === true && layerShift(waypointsLayer))) renderWaypoints();
+    if (!(pan === true && layerShift(boatsLayer))) renderBoats();
     renderMeasure();
   }
 
   // Touch/wheel events can fire far more often than the screen redraws
   // (120Hz+ on some phones) -- coalesce them into one redraw per frame.
-  var renderQueued = false;
-  function scheduleRender(){
+  var renderQueued = false, renderPan = false;
+  function scheduleRender(pan){   // pan: asked for by a finger drag only (anyone else asking in the same frame = a full render)
+    renderPan = (!renderQueued || renderPan) && pan === true;
     if (renderQueued) return;
     renderQueued = true;
-    requestAnimationFrame(function(){ renderQueued = false; render(); });
+    requestAnimationFrame(function(){ var p = renderPan; renderQueued = renderPan = false; render(p); });
   }
 
   function zoomAtPoint(px, py, newScale){
@@ -4218,7 +4226,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
       originX = panStart.originX + dx;
       originY = panStart.originY + dy;
       clampOrigin();
-      scheduleRender();
+      scheduleRender(true);
     } else if (pointers.size === 2 && pinch){
       var pts = Array.from(pointers.values());
       var d = dist(pts[0], pts[1]);
@@ -4324,6 +4332,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   var boatPositions = {}; // uid -> {lat, lon, name, uid, updatedAt}
   var boatClustersById = {}; // last-rendered clusters, keyed for click lookups (see renderBoats)
   var posCol = null; // Firestore 'positions' collection ref (see initSharedWaypoints)
+  var posQ = null;   // ...this lake's positions only: what is listened to and read (a boat moving on another lake = no reads here)
   var usageCol = null; // Firestore 'usage' collection: each device's daily read/write counts (admin page)
   var BOAT_GRAY_MS = 15 * 60 * 1000; // a boat that hasn't updated in this long turns grey -- still shown at its last known spot, just marked as not live anymore
   var BOAT_REMOVE_MS = 60 * 60 * 1000; // a boat that hasn't updated in THIS long is finally removed entirely
@@ -4455,6 +4464,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   var OTHER_PIN_SCALE = 0.7; // others' spots, relative to yours (must match .wpPin--other in the CSS)
   function renderWaypoints(){
     var seen = {};
+    layerBase(waypointsLayer);
     if (pendingSheetRestore) tryRestoreSheet();
     waypoints.forEach(function(wp){
       var mine = isMine(wp);
@@ -5005,6 +5015,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
 
   function renderBoats(){
     var seen = {};
+    layerBase(boatsLayer);
     boatClustersById = {};
     if (showBoats){
       var now = Date.now();
@@ -5646,6 +5657,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
       try { fsdb.enablePersistence({ synchronizeTabs:true }).catch(function(){}); } catch(e){}
       fsCol = fsdb.collection('waypoints');
       posCol = fsdb.collection('positions');
+      posQ = posCol.where('lake', '==', LAKE_ID);
       usageCol = fsdb.collection('usage');
       // (the Spår: 46-gps-track.js; trackusers = who has tracks on which lake -- the drop-down in the Spår panel).
       // Never in the test mode: your real track would be uploaded to the test project, marked as done and lost.
@@ -5692,7 +5704,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
         if (!hadLocalCopy) forceFetchWaypoints();
         else setTimeout(function(){ if (!gotServerWaypoints) forceFetchWaypoints(); }, 6000);
         var posListenerBilled = false;
-        posCol.onSnapshot(function(snap){
+        posQ.onSnapshot(function(snap){
           if (!(snap.metadata && snap.metadata.fromCache)) posListenerBilled = countListenerReads(snap, posListenerBilled);
           applyPositionsSnapshot(snap);
         }, function(err){ console.warn('positions sync error', err); });
@@ -8609,6 +8621,15 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     if (demoStopsCache.n !== n) demoStopsCache = { n: n, s: findStops(demoTrack.segs) };
     return demoStopsCache.s;
   }
+  // a path on the screen: worked out again only when the zoom or its points are new -- a pan just shifts it
+  function setPath(el, list){
+    var c = el._c;
+    if (!c || c.s !== scale || c.l.length !== list.length || list.some(function(seg, i){ return seg !== c.l[i]; })){
+      c = el._c = { s: scale, l: list, x: originX, y: originY };
+      el.setAttribute('d', pathOfPx(list));
+    }
+    el.setAttribute('transform', 'translate(' + (originX - c.x).toFixed(1) + ' ' + (originY - c.y).toFixed(1) + ')');
+  }
   function trkMineDays(){   // earlier days (not today) inside the chosen range, oldest first
     var from = trkRangeFrom(), td = todayStr();
     return Object.keys(trkHist).filter(function(dk){ return dk >= from && dk !== td; }).sort();
@@ -8634,15 +8655,14 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
       }
     }
     stops = stops.filter(function(s){ return s[2] >= c.stopMin; });
-    var d = pathOfPx(mine);
-    trkLineEl.setAttribute('d', d); trkUnderEl.setAttribute('d', d);
+    setPath(trkLineEl, mine); setPath(trkUnderEl, mine);
     trkLineEl.style.stroke = c.color;
     var others = [];
     if (c.who) Object.keys(trkOthers).forEach(function(id){
       var o = trkOthers[id];
       if (o.uid === c.who && o.day >= from) others.push.apply(others, pxSegs('o' + id, o, o.p.length, function(){ return unpackSegs(o.p); }));
     });
-    trkOtherEl.setAttribute('d', pathOfPx(others));
+    setPath(trkOtherEl, others);
     if (!c.stops || !stops.length){ if (trkStopsEl.firstChild) trkStopsEl.textContent = ''; return; }
     var h = '';
     stops.forEach(function(s){
@@ -8939,7 +8959,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     }
     renderBoats(); // grey / gone status right away
     if (USE_FIREBASE && posCol){
-      posCol.get({ source: 'server' }).then(function(snap){ countGetReads(snap); applyPositionsSnapshot(snap); }).catch(function(){});
+      posQ.get({ source: 'server' }).then(function(snap){ countGetReads(snap); applyPositionsSnapshot(snap); }).catch(function(){});
     }
   }
 
@@ -10022,6 +10042,21 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     for (i = 0; i < W * H; i++) a[i] = w[i] > 1e-6 ? a[i] / w[i] : 0;
     return a;
   }
+  function anSlopeCell(sm, wat, W, i, cell){
+    var gx = (sm[i + 1] - sm[i - 1]) / (2 * cell), gy = (sm[i + W] - sm[i - W]) / (2 * cell);
+    if (!wat[i + 1] || !wat[i - 1]) gx = 0;
+    if (!wat[i + W] || !wat[i - W]) gy = 0;
+    return Math.sqrt(gx * gx + gy * gy) * 100;
+  }
+  // the slope (%) under one cell without the whole lake's grids (a spot's sheet): the same blur on a small window around it
+  function anSlopeAt(wg, cx, cy){
+    var W = wg.W, H = wg.H, cell = WEB_METERS_PER_PX * IMG_W / W, r = Math.max(1, Math.round(4 / cell)), m = 2 * r + 2;
+    if (cx < 1 || cy < 1 || cx >= W - 1 || cy >= H - 1 || wg.g[cy * W + cx] > 250) return 0;
+    var x0 = Math.max(0, cx - m), y0 = Math.max(0, cy - m), w = Math.min(W, cx + m + 1) - x0, h = Math.min(H, cy + m + 1) - y0;
+    var dep = new Float32Array(w * h), wat = new Uint8Array(w * h);
+    for (var y = 0; y < h; y++) for (var x = 0; x < w; x++){ var v = wg.g[(y0 + y) * W + x0 + x]; if (v <= 250){ wat[y * w + x] = 1; dep[y * w + x] = v * DEPTH_STEP; } }
+    return anSlopeCell(anBlur(dep, wat, w, h, r), wat, w, (cy - y0) * w + cx - x0, cell);
+  }
   // the lake's grids: depth, water, slope (%), "higher/lower than around" (m), distance from land (m)
   function anBase(){
     if (AN) return AN;
@@ -10031,13 +10066,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     for (i = 0; i < N; i++){ var v = g[i]; lake[i] = v !== 255 ? 1 : 0; if (v <= 250){ wat[i] = 1; dep[i] = v * DEPTH_STEP; } }
     var sm = anBlur(dep, wat, W, H, Math.max(1, Math.round(4 / cell)));
     var slope = new Float32Array(N);
-    for (y = 1; y < H - 1; y++) for (x = 1; x < W - 1; x++){
-      i = y * W + x; if (!wat[i]) continue;
-      var gx = (sm[i + 1] - sm[i - 1]) / (2 * cell), gy = (sm[i + W] - sm[i - W]) / (2 * cell);
-      if (!wat[i + 1] || !wat[i - 1]) gx = 0;
-      if (!wat[i + W] || !wat[i - W]) gy = 0;
-      slope[i] = Math.sqrt(gx * gx + gy * gy) * 100;
-    }
+    for (y = 1; y < H - 1; y++) for (x = 1; x < W - 1; x++){ i = y * W + x; if (wat[i]) slope[i] = anSlopeCell(sm, wat, W, i, cell); }
     var big = anBlur(dep, wat, W, H, Math.max(2, Math.round(28 / cell)));
     var tpi = new Float32Array(N);
     for (i = 0; i < N; i++) if (wat[i]) tpi[i] = big[i] - sm[i];       // + shallower than around, - deeper
@@ -10174,7 +10203,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   // the chosen filter -> a mask (1 = main colour, 2 = second colour), labels and a result text
   function anCompute(){
     anRes = null; anVer++;
-    var m = anSet.mode, A = anBase();
+    var m = anSet.mode, A = m ? anBase() : AN;   // (off: don't build the lake's grids just because the bottom data arrived for a spot's sheet)
     if (m && A && anNeedsBottom(m) && !anBottom){ anLoadBottom(); if (!anBottom){ anRes = { wait: true }; anRender(); return; } }
     if (!m){ anSimCache = {}; if (anPyrBox) anPyrBox.p = null; if (A) A.cBins = null; }   // off: let go of all but the lake's grids (AN: quick back on)
     if (!m || !A){ anRender(); return; }
@@ -10266,10 +10295,10 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
         var F = anSimFeatures(A, anSet.simR), use = AN_SIMF.filter(function(x){ return anSet.simF[x[0]]; }).map(function(x){ return x[0]; });
         var SC = { d: 1.5, s: 5, h: 0.8, v: 0.3, t: 0.8 }, r0 = {};
         use.forEach(function(k){ r0[k] = F[k][ri]; });
-        var sim = new Float32Array(N), vals = [];
-        for (i = 0; i < N; i++){ if (!wat[i]) continue; var d2 = 0; for (var q = 0; q < use.length; q++){ var kk = use[q], dd = (F[kk][i] - r0[kk]) / SC[kk]; d2 += dd * dd; } sim[i] = use.length ? Math.exp(-d2) : 0; vals.push(sim[i]); }
-        vals.sort(function(a, b){ return b - a; });
-        var th = Math.max(0.3, vals[Math.floor(vals.length * 0.04)] || 1);
+        var sim = new Float32Array(N), vals = new Float32Array(N), nv = 0;
+        for (i = 0; i < N; i++){ if (!wat[i]) continue; var d2 = 0; for (var q = 0; q < use.length; q++){ var kk = use[q], dd = (F[kk][i] - r0[kk]) / SC[kk]; d2 += dd * dd; } sim[i] = use.length ? Math.exp(-d2) : 0; vals[nv++] = sim[i]; }
+        vals = vals.subarray(0, nv).sort();   // (typed, ascending: no compare function over ~1 M values for every slider step)
+        var th = Math.max(0.3, (nv ? vals[nv - 1 - Math.floor(nv * 0.04)] : 0) || 1);   // the most alike 4 %
         var rx = ri % A.W, ry = Math.floor(ri / A.W), away = 60 / A.cell;
         for (i = 0; i < N; i++) if (sim[i] >= th){ M[i] = 1; n++; }          // (the spot's own surroundings lit too)
         if (wantS) sv = anScaleOf(M, sim, th);
@@ -10762,7 +10791,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   });
   // (the depth grid arrives a moment after start: work it out then)
   var anWaitGrid = setInterval(function(){ if (loadDepthGrid()){ clearInterval(anWaitGrid); if (anSet.mode) anCompute(); else anRender(); } }, 400);
-  window.__ffAnalysis = function(){ var R = anRes; return { mode: anSet.mode, show: anShow, ready: !!(R && R.M), n: R ? R.n : 0, labels: R && R.labels ? R.labels.length : 0,
+  window.__ffAnalysis = function(){ var R = anRes; return { slopeAt: function(x, y){ var A = anBase(); return [anSlopeAt(workGrid(), x, y), A.slope[y * A.W + x]]; }, mode: anSet.mode, show: anShow, ready: !!(R && R.M), n: R ? R.n : 0, labels: R && R.labels ? R.labels.length : 0,
     list: R && R.list ? R.list.length : 0, text: R ? (R.text || '').replace(/<[^>]+>/g, '') : '', grid: AN ? AN.W + 'x' + AN.H : '', sim: Object.keys(anSimCache).length }; };
 
   /* ================= Kartanalys "Från fångsterna (data)" -- per species =================
@@ -11015,28 +11044,28 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
 
   /* ---- what's under a spot (its sheet): depth, slope, bottom, plants + the terrain ---- */
   function renderWpData(lat, lon){
-    var el = document.getElementById('wpData'), A = anBase();
+    var el = document.getElementById('wpData'), wg = workGrid();   // (not anBase(): ~28 MB and a pause for a tap on a spot)
     var p = latLonToImgPx(lat, lon), dm = depthAtImgPx(p.x, p.y);
-    if (!A || dm == null){ el.innerHTML = dm != null ? '' : (isLakeAtImgPx(p.x, p.y) ? '<div class="wpTerrain">Okänt djup här (ingen ekolodsdata).</div>' : ''); return; }
+    if (!wg || dm == null){ el.innerHTML = dm != null ? '' : (isLakeAtImgPx(p.x, p.y) ? '<div class="wpTerrain">Okänt djup här (ingen ekolodsdata).</div>' : ''); return; }
     if (!anBottom) anLoadBottom();
-    var i = anCellOfImg(p.x, p.y), W = A.W, cx = i % W, cy = Math.floor(i / W);
-    var sl = A.slope[i], slTxt = sl < 3 ? 'plant' : sl < 10 ? 'sluttar' : 'brant';
+    var W = wg.W, H = wg.H, cell = WEB_METERS_PER_PX * IMG_W / W;
+    var cx = Math.min(W - 1, Math.max(0, Math.floor(p.x / IMG_W * W))), cy = Math.min(H - 1, Math.max(0, Math.floor(p.y / IMG_H * H)));
+    var sl = anSlopeAt(wg, cx, cy);
     var bot = '–', botSub = anBottom ? 'ej mätt' : '…', veg = '–', vegSub = anBottom ? '' : '…';
     if (anBottom){
-      var best = 0, bd = 1e9, r = Math.max(1, Math.round(15 / A.cell));     // hardness: here, or the nearest measured within 15 m
+      var best = 0, bd = 1e9, r = Math.max(1, Math.round(15 / cell));     // hardness: here, or the nearest measured within 15 m
       for (var dy = -r; dy <= r; dy++) for (var dx = -r; dx <= r; dx++){
-        var x = cx + dx, y = cy + dy; if (x < 0 || y < 0 || x >= W || y >= A.H) continue;
+        var x = cx + dx, y = cy + dy; if (x < 0 || y < 0 || x >= W || y >= H) continue;
         var h = anBottom[y * W + x] & 7; if (h && dx * dx + dy * dy < bd){ bd = dx * dx + dy * dy; best = h; } }
       if (best){ bot = ['Mjuk', 'Medel', 'Hård', 'Mkt hård'][best - 1]; botSub = bd ? 'strax intill' : 'hårdhet'; }
-      var rv = Math.max(1, Math.round(25 / A.cell)), nv = 0, nw = 0;           // plants: share of the water within 25 m
+      var rv = Math.max(1, Math.round(25 / cell)), nv = 0, nw = 0;           // plants: share of the water within 25 m
       for (var dy2 = -rv; dy2 <= rv; dy2++) for (var dx2 = -rv; dx2 <= rv; dx2++){
         if (dx2 * dx2 + dy2 * dy2 > rv * rv) continue;
-        var x2 = cx + dx2, y2 = cy + dy2; if (x2 < 0 || y2 < 0 || x2 >= W || y2 >= A.H) continue;
-        var j = y2 * W + x2; if (!A.wat[j]) continue; nw++; if (anBottom[j] & 8) nv++; }
+        var x2 = cx + dx2, y2 = cy + dy2; if (x2 < 0 || y2 < 0 || x2 >= W || y2 >= H) continue;
+        var j = y2 * W + x2; if (wg.g[j] > 250) continue; nw++; if (anBottom[j] & 8) nv++; }
       var f = nw ? nv / nw : 0;
       veg = f < 0.05 ? 'Inga' : f < 0.3 ? 'Lite' : f < 0.7 ? 'En del' : 'Mycket'; vegSub = Math.round(f * 100) + ' % inom 25 m';
     }
-    var t = A.tpi[i], terr = t >= 0.6 ? '⛰ <b>Grynna</b> – ' + fmtDepth(t) + ' m grundare än runt om' : t <= -0.8 ? '🕳 <b>Håla</b> – ' + fmtDepth(-t) + ' m djupare än runt om' : 'Jämn botten runt om';
     el.innerHTML =
       '<div class="wpTile"><i>Djup</i><b>' + fmtDepth(dm) + ' m</b></div>' +
       '<div class="wpTile"><i>Lutning</i><b>' + Math.round(sl) + ' %</b></div>' +
@@ -12153,9 +12182,16 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     }
     return S[S.length - 1][1];
   }
+  // the scratch canvases, kept from frame to frame (a new one for every frame of a drag = memory pressure on iPhone)
+  var hmScr = {};
+  function hmScratch(name, w, h){
+    var cv = hmScr[name] || (hmScr[name] = document.createElement('canvas'));
+    if (cv.width !== w || cv.height !== h){ cv.width = w; cv.height = h; } else cv.getContext('2d').clearRect(0, 0, w, h);
+    return cv;
+  }
   // a heat layer (every STEP css px, see viewStep): soft spots of `rad` metres, coloured by pal(0..1)
-  function hmHeatLayer(pts, W, H, STEP, mpp, pal){
-    var vw = Math.ceil(W / STEP), vh = Math.ceil(H / STEP), cv = document.createElement('canvas'); cv.width = vw; cv.height = vh;
+  function hmHeatLayer(pts, W, H, STEP, mpp, pal, name){
+    var vw = Math.ceil(W / STEP), vh = Math.ceil(H / STEP), cv = hmScratch(name || 'heat', vw, vh);
     var o = cv.getContext('2d'), R = Math.max(6, hmSet.rad / mpp) / STEP, a = 0.12 + 0.43 * hmSet.str / 100;
     pts.forEach(function(s){
       var x = s.x / STEP, y = s.y / STEP; if (x < -R || y < -R || x > vw + R || y > vh + R) return;
@@ -12200,11 +12236,11 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
         var cv;
         if (st === 'heat') cv = hmHeatLayer(P, W, H, STEP, mpp, hmRamp);
         else {
-          cv = document.createElement('canvas'); cv.width = Math.ceil(W / STEP); cv.height = Math.ceil(H / STEP);
+          cv = hmScratch('species', Math.ceil(W / STEP), Math.ceil(H / STEP));
           var o = cv.getContext('2d'); o.globalCompositeOperation = 'lighter';
           HM_SP.forEach(function(x){
             var col = HM_COL[x[0]], S2 = P.filter(function(p){ return p.c.sp === x[0]; }); if (!S2.length) return;
-            o.drawImage(hmHeatLayer(S2, W, H, STEP, mpp, function(v){ var k = Math.min(1, v * 1.6); return [col[0], col[1], col[2], 60 + 180 * k]; }), 0, 0);
+            o.drawImage(hmHeatLayer(S2, W, H, STEP, mpp, function(v){ var k = Math.min(1, v * 1.6); return [col[0], col[1], col[2], 60 + 180 * k]; }, 'sp'), 0, 0);
           });
         }
         hmHeatCache = { key: key, cv: cv, STEP: STEP };
@@ -12254,7 +12290,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   }
   // the lake's edge: a thin white line at 50 %, drawn exactly like Kartanalys' (the lake field smoothed
   // to about one drawn point, the line where it crosses 0,5 -- see anField / edgeW)
-  var hmShoreBox = { p: null }, hmShoreCache = null, HM_NOMASK = null;
+  var hmShoreBox = { p: null }, hmShoreCache = null, HM_NOMASK = null, hmShoreFl = null, hmShoreIm = null;
   function hmShoreLayer(W, H){
     var A = AN || shoreBase(); if (!A) return null;
     var STEP = viewStep(W, H), key = [originX.toFixed(1), originY.toFixed(1), scale.toFixed(5), W, H, STEP].join('|');
@@ -12262,22 +12298,29 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     if (!HM_NOMASK || HM_NOMASK.length !== A.N) HM_NOMASK = new Uint8Array(A.N);
     var vw = Math.ceil(W / STEP), vh = Math.ceil(H / STEP), fp = A.W / IMG_W / scale * STEP;
     var Lf = anField({ ver: 'shore', M: HM_NOMASK, G: null }, A, Math.max(0, Math.round(Math.log(Math.max(1, fp)) / Math.LN2)), hmShoreBox);
-    var g = Lf.f[2], LW2 = Lf.w, LH2 = Lf.h, kx = A.W / IMG_W / (1 << Lf.lv), ky = A.H / IMG_H / (1 << Lf.lv), fl = new Float32Array(vw * vh);
-    for (var y = 0; y < vh; y++) for (var x = 0; x < vw; x++){
-      var fx = (x * STEP + 1 - originX) / scale * kx - 0.5, fy = (y * STEP + 1 - originY) / scale * ky - 0.5, x0 = Math.floor(fx), y0 = Math.floor(fy), tx = fx - x0, ty = fy - y0, a = 0;
-      for (var dy = 0; dy <= 1; dy++) for (var dx = 0; dx <= 1; dx++){
-        var cx = x0 + dx, cy = y0 + dy; if (cx < 0 || cy < 0 || cx >= LW2 || cy >= LH2) continue;
-        a += g[cy * LW2 + cx] * (dx ? tx : 1 - tx) * (dy ? ty : 1 - ty);
+    var g = Lf.f[2], LW2 = Lf.w, LH2 = Lf.h, kx = A.W / IMG_W / (1 << Lf.lv), ky = A.H / IMG_H / (1 << Lf.lv);
+    var fl = hmShoreFl && hmShoreFl.length === vw * vh ? hmShoreFl : (hmShoreFl = new Float32Array(vw * vh));   // (every point is written below)
+    for (var y = 0; y < vh; y++){
+      var fy = (y * STEP + 1 - originY) / scale * ky - 0.5, y0 = Math.floor(fy), ty = fy - y0, inY = y0 >= 0 && y0 < LH2 - 1;
+      for (var x = 0; x < vw; x++){
+        var fx = (x * STEP + 1 - originX) / scale * kx - 0.5, x0 = Math.floor(fx), tx = fx - x0, a = 0;
+        if (inY && x0 >= 0 && x0 < LW2 - 1){   // (inside the field: the four points straight away -- this runs for every frame of a drag)
+          var i0 = y0 * LW2 + x0; a = (g[i0] * (1 - tx) + g[i0 + 1] * tx) * (1 - ty) + (g[i0 + LW2] * (1 - tx) + g[i0 + LW2 + 1] * tx) * ty;
+        } else for (var dy = 0; dy <= 1; dy++) for (var dx = 0; dx <= 1; dx++){
+          var cx = x0 + dx, cy = y0 + dy; if (cx < 0 || cy < 0 || cx >= LW2 || cy >= LH2) continue;
+          a += g[cy * LW2 + cx] * (dx ? tx : 1 - tx) * (dy ? ty : 1 - ty);
+        }
+        fl[y * vw + x] = a;
       }
-      fl[y * vw + x] = a;
     }
-    var cv = document.createElement('canvas'); cv.width = vw; cv.height = vh;
-    var o = cv.getContext('2d'), im = o.createImageData(vw, vh), d = im.data, ES = edgeW(STEP, 0.9);
+    var cv = hmScratch('shore', vw, vh), o = cv.getContext('2d'), ES = edgeW(STEP, 0.9);
+    var im = hmShoreIm && hmShoreIm.width === vw && hmShoreIm.height === vh ? hmShoreIm : (hmShoreIm = o.createImageData(vw, vh)), d = im.data;
     for (var y2 = 0; y2 < vh; y2++) for (var x2 = 0; x2 < vw; x2++){
       var q = y2 * vw + x2;
       var gx = (fl[x2 < vw - 1 ? q + 1 : q] - fl[x2 > 0 ? q - 1 : q]) / 2, gy = (fl[y2 < vh - 1 ? q + vw : q] - fl[y2 > 0 ? q - vw : q]) / 2;
-      var es = Math.max(0, Math.min(1, 1 - Math.abs((fl[q] - 0.5) / (Math.sqrt(gx * gx + gy * gy) + 1e-3)) / ES[0])) * ES[1];
-      if (es > 0){ var k = q * 4; d[k] = d[k + 1] = d[k + 2] = 255; d[k + 3] = 128 * es; }
+      var v = Math.abs(fl[q] - 0.5), es = 0;
+      if (v < ES[0] * (Math.abs(gx) + Math.abs(gy) + 1e-3)) es = Math.max(0, Math.min(1, 1 - v / (Math.sqrt(gx * gx + gy * gy) + 1e-3) / ES[0])) * ES[1];   // (no edge near: no root)
+      var k = q * 4; d[k] = d[k + 1] = d[k + 2] = 255; d[k + 3] = 128 * es;   // (every point: the picture is reused)
     }
     o.putImageData(im, 0, 0);
     return (hmShoreCache = { key: key, cv: cv, STEP: STEP });
@@ -12743,7 +12786,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     ar.grp = new T.Group(); ar.grp.add(ar.mesh, ar.lines, ar.surf, ar.sticks, ar.dots, ar.wline);   // (the group is scaled by Djup ×: the surface at 0 stays)
     ar.scene.add(ar.grp);
     ar.scene.fog = new T.Fog(0x0b1830, R * 0.25, R * 1.1);   // (far = darker: the depth reads in 3D)
-    ar.at = { px: w.px, py: w.py, r: R, ex: -1 }; ar.n = AR_N;
+    ar.at = { px: w.px, py: w.py, r: R, ex: -1 }; ar.n = AR_N; ar.nb = (ar.nb || 0) + 1;
     arMsg.textContent = w.gps ? '' : 'Ingen GPS – visar från kartans mitt';
     if (!idx.length) arMsg.textContent = 'Ingen djupdata här';
   }
@@ -12776,7 +12819,8 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     var T = ar.T, w = arWhere();
     if (!ar.mesh && loadDepthGrid()) arBuild();
     if (!ar.mesh) { arMsg.textContent = 'Laddar djupdata …'; return; }
-    if (Math.hypot(w.px - ar.at.px, w.py - ar.at.py) * WEB_METERS_PER_PX > arCfg.r * 0.2 || ar.at.r !== arCfg.r) arBuild();
+    // (Avstånd: built when the slider has rested 0,2 s -- not 400 x 400 points for every step of a drag)
+    if (Math.hypot(w.px - ar.at.px, w.py - ar.at.py) * WEB_METERS_PER_PX > arCfg.r * 0.2 || (ar.at.r !== arCfg.r && Date.now() - arSlid > 200)) arBuild();
     // you moved a bit within the mesh: shift it under you instead of rebuilding
     ar.grp.position.set((ar.at.px - w.px) * WEB_METERS_PER_PX, 0, (ar.at.py - w.py) * WEB_METERS_PER_PX);
     ar.grp.scale.y = arCfg.ex;
@@ -12866,12 +12910,13 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   function arClose(){
     if (!ar) return;
     if (ar.raf) cancelAnimationFrame(ar.raf);
-    if (ar.r){ if (ar.grp) ar.grp.children.forEach(function(o){ o.geometry.dispose(); }); ar.r.dispose(); }
+    if (ar.r){ ar.scene.traverse(function(o){ if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); }); ar.r.dispose(); }   // (all of it back from the GPU: the materials' programs too)
     ar = null; arListen(false); arCamera(false); arCorr = null;
     arView.classList.remove('show');
   }
   // the controls
   var AR_SL = { arR: ['r', function(v){ return v + ' m'; }], arEx: ['ex', function(v){ return '× ' + v; }], arEye: ['eye', function(v){ return String(v).replace('.', ',') + ' m'; }] };
+  var arSlid = 0;   // when a slider last moved
   function arUi(){
     Object.keys(AR_SL).forEach(function(id){ var el = document.getElementById(id); el.value = arCfg[AR_SL[id][0]]; rangeFill(el); document.getElementById(id + 'Val').textContent = AR_SL[id][1](arCfg[AR_SL[id][0]]); });
     document.getElementById('arCam').classList.toggle('on', arCfg.cam);
@@ -12880,7 +12925,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     nb.hidden = !nv; nb.textContent = 'Vriden ' + nv + '° ✕';
   }
   Object.keys(AR_SL).forEach(function(id){
-    document.getElementById(id).addEventListener('input', function(e){ arCfg[AR_SL[id][0]] = +e.target.value; arSave(); arUi(); });
+    document.getElementById(id).addEventListener('input', function(e){ arCfg[AR_SL[id][0]] = +e.target.value; arSlid = Date.now(); arSave(); arUi(); });
   });
   document.getElementById('arCam').addEventListener('click', function(){ arCfg.cam = !arCfg.cam; arSave(); arUi(); arCamera(arCfg.cam); });
   document.getElementById('arChips').addEventListener('click', function(e){
@@ -12912,7 +12957,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   arCv.addEventListener('pointermove', function(e){ if (arDrag){ arCfg.north = (arDrag.n + (e.clientX - arDrag.x) / innerWidth * 60 + 360) % 360; arUi(); } });
   arCv.addEventListener('pointerup', function(){ if (arDrag){ arDrag = null; arSave(); } });
   document.addEventListener('visibilitychange', function(){ if (ar && ar.r) arCamera(!document.hidden && arCfg.cam); });
-  window.__ffAr = function(o){ if (o) arOri = o; var w = arWhere(); return { open: !!ar, at: imgPxToLatLon(w.px, w.py), gps: w.gps, ready: !!(ar && ar.mesh), depth: document.getElementById('arDepth').textContent, msg: arMsg.textContent, cfg: arCfg, n: ar && ar.n, cam: arView.classList.contains('cam') }; };   // (for the tests)
+  window.__ffAr = function(o){ if (o) arOri = o; var w = arWhere(); return { open: !!ar, at: imgPxToLatLon(w.px, w.py), gps: w.gps, ready: !!(ar && ar.mesh), depth: document.getElementById('arDepth').textContent, msg: arMsg.textContent, cfg: arCfg, n: ar && ar.n, builds: ar && ar.nb, cam: arView.classList.contains('cam') }; };   // (for the tests)
   /* ---------------- init ---------------- */
   var appStarted = false; // true once geolocation + Firebase have been started for this page load
   function continueBootAfterName(){

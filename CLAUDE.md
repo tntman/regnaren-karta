@@ -98,7 +98,7 @@ Uppdatera rätt anteckning när något ändras.
   beror på sådana variabler i `boot()` (`js/90-boot.js`, se toggleDepth/toggleTrack).
 - **Firebase-kvot** (gratis: 50k reads/dygn). Positioner delas var 20:e s vid rörelse
   (admin-inställning i `config/<lake>`, per sjö; sjö utan inställning = 20 s), var 60:e s stilla.
-  Undvik onödiga get().
+  Undvik onödiga get(). Bara sjöns egna positioner läses (`posQ`, `where('lake', '==', sjön)`, `js/26-sync.js`).
 - **Flera sjöar:** en mapp per sjö, `lakes/<id>/` med `lake.json` (namn, center, geo-referens,
   djupskala, kartstilar, zoomnivåer) + `raw/`. build.py bäddar in alla lake.json som `LAKES`;
   bilderna ligger bara i `docs/lakes/<id>/`; `lakes/<id>/names.json` = OSM-namnen (`tools/osm_names.py`, steg 8 i KARTOR.md) som build.py också bäddar in. Vald sjö: localStorage `ffmap_lake_v1` (eller

@@ -85,7 +85,7 @@
     ar.grp = new T.Group(); ar.grp.add(ar.mesh, ar.lines, ar.surf, ar.sticks, ar.dots, ar.wline);   // (the group is scaled by Djup ×: the surface at 0 stays)
     ar.scene.add(ar.grp);
     ar.scene.fog = new T.Fog(0x0b1830, R * 0.25, R * 1.1);   // (far = darker: the depth reads in 3D)
-    ar.at = { px: w.px, py: w.py, r: R, ex: -1 }; ar.n = AR_N;
+    ar.at = { px: w.px, py: w.py, r: R, ex: -1 }; ar.n = AR_N; ar.nb = (ar.nb || 0) + 1;
     arMsg.textContent = w.gps ? '' : 'Ingen GPS – visar från kartans mitt';
     if (!idx.length) arMsg.textContent = 'Ingen djupdata här';
   }
@@ -118,7 +118,8 @@
     var T = ar.T, w = arWhere();
     if (!ar.mesh && loadDepthGrid()) arBuild();
     if (!ar.mesh) { arMsg.textContent = 'Laddar djupdata …'; return; }
-    if (Math.hypot(w.px - ar.at.px, w.py - ar.at.py) * WEB_METERS_PER_PX > arCfg.r * 0.2 || ar.at.r !== arCfg.r) arBuild();
+    // (Avstånd: built when the slider has rested 0,2 s -- not 400 x 400 points for every step of a drag)
+    if (Math.hypot(w.px - ar.at.px, w.py - ar.at.py) * WEB_METERS_PER_PX > arCfg.r * 0.2 || (ar.at.r !== arCfg.r && Date.now() - arSlid > 200)) arBuild();
     // you moved a bit within the mesh: shift it under you instead of rebuilding
     ar.grp.position.set((ar.at.px - w.px) * WEB_METERS_PER_PX, 0, (ar.at.py - w.py) * WEB_METERS_PER_PX);
     ar.grp.scale.y = arCfg.ex;
@@ -208,12 +209,13 @@
   function arClose(){
     if (!ar) return;
     if (ar.raf) cancelAnimationFrame(ar.raf);
-    if (ar.r){ if (ar.grp) ar.grp.children.forEach(function(o){ o.geometry.dispose(); }); ar.r.dispose(); }
+    if (ar.r){ ar.scene.traverse(function(o){ if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); }); ar.r.dispose(); }   // (all of it back from the GPU: the materials' programs too)
     ar = null; arListen(false); arCamera(false); arCorr = null;
     arView.classList.remove('show');
   }
   // the controls
   var AR_SL = { arR: ['r', function(v){ return v + ' m'; }], arEx: ['ex', function(v){ return '× ' + v; }], arEye: ['eye', function(v){ return String(v).replace('.', ',') + ' m'; }] };
+  var arSlid = 0;   // when a slider last moved
   function arUi(){
     Object.keys(AR_SL).forEach(function(id){ var el = document.getElementById(id); el.value = arCfg[AR_SL[id][0]]; rangeFill(el); document.getElementById(id + 'Val').textContent = AR_SL[id][1](arCfg[AR_SL[id][0]]); });
     document.getElementById('arCam').classList.toggle('on', arCfg.cam);
@@ -222,7 +224,7 @@
     nb.hidden = !nv; nb.textContent = 'Vriden ' + nv + '° ✕';
   }
   Object.keys(AR_SL).forEach(function(id){
-    document.getElementById(id).addEventListener('input', function(e){ arCfg[AR_SL[id][0]] = +e.target.value; arSave(); arUi(); });
+    document.getElementById(id).addEventListener('input', function(e){ arCfg[AR_SL[id][0]] = +e.target.value; arSlid = Date.now(); arSave(); arUi(); });
   });
   document.getElementById('arCam').addEventListener('click', function(){ arCfg.cam = !arCfg.cam; arSave(); arUi(); arCamera(arCfg.cam); });
   document.getElementById('arChips').addEventListener('click', function(e){
@@ -254,4 +256,4 @@
   arCv.addEventListener('pointermove', function(e){ if (arDrag){ arCfg.north = (arDrag.n + (e.clientX - arDrag.x) / innerWidth * 60 + 360) % 360; arUi(); } });
   arCv.addEventListener('pointerup', function(){ if (arDrag){ arDrag = null; arSave(); } });
   document.addEventListener('visibilitychange', function(){ if (ar && ar.r) arCamera(!document.hidden && arCfg.cam); });
-  window.__ffAr = function(o){ if (o) arOri = o; var w = arWhere(); return { open: !!ar, at: imgPxToLatLon(w.px, w.py), gps: w.gps, ready: !!(ar && ar.mesh), depth: document.getElementById('arDepth').textContent, msg: arMsg.textContent, cfg: arCfg, n: ar && ar.n, cam: arView.classList.contains('cam') }; };   // (for the tests)
+  window.__ffAr = function(o){ if (o) arOri = o; var w = arWhere(); return { open: !!ar, at: imgPxToLatLon(w.px, w.py), gps: w.gps, ready: !!(ar && ar.mesh), depth: document.getElementById('arDepth').textContent, msg: arMsg.textContent, cfg: arCfg, n: ar && ar.n, builds: ar && ar.nb, cam: arView.classList.contains('cam') }; };   // (for the tests)

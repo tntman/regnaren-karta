@@ -10,6 +10,7 @@
 
   function renderBoats(){
     var seen = {};
+    layerBase(boatsLayer);
     boatClustersById = {};
     if (showBoats){
       var now = Date.now();

@@ -159,6 +159,21 @@
     for (i = 0; i < W * H; i++) a[i] = w[i] > 1e-6 ? a[i] / w[i] : 0;
     return a;
   }
+  function anSlopeCell(sm, wat, W, i, cell){
+    var gx = (sm[i + 1] - sm[i - 1]) / (2 * cell), gy = (sm[i + W] - sm[i - W]) / (2 * cell);
+    if (!wat[i + 1] || !wat[i - 1]) gx = 0;
+    if (!wat[i + W] || !wat[i - W]) gy = 0;
+    return Math.sqrt(gx * gx + gy * gy) * 100;
+  }
+  // the slope (%) under one cell without the whole lake's grids (a spot's sheet): the same blur on a small window around it
+  function anSlopeAt(wg, cx, cy){
+    var W = wg.W, H = wg.H, cell = WEB_METERS_PER_PX * IMG_W / W, r = Math.max(1, Math.round(4 / cell)), m = 2 * r + 2;
+    if (cx < 1 || cy < 1 || cx >= W - 1 || cy >= H - 1 || wg.g[cy * W + cx] > 250) return 0;
+    var x0 = Math.max(0, cx - m), y0 = Math.max(0, cy - m), w = Math.min(W, cx + m + 1) - x0, h = Math.min(H, cy + m + 1) - y0;
+    var dep = new Float32Array(w * h), wat = new Uint8Array(w * h);
+    for (var y = 0; y < h; y++) for (var x = 0; x < w; x++){ var v = wg.g[(y0 + y) * W + x0 + x]; if (v <= 250){ wat[y * w + x] = 1; dep[y * w + x] = v * DEPTH_STEP; } }
+    return anSlopeCell(anBlur(dep, wat, w, h, r), wat, w, (cy - y0) * w + cx - x0, cell);
+  }
   // the lake's grids: depth, water, slope (%), "higher/lower than around" (m), distance from land (m)
   function anBase(){
     if (AN) return AN;
@@ -168,13 +183,7 @@
     for (i = 0; i < N; i++){ var v = g[i]; lake[i] = v !== 255 ? 1 : 0; if (v <= 250){ wat[i] = 1; dep[i] = v * DEPTH_STEP; } }
     var sm = anBlur(dep, wat, W, H, Math.max(1, Math.round(4 / cell)));
     var slope = new Float32Array(N);
-    for (y = 1; y < H - 1; y++) for (x = 1; x < W - 1; x++){
-      i = y * W + x; if (!wat[i]) continue;
-      var gx = (sm[i + 1] - sm[i - 1]) / (2 * cell), gy = (sm[i + W] - sm[i - W]) / (2 * cell);
-      if (!wat[i + 1] || !wat[i - 1]) gx = 0;
-      if (!wat[i + W] || !wat[i - W]) gy = 0;
-      slope[i] = Math.sqrt(gx * gx + gy * gy) * 100;
-    }
+    for (y = 1; y < H - 1; y++) for (x = 1; x < W - 1; x++){ i = y * W + x; if (wat[i]) slope[i] = anSlopeCell(sm, wat, W, i, cell); }
     var big = anBlur(dep, wat, W, H, Math.max(2, Math.round(28 / cell)));
     var tpi = new Float32Array(N);
     for (i = 0; i < N; i++) if (wat[i]) tpi[i] = big[i] - sm[i];       // + shallower than around, - deeper
@@ -311,7 +320,7 @@
   // the chosen filter -> a mask (1 = main colour, 2 = second colour), labels and a result text
   function anCompute(){
     anRes = null; anVer++;
-    var m = anSet.mode, A = anBase();
+    var m = anSet.mode, A = m ? anBase() : AN;   // (off: don't build the lake's grids just because the bottom data arrived for a spot's sheet)
     if (m && A && anNeedsBottom(m) && !anBottom){ anLoadBottom(); if (!anBottom){ anRes = { wait: true }; anRender(); return; } }
     if (!m){ anSimCache = {}; if (anPyrBox) anPyrBox.p = null; if (A) A.cBins = null; }   // off: let go of all but the lake's grids (AN: quick back on)
     if (!m || !A){ anRender(); return; }
@@ -403,10 +412,10 @@
         var F = anSimFeatures(A, anSet.simR), use = AN_SIMF.filter(function(x){ return anSet.simF[x[0]]; }).map(function(x){ return x[0]; });
         var SC = { d: 1.5, s: 5, h: 0.8, v: 0.3, t: 0.8 }, r0 = {};
         use.forEach(function(k){ r0[k] = F[k][ri]; });
-        var sim = new Float32Array(N), vals = [];
-        for (i = 0; i < N; i++){ if (!wat[i]) continue; var d2 = 0; for (var q = 0; q < use.length; q++){ var kk = use[q], dd = (F[kk][i] - r0[kk]) / SC[kk]; d2 += dd * dd; } sim[i] = use.length ? Math.exp(-d2) : 0; vals.push(sim[i]); }
-        vals.sort(function(a, b){ return b - a; });
-        var th = Math.max(0.3, vals[Math.floor(vals.length * 0.04)] || 1);
+        var sim = new Float32Array(N), vals = new Float32Array(N), nv = 0;
+        for (i = 0; i < N; i++){ if (!wat[i]) continue; var d2 = 0; for (var q = 0; q < use.length; q++){ var kk = use[q], dd = (F[kk][i] - r0[kk]) / SC[kk]; d2 += dd * dd; } sim[i] = use.length ? Math.exp(-d2) : 0; vals[nv++] = sim[i]; }
+        vals = vals.subarray(0, nv).sort();   // (typed, ascending: no compare function over ~1 M values for every slider step)
+        var th = Math.max(0.3, (nv ? vals[nv - 1 - Math.floor(nv * 0.04)] : 0) || 1);   // the most alike 4 %
         var rx = ri % A.W, ry = Math.floor(ri / A.W), away = 60 / A.cell;
         for (i = 0; i < N; i++) if (sim[i] >= th){ M[i] = 1; n++; }          // (the spot's own surroundings lit too)
         if (wantS) sv = anScaleOf(M, sim, th);
@@ -899,6 +908,6 @@
   });
   // (the depth grid arrives a moment after start: work it out then)
   var anWaitGrid = setInterval(function(){ if (loadDepthGrid()){ clearInterval(anWaitGrid); if (anSet.mode) anCompute(); else anRender(); } }, 400);
-  window.__ffAnalysis = function(){ var R = anRes; return { mode: anSet.mode, show: anShow, ready: !!(R && R.M), n: R ? R.n : 0, labels: R && R.labels ? R.labels.length : 0,
+  window.__ffAnalysis = function(){ var R = anRes; return { slopeAt: function(x, y){ var A = anBase(); return [anSlopeAt(workGrid(), x, y), A.slope[y * A.W + x]]; }, mode: anSet.mode, show: anShow, ready: !!(R && R.M), n: R ? R.n : 0, labels: R && R.labels ? R.labels.length : 0,
     list: R && R.list ? R.list.length : 0, text: R ? (R.text || '').replace(/<[^>]+>/g, '') : '', grid: AN ? AN.W + 'x' + AN.H : '', sim: Object.keys(anSimCache).length }; };
 

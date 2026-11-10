@@ -56,6 +56,7 @@ with sync_playwright() as p:
     check("Vågsfjärden without a setting: the default 20 s (not Regnaren's 30)", pos_interval(pg) == '30/20', pos_interval(pg))
     boats = pg.eval_on_selector_all('#boatsLayer .boatPip', 'e=>e.map(x=>x.textContent)')
     check("only the boat on Vågsfjärden (Pia), not Calle on Regnaren", any('Pia' in x for x in boats) and not any('Calle' in x for x in boats), boats)
+    check("...and only this lake's positions are read from the database (not the boats on the other lakes)", 'pia' in pg.evaluate('window.__posSeen') and 'kalle' not in pg.evaluate('window.__posSeen'), pg.evaluate('window.__posSeen'))
     check('weather card named after the lake', pg.inner_text('#wxTitle') == 'Väder vid Vågsfjärden')
     check('title = the lake', pg.inner_text('#lakeTitle') == 'Vågsfjärden', pg.inner_text('#lakeTitle'))
     ticks = pg.eval_on_selector_all('#legendTicks span', 'e=>e.map(x=>x.textContent)')

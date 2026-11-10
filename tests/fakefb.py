@@ -132,8 +132,12 @@ FAKE_FIREBASE_JS = r"""
     }
   };
   var posCol = {
-    onSnapshot: function(a, b){ return listen(posListeners, posDocs, a, b); },
-    get: function(){ return Promise.resolve(snapOf(posDocs)); },
+    // (the app only reads one lake's positions: no onSnapshot/get on the whole collection)
+    where: function(f, op, v){
+      function only(){ var o = {}; Object.keys(posDocs).forEach(function(k){ if (posDocs[k][f] === v) o[k] = posDocs[k]; }); window.__posSeen = Object.keys(o); return snapOf(o); }
+      return { onSnapshot: function(a, b){ var cb = (typeof a === 'function') ? a : b; posListeners.push(function(){ cb(only()); }); cb(only()); return function(){}; },
+               get: function(){ window.__posGets = (window.__posGets || 0) + 1; return Promise.resolve(only()); } };
+    },
     doc: function(id){
       return { set: function(d){
         window.__posWrites.push({ t: Date.now(), id: id, lat: d.lat, lon: d.lon, device: d.device, lake: d.lake, msg: d.msg, msgAt: d.msgAt, msgSp: d.msgSp, msgImg: d.msgImg, msgPb: d.msgPb,

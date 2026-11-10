@@ -35,6 +35,20 @@ with sync_playwright() as p:
     pg.click('#anClear'); pg.wait_for_timeout(600)
     a = an(pg)
     check('Kartanalys off: its grids let go, its canvases 1x1, the shore back', a['sim'] == 0 and pg.evaluate(SIZE, 'anLayer') == '1x1' and pg.evaluate(SIZE, 'shoreLayer') != '1x1', (a['sim'], pg.evaluate(SIZE, 'anLayer')))
+    # a drag of the map: the spots move as one layer (not pin by pin), and no new canvas is made per frame
+    PIN = "() => { var e = document.querySelector('#waypoints .wpPin'), r = e.getBoundingClientRect(); return [r.left, r.top, e.style.left, document.getElementById('waypoints').style.transform]; }"
+    pg.evaluate("window.__cv = 0; var oc = document.createElement; document.createElement = function(t){ if (/canvas/i.test(t)) window.__cv++; return oc.apply(document, arguments); }")
+    p0 = pg.evaluate(PIN); x0 = 60 if p0[0] > 195 else 330
+    pg.mouse.move(x0, 600); pg.mouse.down(); pg.mouse.move(x0 + 40, 630, steps=5); pg.wait_for_timeout(250)
+    p1 = pg.evaluate(PIN)
+    check('dragging: the spot follows the map (40 x 30)...', abs(p1[0] - p0[0] - 40) < 1 and abs(p1[1] - p0[1] - 30) < 1, (p0, p1))
+    check('...as a layer: the pin itself is not touched', p1[2] == p0[2] and 'translate(40px' in p1[3], p1)
+    pg.evaluate("window.__fireWp()"); pg.wait_for_timeout(100); p2 = pg.evaluate(PIN)
+    check('new spots mid-drag: placed again, still in the right place', p2[3] == '' and p2[2] != p0[2] and abs(p2[0] - p1[0]) < 1 and abs(p2[1] - p1[1]) < 1, p2)
+    pg.mouse.move(x0 + 60, 640, steps=3); pg.wait_for_timeout(150); pg.mouse.up(); pg.wait_for_timeout(400)
+    p3 = pg.evaluate(PIN)
+    check('finger up: every pin placed again, the layer back', p3[3] == '' and abs(p3[0] - p0[0] - 60) < 1 and abs(p3[1] - p0[1] - 40) < 1, p3)
+    check('no canvas made during the drag (the shore line reuses its own)', pg.evaluate('window.__cv') == 0, pg.evaluate('window.__cv'))
     check('no page errors', not errs, errs)
     b.close()
 print('%d/%d passed' % (sum(results), len(results)))

@@ -45,6 +45,7 @@
   var boatPositions = {}; // uid -> {lat, lon, name, uid, updatedAt}
   var boatClustersById = {}; // last-rendered clusters, keyed for click lookups (see renderBoats)
   var posCol = null; // Firestore 'positions' collection ref (see initSharedWaypoints)
+  var posQ = null;   // ...this lake's positions only: what is listened to and read (a boat moving on another lake = no reads here)
   var usageCol = null; // Firestore 'usage' collection: each device's daily read/write counts (admin page)
   var BOAT_GRAY_MS = 15 * 60 * 1000; // a boat that hasn't updated in this long turns grey -- still shown at its last known spot, just marked as not live anymore
   var BOAT_REMOVE_MS = 60 * 60 * 1000; // a boat that hasn't updated in THIS long is finally removed entirely
@@ -176,6 +177,7 @@
   var OTHER_PIN_SCALE = 0.7; // others' spots, relative to yours (must match .wpPin--other in the CSS)
   function renderWaypoints(){
     var seen = {};
+    layerBase(waypointsLayer);
     if (pendingSheetRestore) tryRestoreSheet();
     waypoints.forEach(function(wp){
       var mine = isMine(wp);

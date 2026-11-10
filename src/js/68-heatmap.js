@@ -235,9 +235,16 @@
     }
     return S[S.length - 1][1];
   }
+  // the scratch canvases, kept from frame to frame (a new one for every frame of a drag = memory pressure on iPhone)
+  var hmScr = {};
+  function hmScratch(name, w, h){
+    var cv = hmScr[name] || (hmScr[name] = document.createElement('canvas'));
+    if (cv.width !== w || cv.height !== h){ cv.width = w; cv.height = h; } else cv.getContext('2d').clearRect(0, 0, w, h);
+    return cv;
+  }
   // a heat layer (every STEP css px, see viewStep): soft spots of `rad` metres, coloured by pal(0..1)
-  function hmHeatLayer(pts, W, H, STEP, mpp, pal){
-    var vw = Math.ceil(W / STEP), vh = Math.ceil(H / STEP), cv = document.createElement('canvas'); cv.width = vw; cv.height = vh;
+  function hmHeatLayer(pts, W, H, STEP, mpp, pal, name){
+    var vw = Math.ceil(W / STEP), vh = Math.ceil(H / STEP), cv = hmScratch(name || 'heat', vw, vh);
     var o = cv.getContext('2d'), R = Math.max(6, hmSet.rad / mpp) / STEP, a = 0.12 + 0.43 * hmSet.str / 100;
     pts.forEach(function(s){
       var x = s.x / STEP, y = s.y / STEP; if (x < -R || y < -R || x > vw + R || y > vh + R) return;
@@ -282,11 +289,11 @@
         var cv;
         if (st === 'heat') cv = hmHeatLayer(P, W, H, STEP, mpp, hmRamp);
         else {
-          cv = document.createElement('canvas'); cv.width = Math.ceil(W / STEP); cv.height = Math.ceil(H / STEP);
+          cv = hmScratch('species', Math.ceil(W / STEP), Math.ceil(H / STEP));
           var o = cv.getContext('2d'); o.globalCompositeOperation = 'lighter';
           HM_SP.forEach(function(x){
             var col = HM_COL[x[0]], S2 = P.filter(function(p){ return p.c.sp === x[0]; }); if (!S2.length) return;
-            o.drawImage(hmHeatLayer(S2, W, H, STEP, mpp, function(v){ var k = Math.min(1, v * 1.6); return [col[0], col[1], col[2], 60 + 180 * k]; }), 0, 0);
+            o.drawImage(hmHeatLayer(S2, W, H, STEP, mpp, function(v){ var k = Math.min(1, v * 1.6); return [col[0], col[1], col[2], 60 + 180 * k]; }, 'sp'), 0, 0);
           });
         }
         hmHeatCache = { key: key, cv: cv, STEP: STEP };
@@ -336,7 +343,7 @@
   }
   // the lake's edge: a thin white line at 50 %, drawn exactly like Kartanalys' (the lake field smoothed
   // to about one drawn point, the line where it crosses 0,5 -- see anField / edgeW)
-  var hmShoreBox = { p: null }, hmShoreCache = null, HM_NOMASK = null;
+  var hmShoreBox = { p: null }, hmShoreCache = null, HM_NOMASK = null, hmShoreFl = null, hmShoreIm = null;
   function hmShoreLayer(W, H){
     var A = AN || shoreBase(); if (!A) return null;
     var STEP = viewStep(W, H), key = [originX.toFixed(1), originY.toFixed(1), scale.toFixed(5), W, H, STEP].join('|');
@@ -344,22 +351,29 @@
     if (!HM_NOMASK || HM_NOMASK.length !== A.N) HM_NOMASK = new Uint8Array(A.N);
     var vw = Math.ceil(W / STEP), vh = Math.ceil(H / STEP), fp = A.W / IMG_W / scale * STEP;
     var Lf = anField({ ver: 'shore', M: HM_NOMASK, G: null }, A, Math.max(0, Math.round(Math.log(Math.max(1, fp)) / Math.LN2)), hmShoreBox);
-    var g = Lf.f[2], LW2 = Lf.w, LH2 = Lf.h, kx = A.W / IMG_W / (1 << Lf.lv), ky = A.H / IMG_H / (1 << Lf.lv), fl = new Float32Array(vw * vh);
-    for (var y = 0; y < vh; y++) for (var x = 0; x < vw; x++){
-      var fx = (x * STEP + 1 - originX) / scale * kx - 0.5, fy = (y * STEP + 1 - originY) / scale * ky - 0.5, x0 = Math.floor(fx), y0 = Math.floor(fy), tx = fx - x0, ty = fy - y0, a = 0;
-      for (var dy = 0; dy <= 1; dy++) for (var dx = 0; dx <= 1; dx++){
-        var cx = x0 + dx, cy = y0 + dy; if (cx < 0 || cy < 0 || cx >= LW2 || cy >= LH2) continue;
-        a += g[cy * LW2 + cx] * (dx ? tx : 1 - tx) * (dy ? ty : 1 - ty);
+    var g = Lf.f[2], LW2 = Lf.w, LH2 = Lf.h, kx = A.W / IMG_W / (1 << Lf.lv), ky = A.H / IMG_H / (1 << Lf.lv);
+    var fl = hmShoreFl && hmShoreFl.length === vw * vh ? hmShoreFl : (hmShoreFl = new Float32Array(vw * vh));   // (every point is written below)
+    for (var y = 0; y < vh; y++){
+      var fy = (y * STEP + 1 - originY) / scale * ky - 0.5, y0 = Math.floor(fy), ty = fy - y0, inY = y0 >= 0 && y0 < LH2 - 1;
+      for (var x = 0; x < vw; x++){
+        var fx = (x * STEP + 1 - originX) / scale * kx - 0.5, x0 = Math.floor(fx), tx = fx - x0, a = 0;
+        if (inY && x0 >= 0 && x0 < LW2 - 1){   // (inside the field: the four points straight away -- this runs for every frame of a drag)
+          var i0 = y0 * LW2 + x0; a = (g[i0] * (1 - tx) + g[i0 + 1] * tx) * (1 - ty) + (g[i0 + LW2] * (1 - tx) + g[i0 + LW2 + 1] * tx) * ty;
+        } else for (var dy = 0; dy <= 1; dy++) for (var dx = 0; dx <= 1; dx++){
+          var cx = x0 + dx, cy = y0 + dy; if (cx < 0 || cy < 0 || cx >= LW2 || cy >= LH2) continue;
+          a += g[cy * LW2 + cx] * (dx ? tx : 1 - tx) * (dy ? ty : 1 - ty);
+        }
+        fl[y * vw + x] = a;
       }
-      fl[y * vw + x] = a;
     }
-    var cv = document.createElement('canvas'); cv.width = vw; cv.height = vh;
-    var o = cv.getContext('2d'), im = o.createImageData(vw, vh), d = im.data, ES = edgeW(STEP, 0.9);
+    var cv = hmScratch('shore', vw, vh), o = cv.getContext('2d'), ES = edgeW(STEP, 0.9);
+    var im = hmShoreIm && hmShoreIm.width === vw && hmShoreIm.height === vh ? hmShoreIm : (hmShoreIm = o.createImageData(vw, vh)), d = im.data;
     for (var y2 = 0; y2 < vh; y2++) for (var x2 = 0; x2 < vw; x2++){
       var q = y2 * vw + x2;
       var gx = (fl[x2 < vw - 1 ? q + 1 : q] - fl[x2 > 0 ? q - 1 : q]) / 2, gy = (fl[y2 < vh - 1 ? q + vw : q] - fl[y2 > 0 ? q - vw : q]) / 2;
-      var es = Math.max(0, Math.min(1, 1 - Math.abs((fl[q] - 0.5) / (Math.sqrt(gx * gx + gy * gy) + 1e-3)) / ES[0])) * ES[1];
-      if (es > 0){ var k = q * 4; d[k] = d[k + 1] = d[k + 2] = 255; d[k + 3] = 128 * es; }
+      var v = Math.abs(fl[q] - 0.5), es = 0;
+      if (v < ES[0] * (Math.abs(gx) + Math.abs(gy) + 1e-3)) es = Math.max(0, Math.min(1, 1 - v / (Math.sqrt(gx * gx + gy * gy) + 1e-3) / ES[0])) * ES[1];   // (no edge near: no root)
+      var k = q * 4; d[k] = d[k + 1] = d[k + 2] = 255; d[k + 3] = 128 * es;   // (every point: the picture is reused)
     }
     o.putImageData(im, 0, 0);
     return (hmShoreCache = { key: key, cv: cv, STEP: STEP });

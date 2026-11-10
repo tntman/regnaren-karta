@@ -224,7 +224,14 @@
     });
   }
 
-  function render(){
+  // the spots' and the boats' layers: a full render places every pin and notes where the map was (layerBase);
+  // a frame that only a finger drag asked for then shifts the whole layer (no work and no new style per pin)
+  function layerBase(el){ el._b = { x: originX, y: originY, s: scale }; if (el.style.transform) el.style.transform = ''; }
+  function layerShift(el){
+    var b = el._b; if (!b || b.s !== scale) return false;
+    el.style.transform = 'translate(' + (originX - b.x) + 'px,' + (originY - b.y) + 'px)'; return true;
+  }
+  function render(pan){
     world.style.transform = 'translate(' + originX + 'px,' + originY + 'px) scale(' + scale + ')';
     renderDetail();
     if (windOn && windCanvas){ try { drawWind(); } catch(e){} }   // ("Vind och lä" -- set up further down; never stops the rest)
@@ -239,18 +246,19 @@
     renderProbe();
     updateMarker();
     updateScaleBar();
-    renderWaypoints();
-    renderBoats();
+    if (!(pan === true && layerShift(waypointsLayer))) renderWaypoints();
+    if (!(pan === true && layerShift(boatsLayer))) renderBoats();
     renderMeasure();
   }
 
   // Touch/wheel events can fire far more often than the screen redraws
   // (120Hz+ on some phones) -- coalesce them into one redraw per frame.
-  var renderQueued = false;
-  function scheduleRender(){
+  var renderQueued = false, renderPan = false;
+  function scheduleRender(pan){   // pan: asked for by a finger drag only (anyone else asking in the same frame = a full render)
+    renderPan = (!renderQueued || renderPan) && pan === true;
     if (renderQueued) return;
     renderQueued = true;
-    requestAnimationFrame(function(){ renderQueued = false; render(); });
+    requestAnimationFrame(function(){ var p = renderPan; renderQueued = renderPan = false; render(p); });
   }
 
   function zoomAtPoint(px, py, newScale){
@@ -486,7 +494,7 @@
       originX = panStart.originX + dx;
       originY = panStart.originY + dy;
       clampOrigin();
-      scheduleRender();
+      scheduleRender(true);
     } else if (pointers.size === 2 && pinch){
       var pts = Array.from(pointers.values());
       var d = dist(pts[0], pts[1]);

@@ -157,6 +157,7 @@
       try { fsdb.enablePersistence({ synchronizeTabs:true }).catch(function(){}); } catch(e){}
       fsCol = fsdb.collection('waypoints');
       posCol = fsdb.collection('positions');
+      posQ = posCol.where('lake', '==', LAKE_ID);
       usageCol = fsdb.collection('usage');
       // (the Spår: 46-gps-track.js; trackusers = who has tracks on which lake -- the drop-down in the Spår panel).
       // Never in the test mode: your real track would be uploaded to the test project, marked as done and lost.
@@ -203,7 +204,7 @@
         if (!hadLocalCopy) forceFetchWaypoints();
         else setTimeout(function(){ if (!gotServerWaypoints) forceFetchWaypoints(); }, 6000);
         var posListenerBilled = false;
-        posCol.onSnapshot(function(snap){
+        posQ.onSnapshot(function(snap){
           if (!(snap.metadata && snap.metadata.fromCache)) posListenerBilled = countListenerReads(snap, posListenerBilled);
           applyPositionsSnapshot(snap);
         }, function(err){ console.warn('positions sync error', err); });

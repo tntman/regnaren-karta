@@ -61,3 +61,21 @@ där detaljbitarna tar över vid inzoomning, sparar ~47 MB. Det är kartformatet
 - Tester: `test_memory.py` (3×-skärm: lager 1 × 1 när de är av, 2× på; högst 2 radier; släpps när Kartanalys stängs av;
   Regnaren på sin egen griden), `test_lakes.py` (Mälaren på 2 × 2-griden). `__ffAnalysis()` ger `grid` och `sim`.
 - **D** (kart-chatten): mindre översiktsbild för Mälaren (63 MB) – inte gjort.
+
+## Gjort 2026-11-10 – snabbare panorering, mindre skräp (kodgenomgångens punkter 25–30)
+- **Inga nya canvasar medan kartan dras:** Strandlinje och Heatmap återanvänder sina arbetsytor (`hmScratch`, 68-heatmap.js) och
+  strandlinjens buffertar (`hmShoreFl`/`hmShoreIm`). Förr en ny canvas per bild = skräpsamling 38 ms per drag, nu 4 ms.
+- **Ett finger som drar = lagren flyttas, räknas inte om:** `scheduleRender(true)` (bara enfingersdraget) → `render(pan)` flyttar
+  `#waypoints` och `#boats` med en transform (`layerBase`/`layerShift`, 12-map.js) i stället för `renderWaypoints`/`renderBoats`.
+  Zoom, släppt finger och alla andra som ber om en ritning = full ritning. Spårens linjer: `setPath` (46-gps-track.js) räknar om
+  `d` bara vid ny zoom eller nya punkter, annars `translate`. Nytt lager som ska följa med i draget: gör likadant.
+- Mätt (Edge, 4× långsammare processor, 150 platser, spår med 4 000 punkter): 42 → 64 bilder/s, ritningen 7,6 → 3,0 ms per bild.
+  Strandlinjen är kvar som största biten (ca 2 ms).
+- **Platsens ruta bygger inte Kartanalys-griden** (28 MB + paus): lutningen räknas i ett litet fönster runt platsen
+  (`anSlopeAt`, 56-analysis.js – samma oskärpa, samma siffra), och `anCompute` bygger inte griden när Kartanalys är av.
+- **Liknande:** tröskeln (de 4 % mest lika) med typad sortering i stället för en vanlig lista med jämförelsefunktion.
+- **Under ytan:** Avstånd bygger om botten när reglaget vilat 0,2 s (inte för varje steg); ✕ lämnar tillbaka allt från grafikkortet.
+- **Båtpositioner:** bara sjöns egna läses (`posQ` = `where('lake', '==', sjön)`, 26-sync.js) – en båt som rör sig på en annan sjö
+  kostar inga läsningar här. Positioner utan `lake` (från före flera sjöar) syns inte längre, inte heller i Admin.
+- Tester: test_memory (drag: lagren flyttas, inga nya canvasar), test_track_history (spåret flyttas/räknas om), test_extras
+  (lutningen = Kartanalys, griden byggs inte), test_ar (ett bygge per drag), test_lakes (bara sjöns positioner läses).

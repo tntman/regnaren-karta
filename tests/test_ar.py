@@ -29,6 +29,11 @@ with sync_playwright() as p:
     check('Avstånd: shown and remembered', pg.inner_text('#arRVal') == '600 m' and json.loads(pg.evaluate("localStorage.getItem('ffmap_ar_v1')"))['r'] == 600)
     pg.wait_for_timeout(800); n = A(pg)['n']
     check('...the bottom as fine as the depth data: one point per cell (Regnaren ~4,9 m: 1200 m = ~243)', 235 <= n <= 250, n)
+    b0 = A(pg)['builds']
+    for v in (650, 700, 750, 800): pg.fill('#arR', str(v)); pg.wait_for_timeout(40)
+    pg.wait_for_timeout(700); b1 = A(pg)['builds']
+    check('...a drag over several steps: the bottom built once, when the slider rests', b1 == b0 + 1 and A(pg)['n'] > n, (b0, b1, A(pg)['n']))
+    pg.fill('#arR', '600'); pg.wait_for_timeout(700)
     pg.screenshot(path='shot_ar.png')
     on = lambda: {b.get_attribute('data-k'): 'on' in (b.get_attribute('class') or '') for b in pg.query_selector_all('#arChips [data-k]')}
     check('the switches: grid, surface, shore, sticks, lead on; dots, waves, Djupfog off', on() == {'grid': True, 'surf': True, 'dots': False, 'waves': False, 'shore': True, 'sticks': True, 'lod': True, 'dfog': False}, on())

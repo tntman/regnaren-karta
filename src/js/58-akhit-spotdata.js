@@ -19,28 +19,28 @@
 
   /* ---- what's under a spot (its sheet): depth, slope, bottom, plants + the terrain ---- */
   function renderWpData(lat, lon){
-    var el = document.getElementById('wpData'), A = anBase();
+    var el = document.getElementById('wpData'), wg = workGrid();   // (not anBase(): ~28 MB and a pause for a tap on a spot)
     var p = latLonToImgPx(lat, lon), dm = depthAtImgPx(p.x, p.y);
-    if (!A || dm == null){ el.innerHTML = dm != null ? '' : (isLakeAtImgPx(p.x, p.y) ? '<div class="wpTerrain">Okänt djup här (ingen ekolodsdata).</div>' : ''); return; }
+    if (!wg || dm == null){ el.innerHTML = dm != null ? '' : (isLakeAtImgPx(p.x, p.y) ? '<div class="wpTerrain">Okänt djup här (ingen ekolodsdata).</div>' : ''); return; }
     if (!anBottom) anLoadBottom();
-    var i = anCellOfImg(p.x, p.y), W = A.W, cx = i % W, cy = Math.floor(i / W);
-    var sl = A.slope[i], slTxt = sl < 3 ? 'plant' : sl < 10 ? 'sluttar' : 'brant';
+    var W = wg.W, H = wg.H, cell = WEB_METERS_PER_PX * IMG_W / W;
+    var cx = Math.min(W - 1, Math.max(0, Math.floor(p.x / IMG_W * W))), cy = Math.min(H - 1, Math.max(0, Math.floor(p.y / IMG_H * H)));
+    var sl = anSlopeAt(wg, cx, cy);
     var bot = '–', botSub = anBottom ? 'ej mätt' : '…', veg = '–', vegSub = anBottom ? '' : '…';
     if (anBottom){
-      var best = 0, bd = 1e9, r = Math.max(1, Math.round(15 / A.cell));     // hardness: here, or the nearest measured within 15 m
+      var best = 0, bd = 1e9, r = Math.max(1, Math.round(15 / cell));     // hardness: here, or the nearest measured within 15 m
       for (var dy = -r; dy <= r; dy++) for (var dx = -r; dx <= r; dx++){
-        var x = cx + dx, y = cy + dy; if (x < 0 || y < 0 || x >= W || y >= A.H) continue;
+        var x = cx + dx, y = cy + dy; if (x < 0 || y < 0 || x >= W || y >= H) continue;
         var h = anBottom[y * W + x] & 7; if (h && dx * dx + dy * dy < bd){ bd = dx * dx + dy * dy; best = h; } }
       if (best){ bot = ['Mjuk', 'Medel', 'Hård', 'Mkt hård'][best - 1]; botSub = bd ? 'strax intill' : 'hårdhet'; }
-      var rv = Math.max(1, Math.round(25 / A.cell)), nv = 0, nw = 0;           // plants: share of the water within 25 m
+      var rv = Math.max(1, Math.round(25 / cell)), nv = 0, nw = 0;           // plants: share of the water within 25 m
       for (var dy2 = -rv; dy2 <= rv; dy2++) for (var dx2 = -rv; dx2 <= rv; dx2++){
         if (dx2 * dx2 + dy2 * dy2 > rv * rv) continue;
-        var x2 = cx + dx2, y2 = cy + dy2; if (x2 < 0 || y2 < 0 || x2 >= W || y2 >= A.H) continue;
-        var j = y2 * W + x2; if (!A.wat[j]) continue; nw++; if (anBottom[j] & 8) nv++; }
+        var x2 = cx + dx2, y2 = cy + dy2; if (x2 < 0 || y2 < 0 || x2 >= W || y2 >= H) continue;
+        var j = y2 * W + x2; if (wg.g[j] > 250) continue; nw++; if (anBottom[j] & 8) nv++; }
       var f = nw ? nv / nw : 0;
       veg = f < 0.05 ? 'Inga' : f < 0.3 ? 'Lite' : f < 0.7 ? 'En del' : 'Mycket'; vegSub = Math.round(f * 100) + ' % inom 25 m';
     }
-    var t = A.tpi[i], terr = t >= 0.6 ? '⛰ <b>Grynna</b> – ' + fmtDepth(t) + ' m grundare än runt om' : t <= -0.8 ? '🕳 <b>Håla</b> – ' + fmtDepth(-t) + ' m djupare än runt om' : 'Jämn botten runt om';
     el.innerHTML =
       '<div class="wpTile"><i>Djup</i><b>' + fmtDepth(dm) + ' m</b></div>' +
       '<div class="wpTile"><i>Lutning</i><b>' + Math.round(sl) + ' %</b></div>' +
