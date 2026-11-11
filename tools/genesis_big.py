@@ -374,6 +374,9 @@ def shade(lk, bx, by):
 # ---------------------------------------------------------------- render
 def legend_scale(lk):
     maxd = json.load(open(os.path.join(lk.D, 'depth', 'stats.json')))['max']
+    ownp = os.path.join(lk.L, 'raw', 'own_depth.npz')
+    if os.path.exists(ownp):           # (own logging deeper than Genesis: the legend goes as deep as the map)
+        d = _own(ownp)[0]; maxd = max(maxd, float(d.max()) + _own(ownp)[5])
     sc = 2 if maxd <= 20 else 5; DMAX = sc * math.ceil(maxd / sc)
     LMAX = math.ceil(maxd) if maxd <= 20 else 5 * math.ceil(maxd / 5)
     nt = 4 if LMAX % 3 == 0 else 3

@@ -99,10 +99,10 @@ check('Gryt lake.json: only s1, levels 14-16, only Genesis', [s['id'] for s in G
 with sync_playwright() as p:
     b, ctx, pg, errs = new_page(p, geo=(58.173, 16.805), cfg={}, name='Filip')
     pg.evaluate("() => localStorage.setItem('ffmap_lake_v1', 'gryt')"); pg.reload(); pg.wait_for_timeout(2500)
-    check('Gryt: the half overview loaded', 'gryt/map_v1h_s1.jpg' in pg.get_attribute('#mapImg', 'src') and
+    check('Gryt: the half overview loaded', re.search(r'gryt/map_v\d+h_s1\.jpg', pg.get_attribute('#mapImg', 'src')) and
           pg.evaluate("document.getElementById('mapImg').naturalWidth") * 2 == GK['geo']['imgW'], pg.get_attribute('#mapImg', 'src'))
     pg.click('#mapTypeBtn'); pg.wait_for_timeout(600)
-    check('Gryt: the map-type button stays on Djupfärger (the only style)', 'map_v1h_s1.jpg' in pg.get_attribute('#mapImg', 'src'))
+    check('Gryt: the map-type button stays on Djupfärger (the only style)', re.search(r'map_v\d+h_s1\.jpg', pg.get_attribute('#mapImg', 'src')))
     n = 256 * 2 ** 14; la = math.radians(58.1375)            # the Genesis strip in Valdemarsviken, zoom 15
     cx = (16.68 + 180) / 360 * n - GK['geo']['originX']; cy = (1 - math.log(math.tan(la) + 1 / math.cos(la)) / math.pi) / 2 * n - GK['geo']['originY']
     pg.evaluate("([k, v]) => sessionStorage.setItem(k, JSON.stringify(Object.assign(v, {t: Date.now()})))",
