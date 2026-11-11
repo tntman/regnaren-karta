@@ -191,6 +191,12 @@ aldrig**, kurvor och siffror kommer fortfarande bara från Genesis. Regnaren v7:
 - **Kontroll:** utskriften visar justeringen, skillnaden där båda har djup (Regnaren 0,9 m i medel) och skarven före utjämningen
   (1,1 m i medel). Mycket större = titta på loggningen först.
 - *Förkastat (Filip):* kalibrering per djup, ett "tak" vid stranden ur Genesis typiska profil – för mycket påhitt.
+- **Mälaren (stora sjöar, 2026-11-11):** Filips lodning i appens eget djupnät (`soundings/mälaren/DJUPDATA_malaren.md`: Mälarens
+  1 536 × 2 560-nät à ~10 m, 252-rutorna ifyllda, packat som depth_v*.txt) → `py -3 tools/soundings.py malaren --appgrid <fil.md>`
+  → `own_depth.npz` på det nätet. `genesis_big.block_depth()` tar den per block (`own_crop()`: bilinjär, utjämnad ~5 m) och samma
+  skarv-utjämning (`genesis_render.seam_blend()`). Den finns kvar även under Genesis-rutorna (används inte där – men en ~10 m-ruta
+  som bara delvis är Genesis måste ha den under resten, annars 1 px-hål i skarven). Mälaren v2: fyller 360 076 av 371 114
+  luckor, justering 0,00 m (Genesis-rutorna var oförändrade i filen). Platta trekanter i utfyllnaden = så ser datan ut.
 
 ---
 

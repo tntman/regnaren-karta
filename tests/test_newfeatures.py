@@ -25,7 +25,16 @@ def snap(mask, c, r, need=12):
     return xs[i] + max(0, c - win), ys[i] + max(0, r - win)
 A = snap(water, 300, 560)                      # you: west basin
 B = snap(water, 1560, 700)                     # target: across a headland (straight line crosses land)
-U = snap(lake & ~water, 600, 380, need=20)     # lake that Genesis has no depth for
+def snap_any(mask, need):
+    """the middle of the biggest patch of mask anywhere (eroded by need z16 px, less if none is that big)"""
+    for n in range(need, 0, -2):
+        inner = ndimage.binary_erosion(mask, iterations=n * SC)
+        if inner.any():
+            lab, k = ndimage.label(inner); big = np.argmax(np.bincount(lab.ravel())[1:]) + 1
+            ys, xs = np.where(lab == big); i = len(ys) // 2; return xs[i], ys[i]
+    raise SystemExit('no lake without depth left')
+# lake with no depth at all (Regnaren v7: Filip's own logging fills almost everything -- the little left)
+U = snap_any(lake & ~water, 20)
 bird = math.hypot(B[0] - A[0], B[1] - A[1]) * 156543.03392 * math.cos(math.radians(ll(*A)[0])) / 2 ** Z
 LA, LB, LU = ll(*A), ll(*B), ll(*U)
 now = time.time() * 1000

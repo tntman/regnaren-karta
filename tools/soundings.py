@@ -137,8 +137,35 @@ def own_grid(lake, md):
     np.savez_compressed(p, dep=dep, zoom=17, origin=np.array([OX // 2, OY // 2]))
     print('own grid %d x %d (%.1f M cells with depth, 0-%.2f m) -> %s' % (cols, rows, np.isfinite(dep).sum() / 1e6, np.nanmax(dep.astype(np.float32)), p))
 
+def own_appgrid(lake, md):
+    """own logging in the app's own depth-grid format (Filip's DJUPDATA_malaren.md: the lake's depth grid with
+    the 252 cells filled; packed like depth_v<V>.txt, base64) -> lakes/<lake>/raw/own_depth.npz on that grid
+    (dep m float16, nan = none; zoom = the map picture's, px = map px per cell) for genesis_big.py. Used only
+    where the lake has no Genesis depth (Genesis stays as it is); the offset = median Genesis -
+    own where both have depth (0 when the file kept Genesis as it was)."""
+    txt = open(md, encoding='utf-8').read()
+    vals, step, lk = depth_grid(lake); h, w = vals.shape
+    raw = base64.b64decode(''.join(txt.split('```base64', 1)[1].split('```', 1)[0].split()))
+    g = bytearray(); i = 0
+    while i < len(raw):
+        b = raw[i]
+        if b in (251, 253): g += bytes([255 if b == 251 else 252]) * (raw[i + 1] | raw[i + 2] << 8); i += 3
+        else: g.append(b); i += 1
+    g = np.frombuffer(bytes(g), np.uint8).reshape(h, w)
+    both = (vals <= 250) & (g <= 250)
+    off = float(np.median(vals[both] * step - g[both] * step)) if both.any() else 0.0
+    keep = (vals == 252) & (g <= 250)
+    # (kept wherever it has depth, also under Genesis: it is only used where Genesis has none, but a cell
+    #  that is half Genesis at 10 m must still have it under the other half -- else 1 px gaps at the seam)
+    dep = np.where((vals != 255) & (g <= 250), g * step, np.nan).astype(np.float16)
+    G = lk['geo']; p = os.path.join(ROOT, 'lakes', lake, 'raw', 'own_depth.npz')
+    np.savez_compressed(p, dep=dep, zoom=G['zoom'], px=G['imgW'] / w, origin=np.array([G['originX'], G['originY']]), offset=off)
+    print('own grid %d x %d: fills %d of %d cells without Genesis depth, offset %+.2f m (%d cells where both have depth) -> %s'
+          % (w, h, keep.sum(), (vals == 252).sum(), off, both.sum(), p))
+
 def main(argv):
     if argv[1:2] == ['--grid']: return own_grid(argv[0], argv[2])
+    if argv[1:2] == ['--appgrid']: return own_appgrid(argv[0], argv[2])
     preview = None
     if '--preview' in argv: i = argv.index('--preview'); preview = argv[i + 1]; argv = argv[:i] + argv[i + 2:]
     lake, logs = argv[0], argv[1:]

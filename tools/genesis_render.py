@@ -239,6 +239,33 @@ def pack_bottom(bv):
             enc.append(bv[i]); i += 1
     return bytes(enc)
 
+def seam_blend(water, dep0, add, own, mpx, BLEND_M=25.0):
+    """dep0 with own depth in `add` (the filled part), the last BLEND_M metres toward Genesis (water) fading into
+    Genesis' depth so colours and relief don't jump (smoothstep, soft across) -- Genesis itself never changes"""
+    H, W = water.shape
+    # the seam: at 1/4 resolution (smooth anyway), the difference Genesis - own at the filled cells next to
+    # Genesis, carried in from the nearest such cell and fading to nothing BLEND_M metres in
+    q = 4; hq, wq = -(-H // q), -(-W // q)
+    def small(a, fill):
+        p = np.full((hq * q, wq * q), fill, np.float32); p[:H, :W] = a
+        return p.reshape(hq, q, wq, q)
+    wq_ = small(water.astype(np.float32), 0).mean((1, 3)) >= 0.5
+    gq = np.nanmean(np.where(small(water.astype(np.float32), 0) > 0, small(dep0, np.nan), np.nan), (1, 3))
+    aq = small(add.astype(np.float32), 0).mean((1, 3)) >= 0.5
+    oq = np.nanmean(small(np.where(add, own, np.nan), np.nan), (1, 3))
+    edge = aq & ndimage.binary_dilation(wq_) & np.isfinite(gq) & np.isfinite(oq)
+    corr = np.zeros((hq, wq), np.float32)
+    if edge.any():
+        dist, (iy, ix) = ndimage.distance_transform_edt(~edge, return_indices=True)
+        cq = np.where(edge, gq - oq, 0)
+        fade = np.clip(1 - dist * q * mpx / BLEND_M, 0, 1); fade = fade * fade * (3 - 2 * fade)     # (smoothstep: no kink)
+        corr = ndimage.gaussian_filter((cq[iy, ix] * fade).astype(np.float32), 2.0); del dist, iy, ix   # (soft across: no ridge)
+        print('  own logging: seam vs Genesis before blending: median %+.2f m, mean |diff| %.2f m (%d cells)'
+              % (np.median(cq[edge]), np.abs(cq[edge]).mean(), edge.sum()))
+    corr = ndimage.zoom(corr, q, order=1)[:H, :W]
+    dep0 = dep0.copy(); dep0[add] = np.maximum(own[add] + corr[add], 0.1)
+    return dep0
+
 def own_fill(lake, ownp, water, dep0, gx0, gy0, W, H, DZ, mpx, BLEND_M=25.0):
     """Filip's own logging (lakes/<lake>/raw/own_depth.npz, tools/soundings.py --grid) where Genesis has no depth,
     inside the lake (OpenStreetMap). Genesis is never changed. One global offset (median Genesis - own where both
@@ -261,27 +288,7 @@ def own_fill(lake, ownp, water, dep0, gx0, gy0, W, H, DZ, mpx, BLEND_M=25.0):
     off = float(np.median(dep0[both] - own[both])) if both.any() else 0.0
     add = ~water & lakem & np.isfinite(own)
     own = own + off
-    # the seam: at 1/4 resolution (smooth anyway), the difference Genesis - own at the filled cells next to
-    # Genesis, carried in from the nearest such cell and fading to nothing BLEND_M metres in
-    q = 4; hq, wq = -(-H // q), -(-W // q)
-    def small(a, fill):
-        p = np.full((hq * q, wq * q), fill, np.float32); p[:H, :W] = a
-        return p.reshape(hq, q, wq, q)
-    wq_ = small(water.astype(np.float32), 0).mean((1, 3)) >= 0.5
-    gq = np.nanmean(np.where(small(water.astype(np.float32), 0) > 0, small(dep0, np.nan), np.nan), (1, 3))
-    aq = small(add.astype(np.float32), 0).mean((1, 3)) >= 0.5
-    oq = np.nanmean(small(np.where(add, own, np.nan), np.nan), (1, 3))
-    edge = aq & ndimage.binary_dilation(wq_) & np.isfinite(gq) & np.isfinite(oq)
-    corr = np.zeros((hq, wq), np.float32)
-    if edge.any():
-        dist, (iy, ix) = ndimage.distance_transform_edt(~edge, return_indices=True)
-        cq = np.where(edge, gq - oq, 0)
-        fade = np.clip(1 - dist * q * mpx / BLEND_M, 0, 1); fade = fade * fade * (3 - 2 * fade)     # (smoothstep: no kink)
-        corr = ndimage.gaussian_filter((cq[iy, ix] * fade).astype(np.float32), 2.0); del dist, iy, ix   # (soft across: no ridge)
-        print('  own logging: seam vs Genesis before blending: median %+.2f m, mean |diff| %.2f m (%d cells)'
-              % (np.median(cq[edge]), np.abs(cq[edge]).mean(), edge.sum()))
-    corr = ndimage.zoom(corr, q, order=1)[:H, :W]
-    dep0 = dep0.copy(); dep0[add] = np.maximum(own[add] + corr[add], 0.1)
+    dep0 = seam_blend(water, dep0, add, own, mpx, BLEND_M)
     r = np.abs(dep0[both] - (own[both])) if both.any() else np.zeros(1)
     print('  own logging: offset %+.2f m (median of %d px where both have depth; then mean |diff| %.2f m); fills %.2f km2 of the lake'
           % (off, both.sum(), r.mean(), add.sum() * mpx * mpx / 1e6))

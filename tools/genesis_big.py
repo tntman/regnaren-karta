@@ -275,14 +275,40 @@ def sea_mask(lk, X, Y, w, h):
     out = sea[np.clip(ys, 0, sea.shape[0] - 1)][:, np.clip(xs, 0, sea.shape[1] - 1)]
     return out & ok_y[:, None] & ok_x[None, :]
 
+@lru_cache(maxsize=1)
+def _own(path):
+    z = np.load(path); d = z['dep'].astype(np.float32); ok = np.isfinite(d)
+    if ok.any() and (~ok).any():              # (holes = the nearest own depth, so the bilinear sample has no nan)
+        iy, ix = ndimage.distance_transform_edt(~ok, return_distances=False, return_indices=True); d = d[iy, ix]
+    return d, ok.astype(np.float32), int(z['zoom']), float(z['px']), tuple(int(v) for v in z['origin']), float(z['offset'])
+
+def own_crop(lk, X, Y, w, h):
+    """Filip's own logging (lakes/<lake>/raw/own_depth.npz, tools/soundings.py --appgrid) over a crop at DZ px:
+    depth (+ its global offset, bilinear, smoothed ~5 m -- the grid is ~10 m) and where it has depth; None without"""
+    p = os.path.join(lk.L, 'raw', 'own_depth.npz')
+    if not os.path.exists(p): return None
+    d, ok, z, px, (ox, oy), off = _own(p); f = 2 ** (lk.DZ - z) * px          # DZ px per own cell
+    yy = ((lk.gy0 + Y + np.arange(h) + .5) / f - oy / px - .5).astype(np.float32)
+    xx = ((lk.gx0 + X + np.arange(w) + .5) / f - ox / px - .5).astype(np.float32)
+    co = np.meshgrid(yy, xx, indexing='ij')
+    dep = ndimage.map_coordinates(d, co, order=1, mode='nearest')
+    has = ndimage.map_coordinates(ok, co, order=1, mode='constant', cval=0) >= 0.5; del co
+    dep = ndimage.gaussian_filter(dep, 5.0 / lk.PXD)
+    return dep + off, has
+
 def block_depth(lk, bx, by):
-    """depth with the unmapped parts of the OSM lake filled (genesis_render: depc), water, osm -- block + RMG"""
+    """depth with the unmapped parts of the OSM lake filled (genesis_render: depc), water, osm -- block + RMG.
+    Own logging (own_crop) fills the lake where Genesis has no depth first -- Genesis on top, never changed."""
     X, Y = bx * lk.BS - RMG, by * lk.BS - RMG; w = h = lk.BS + 2 * RMG
     dep, water = load_depth(lk, X, Y, w, h)
     dep0 = np.where(water, dep, 0).astype(np.float32)
     osm = osm_water.mask(lk.id, lk.DZ, lk.gx0 + X, lk.gy0 + Y, w, h)
     if osm is None: osm = sea_mask(lk, X, Y, w, h)
     if osm is None: osm = np.zeros_like(water)
+    own = own_crop(lk, X, Y, w, h)
+    if own is not None:
+        add = osm & ~water & own[1]
+        if add.any(): dep0 = R.seam_blend(water, dep0, add, own[0], lk.PXD); water = water | add
     unm = osm & ~water; depc = dep0
     if unm.any() and water.any():
         iy, ix = ndimage.distance_transform_edt(~water, return_distances=False, return_indices=True)
