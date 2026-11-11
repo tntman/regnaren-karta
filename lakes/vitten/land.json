@@ -1,0 +1,16 @@
+{
+ "file": "land/vitten_v2.txt",
+ "w": 748,
+ "h": 726,
+ "max": 34,
+ "level": 64.7,
+ "credit": "Höjddata: Lantmäteriet",
+ "geo": [
+  14,
+  2280163,
+  1241004,
+  374,
+  374,
+  363
+ ]
+}

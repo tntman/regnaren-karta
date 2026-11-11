@@ -2,7 +2,7 @@
 
 Sidochatt 2026-10-06 → **kart-chatten** (worktree `.claude/worktrees/kartformat`, gren `worktree-kartformat`).
 
-**Från main-chatten 2026-11-11 (3D-kartan):** varje sjö kan ha en höjdfil för marken, `docs/land/<id>_v1.txt` +
+**Från main-chatten 2026-11-11 (3D-kartan):** varje sjö har en höjdfil för marken, `docs/land/<id>_v<V>.txt` +
 `lakes/<id>/land.json` (`tools/land_height.py`, `tools/NOTES_3D.md`). Era verktyg rör dem inte och behöver inte göra det.
 Ändras en sjös kartutsnitt (`geo` i lake.json): kör `py -3 -I tools/land_height.py <id>` eller säg till – bygget varnar annars.
 

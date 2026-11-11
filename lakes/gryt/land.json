@@ -1,0 +1,16 @@
+{
+ "file": "land/gryt_v2.txt",
+ "w": 2304,
+ "h": 1792,
+ "max": 82,
+ "level": 0.4,
+ "credit": "Höjddata: Lantmäteriet",
+ "geo": [
+  14,
+  2290323,
+  1258651,
+  4608,
+  4608,
+  3584
+ ]
+}

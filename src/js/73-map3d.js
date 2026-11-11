@@ -1,74 +1,96 @@
   /* ================= 3D-karta: the lake's bottom and the land around it in 3D =================
      In the map-style list (hold the map button), right after the map styles: a full-screen view of its own -- the map
-     itself is untouched underneath. ONE mesh of at most M3_NMAX points a side around the point you look at: zoomed in =
-     a small area with every depth cell, zoomed out = the whole lake, coarser (built again when the fingers have rested
-     0,2 s, like Under ytan's slider). On it the chosen map style's picture (aerial photo on land, Genesis' colours and
-     lines on the water -- nothing of that is drawn here), lit from the north-west like the maps' relief. y = -depth in
-     the water; on land the height above the lake from LAKE.land (tools/land_height.py: a small file per lake, fetched
-     when the view opens; a lake without one, or no coverage the first time = flat land).
+     itself is untouched underneath. TWO meshes of at most M3_NMAX points a side: the whole map, coarse (always there:
+     you see the lake to its end, no fog), and a fine one around the point you look at with every depth cell (built
+     again when the fingers have rested 0,2 s, like Under ytan's slider; the whole map's is cut out where it lies).
+     On them the chosen map style's picture (aerial photo on land, Genesis' colours and lines on the water -- nothing of
+     that is drawn here), lit from the north-west like the maps' relief. y = -depth in the water; on land the height
+     above the lake from LAKE.land (tools/land_height.py: a small file per lake, fetched when the view opens; a lake
+     without one, or no coverage the first time = flat land).
      Near the point you look at the picture is sharp: the zoom level's pieces (the same as the map's own, 12-map.js) put
      together on ONE canvas of M3_TEX px, shown instead of the map picture where it reaches (m3Detail).
      One finger = turn and tilt, two = move, pinch = zoom (three.js' OrbitControls isn't in the app's build).
      Your boat, the spots and the others' boats: the map's own pins copied on top (the same filter and icons; view only).
      Settings: ffmap_3d_v1 (Höjd ×, Vatten). Drawn only when something changed -- no loop runs. Filip 2026-11-11. */
-  var M3_KEY = 'ffmap_3d_v1', M3_NMAX = 400, M3_FOV = 40;   // ponytail: one mesh, rebuilt as you zoom -- a coarse whole lake + a fine patch if the rebuild shows
-  var M3_RFULL = Math.max(IMG_W, IMG_H) * WEB_METERS_PER_PX / 2;   // half the map's long side (m): from here on the mesh is the whole map
+  var M3_KEY = 'ffmap_3d_v1', M3_NMAX = 400, M3_FOV = 40;
+  var M3_RFULL = Math.max(IMG_W, IMG_H) * WEB_METERS_PER_PX / 2;   // half the map's long side (m): a fine mesh this far out would be no finer than the whole map's
   var M3_TEX = 2048;   // the sharp patch's canvas (px a side): 4 x 4 pieces
   var m3Cfg = { ex: 3, water: true };
   try { m3Cfg = Object.assign(m3Cfg, JSON.parse(localStorage.getItem(M3_KEY) || '{}')); } catch(e){}
   var m3View = document.getElementById('m3View'), m3Canvas = document.getElementById('m3Canvas'), m3Marks = document.getElementById('m3Marks'), m3Msg = document.getElementById('m3Msg');
-  var m3 = null;   // while open: { T, r, scene, cam, mesh, water, tex, c: the camera { px, py (the image px looked at), d (m away), az, tilt (0 = straight down) }, at: what the mesh was built for }
+  var m3 = null;   // while open: { T, r, scene, cam, far: the whole map's mesh, near: the fine one (or null), tex, c: the camera { px, py (the image px looked at), d (m away), az, tilt (0 = straight down) }, at: what the fine mesh was built for }
   function m3Save(){ try { localStorage.setItem(M3_KEY, JSON.stringify(m3Cfg)); } catch(e){} }
-  var m3Land = null;   // the land's heights while the view is open: a byte per cell x LAKE.land.step = m above the lake, 255 = lake (1 = asked for)
+  var m3Land = null;   // the land's heights while the view is open: a byte per cell, LAKE.land.max x (byte / 250)^2 = m above the lake, 255 = lake (1 = asked for)
   function m3LoadLand(){
     if (!LAKE.land || m3Land) return;
     m3Land = 1;
     fetch(lakeUrl(LAKE.land.file)).then(function(r){ return r.ok ? r.text() : Promise.reject(); }).then(function(t){
       if (!m3) return;
       m3Land = unpackGrid(t.trim(), LAKE.land.w * LAKE.land.h);
-      if (m3.r){ m3.at = null; m3MarksSync(); }   // (the mesh and the pins again, with the land)
+      if (m3.r){ m3Drop(m3.far); m3.far = m3.at = null; m3MarksSync(); }   // (the meshes and the pins again, with the land)
     }).catch(function(){ m3Land = null; });        // (no coverage: flat land; asked again the next time it opens)
   }
   function m3Ground(x, y){ return isLakeAtImgPx(x, y) ? 0 : m3LandAt(x, y) * m3Cfg.ex; }   // the ground's (the water's) height in the picture at a map-picture px
   function m3LandAt(x, y){   // m above the lake at a map-picture px (0: in the lake, or no heights)
     var v = m3Land && m3Land.length ? gridValAt(m3Land, LAKE.land.w, LAKE.land.h, x, y) : null;
-    return v === null ? 0 : v * LAKE.land.step;
+    return v === null ? 0 : v * v / 62500 * LAKE.land.max;   // (square-root steps: fine low down, by the shore -- tools/land_height.py)
   }
   function m3Clamp(c){
     c.px = Math.max(0, Math.min(IMG_W, c.px)); c.py = Math.max(0, Math.min(IMG_H, c.py));
     c.d = Math.max(60, Math.min(M3_RFULL * 3, c.d)); c.tilt = Math.max(0.05, Math.min(1.45, c.tilt));
     return c;
   }
-  function m3R(c){ return Math.min(M3_RFULL, Math.max(150, c.d * 1.6)); }   // how far out the mesh goes for this zoom (m)
-  // the mesh: the map's rectangle within R of the point you look at; x = east, z = south (m), y = -depth (scaled by Höjd ×)
-  function m3Build(){
-    var T = m3.T, c = m3.c, R = m3R(c), full = R >= M3_RFULL, M = WEB_METERS_PER_PX;
-    var cx = full ? IMG_W / 2 : c.px, cy = full ? IMG_H / 2 : c.py, rp = R / M;
-    var x0 = Math.max(0, cx - rp), x1 = Math.min(IMG_W, cx + rp), y0 = Math.max(0, cy - rp), y1 = Math.min(IMG_H, cy + rp);
-    var k = Math.max(AR_CELL / M, Math.max(x1 - x0, y1 - y0) / M3_NMAX);   // image px a step: never finer than the depth cells
+  function m3R(c){ return Math.min(M3_RFULL, Math.max(150, c.d * 1.6)); }   // how far out the fine mesh goes for this zoom (m)
+  // a mesh of the ground and one of the water's surface over a rectangle of the map picture (px), at most M3_NMAX points
+  // a side; x = east, z = south (m from the map's middle), y = -depth / the land's height (the mesh is scaled by Höjd ×)
+  function m3Make(x0, y0, x1, y1, mat, wmat){
+    var T = m3.T, M = WEB_METERS_PER_PX, k = Math.max(AR_CELL / M, Math.max(x1 - x0, y1 - y0) / M3_NMAX);   // image px a step: never finer than the depth cells
     var nx = Math.max(2, Math.floor((x1 - x0) / k) + 1), ny = Math.max(2, Math.floor((y1 - y0) / k) + 1);
     var pos = new Float32Array(nx * ny * 3), uv = new Float32Array(nx * ny * 2), wet = new Uint8Array(nx * ny), idx = [], widx = [];
     for (var j = 0; j < ny; j++) for (var i = 0; i < nx; i++){
       var q = j * nx + i, x = x0 + i * k, y = y0 + j * k, d = depthAtImgPx(x, y);
       wet[q] = d !== null || isLakeAtImgPx(x, y) ? 1 : 0;
-      pos[q * 3] = (x - cx) * M; pos[q * 3 + 2] = (y - cy) * M;
+      pos[q * 3] = (x - IMG_W / 2) * M; pos[q * 3 + 2] = (y - IMG_H / 2) * M;
       pos[q * 3 + 1] = d !== null ? -d : wet[q] ? -0.2 : Math.max(0.3, m3LandAt(x, y));   // (lake nobody has logged: just under the surface; land: never lower than just over it -- the water's surface never lies on the land)
       uv[q * 2] = x / IMG_W; uv[q * 2 + 1] = 1 - y / IMG_H;
+    }
+    // the shore: the land's points next to the water lie at the water's level -- else a steep bank rises straight from the
+    // water's points, in teeth with the shallows' colour on them
+    for (j = 0; j < ny; j++) for (i = 0; i < nx; i++){
+      q = j * nx + i;
+      if (!wet[q] && ((i && wet[q - 1]) || (i < nx - 1 && wet[q + 1]) || (j && wet[q - nx]) || (j < ny - 1 && wet[q + nx]))) pos[q * 3 + 1] = 0.3;
     }
     for (j = 0; j < ny - 1; j++) for (i = 0; i < nx - 1; i++){
       var a = j * nx + i, b = a + 1, e = a + nx; idx.push(a, e, b, b, e, e + 1);
       if (wet[a] || wet[b] || wet[e] || wet[e + 1]) widx.push(a, e, b, b, e, e + 1);   // (the water's surface: where the lake is, a cell in over the shore)
     }
-    if (m3.mesh){ m3.scene.remove(m3.mesh, m3.water); m3.mesh.geometry.dispose(); m3.water.geometry.dispose(); }
     var g = new T.BufferGeometry();
     g.setAttribute('position', new T.BufferAttribute(pos, 3)); g.setAttribute('uv', new T.BufferAttribute(uv, 2)); g.setIndex(idx); g.computeVertexNormals();
-    m3.mesh = new T.Mesh(g, m3.mat);
     var wp = pos.slice(), wg = new T.BufferGeometry();   // the water's surface: the same points at height 0
     for (q = 1; q < wp.length; q += 3) wp[q] = 0;
     wg.setAttribute('position', new T.BufferAttribute(wp, 3)); wg.setIndex(widx);
-    m3.water = new T.Mesh(wg, m3.wmat);
-    m3.scene.add(m3.mesh, m3.water);
-    m3.at = { px: cx, py: cy, R: R, full: full }; m3.n = Math.max(nx, ny); m3.nb = (m3.nb || 0) + 1;
+    var o = { mesh: new T.Mesh(g, mat), water: new T.Mesh(wg, wmat), n: Math.max(nx, ny), step: k * M };
+    m3.scene.add(o.mesh, o.water);
+    return o;
+  }
+  function m3Drop(o){ if (o){ m3.scene.remove(o.mesh, o.water); o.mesh.geometry.dispose(); o.water.geometry.dispose(); } }
+  // four planes whose "outsides" together are the rectangle e = [x0, x1, z0, z1] (m), mg in from its edge: what is drawn
+  // with them (the whole map's mesh) is left out there. No e: nowhere.
+  function m3Hole(planes, e, mg){
+    if (!e){ e = [1e9, -1e9, 1e9, -1e9]; mg = 0; }
+    planes[0].constant = e[0] + mg; planes[1].constant = mg - e[1]; planes[2].constant = e[2] + mg; planes[3].constant = mg - e[3];
+  }
+  // the fine mesh around the point you look at -- none when it would reach as far as the whole map's (then that one is as fine)
+  function m3Patch(){
+    var c = m3.c, R = m3R(c), full = R >= M3_RFULL, M = WEB_METERS_PER_PX, rp = R / M, e = null;
+    m3Drop(m3.near); m3.near = null;
+    if (!full){
+      var x0 = Math.max(0, c.px - rp), x1 = Math.min(IMG_W, c.px + rp), y0 = Math.max(0, c.py - rp), y1 = Math.min(IMG_H, c.py + rp);
+      m3.near = m3Make(x0, y0, x1, y1, m3.mat, m3.wmat);
+      e = [(x0 - IMG_W / 2) * M, (x1 - IMG_W / 2) * M, (y0 - IMG_H / 2) * M, (y1 - IMG_H / 2) * M];
+    }
+    m3Hole(m3.cutW, e, 0); m3Hole(m3.cut, e, m3.far.step);   // (the ground: a cell further in, so the two overlap rather than leave a gap)
+    m3.at = { px: full ? IMG_W / 2 : c.px, py: full ? IMG_H / 2 : c.py, R: R, full: full }; m3.n = (m3.near || m3.far).n; m3.nb = (m3.nb || 0) + 1;
   }
   // the sharp patch: the sharpest zoom level whose M3_TEX px still reach 1,2 x the distance around the point you look at
   // (null: so far out that the map picture itself is as sharp)
@@ -128,32 +150,32 @@
     }
   }
   function m3Draw(){ if (m3 && m3.r && !m3.raf) m3.raf = requestAnimationFrame(m3Frame); }
-  function m3Touch(){ m3.t = Date.now(); clearTimeout(m3.rt); m3.rt = setTimeout(m3Draw, 230); m3Draw(); }   // (the later frame: the mesh for the new zoom, when the fingers rest)
+  function m3Touch(){ m3.t = Date.now(); clearTimeout(m3.rt); m3.rt = setTimeout(m3Draw, 230); m3Draw(); }   // (the later frame: the fine mesh for the new zoom, when the fingers rest)
   function m3Frame(){
     m3.raf = 0;
     if (!loadDepthGrid()){ m3Msg.textContent = 'Laddar djupdata …'; m3.rt = setTimeout(m3Draw, 300); return; }
-    var c = m3Clamp(m3.c), at = m3.at, W = innerWidth, H = innerHeight, M = WEB_METERS_PER_PX, R = m3R(c);
-    if (!at || (Date.now() - m3.t > 200 && (Math.abs(Math.log(R / at.R)) > 0.3 || (!(at.full && R >= M3_RFULL) && Math.hypot(c.px - at.px, c.py - at.py) * M > at.R * 0.25)))){ m3Build(); at = m3.at; }
+    var c = m3Clamp(m3.c), W = innerWidth, H = innerHeight, M = WEB_METERS_PER_PX, R = m3R(c), CX = IMG_W / 2, CY = IMG_H / 2;
+    if (!m3.far) m3.far = m3Make(0, 0, IMG_W, IMG_H, m3.matFar, m3.wmatFar);   // the whole map, once (again when the land's heights have come)
+    var at = m3.at;
+    if (!at || (Date.now() - m3.t > 200 && (Math.abs(Math.log(R / at.R)) > 0.3 || at.full !== (R >= M3_RFULL) || (!at.full && Math.hypot(c.px - at.px, c.py - at.py) * M > at.R * 0.25)))) m3Patch();
     if (Date.now() - m3.t > 200){   // the sharp patch: for this zoom, around this point (again when you've moved 15 % of it)
       var L = m3DetLevel(c), D = m3.det;
       if (!L){ m3.detR.value.z = 0; if (D) D.z = 0; }
       else if (!D || D.z !== L.z || Math.hypot(c.px - D.px, c.py - D.py) * Math.pow(2, L.z - ZOOM) / S > M3_TEX * 0.15) m3Detail(L);
     }
-    var tx = (c.px - at.px) * M, tz = (c.py - at.py) * M, st = Math.sin(c.tilt), cam = m3.cam, fog = m3.scene.fog;
+    var tx = (c.px - CX) * M, tz = (c.py - CY) * M, st = Math.sin(c.tilt), cam = m3.cam;
     var ty = m3Ground(c.px, c.py);   // (the point you look at is on the ground: a hill isn't turned about a point deep inside it)
     cam.position.set(tx + c.d * st * Math.sin(c.az), ty + c.d * Math.cos(c.tilt), tz + c.d * st * Math.cos(c.az));   // (az 0 = from the south: north up)
-    cam.position.y = Math.max(cam.position.y, m3Ground(at.px + cam.position.x / M, at.py + cam.position.z / M) + c.d * 0.04);   // (never under the ground: the land seen from inside is nothing at all)
+    cam.position.y = Math.max(cam.position.y, m3Ground(CX + cam.position.x / M, CY + cam.position.z / M) + c.d * 0.04);   // (never under the ground: the land seen from inside is nothing at all)
     cam.lookAt(tx, ty, tz);
-    cam.near = c.d / 50; cam.far = c.d + at.R * 4;
+    cam.near = c.d / 50; cam.far = c.d + M3_RFULL * 3;   // (as far as the map's other corner)
     if (m3.w !== W || m3.h !== H){ m3.w = W; m3.h = H; m3.r.setSize(W, H, false); cam.aspect = W / H; }
     cam.updateProjectionMatrix();
-    fog.near = at.full ? 1e9 : c.d + at.R * 0.45; fog.far = at.full ? 2e9 : c.d + at.R * 0.95;   // (the mesh's far edge fades out; the whole map: no fog)
-    m3.mesh.scale.y = m3Cfg.ex; m3.water.visible = m3Cfg.water;
+    [m3.far, m3.near].forEach(function(o){ if (o){ o.mesh.scale.y = m3Cfg.ex; o.water.visible = m3Cfg.water; } });
     m3.r.render(m3.scene, cam);
-    m3.marks.forEach(function(k){   // the pins: where their spot on the surface is on the screen
-      var v = m3.v.set((k.p.x - at.px) * M, m3Ground(k.p.x, k.p.y), (k.p.y - at.py) * M), gone = v.distanceTo(cam.position) > fog.far;
-      v.project(cam);
-      var on = !gone && v.z < 1 && Math.abs(v.x) < 1.2 && Math.abs(v.y) < 1.2;
+    m3.marks.forEach(function(k){   // the pins: where their spot on the ground is on the screen
+      var v = m3.v.set((k.p.x - CX) * M, m3Ground(k.p.x, k.p.y), (k.p.y - CY) * M).project(cam);
+      var on = v.z < 1 && Math.abs(v.x) < 1.2 && Math.abs(v.y) < 1.2;
       k.el.style.display = on ? '' : 'none';
       if (on){ k.el.style.left = ((v.x + 1) / 2 * W) + 'px'; k.el.style.top = ((1 - v.y) / 2 * H + k.dy) + 'px'; }
     });
@@ -184,27 +206,36 @@
     nlLib().then(function(m){
       if (!m3) return;
       var T = m[0], r;
-      try { r = new T.WebGLRenderer({ canvas: m3Canvas, antialias: true }); } catch(e){ m3Msg.textContent = 'Telefonen kan inte rita 3D'; return; }
-      r.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2)); r.setClearColor(0x141822, 1);
-      var scene = new T.Scene(); scene.fog = new T.Fog(0x141822, 1, 2);
+      // (logarithmicDepthBuffer: the far end of a big lake is 30 km away and the ground by you 50 m -- the water and the bottom under it flickered without)
+      try { r = new T.WebGLRenderer({ canvas: m3Canvas, antialias: true, logarithmicDepthBuffer: true }); } catch(e){ m3Msg.textContent = 'Telefonen kan inte rita 3D'; return; }
+      r.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2)); r.setClearColor(0x141822, 1); r.localClippingEnabled = true;
+      var scene = new T.Scene();
       scene.add(new T.HemisphereLight(0xffffff, 0x8a94a8, 1.6));
       var sun = new T.DirectionalLight(0xffffff, 2.2); sun.position.set(-1, 1.3, -1); scene.add(sun);   // (from the north-west, as the maps' relief)
-      var tex = new T.Texture(mapImgEl); tex.colorSpace = T.SRGBColorSpace; tex.anisotropy = r.capabilities.getMaxAnisotropy();
-      if (mapImgEl.complete && mapImgEl.naturalWidth) tex.needsUpdate = true;
-      else mapImgEl.addEventListener('load', function(){ tex.needsUpdate = true; m3Draw(); }, { once: true });
+      // the map picture, fetched again as a picture of its own (from the browser's cache) -- NOT the map's <img>: three.js
+      // sizes a texture by the element's size on the page, and a big lake's picture is shown at twice its own size (it came out black)
+      var pic = new Image(), tex = new T.Texture(pic); tex.colorSpace = T.SRGBColorSpace; tex.anisotropy = r.capabilities.getMaxAnisotropy();
+      pic.onload = function(){ tex.needsUpdate = true; m3Draw(); };
+      pic.src = mapImgEl.src;
+      var detT = { value: tex }, detR = { value: new T.Vector4(0, 0, 0, 0) };   // the sharp patch's picture and where it lies (z = 0: none)
+      function plane(x, z){ return new T.Plane(new T.Vector3(x, 0, z), 0); }
+      function cut(){ return [plane(-1, 0), plane(1, 0), plane(0, -1), plane(0, 1)]; }   // (m3Hole)
+      function ground(planes){   // the ground's look: the sharp patch's picture instead of the map picture's where it reaches (faded in at its edge)
+        var mt = new T.MeshLambertMaterial({ map: tex, clippingPlanes: planes, clipIntersection: true });
+        mt.onBeforeCompile = function(sh){
+          sh.uniforms.uDet = detT; sh.uniforms.uDetR = detR;
+          sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nuniform sampler2D uDet;\nuniform vec4 uDetR;')
+            .replace('#include <map_fragment>', '#include <map_fragment>\nvec2 dUv = (vMapUv - uDetR.xy) * uDetR.zw; vec2 dE = min(dUv, 1.0 - dUv);\n' +
+              'diffuseColor.rgb = mix(diffuseColor.rgb, texture2D(uDet, dUv).rgb, uDetR.z > 0.0 ? smoothstep(0.0, 0.05, min(dE.x, dE.y)) : 0.0);');
+        };
+        return mt;
+      }
+      function wet(planes){ return new T.MeshBasicMaterial({ color: 0x2f7fd6, transparent: true, opacity: 0.22, depthWrite: false, clippingPlanes: planes, clipIntersection: true }); }
       // where the map looked, about as much of it: tilted, north up
       var c = cam || { px: (innerWidth / 2 - originX) / scale, py: (innerHeight / 2 - originY) / scale, d: innerHeight / scale * WEB_METERS_PER_PX * 1.2, az: 0, tilt: 0.95 };
       m3 = { T: T, r: r, scene: scene, cam: new T.PerspectiveCamera(M3_FOV, 1, 1, 1e5), tex: tex, v: new T.Vector3(), marks: [], t: 0, c: m3Clamp(c),
-             detT: { value: tex }, detR: { value: new T.Vector4(0, 0, 0, 0) },   // the sharp patch's picture and where it lies (z = 0: none)
-             mat: new T.MeshLambertMaterial({ map: tex }),
-             wmat: new T.MeshBasicMaterial({ color: 0x2f7fd6, transparent: true, opacity: 0.22, depthWrite: false }) };
-      // the sharp patch's picture instead of the map picture's where it reaches (faded in at its edge)
-      m3.mat.onBeforeCompile = function(sh){
-        sh.uniforms.uDet = m3.detT; sh.uniforms.uDetR = m3.detR;
-        sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nuniform sampler2D uDet;\nuniform vec4 uDetR;')
-          .replace('#include <map_fragment>', '#include <map_fragment>\nvec2 dUv = (vMapUv - uDetR.xy) * uDetR.zw; vec2 dE = min(dUv, 1.0 - dUv);\n' +
-            'diffuseColor.rgb = mix(diffuseColor.rgb, texture2D(uDet, dUv).rgb, uDetR.z > 0.0 ? smoothstep(0.0, 0.05, min(dE.x, dE.y)) : 0.0);');
-      };
+             detT: detT, detR: detR, cut: cut(), cutW: cut(), far: null, near: null };
+      m3.mat = ground(null); m3.wmat = wet(null); m3.matFar = ground(m3.cut); m3.wmatFar = wet(m3.cutW);   // (the whole map's: left out where the fine mesh lies)
       m3MarksSync(); m3Draw();
     }).catch(function(){ m3Msg.textContent = 'Kunde inte ladda 3D'; });
   }
@@ -213,7 +244,11 @@
     if (m3.raf) cancelAnimationFrame(m3.raf);
     clearTimeout(m3.rt);
     // all of it back from the GPU, as Under ytan -- and the canvas down to 1 px: three's dispose() keeps the drawing buffer (~40 MB on a phone)
-    if (m3.r){ m3.scene.traverse(function(o){ if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); }); m3.tex.dispose(); m3.r.setSize(1, 1, false); m3.r.dispose(); }
+    if (m3.r){
+      m3.scene.traverse(function(o){ if (o.geometry) o.geometry.dispose(); });
+      [m3.mat, m3.wmat, m3.matFar, m3.wmatFar, m3.tex].forEach(function(o){ o.dispose(); });
+      m3.r.setSize(1, 1, false); m3.r.dispose();
+    }
     if (m3.det){ m3.det.tex.dispose(); m3.det.cv.width = m3.det.cv.height = 1; }   // (the sharp patch: 16 MB of canvas)
     m3 = null; m3Land = null; m3Marks.innerHTML = ''; m3View.classList.remove('show');
   }
@@ -255,12 +290,12 @@
   m3Canvas.addEventListener('webglcontextlost', m3Close);   // (iOS took the 3D away, e.g. the app was put aside: close rather than show a black picture)
   window.__ffMap3d = function(o){   // (for the tests: o = camera values to set)
     if (o && !o.pic && m3 && m3.r){ Object.assign(m3.c, o); m3Touch(); }
-    var hit = null;   // where the middle of the screen meets the mesh: its height (m, unscaled) and place
-    if (m3 && m3.mesh){
+    var hit = null;   // where the middle of the screen meets the ground (the fine mesh where there is one): its height (m, unscaled) and place
+    if (m3 && m3.far){
       var rc = new m3.T.Raycaster(); rc.setFromCamera(new m3.T.Vector2(0, 0), m3.cam);
-      var h = rc.intersectObject(m3.mesh)[0];
-      if (h) hit = { y: h.point.y / m3Cfg.ex, at: imgPxToLatLon(m3.at.px + h.point.x / WEB_METERS_PER_PX, m3.at.py + h.point.z / WEB_METERS_PER_PX) };
+      var h = (m3.near && rc.intersectObject(m3.near.mesh)[0]) || rc.intersectObject(m3.far.mesh)[0];
+      if (h) hit = { y: h.point.y / m3Cfg.ex, at: imgPxToLatLon(IMG_W / 2 + h.point.x / WEB_METERS_PER_PX, IMG_H / 2 + h.point.z / WEB_METERS_PER_PX) };
     }
     var det = m3 && m3.det && m3.det.z ? { z: m3.det.z, n: m3.det.n || 0, X: m3.det.X, Y: m3.det.Y, url: o && o.pic ? m3.det.cv.toDataURL('image/jpeg', 0.6) : '' } : null;   // (the sharp patch; pic: its picture too)
-    return { land: !!(m3Land && m3Land.length), det: det, hit: hit, open: !!m3, ready: !!(m3 && m3.mesh), n: m3 && m3.n, builds: m3 && m3.nb, c: m3 && m3.c, at: m3 && m3.at, marks: m3 && m3.marks ? m3.marks.length : 0, cfg: m3Cfg };
+    return { land: !!(m3Land && m3Land.length), det: det, hit: hit, open: !!m3, ready: !!(m3 && m3.far && m3.at), n: m3 && m3.n, builds: m3 && m3.nb, c: m3 && m3.c, at: m3 && m3.at, marks: m3 && m3.marks ? m3.marks.length : 0, cfg: m3Cfg };
   };

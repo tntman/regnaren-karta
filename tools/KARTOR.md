@@ -55,7 +55,7 @@ Alla kommandon körs från repots rot (`E:\github\regnaren-karta`), med `py -3`.
 8. **Namn från OpenStreetMap:** `py -3 tools/osm_names.py <id>` → `lakes/<id>/names.json` (öar, uddar, vikar, gårdar,
    byar med namn inom kartbildens yta; läser `lake.json` från steg 7, så kör den efter rit-steget). Visas som
    Filter → Lager → Namn (se slutet av filen). Kolla utskriften: en sjö kan ha 0 namn i vattnet (Sibbof. har det).
-8b. **Markens höjder (3D-kartan, main-chattens verktyg):** `py -3 -I tools/land_height.py <id>` → `docs/land/<id>_v1.txt` +
+8b. **Markens höjder (3D-kartan, main-chattens verktyg):** `py -3 -I tools/land_height.py <id>` → `docs/land/<id>_v<V>.txt` +
    `lakes/<id>/land.json` (Lantmäteriets laserdata; rutorna laddas ner för hand med inloggning – `tools/NOTES_3D.md`).
    Kör om den när sjöns kartutsnitt ändras: bygget varnar annars, och marken är platt i 3D tills dess.
 9. **Bygg:** `py -3 tools/build.py` (sjön dyker upp i menyn av sig själv; names.json och land.json bäddas in).

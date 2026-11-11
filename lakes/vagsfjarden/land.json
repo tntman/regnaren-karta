@@ -1,0 +1,16 @@
+{
+ "file": "land/vagsfjarden_v2.txt",
+ "w": 1163,
+ "h": 875,
+ "max": 154,
+ "level": 1.8,
+ "credit": "Höjddata: Lantmäteriet",
+ "geo": [
+  14,
+  2309573,
+  1146389,
+  872,
+  872,
+  656
+ ]
+}

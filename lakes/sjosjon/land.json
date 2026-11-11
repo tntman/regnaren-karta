@@ -1,0 +1,16 @@
+{
+ "file": "land/sjosjon_v2.txt",
+ "w": 504,
+ "h": 1054,
+ "max": 82,
+ "level": 35.7,
+ "credit": "Höjddata: Lantmäteriet",
+ "geo": [
+  14,
+  2304580,
+  1155389,
+  252,
+  252,
+  527
+ ]
+}

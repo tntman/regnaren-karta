@@ -1,8 +1,8 @@
 {
- "file": "land/regnaren_v1.txt",
+ "file": "land/regnaren_v2.txt",
  "w": 1627,
  "h": 795,
- "step": 0.25,
+ "max": 48,
  "level": 51.2,
  "credit": "Höjddata: Lantmäteriet",
  "geo": [

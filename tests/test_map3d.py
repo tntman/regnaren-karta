@@ -64,7 +64,7 @@ with sync_playwright() as p:
     ld = json.load(open('../lakes/regnaren/land.json', encoding='utf-8'))
     g = unpack(open('../docs/' + ld['file']).read().strip(), ld['w'] * ld['h']).reshape(ld['h'], ld['w']).astype(float)
     g[g > 250] = 0; g = g[5:-5, 5:-5]; j, i = divmod(int(g.argmax()), g.shape[1])
-    top = g[j, i] * ld['step']; TOP = {'px': (i + 5.5) / ld['w'] * lk['geo']['imgW'], 'py': (j + 5.5) / ld['h'] * lk['geo']['imgH'], 'd': 400, 'tilt': 0.05, 'az': 0}
+    top = (g[j, i] / 250) ** 2 * ld['max']; TOP = {'px': (i + 5.5) / ld['w'] * lk['geo']['imgW'], 'py': (j + 5.5) / ld['h'] * lk['geo']['imgH'], 'd': 400, 'tilt': 0.05, 'az': 0}
     M(pg, TOP); pg.wait_for_timeout(900)
     s = M(pg)
     check('the land has its height (the land file read apart from the app says the same)', s['land'] and top > 20 and abs(s['hit']['y'] - top) < 3, (top, s['hit']))
@@ -93,5 +93,24 @@ with sync_playwright() as p:
     M(pg, TOP); pg.wait_for_timeout(900)
     s = M(pg)
     check('no land heights to fetch: flat land, just over the water', not s['land'] and abs(s['hit']['y'] - 0.3) < 0.01 and not errs, (s['land'], s['hit'], errs))
+    b.close()
+
+    # a big lake (its map picture is stored at half size and shown at twice that): far out the whole map is there with its
+    # picture on -- it came out black (the texture was sized by the picture's size on the page), and there is no fog
+    b, ctx, pg, errs = new_page(p, geo=(59.40, 17.58), name='Filip')
+    logs = []; pg.on('console', lambda m: logs.append(m.text))
+    pg.evaluate("localStorage.setItem('ffmap_lake_v1', 'malaren')"); pg.reload(); pg.wait_for_timeout(3500)
+    hold_map_btn(pg); pg.click('#mapTypePop .m3Opt'); pg.wait_for_timeout(3500)
+    M(pg, {'d': 15000, 'tilt': 0.6}); pg.wait_for_timeout(1500)
+    s = M(pg)
+    lum = ImageStat.Stat(Image.open(io.BytesIO(pg.screenshot())).convert('L').crop((40, 250, 350, 650))).mean[0]
+    gl = [l for l in logs if 'GL_INVALID' in l]
+    check('Mälaren far out: the whole map with its picture on (not black), no graphics errors', s['at']['full'] and lum > 40 and not gl, (s['at'], round(lum), gl[:2]))
+    pg.screenshot(path='shot_map3d_malaren.png')
+    M(pg, {'d': 3000, 'tilt': 1.2}); pg.wait_for_timeout(1500)
+    s = M(pg)
+    top = ImageStat.Stat(Image.open(io.BytesIO(pg.screenshot())).convert('L').crop((40, 330, 350, 420))).mean[0]
+    check('...nearer and tilted: a fine mesh around the point, the rest of the lake still there behind it (no fog), the land with its heights', not s['at']['full'] and s['n'] <= 401 and s['land'] and top > 40, (s['at'], s['land'], round(top)))
+    check('no page errors', not errs, errs)
     b.close()
 print('\n%d/%d passed' % (sum(results), len(results)))

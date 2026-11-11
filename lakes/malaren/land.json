@@ -1,0 +1,16 @@
+{
+ "file": "land/malaren_v2.txt",
+ "w": 1536,
+ "h": 2560,
+ "max": 69,
+ "level": 1.0,
+ "credit": "Höjddata: Lantmäteriet",
+ "geo": [
+  14,
+  2300517,
+  1229473,
+  3072,
+  3072,
+  5120
+ ]
+}

@@ -81,10 +81,11 @@ där detaljbitarna tar över vid inzoomning, sparar ~47 MB. Det är kartformatet
   (lutningen = Kartanalys, griden byggs inte), test_ar (ett bygge per drag), test_lakes (bara sjöns positioner läses).
 
 ## 3D-karta (2026-11-11, `73-map3d.js`, `tools/NOTES_3D.md`)
-- Bara medan vyn är öppen: rutnätet (högst 400 × 400 punkter, ca 10 MB i minnet och lika mycket på grafikkortet), den skarpa
-  bitens canvas (2048 × 2048 = 16 MB + grafikkortet, bara när man är så nära att en zoomnivå används) och markens höjdnät
-  (Regnaren 1,3 MB). Kartbilden som textur är samma bild som redan är laddad.
+- Bara medan vyn är öppen: två rutnät (hela kartan + ett fint runt punkten man tittar på, högst 400 × 400 punkter vardera,
+  ca 10 MB var i minnet och lika mycket på grafikkortet), den skarpa bitens canvas (2048 × 2048 = 16 MB + grafikkortet, bara
+  när man är så nära att en zoomnivå används), markens höjdnät (Regnaren 1,3 MB, Mälaren 3,9 MB) och kartbilden som textur
+  (samma fil som kartans, ur webbläsarens cache: Mälaren 16 MB på grafikkortet).
 - ✕ lämnar tillbaka allt: geometri, texturer, canvasen ner till 1 px, ritytan ner till 1 px (three.js `dispose()` behåller
   annars ritytan, ca 40 MB på en telefon), höjdnätet.
 - Ritas bara när något ändrats (ingen loop). Den skarpa biten skickas till grafikkortet högst ~8 gånger per sekund medan bitarna kommer.
-- Inte mätt på iPhone eller på Mälaren än – gör det innan Mälaren får höjdfil.
+- Filip har kört det på sin iPhone på Regnaren och Mälaren (2026-11-11), ingen krasch rapporterad. Inte mätt i siffror.

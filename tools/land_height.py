@@ -12,9 +12,11 @@ bilinearly into the lake's own grid (the depth grid's cells) -- so the app's fil
 EU-DEM/SRTM) -- the tree tops are in it, so the land jumped up in teeth along the shore. Left out.)
 
 Out (nothing of the map chat's is touched -- its tools empty docs/lakes/<id>/ on every render, so the file lies beside):
-  docs/land/<id>_v<V>.txt   a byte per cell = height above the lake / step (0-250), 255 = lake; runs of 255 packed
-                            (251, count lo, count hi), base64 -- the depth file's format, unpacked by the same code
-  lakes/<id>/land.json      file, w, h, step, level (the lake's surface, m above the sea), credit, and the map
+  docs/land/<id>_v<V>.txt   a byte per cell (0-250): height above the lake = max x (byte / 250)^2 -- fine steps low down,
+                            where the shore is (Regnaren: 6 cm at 1 m, 44 cm at the top; linear steps of 1 m showed as
+                            stairs on flat ground by a lake with 150 m hills); 255 = lake; runs of 255 packed (251, count
+                            lo, count hi), base64 -- the depth file's packing, unpacked by the same code
+  lakes/<id>/land.json      file, w, h, max, level (the lake's surface, m above the sea), credit, and the map
                             rectangle it was made for ("geo": tools/build.py leaves a stale one out)
 A new map rectangle for a lake (the map chat): run this again. New data for a lake that is already out: V + 1.
 """
@@ -24,7 +26,7 @@ import numpy as np
 from scipy.ndimage import map_coordinates
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-V = 1          # in the file's name: the service worker keeps a file for good, new data = a new name
+V = 2          # in the file's name: the service worker keeps a file for good, new data = a new name (1: linear steps)
 LM = 'https://dl1.lantmateriet.se/hojd/data/grid/mhm/%d_%d/m%d_%d.tif'
 
 def unpack(b64, n):
@@ -110,22 +112,22 @@ def make(lake, dem):
     inlake = unpack(open(os.path.join(ROOT, 'docs', 'lakes', lake, dp['file'])).read().strip(), w * h).reshape(h, w) != 255
     level = float(np.nanmedian(hm[inlake]))                                 # the lake's surface in the height data
     up = np.clip(np.nan_to_num(hm, nan=level) - level, 0, None)
-    # ponytail: a byte per cell (0,25 m steps on Regnaren) -- no steps seen on flat ground at Höjd x 8; two bytes if they show
-    step = next(s for s in (0.1, 0.25, 0.5, 1, 2, 4, 8) if np.percentile(up[~inlake], 99.9) <= 250 * s)
-    g = np.clip(np.round(up / step), 0, 250).astype(np.uint8); g[inlake] = 255
+    mx = math.ceil(float(up[~inlake].max()))                                # ponytail: a byte per cell, square-root steps; two bytes if stairs still show
+    g = np.clip(np.round(250 * np.sqrt(up / mx)), 0, 250).astype(np.uint8); g[inlake] = 255
     txt = pack(g)
     assert (unpack(txt, w * h) == g.ravel()).all()                          # what the app unpacks is what was made
     os.makedirs(os.path.join(ROOT, 'docs', 'land'), exist_ok=True)
+    for old in range(1, V): old = os.path.join(ROOT, 'docs', 'land', '%s_v%d.txt' % (lake, old)); os.path.exists(old) and os.remove(old)
     name = 'land/%s_v%d.txt' % (lake, V)
     open(os.path.join(ROOT, 'docs', name), 'w', newline='\n').write(txt + '\n')
-    json.dump({'file': name, 'w': w, 'h': h, 'step': step, 'level': round(level, 1), 'credit': 'Höjddata: Lantmäteriet',
+    json.dump({'file': name, 'w': w, 'h': h, 'max': mx, 'level': round(level, 1), 'credit': 'Höjddata: Lantmäteriet',
                'geo': [geo[x] for x in ('zoom', 'originX', 'originY', 'fullW', 'imgW', 'imgH')]},
               open(os.path.join(ROOT, 'lakes', lake, 'land.json'), 'w', encoding='utf-8', newline='\n'), ensure_ascii=False, indent=1)
     j, i = np.unravel_index(np.argmax(np.where(inlake, 0, up)), up.shape)
     la, lo = latlon(gx[i], gy[j], geo['zoom'])
-    print('%s: %d x %d cells of %.1f m from the %d m level, step %.2f m, lake %.1f m above the sea (%.0f %% of its cells within 0,5 m of that), '
-          'highest %.0f m above the lake at %.5f, %.5f, %.0f kB' % (lake, w, h, cell, r, step, level,
-          100 * float(np.mean(np.abs(hm[inlake] - level) <= 0.5)), up[j, i], la, lo, len(txt) / 1024))
+    print('%s: %d x %d cells of %.1f m from the %d m level, steps of %.2f m at 1 m and %.2f m at the top, lake %.1f m above the sea (%.0f %% of its '
+          'cells within 0,5 m of that), highest %.0f m above the lake at %.5f, %.5f, %.0f kB' % (lake, w, h, cell, r, 2 * math.sqrt(mx) / 250, 2 * mx / 250,
+          level, 100 * float(np.mean(np.abs(hm[inlake] - level) <= 0.5)), up[j, i], la, lo, len(txt) / 1024))
 
 if __name__ == '__main__':
     if len(sys.argv) < 2: sys.exit(__doc__)

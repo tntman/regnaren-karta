@@ -1,0 +1,16 @@
+{
+ "file": "land/sibbo_v2.txt",
+ "w": 706,
+ "h": 1317,
+ "max": 53,
+ "level": 0.5,
+ "credit": "Höjddata: Lantmäteriet",
+ "geo": [
+  14,
+  2298431,
+  1245211,
+  706,
+  706,
+  1317
+ ]
+}
