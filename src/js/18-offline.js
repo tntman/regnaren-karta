@@ -32,6 +32,7 @@
   function offlineFiles(){
     var list = [lakeUrl(LAKE_DIR + LAKE.depth.file)];
     if (LAKE.bottom) list.push(lakeUrl(LAKE_DIR + LAKE.bottom.file));     // (Kartanalys: vegetation + hardness)
+    if (LAKE.land) list.push(lakeUrl(LAKE.land.file));                    // (3D-karta: the land's heights)
     var lineDirs = {};
     QUICK_STYLES.forEach(function(sid){
       list.push(mapFile(sid), thumbFile(sid));

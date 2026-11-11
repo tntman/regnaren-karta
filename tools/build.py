@@ -29,6 +29,11 @@ for d in sorted(os.listdir(os.path.join(ROOT, 'lakes'))):
         assert lk['id'] == d, 'lake.json id must match its folder: ' + d
         nf = os.path.join(ROOT, 'lakes', d, 'names.json')      # place names from OpenStreetMap (tools/osm_names.py)
         if os.path.exists(nf): lk['names'] = json.load(open(nf, encoding='utf-8'))
+        lf = os.path.join(ROOT, 'lakes', d, 'land.json')       # the land's heights for the 3D map (tools/land_height.py)
+        if os.path.exists(lf):
+            land = json.load(open(lf, encoding='utf-8'))
+            if land.pop('geo') == [lk['geo'][k] for k in ('zoom', 'originX', 'originY', 'fullW', 'imgW', 'imgH')]: lk['land'] = land
+            else: print('WARNING: %s was made for another map rectangle -- run tools/land_height.py %s (flat land in 3D until then)' % (lf, d))
         lakes.append(lk)
 lakes.sort(key=lambda l: (l.get('order', 0 if l['id'] == 'regnaren' else 100), l['name']))
 

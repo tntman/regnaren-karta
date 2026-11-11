@@ -35,6 +35,10 @@ spåren, Ledare, Kompass, Namn, Fog of war, tävlingslåset, Storlek/När, start
   Nyhet: "Ny karta: Gryts Skärgård – Valdemarsviken ut till Flisdjupet, med djupfärger i hela skärgården" (NYTT)
 - [ ] 2026-11-11 – Regnaren och Mälaren: djupfärger i nästan hela sjön – Filips egen loggning fyller där Genesis saknar djup (Genesis
   överst, kurvorna bara från Genesis). Hjälp: Kartan (var djupet kommer ifrån). Nyhet: "Regnaren och Mälaren har nu djupfärger i nästan hela sjön" (BÄTTRE)
+- [ ] 2026-11-11 – Nytt kartläge: 3D-karta (håll kartknappen → 3D-karta). Botten och marken runt sjön i 3D med kartbilden på, skarp på nära håll.
+  Ett finger vrider och lutar, två flyttar, nyp zoomar; Höjd ×, Vatten, Till mig, norrpil. Marken har riktiga höjder på Regnaren (Lantmäteriet),
+  platt på övriga sjöar tills deras filer finns. Hjälp: nytt avsnitt vid kartlägena + animering `map3d`.
+  Nyhet: "Ny 3D-karta: se botten och marken runt sjön i 3D – håll kartknappen" (NYTT)
 
 ---
 

@@ -130,6 +130,9 @@
       return '<button type="button" class="styleOpt' + (st.id === mapStyle ? ' active' : '') + '" data-style="' + st.id + '"><img src="' + thumbFile(st.id) + '" alt="">' +
         '<span class="soText"><span class="soName">' + st.name + '</span></span><span class="soCheck"></span></button>';
     }).join('') +
+      // the map in 3D: the bottom and the land around it, a full-screen view of its own (73-map3d.js)
+      '<button type="button" class="styleOpt m3Opt" data-3d="1"><span class="m3Thumb"></span>' +
+      '<span class="soText"><span class="soName">3D-karta</span><span class="soDesc">Botten och mark i 3D</span></span><span class="hmArrow">›</span></button>' +
       // last: the heat map of the catches -- not a map picture: it opens its own panel (68-heatmap.js)
       '<button type="button" class="styleOpt hmOpt' + (hmOn ? ' active' : '') + '" data-heat="1"><span class="hmThumb"></span>' +
       '<span class="soText"><span class="soName">Heatmap</span><span class="soDesc">' + (hmOn ? 'På · öppnar menyn' : 'Fångster · öppnar meny') + '</span></span><span class="hmArrow">›</span></button>' +
@@ -162,6 +165,7 @@
     if (!b) return;
     if (b.getAttribute('data-heat')){ openMapTypePop(false); hmShowPanel(true); return; }
     if (b.getAttribute('data-ar')){ openMapTypePop(false); arOpen(); return; }
+    if (b.getAttribute('data-3d')){ openMapTypePop(false); m3Open(); return; }
     var id = b.getAttribute('data-style');
     openMapTypePop(false);
     if (id !== mapStyle) loadMapStyle(id, false);

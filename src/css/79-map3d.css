@@ -1,0 +1,16 @@
+  /* ---- 3D-karta (js/73-map3d.js): the row in the map-style list + the full-screen view. The controls, ✕ and the
+     message look like Under ytan's (their rules are shared in 79-ar.css) ---- */
+  #mapTypePop .styleOpt.m3Opt{border-color:rgba(58,134,255,.6);}
+  .m3Thumb{width:64px;height:38px;border-radius:8px;flex:0 0 auto;background:#1C212C url(thumb_3d.png) center/100% 100% no-repeat;}   /* (a piece of Regnaren in the view itself) */
+  .m3Opt .soDesc{display:block;}
+  #m3View{position:fixed;inset:0;z-index:70;background:#141822;display:none;overflow:hidden;touch-action:none;}
+  #m3View.show{display:block;}
+  #m3Canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;}
+  /* the map's own pins, copied on top of the picture: only to look at */
+  #m3Marks{position:absolute;inset:0;overflow:hidden;pointer-events:none;}
+  #m3Marks *{pointer-events:none;}
+  #m3Marks.othersDim .wpPin--other{opacity:.5;}
+  .m3Me{position:absolute;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;background:var(--amber);border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.5);z-index:5;}
+  #m3North{right:auto;left:16px;display:flex;align-items:center;justify-content:center;padding:0;}
+  #m3North svg{width:20px;height:20px;display:block;}
+  #m3Src{font-size:10.5px;opacity:.55;padding-top:2px;}   /* (whose height data the land is made of) */
