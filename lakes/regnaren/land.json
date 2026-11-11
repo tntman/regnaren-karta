@@ -1,0 +1,16 @@
+{
+ "file": "land/regnaren_v1.txt",
+ "w": 1627,
+ "h": 795,
+ "step": 0.25,
+ "level": 51.2,
+ "credit": "Höjddata: Lantmäteriet",
+ "geo": [
+  14,
+  2280015,
+  1243182,
+  1627,
+  1627,
+  795
+ ]
+}

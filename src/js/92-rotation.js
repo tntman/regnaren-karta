@@ -29,6 +29,7 @@
       if (helpView.classList.contains('show')) st.help = helpLastPlace || helpPlace();
       st.trk = trkPanel.classList.contains('show');
       st.ar = arView.classList.contains('show');   // (Under ytan, 72-ar.js)
+      if (m3 && m3.r) st.m3 = m3.c;                // (3D-karta, 73-map3d.js: where it looks)
       if (pfCard.classList.contains('show')) st.pf = pfName;
       st.wx = wxCard.classList.contains('show');
       st.probe = probe;
@@ -81,6 +82,7 @@
       if (r.an) showAnPanel(true);
       if (r.trk) trkShowPanel(true);
       if (r.ar) arOpen();
+      if (r.m3) m3Open(r.m3);
       if (r.follow) setFollow(true);
       if (r.pf) openProfile(r.pf);
       if (r.hm){ if (r.hm.card) hmPendingCard = r.hm.card; hmSetOn(true, r.hm.panel, true); }   // (the card first: the copy may be there at once)

@@ -72,6 +72,7 @@ All text i appen är på svenska. Svara Filip på svenska, kort och tydligt.
 | Spår (sparas för evigt i Firestore `tracks`), Spår-menyn, stopp som ringar, Fog of war | `tools/NOTES_SPAR.md` |
 | Båtikoner (valbar ikon för din båt – idé, förslagsblad, ej byggt) | `tools/boaticons.md` |
 | Testläget (= Demo Mode: egen testdatabas, admin styr en låtsastävling) | `tools/NOTES_TESTLAGE.md` |
+| 3D-karta (botten och mark i 3D, markens höjder från Lantmäteriet, `tools/land_height.py`) | `tools/NOTES_3D.md` |
 
 Uppdatera rätt anteckning när något ändras.
 
@@ -175,6 +176,11 @@ Uppdatera rätt anteckning när något ändras.
   Riktning = `deviceorientation` (iOS: `webkitCompassHeading`, lovet i trycket). Ytan mäts inte: ögat "Ögonhöjd" över vattnet. Reglage nertill (frostat,
   genomskinligt): Avstånd 100–1000 m, Djup × 1–5, Ögonhöjd; dra åt sidan = vrid botten (kompassfel), allt i `ffmap_ar_v1`. Knappar överst (`#arChips`, på prov – Filip väljer sedan): Kamera, Rutnät (botten), Yta (rutnät på vattenytan), Prickar, Vågor, Strand (vattenlinjen vid land, ska ligga på stranden i kameran), Stavar (djupstavar), Lod (rakt under dig), Djupfog (botten mörknar med djupet, i shadern). Prövat och borttaget: djuplinjer, djupfärger rött → mörkblått. Svepbar överst: ner = minimerad ('Reglage'), upp/tryck = tillbaka; liggande = reglagen i högra hörnet (ringen i mitten syns). ✕ = av. Överlever vridning.
   Bildvinkeln `AR_FOV` (62°) är en gissning – justera efter prov på sjön. Ikonen i listan = `assets/thumb_ar.png` (renderad en gång med three.js).
+- **3D-karta** (`js/73-map3d.js`, `css/79-map3d.css`, Filip 2026-11-11, `tools/NOTES_3D.md`): i kartlägeslistan direkt efter kartstilarna. Helskärm: botten (−djup) och
+  marken (höjd över sjön ur `LAKE.land` = `lakes/<id>/land.json` + `docs/land/<id>_v1.txt`, Lantmäteriets laserdata nedräknad av `tools/land_height.py`; sjö utan fil = platt mark)
+  som ETT rutnät (högst 400 punkter per sida) runt punkten man tittar på, med kartbilden som textur och zoomnivåns bitar ihopsatta till en skarp bit nära (`m3Detail`).
+  Ett finger = vrid/luta, två = flytta, nyp = zooma. Din båt, platser och andras båtar = kopior av kartans märken (bara titta). Höjd × 1–10, Vatten, Till mig, norrpil (`ffmap_3d_v1`).
+  "Höjddata: Lantmäteriet" ska stå i vyn (licensen). Nytt kartutsnitt för en sjö → kör om `land_height.py` (bygget varnar, marken är platt tills dess).
 - **Kraschlogg** (Inställningar → Avancerat → Senaste krasch, `js/91-crashlog.js`): en rad om vad appen gör sparas i localStorage var 2:a
   sekund; stängdes sidan inte rent (pagehide) visas raden vid nästa start. Rader samlas i `tools/KRASCHLOGG.md`.
 - **Minnesbudget** (`tools/PLAN_MINNE.md`): beräkningar för hela sjön på `workGrid()` (≤ 1,5 M rutor, Mälaren 20 m), skärmlager via

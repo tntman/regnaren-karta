@@ -116,20 +116,22 @@
     }).catch(function(e){ console.warn('djupdata', e); });
   }
   fetchDepthGrid();
+  // a packed grid (this format; the land's heights for the 3D map are packed the same way, 73-map3d.js) -> its n bytes
+  function unpackGrid(b64, n){
+    var bin = atob(b64), g = new Uint8Array(n), j = 0;
+    for (var i = 0; i < bin.length; i++){
+      var v = bin.charCodeAt(i);
+      if (v === 251 || v === 253){ // a run of land (255) / of lake without depth data (252)
+        var k = bin.charCodeAt(i + 1) | (bin.charCodeAt(i + 2) << 8); g.fill(v === 251 ? 255 : 252, j, j + k); j += k; i += 2;
+      }
+      else g[j++] = v;
+    }
+    return g;
+  }
   function loadDepthGrid(){
     if (depthGrid) return depthGrid;
     if (!DEPTH_B64) return null; // (still on its way)
-    try {
-      var bin = atob(DEPTH_B64), g = new Uint8Array(DEPTH_W * DEPTH_H), j = 0;
-      for (var i = 0; i < bin.length; i++){
-        var v = bin.charCodeAt(i);
-        if (v === 251 || v === 253){ // a run of land (255) / of lake without depth data (252)
-          var n = bin.charCodeAt(i + 1) | (bin.charCodeAt(i + 2) << 8); g.fill(v === 251 ? 255 : 252, j, j + n); j += n; i += 2;
-        }
-        else g[j++] = v;
-      }
-      depthGrid = g;
-    } catch(e){ console.warn('djupdata', e); }
+    try { depthGrid = unpackGrid(DEPTH_B64, DEPTH_W * DEPTH_H); } catch(e){ console.warn('djupdata', e); }
     return depthGrid;
   }
   // the grid that things for the whole lake are worked out on (Kartanalys, Vind och lä, the route): at most ~1,5 M
@@ -153,22 +155,25 @@
     }
     return (workGridC = { g: o, W: W, H: H, k: k });
   }
-  function depthAtImgPx(x, y){
-    var g = loadDepthGrid();
-    if (!g) return null;
-    var gx = x / IMG_W * DEPTH_W - 0.5, gy = y / IMG_H * DEPTH_H - 0.5;
+  // a grid's value at a map-picture px: the cells around it weighed together (bilinear), only those with a value
+  // (<= 250); null where there are (nearly) none. The depth grid -- and the land's heights for the 3D map.
+  function gridValAt(g, W, H, x, y){
+    var gx = x / IMG_W * W - 0.5, gy = y / IMG_H * H - 0.5;
     var x0 = Math.floor(gx), y0 = Math.floor(gy), fx = gx - x0, fy = gy - y0;
     var sum = 0, wsum = 0;
     for (var dy = 0; dy <= 1; dy++) for (var dx = 0; dx <= 1; dx++){
       var xi = x0 + dx, yi = y0 + dy;
-      if (xi < 0 || yi < 0 || xi >= DEPTH_W || yi >= DEPTH_H) continue;
-      var v = g[yi * DEPTH_W + xi];
+      if (xi < 0 || yi < 0 || xi >= W || yi >= H) continue;
+      var v = g[yi * W + xi];
       if (v > 250) continue; // land (255), or lake without depth data (252)
       var w = (dx ? fx : 1 - fx) * (dy ? fy : 1 - fy);
       sum += v * w; wsum += w;
     }
-    if (wsum < 0.2) return null; // (on land / no depth data / outside the map)
-    return sum / wsum * DEPTH_STEP;
+    return wsum < 0.2 ? null : sum / wsum; // (null: on land / no depth data / outside the map)
+  }
+  function depthAtImgPx(x, y){
+    var g = loadDepthGrid(), v = g ? gridValAt(g, DEPTH_W, DEPTH_H, x, y) : null;
+    return v === null ? null : v * DEPTH_STEP;
   }
   // lake or land? The lake = Genesis' data + the lake's outline from OpenStreetMap
   // (Lantmäteriet), so this also knows the parts nobody has logged a depth for.

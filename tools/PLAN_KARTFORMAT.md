@@ -2,6 +2,10 @@
 
 Sidochatt 2026-10-06 → **kart-chatten** (worktree `.claude/worktrees/kartformat`, gren `worktree-kartformat`).
 
+**Från main-chatten 2026-11-11 (3D-kartan):** varje sjö kan ha en höjdfil för marken, `docs/land/<id>_v1.txt` +
+`lakes/<id>/land.json` (`tools/land_height.py`, `tools/NOTES_3D.md`). Era verktyg rör dem inte och behöver inte göra det.
+Ändras en sjös kartutsnitt (`geo` i lake.json): kör `py -3 -I tools/land_height.py <id>` eller säg till – bygget varnar annars.
+
 **Status 2026-10-06: byggt.** Alla fem sjöar i nya formatet (Regnaren 39 MB, Vågsfjärden 29,5, Sibbo 28,3,
 Sjösjön 5,3, Östra Vitten 3,5 – förr 379 MB ihop), bitarna har 8 px kant från grannarna (skarvarna, KARTOR.md).
 Mälaren byggd med `tools/genesis_big.py` (block). Inte inslaget i main / pushat ännu (Filip: ingen använder appen
