@@ -12,8 +12,28 @@ Test: `tests/test_map3d.py`. Höjdfilerna görs av `tools/land_height.py`.
   - ett fint runt punkten man tittar på, med varje djupruta (`m3Patch`, byggs om när fingrarna vilat 0,2 s). Hela kartans
     rutnät skärs ut där det fina ligger (`m3Hole`: fyra klipplan), marken en ruta längre in så att de överlappar.
     Så långt ut att det fina inte vore finare än hela kartans finns bara det senare.
-  - Vatten = −djup (`depthAtImgPx`), sjö utan djup = strax under ytan, land = höjd över sjön ur `LAKE.land` (minst 0,3 m).
+  - Vatten = −djup (`depthAtImgPx`), land = höjd över sjön ur `LAKE.land` (minst 0,3 m). Vatten utan djup = hål (nästa
+    punkt); smala olodade bitar och småöar som djupfilen räknar som sjö = strax under ytan, som förut.
     Markens punkter intill vattnet ligger i vattnets nivå – annars reser sig en brant strand i taggar ur vattnet.
+- **Hål där vattnet saknar djup** (Filip 2026-11-12: ritat vid ytan blev det "stora kullar som egentligen inte finns"
+  bredvid det lodade djupet). Två sorters vatten utan djup:
+  - olodad del av sjön (djupfilens 252) – Östra Vitten 55 % av sjön, Sjösjön 29 %;
+  - vatten utanför sjökortet, som djupfilen räknar som land (255 = land/okänt) – Mälaren 31 % av "marken" (västra och
+    södra delen), Gryt 17 % (havet utanför).
+  - **Höjdfilen pekar ut hålen** (252 där, `holes()` i `tools/land_height.py`) – appen har en enda källa (`m3Void`).
+    Vatten = saknar djup + plant i Lantmäteriets höjder (rutan och dess 8 grannar inom 2 cm – deras höjder är helt plana
+    över vatten: 0,000 m på öppet vatten i alla sju sjöar, medan låg strand, vass och öar inte är det) + i sjöns nivå
+    (± 0,5 m: havet står olika mellan skanningarna) + sammanhängande med sjön (en egen damm förblir mark).
+  - Av det blir det hål bara där det är **minst 30 m brett** (`WIDE` – en smal remsa mellan sjökortets kant och stranden
+    ritas som förut, annars blir det en glipa längs stranden) och **ligger intill lodat vatten djupare än 1 m** (`SHOAL` –
+    ett grund eller en vassvik i grunt vatten ritas som förut, där står ingen kulle).
+  - Regnarens "olodade" fläckar är småöar (upp till 5 m höga) – inga hål där. Gryts likaså (skär).
+  - I appen (`m3Make`): punktens klass `wet` = 0 land, 1 vatten, 2 hål (djup vinner över hål – en ny lodning syns även om
+    höjdfilen är äldre). Trianglar ritas inte om alla tre hörn är hål, eller om hål och vatten möts (det var väggen upp
+    mot ytan). Land + hål ritas: stranden ner till vattnet.
+  - **Vattenytan ligger kvar över hålen** (Filips val): mörkblått vatten utan botten. Vatten av = helt tomt.
+  - Långt bort är rutnätet grovt (ca 60 m på Mälaren och Gryt): små hål syns först på nära håll. Utan höjdfil (går inte
+    att hämta) = inga hål, som förut.
 - **Bilden:** vald kartstils kartbild som textur (flygfoto på land, Genesis färger och kurvor i vattnet – inget ritas av oss),
   ljus från nordväst som kartornas relief. Bilden hämtas som en egen `Image` (ur webbläsarens cache), INTE kartans `<img>`:
   three.js mäter texturen efter elementets storlek på sidan, och Mälarens och Gryts bild visas i dubbel storlek mot filen –
@@ -58,8 +78,9 @@ Test: `tests/test_map3d.py`. Höjdfilerna görs av `tools/land_height.py`.
   Saknas någon skrivs länkarna ut och inget görs. Verktyget läser nivån strax under djupnätets ruta (Regnaren: 4 m-nivån
   → 4,9 m), räknar om SWEREF 99 TM till kartbildens rutnät (Krügers formler) och sparar höjd över sjön (sjöns nivå =
   medianen över vattenrutorna). `py -3 -I tools/land_height.py check` jämför omräkningen med Lantmäteriets egna hörn.
-- **Filer:** `docs/land/<id>_v2.txt` och `lakes/<id>/land.json` (fil, storlek, `max`, nivå, källa, vilket kartutsnitt).
-  - Samma packning som djupfilen (255 = sjö, packade rader, base64), samma rutnät som djupet.
+- **Filer:** `docs/land/<id>_v3.txt` och `lakes/<id>/land.json` (fil, storlek, `max`, nivå, källa, vilket kartutsnitt).
+  - Samma packning som djupfilen (255 = sjö, 252 = hål – se ovan –, packade rader, base64), samma rutnät som djupet.
+    v2 hade inga hål.
   - En byte per ruta: höjd över sjön = `max` × (byte / 250)². Stegen är alltså fina lågt ner, där stranden är (Regnaren:
     6 cm vid 1 m, 38 cm högst upp). v1 hade jämna steg – 1 m på Vågsfjärden (154 m höga berg) hade synts som trappsteg.
   - De ligger utanför `docs/lakes/<id>/`, som kart-chattens verktyg tömmer. `tools/build.py` bäddar in land.json som
@@ -74,8 +95,8 @@ Test: `tests/test_map3d.py`. Höjdfilerna görs av `tools/land_height.py`.
   | Sibbofjärden | 651_63, 652_63 | 0,9 MB | 0,5 m | 52 m |
   | Sjösjön | 693_64, 694_64 | 0,5 MB | 35,7 m | 81 m |
   | Vågsfjärden | 697_66, 698_66 | 0,9 MB | 1,8 m | 154 m |
-  | Mälaren | 9 st (657–659 × 63–65) | 3,8 MB | 1,0 m | 69 m |
-  | Gryts Skärgård | 9 st (643–645 × 59–61) | 4,0 MB | 0,4 m | 81 m |
+  | Mälaren | 9 st (657–659 × 63–65) | 2,7 MB | 1,0 m | 69 m |
+  | Gryts Skärgård | 9 st (643–645 × 59–61) | 3,3 MB | 0,4 m | 81 m |
 
   Kontroll vid körningen: 93–100 % av sjöns rutor ligger inom 0,5 m från sjöns nivå i höjddatan, alltså ligger höjderna
   rätt mot kartan. Sjö utan höjdfil (ny sjö) = platt mark; vyn fungerar ändå.
@@ -86,5 +107,9 @@ Test: `tests/test_map3d.py`. Höjdfilerna görs av `tools/land_height.py`.
 ## Kvar och att tänka på
 - iPhone-appen packar sjöfilerna i appen: app-chatten måste ta med mappen `land/`.
 - Märkena syns genom kullar, eftersom de ligger ovanpå bilden.
+- Småöar som djupfilen räknar som sjö utan djup (Regnaren: upp till 5 m höga) ritas strax under ytan. Höjdfilen kunde
+  ge dem sin höjd (verktyget vet redan att de inte är vatten) – inte gjort.
+- Vatten utan djup som inte gränsar till lodat djup (en vik bakom en smal kanal, en annan sjö) ligger kvar som platt mark
+  med flygfotot på.
 - Inte i vyn: heatmap, Kartanalys, spår, väder, lodet, lägga eller ändra platser. Kartans färgreglage gäller inte heller där.
 - Rutorna i Hämtade filer (5,6 GB) behövs bara om en höjdfil ska göras om, t.ex. efter ett nytt kartutsnitt.

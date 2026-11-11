@@ -6,7 +6,8 @@
      On them the chosen map style's picture (aerial photo on land, Genesis' colours and lines on the water -- nothing of
      that is drawn here), lit from the north-west like the maps' relief. y = -depth in the water; on land the height
      above the lake from LAKE.land (tools/land_height.py: a small file per lake, fetched when the view opens; a lake
-     without one, or no coverage the first time = flat land).
+     without one, or no coverage the first time = flat land). Water nobody has charted -- the lake's own, or outside the
+     chart -- is left as a hole (the same file says where, m3Void): only the water's surface lies over it.
      Near the point you look at the picture is sharp: the zoom level's pieces (the same as the map's own, 12-map.js) put
      together on ONE canvas of M3_TEX px, shown instead of the map picture where it reaches (m3Detail).
      The fingers as in the map apps: one = move, pinch = zoom, twist = turn, two up/down = tilt (own code, further down).
@@ -20,7 +21,7 @@
   var m3View = document.getElementById('m3View'), m3Canvas = document.getElementById('m3Canvas'), m3Marks = document.getElementById('m3Marks'), m3Msg = document.getElementById('m3Msg');
   var m3 = null;   // while open: { T, r, scene, cam, far: the whole map's mesh, near: the fine one (or null), tex, c: the camera { px, py (the image px looked at), d (m away), az, tilt (0 = straight down) }, at: what the fine mesh was built for }
   function m3Save(){ try { localStorage.setItem(M3_KEY, JSON.stringify(m3Cfg)); } catch(e){} }
-  var m3Land = null;   // the land's heights while the view is open: a byte per cell, LAKE.land.max x (byte / 250)^2 = m above the lake, 255 = lake (1 = asked for)
+  var m3Land = null;   // the land's heights while the view is open: a byte per cell, LAKE.land.max x (byte / 250)^2 = m above the lake, 255 = lake, 252 = a hole (1 = asked for)
   function m3LoadLand(){
     if (!LAKE.land || m3Land) return;
     m3Land = 1;
@@ -34,6 +35,13 @@
   function m3LandAt(x, y){   // m above the lake at a map-picture px (0: in the lake, or no heights)
     var v = m3Land && m3Land.length ? gridValAt(m3Land, LAKE.land.w, LAKE.land.h, x, y) : null;
     return v === null ? 0 : v * v / 62500 * LAKE.land.max;   // (square-root steps: fine low down, by the shore -- tools/land_height.py)
+  }
+  // water nobody has charted, 30 m wide or more (the land file's 252: the lake's own, or outside the chart -- which the
+  // depth grid calls land): left as a hole. Drawn at the surface it stood as big hills beside the charted bottom (Filip 2026-11-12)
+  function m3Void(x, y){
+    if (!m3Land || !m3Land.length) return false;
+    var L = LAKE.land, xi = Math.floor(x / IMG_W * L.w), yi = Math.floor(y / IMG_H * L.h);
+    return xi >= 0 && yi >= 0 && xi < L.w && yi < L.h && m3Land[yi * L.w + xi] === 252;
   }
   function m3Clamp(c){
     c.px = Math.max(0, Math.min(IMG_W, c.px)); c.py = Math.max(0, Math.min(IMG_H, c.py));
@@ -49,7 +57,7 @@
     var pos = new Float32Array(nx * ny * 3), uv = new Float32Array(nx * ny * 2), wet = new Uint8Array(nx * ny), idx = [], widx = [];
     for (var j = 0; j < ny; j++) for (var i = 0; i < nx; i++){
       var q = j * nx + i, x = x0 + i * k, y = y0 + j * k, d = depthAtImgPx(x, y);
-      wet[q] = d !== null || isLakeAtImgPx(x, y) ? 1 : 0;
+      wet[q] = d !== null ? 1 : m3Void(x, y) ? 2 : isLakeAtImgPx(x, y) ? 1 : 0;   // 0 land, 1 water, 2 a hole (a depth wins: sounded since the land file was made)
       pos[q * 3] = (x - IMG_W / 2) * M; pos[q * 3 + 2] = (y - IMG_H / 2) * M;
       pos[q * 3 + 1] = d !== null ? -d : wet[q] ? -0.2 : Math.max(0.3, m3LandAt(x, y));   // (lake nobody has logged: just under the surface; land: never lower than just over it -- the water's surface never lies on the land)
       uv[q * 2] = x / IMG_W; uv[q * 2 + 1] = 1 - y / IMG_H;
@@ -60,9 +68,12 @@
       q = j * nx + i;
       if (!wet[q] && ((i && wet[q - 1]) || (i < nx - 1 && wet[q + 1]) || (j && wet[q - nx]) || (j < ny - 1 && wet[q + nx]))) pos[q * 3 + 1] = 0.3;
     }
+    // the ground's triangles -- none where all three corners are holes, and none between a hole and the bottom beside it
+    // (that was the wall up to the surface); a hole's corner with the land's: drawn, the shore down to the water
+    function tri(p, q, r){ if ((wet[p] | wet[q] | wet[r]) < 3 && (wet[p] & wet[q] & wet[r]) < 2) idx.push(p, q, r); }
     for (j = 0; j < ny - 1; j++) for (i = 0; i < nx - 1; i++){
-      var a = j * nx + i, b = a + 1, e = a + nx; idx.push(a, e, b, b, e, e + 1);
-      if (wet[a] || wet[b] || wet[e] || wet[e + 1]) widx.push(a, e, b, b, e, e + 1);   // (the water's surface: where the lake is, a cell in over the shore)
+      var a = j * nx + i, b = a + 1, e = a + nx; tri(a, e, b); tri(b, e, e + 1);
+      if (wet[a] || wet[b] || wet[e] || wet[e + 1]) widx.push(a, e, b, b, e, e + 1);   // (the water's surface: where the lake is, a cell in over the shore -- over the holes too)
     }
     var g = new T.BufferGeometry();
     g.setAttribute('position', new T.BufferAttribute(pos, 3)); g.setAttribute('uv', new T.BufferAttribute(uv, 2)); g.setIndex(idx); g.computeVertexNormals();
@@ -291,7 +302,7 @@
     }
     return 0;
   }
-  function m3Surf(x, y){ var d = depthAtImgPx(x, y); return (d !== null ? -d : isLakeAtImgPx(x, y) ? -0.2 : Math.max(0.3, m3LandAt(x, y))) * m3Cfg.ex; }   // what is drawn at a map-picture px: the bottom, or the land (as m3Make's points)
+  function m3Surf(x, y){ var d = depthAtImgPx(x, y); return (d !== null ? -d : isLakeAtImgPx(x, y) ? -0.2 : Math.max(0.3, m3LandAt(x, y))) * m3Cfg.ex; }   // what is drawn at a map-picture px: the bottom, or the land (as m3Make's points; in a hole: about the water's level, which is what a finger takes hold of there)
   // the point looked at, moved along the line of sight to s m from the camera -- which stays where it is
   function m3Slide(s){
     var c = m3.c, k = (c.d - s) * Math.sin(c.tilt) / WEB_METERS_PER_PX;

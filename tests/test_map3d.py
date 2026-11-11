@@ -3,8 +3,9 @@
 # The fingers as in the map apps (one moves the map, a pinch zooms, a twist turns, two up/down tilt), zoomed in = a finer
 # mesh; Vatten / Höjd are remembered; ✕ closes all of it.
 import json, io, base64, sys, math
+import numpy as np
 sys.path.insert(0, '../tools')
-from land_height import unpack          # (the land file read here, apart from the app)
+from land_height import unpack, check as tool_check          # (the land file read here, apart from the app)
 from PIL import Image, ImageChops, ImageStat
 from playwright.sync_api import sync_playwright
 from fakefb import new_page
@@ -15,6 +16,9 @@ B3 = (58.887269, 15.772629); B1 = (58.887421, 15.775569)
 def M(pg, o=None): return pg.evaluate('window.__ffMap3d(%s)' % (json.dumps(o) if o else ''))
 def hold_map_btn(pg):
     bb = pg.locator('#mapTypeBtn').bounding_box(); pg.mouse.move(bb['x'] + 20, bb['y'] + 20); pg.mouse.down(); pg.wait_for_timeout(700); pg.mouse.up(); pg.wait_for_timeout(300)
+try: tool_check(); tool_ok = True
+except AssertionError as e: tool_ok = repr(e)
+check("the height tool's own checks: the map turned into Lantmäteriet's squares, the file's packing, which water is a hole", tool_ok is True, tool_ok)
 
 with sync_playwright() as p:
     cfg = {'positions': [{'uid': 'pia', 'name': 'Pia', 'lat': 58.8905, 'lon': 15.7850}],
@@ -163,6 +167,24 @@ with sync_playwright() as p:
     s = M(pg)
     top = ImageStat.Stat(Image.open(io.BytesIO(pg.screenshot())).convert('L').crop((40, 330, 350, 420))).mean[0]
     check('...nearer and tilted: a fine mesh around the point, the rest of the lake still there behind it (no fog), the land with its heights', not s['at']['full'] and s['n'] <= 401 and s['land'] and top > 40, (s['at'], s['land'], round(top)))
+    # water nobody has charted is a hole -- drawn at the surface it stood as big hills beside the charted bottom. A straight
+    # edge of the chart is found in the files, apart from the app: a hole in 14 columns of cells, charted water deeper than
+    # 3 m in the 8 east of them, in 25 rows. Seen from straight above, three.js is asked what is drawn across that edge
+    mk = json.load(open('../lakes/malaren/lake.json', encoding='utf-8')); md = mk['depth']; ml = json.load(open('../lakes/malaren/land.json', encoding='utf-8'))
+    dg = unpack(open('../docs/lakes/malaren/' + md['file']).read().strip(), md['w'] * md['h']).reshape(md['h'], md['w'])
+    lg = unpack(open('../docs/' + ml['file']).read().strip(), ml['w'] * ml['h']).reshape(ml['h'], ml['w'])
+    win = np.lib.stride_tricks.sliding_window_view
+    void = win(lg == 252, (25, 14)).all((2, 3)); deep = win((dg < 251) & (dg * md['step'] > 3), (25, 8)).all((2, 3))
+    j, i = (int(v) for v in np.argwhere(void[:, :deep.shape[1] - 14] & deep[:, 14:])[0])
+    M(pg, {'px': (i + 14) / md['w'] * mk['geo']['imgW'], 'py': (j + 12.5) / md['h'] * mk['geo']['imgH'], 'd': 400, 'tilt': 0.05, 'az': 0}); pg.wait_for_timeout(1800)
+    hits = [(dx, M(pg, {'at': [195 + dx, 422]})['hit']) for dx in (-120, -80, -40, -15, 0, 15, 40, 80, 120)]      # (a cell is 28 px here)
+    px = Image.open(io.BytesIO(pg.screenshot())).convert('RGB').getpixel((195 - 80, 422))
+    check('water nobody has charted is a hole: at the edge of the chart the bottom is drawn on one side and nothing on the other -- no wall up to the surface between them',
+          all(h is None for dx, h in hits if dx <= -40) and all(h and h['y'] < -3 for dx, h in hits if dx >= 40) and all(h is None or h['y'] < -3 for dx, h in hits),
+          [(dx, h and round(h['y'], 1)) for dx, h in hits])
+    check("...the water's surface lies over the hole all the same (Vatten on): dark blue, nothing under it", px[2] > px[0] + 25 and px[0] < 60, px)
+    M(pg, {'d': 1500, 'tilt': 1.1}); pg.wait_for_timeout(1800)
+    pg.screenshot(path='shot_map3d_hole.png')
     check('no page errors', not errs, errs)
     b.close()
 print('\n%d/%d passed' % (sum(results), len(results)))

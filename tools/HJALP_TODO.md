@@ -37,6 +37,7 @@ spåren, Ledare, Kompass, Namn, Fog of war, tävlingslåset, Storlek/När, start
   överst, kurvorna bara från Genesis). Hjälp: Kartan (var djupet kommer ifrån). Nyhet: "Regnaren och Mälaren har nu djupfärger i nästan hela sjön" (BÄTTRE)
 - [ ] 2026-11-11 – Nytt kartläge: 3D-karta (håll kartknappen → 3D-karta). Botten och marken runt sjön i 3D med kartbilden på, skarp på nära håll.
   Ett finger flyttar kartan, nyp zoomar, vrid med två fingrar vrider, två fingrar upp/ner lutar (som i Google Maps); Höjd ×, Vatten, Till mig, norrpil. Marken har riktiga höjder på alla sjöar (Lantmäteriet).
+  Där djup saknas (olodat, eller utanför sjökortet) är det hål i botten – bara vattenytan syns (2026-11-12).
   Hjälp: nytt avsnitt vid kartlägena + animering `map3d`.
   Nyhet: "Ny 3D-karta: se botten och marken runt sjön i 3D – håll kartknappen" (NYTT)
 
