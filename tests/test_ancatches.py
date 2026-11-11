@@ -57,7 +57,7 @@ with sync_playwright() as p:
       for (var i = 3; i < d.length; i += 4) if (d[i] === 0) n++; return n; }""")
     check('..."Tänt" only masks: the lit part is the map itself (no colour on it, like Kartdata), the catches as dots', pixels(pg, 'green') < 20 and clear > 1000, (pixels(pg, 'green'), clear))
     dots = pg.eval_on_selector_all('#anCF button', 'e => e.map(x => x.textContent)')
-    check('each value with dots (how much it alone points gädda out here), at least one ●●●', len(dots) == 6 and all(re.search('[●○]{3}', d) for d in dots) and any('●●●' in d for d in dots), dots)
+    check('each value with dots (how much it alone points gädda out here), at least one ●●○ or more', len(dots) == 6 and all(re.search('[●○]{3}', d) for d in dots) and any('●●' in d for d in dots), dots)   # (at least ●●○: with Regnaren v7's fuller depth no single value stands out as much)
     pg.screenshot(path='shot_ancatch_area.png')
     def cov(v):
         pg.evaluate("(v) => { var e = document.getElementById('anCCov'); e.value = v; e.dispatchEvent(new Event('input', { bubbles: true })); }", v); pg.wait_for_timeout(1500)

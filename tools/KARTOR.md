@@ -173,10 +173,24 @@ färger och relief (ur det kalibrerade djupet).
   OpenStreetMap (i Sverige Lantmäteriets karta) – följer flygfotots stränder exakt.
 - Djupnätet: 0–250 = djup/steg, **252 = sjö men okänt djup** (i OSM-sjön, ej loggat),
   255 = land. Rader packas: 251 n n = land, 253 n n = okänt djup.
-- Kartbilderna färgas INTE där Genesis saknar data – flygfotot syns (Filips val).
+- Kartbilderna färgas INTE där Genesis saknar data – flygfotot syns (Filips val), utom där egen loggning finns (nedan).
   Lodet visar "Okänt djup"; rutter sjövägen går även där.
 - *Testat och förkastat:* hitta vatten i flygfotot (mörkt + ej grönt + slätt).
   Mörk skog ser ut som vatten → öar och strandskog blev "sjö".
+
+### Egen loggning (Filips ekolod) där Genesis saknas (2026-11-11)
+Filips egen loggning fyller de delar av OSM-sjön där Genesis saknar djup – **Genesis ligger alltid överst och ändras
+aldrig**, kurvor och siffror kommer fortfarande bara från Genesis. Regnaren v7: fyller 2,85 km².
+- **In:** ett färdigt rutnät (Filips `soundings/regnaren/regnaren.md`: Web Mercator zoom 18, 2 px per ruta = zoom 17-pixlar,
+  zlib + base64, 0–250 × 0,25 m, 255 land) → `py -3 tools/soundings.py <sjö> --grid <fil.md>` → `lakes/<sjö>/raw/own_depth.npz`.
+  Råa loggar (NMEA/CSV) läser `tools/soundings.py <sjö> <logg>` (kontroll + förhandsbild, inte in i kartan än).
+- **Bygget:** finns `own_depth.npz` tar `genesis_render.py` (`own_fill()`) med den: **en global justering** (median Genesis − egen
+  där båda har djup; Regnaren −0,02 m), utjämnad ~3 m (rutnätet är i 0,25 m-steg – annars ritar reliefen trappsteg), och de sista
+  25 m mot Genesis tonar mjukt över till Genesis djup (smoothstep) så färger och relief inte hoppar i skarven (Filip: "så bra det
+  går i Djupfärger"). Sedan räknas den som vatten med djup: djupfärger, relief, djupnätet (lodet, Kartanalys, rutten).
+- **Kontroll:** utskriften visar justeringen, skillnaden där båda har djup (Regnaren 0,9 m i medel) och skarven före utjämningen
+  (1,1 m i medel). Mycket större = titta på loggningen först.
+- *Förkastat (Filip):* kalibrering per djup, ett "tak" vid stranden ur Genesis typiska profil – för mycket påhitt.
 
 ---
 

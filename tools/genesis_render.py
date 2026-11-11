@@ -239,6 +239,54 @@ def pack_bottom(bv):
             enc.append(bv[i]); i += 1
     return bytes(enc)
 
+def own_fill(lake, ownp, water, dep0, gx0, gy0, W, H, DZ, mpx, BLEND_M=25.0):
+    """Filip's own logging (lakes/<lake>/raw/own_depth.npz, tools/soundings.py --grid) where Genesis has no depth,
+    inside the lake (OpenStreetMap). Genesis is never changed. One global offset (median Genesis - own where both
+    have depth), and the last BLEND_M metres toward Genesis fade into Genesis' depth so the colours and the relief
+    don't jump at the seam (Filip: "så bra det går i Djupfärger"). -> water, dep0 with the filled part."""
+    import osm_water
+    z = np.load(ownp); oz = int(z['zoom']); ox, oy = (int(v) for v in z['origin'])
+    if oz != DZ: raise SystemExit('own_depth.npz is zoom %d, the depth data %d' % (oz, DZ))
+    own = np.full((H, W), np.nan, np.float32); src = z['dep']
+    x0, y0 = gx0 - ox, gy0 - oy                                  # our crop in the own grid
+    sx0, sy0 = max(0, x0), max(0, y0); sx1, sy1 = min(src.shape[1], x0 + W), min(src.shape[0], y0 + H)
+    own[sy0 - y0:sy1 - y0, sx0 - x0:sx1 - x0] = src[sy0:sy1, sx0:sx1]
+    # the own grid is in 0.25 m steps -- smoothed ~3 m (it is no finer than that anyway), or the relief
+    # shades every step as a terrace
+    ok = np.isfinite(own); s = 3.0 / mpx
+    own = np.where(ok, ndimage.gaussian_filter(np.where(ok, own, 0), s) / np.maximum(ndimage.gaussian_filter(ok.astype(np.float32), s), 1e-6), np.nan).astype(np.float32)
+    lakem = osm_water.mask(lake, DZ, gx0, gy0, W, H)
+    if lakem is None: lakem = np.zeros_like(water)
+    both = water & np.isfinite(own)
+    off = float(np.median(dep0[both] - own[both])) if both.any() else 0.0
+    add = ~water & lakem & np.isfinite(own)
+    own = own + off
+    # the seam: at 1/4 resolution (smooth anyway), the difference Genesis - own at the filled cells next to
+    # Genesis, carried in from the nearest such cell and fading to nothing BLEND_M metres in
+    q = 4; hq, wq = -(-H // q), -(-W // q)
+    def small(a, fill):
+        p = np.full((hq * q, wq * q), fill, np.float32); p[:H, :W] = a
+        return p.reshape(hq, q, wq, q)
+    wq_ = small(water.astype(np.float32), 0).mean((1, 3)) >= 0.5
+    gq = np.nanmean(np.where(small(water.astype(np.float32), 0) > 0, small(dep0, np.nan), np.nan), (1, 3))
+    aq = small(add.astype(np.float32), 0).mean((1, 3)) >= 0.5
+    oq = np.nanmean(small(np.where(add, own, np.nan), np.nan), (1, 3))
+    edge = aq & ndimage.binary_dilation(wq_) & np.isfinite(gq) & np.isfinite(oq)
+    corr = np.zeros((hq, wq), np.float32)
+    if edge.any():
+        dist, (iy, ix) = ndimage.distance_transform_edt(~edge, return_indices=True)
+        cq = np.where(edge, gq - oq, 0)
+        fade = np.clip(1 - dist * q * mpx / BLEND_M, 0, 1); fade = fade * fade * (3 - 2 * fade)     # (smoothstep: no kink)
+        corr = ndimage.gaussian_filter((cq[iy, ix] * fade).astype(np.float32), 2.0); del dist, iy, ix   # (soft across: no ridge)
+        print('  own logging: seam vs Genesis before blending: median %+.2f m, mean |diff| %.2f m (%d cells)'
+              % (np.median(cq[edge]), np.abs(cq[edge]).mean(), edge.sum()))
+    corr = ndimage.zoom(corr, q, order=1)[:H, :W]
+    dep0 = dep0.copy(); dep0[add] = np.maximum(own[add] + corr[add], 0.1)
+    r = np.abs(dep0[both] - (own[both])) if both.any() else np.zeros(1)
+    print('  own logging: offset %+.2f m (median of %d px where both have depth; then mean |diff| %.2f m); fills %.2f km2 of the lake'
+          % (off, both.sum(), r.mean(), add.sum() * mpx * mpx / 1e6))
+    return water | add, dep0
+
 def main():
     lake = sys.argv[1]
     L = os.path.join(ROOT, 'lakes', lake)
@@ -272,6 +320,12 @@ def main():
     dep = cropdz(np.load(os.path.join(D, 'depth_m.npy')), np.nan)
     water = cropdz(np.load(os.path.join(D, 'water.npy')), False)
     dep0 = np.where(water, dep, 0).astype(np.float32)
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    ownp = os.path.join(L, 'raw', 'own_depth.npz')
+    if os.path.exists(ownp):           # Filip's own logging where Genesis has no depth (tools/KARTOR.md "Egen loggning")
+        water, dep0 = own_fill(lake, ownp, water, dep0, gx0, gy0, W, H, DZ,
+                               156543.03392 * math.cos(math.radians(sum(src['bbox'][:2]) / 2)) / 2 ** DZ)
+        dep = np.where(water, dep0, np.nan)
     maxd = float(np.nanmax(dep)); sc = 2 if maxd <= 20 else 5
     DMAX = sc * math.ceil(maxd / sc)
     print('max depth %.1f m -> colour scale 0-%d m' % (maxd, DMAX))

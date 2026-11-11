@@ -28,8 +28,8 @@ with sync_playwright() as p:
     pg.wait_for_timeout(1500)
     zoom_to(pg, 16)
     t = pieces(pg)
-    base = [x for x in t if re.search(r'tiles_v[56]/z16/s1/\d+_\d+\.webp$', x[0])]
-    lines = [x for x in t if re.search(r'tiles_v[56]/z16/lines/\d+_\d+\.webp$', x[0])]
+    base = [x for x in t if re.search(r'tiles_v[5-7]/z16/s1/\d+_\d+\.webp$', x[0])]
+    lines = [x for x in t if re.search(r'tiles_v[5-7]/z16/lines/\d+_\d+\.webp$', x[0])]
     check('zoom 16: Djupfärger base pieces + zoom-16 lines on top, all loaded', base and lines and len(base) == len(lines) and
           all(x[1] == 512 + 2 * D["pad"] and x[2] for x in base + lines) and all(x[3] == 2 for x in base) and all(x[3] == 3 for x in lines), t[:6])
     zoom_to(pg, 18)

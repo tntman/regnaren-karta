@@ -33,6 +33,8 @@ spåren, Ledare, Kompass, Namn, Fog of war, tävlingslåset, Storlek/När, start
 - [ ] 2026-11-09 – Sjö och Tävling går tillbaka till Automatiskt varje ny dag. Hjälp: Kartan (Sjö) / Tävlingarna (Tävling-raden).
   Nyhet: "Valt sjö eller tävling själv? Nästa dag väljer appen automatiskt igen" (BÄTTRE)
   Nyhet: "Ny karta: Gryts Skärgård – Valdemarsviken ut till Flisdjupet (flygfoto där Genesis inte har lodat)" (NYTT)
+- [ ] 2026-11-11 – Regnaren: djupfärger i nästan hela sjön – Filips egen loggning fyller där Genesis saknar djup (Genesis
+  överst, kurvorna bara från Genesis). Hjälp: Kartan (var djupet kommer ifrån). Nyhet: "Regnaren har nu djupfärger i nästan hela sjön" (BÄTTRE)
 
 ---
 
