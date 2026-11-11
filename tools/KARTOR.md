@@ -363,7 +363,7 @@ eller `… zoom14` för sig): översiktsbilden i **halv storlek** (`map_v<V>h_*.
 i CSS) + den fulla som **zoom 14-bitar med kurvorna inbakade** (`"baked": true` i levels – inget kurvlager ovanpå) som tar över
 från zoom 13,5, så det är lika skarpt. Den fulla bilden sparas i `raw/<id>/z17/map14_<stil>.jpg`.
 
-### Gryts Skärgård: bara Genesis (2026-11-08/09)
+### Gryts Skärgård: Genesis + Filips lodning (2026-11-08/11)
 Genesis har nästan inget där (17 rutor på zoom 17, en remsa i Valdemarsviken, 0–4,7 m; fångstplatserna vid Gryt saknas helt).
 Kartan = Genesis djupfärger + kurvor i remsan, **flygfoto överallt annars** (Filips beslut 2026-11-09). Bara Djupfärger
 (`"styles": ["s1"]` i source.json) och zoom 14–16 med bitar i **hela** rutan (`"cover": "all"` – annars bara nära Genesis vatten,
@@ -375,6 +375,8 @@ vänster om linjen i OSM → varje område mellan väggarna där de flesta punkt
 `block_depth()` tar det som osm_water: vatten utan djup (252) i djupnätet, kartbilden förblir flygfoto. Inget djup. Hämtning: `sh tools/gryt_fetch.sh` (polygon `tools/gryt_polygon.json`,
 Filips ruta: Käggla–Flisdjupet, Backermåla/Fyrudden–Långrådna/Bokö). Fler loggar på Genesis → hämta igen (cachat: bara
 `rm` de tomma rutorna först) och bygg om.
+**v2 (2026-11-11): Filips egen lodning** (`soundings/gryt/DJUPDATA_gryt.md`, appens nät, `--appgrid`, se "Egen loggning" ovan) fyller
+havet bakom Genesis-remsan: 1 186 982 av 1 190 573 rutor, 0–52,5 m – djupfärger, relief och djup i hela skärgården.
 **Prövat och borttaget (2026-11-08 → 09):** havet utanför Genesis från OpenStreetMaps kustlinje + EMODnet Bathymetry (~115 m,
 grundare mot land). Fungerade, men Filip vill bara ha Genesis-data – ingen annan djupdata på kartorna. Gör inte om.
 
