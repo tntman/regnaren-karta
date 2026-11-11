@@ -13008,7 +13008,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
      without one, or no coverage the first time = flat land).
      Near the point you look at the picture is sharp: the zoom level's pieces (the same as the map's own, 12-map.js) put
      together on ONE canvas of M3_TEX px, shown instead of the map picture where it reaches (m3Detail).
-     One finger = turn and tilt, two = move, pinch = zoom (three.js' OrbitControls isn't in the app's build).
+     The fingers as in the map apps: one = move, pinch = zoom, twist = turn, two up/down = tilt (own code, further down).
      Your boat, the spots and the others' boats: the map's own pins copied on top (the same filter and icons; view only).
      Settings: ffmap_3d_v1 (Höjd ×, Vatten). Drawn only when something changed -- no loop runs. Filip 2026-11-11. */
   var M3_KEY = 'ffmap_3d_v1', M3_NMAX = 400, M3_FOV = 40;
@@ -13163,7 +13163,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
       else if (!D || D.z !== L.z || Math.hypot(c.px - D.px, c.py - D.py) * Math.pow(2, L.z - ZOOM) / S > M3_TEX * 0.15) m3Detail(L);
     }
     var tx = (c.px - CX) * M, tz = (c.py - CY) * M, st = Math.sin(c.tilt), cam = m3.cam;
-    var ty = m3Ground(c.px, c.py);   // (the point you look at is on the ground: a hill isn't turned about a point deep inside it)
+    var ty = m3.ty != null ? m3.ty : m3Ground(c.px, c.py);   // (the point you look at is on the ground: a hill isn't turned about a point deep inside it -- or, while fingers are down, at the height they hold it)
     cam.position.set(tx + c.d * st * Math.sin(c.az), ty + c.d * Math.cos(c.tilt), tz + c.d * st * Math.cos(c.az));   // (az 0 = from the south: north up)
     cam.position.y = Math.max(cam.position.y, m3Ground(CX + cam.position.x / M, CY + cam.position.z / M) + c.d * 0.04);   // (never under the ground: the land seen from inside is nothing at all)
     cam.lookAt(tx, ty, tz);
@@ -13249,7 +13249,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
       m3.r.setSize(1, 1, false); m3.r.dispose();
     }
     if (m3.det){ m3.det.tex.dispose(); m3.det.cv.width = m3.det.cv.height = 1; }   // (the sharp patch: 16 MB of canvas)
-    m3 = null; m3Land = null; m3Marks.innerHTML = ''; m3View.classList.remove('show');
+    m3 = null; m3Land = null; m3P = {}; m3Marks.innerHTML = ''; m3View.classList.remove('show');   // (m3P: a finger still down on it must not count as one the next time)
   }
   // the controls
   function m3Ui(){
@@ -13266,37 +13266,97 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   });
   document.getElementById('m3North').addEventListener('click', function(){ if (m3 && m3.r){ m3.c.az = 0; m3Touch(); } });
   document.getElementById('m3Close').addEventListener('click', m3Close);
-  // the fingers: one = turn (sideways) and tilt (up/down); two = move the ground with them, pinch = nearer/farther
-  var m3P = {};
-  function m3Up(e){ delete m3P[e.pointerId]; }
-  m3Canvas.addEventListener('pointerdown', function(e){ m3P[e.pointerId] = { x: e.clientX, y: e.clientY }; m3Canvas.setPointerCapture(e.pointerId); });
+  /* The fingers, as in the map apps (Filip 2026-11-11; first one finger turned and tilted and two moved): one = move
+     the map; two = pinch to zoom and twist to turn, or -- side by side, both moved up or down -- tilt (up = towards the
+     horizon). With a mouse: Shift / Ctrl + drag = turn and tilt. What a grip is, is decided by its first move.
+     What the fingers took hold of (the bottom, a hill) stays under them: while they are down the point looked at keeps
+     its height (m3.ty) -- the camera doesn't go up and down with the land it is moved over -- and lies at the height of
+     what they hold. All fingers up: it is put back on the ground, along the line of sight (nothing moves in the picture). */
+  // the ray from the camera through a place on the screen -- where it is at t (1 = as far in as the point looked at):
+  // x, y = map-picture px from that point, up = m over it. No t: where it meets flat ground at that point's height (near
+  // the horizon and above it as if the ground ended 3 x as far away: a touch there would else fling the map away)
+  function m3At(x, y, t){
+    var c = m3.c, q = Math.tan(M3_FOV * Math.PI / 360) / innerHeight, a = (2 * x - innerWidth) * q, b = (innerHeight - 2 * y) * q;
+    var st = Math.sin(c.tilt), ct = Math.cos(c.tilt), sa = Math.sin(c.az), ca = Math.cos(c.az), w = ct - b * st;
+    if (t === undefined) t = Math.min(3, ct / Math.max(1e-6, w));
+    var f = st - t * (b * ct + st), k = c.d / WEB_METERS_PER_PX;
+    return { x: k * (t * a * ca + f * sa), y: k * (f * ca - t * a * sa), up: c.d * (ct - t * w) };
+  }
+  // ...and how far in (t) that ray first goes under h(x, y), a height at a map-picture px (0: not before t = far)
+  function m3Cast(x, y, h, far){
+    for (var i = 0, n = 240, u, pu; i <= n; i++, pu = u){
+      var p = m3At(x, y, far * i / n); u = m3.ty + p.up - h(m3.c.px + p.x, m3.c.py + p.y);
+      if (u < 1e-3) return i ? far * (i - u / (u - pu)) / n : 0;   // (between the last two steps, where it went under)
+    }
+    return 0;
+  }
+  function m3Surf(x, y){ var d = depthAtImgPx(x, y); return (d !== null ? -d : isLakeAtImgPx(x, y) ? -0.2 : Math.max(0.3, m3LandAt(x, y))) * m3Cfg.ex; }   // what is drawn at a map-picture px: the bottom, or the land (as m3Make's points)
+  // the point looked at, moved along the line of sight to s m from the camera -- which stays where it is
+  function m3Slide(s){
+    var c = m3.c, k = (c.d - s) * Math.sin(c.tilt) / WEB_METERS_PER_PX;
+    if (!(s >= 60 && s <= M3_RFULL * 3)) return;   // (m3Clamp would move the camera)
+    m3.ty += (c.d - s) * Math.cos(c.tilt); c.px += k * Math.sin(c.az); c.py += k * Math.cos(c.az); c.d = s;
+  }
+  var m3P = {}, m3G = '', m3Tw = 0;   // the fingers down; what they do ('' = not decided, 'move', 'tilt', 'turn') and how far two have twisted
+  function m3Grip(){   // a finger more or less: a new grip, from where they are now
+    m3G = ''; m3Tw = 0;
+    for (var k in m3P){ m3P[k].x0 = m3P[k].x; m3P[k].y0 = m3P[k].y; }
+    if (k || !m3 || !m3.r || m3.ty == null) return;
+    var c = m3.c;   // all up: the point looked at back onto the ground (no further than to the water's level)
+    m3Slide(c.d * m3Cast(innerWidth / 2, innerHeight / 2, m3Ground, 1 + m3.ty / (c.d * Math.cos(c.tilt))));
+    m3.ty = null; m3Touch();
+  }
+  function m3Up(e){ delete m3P[e.pointerId]; m3Grip(); }
+  m3Canvas.addEventListener('pointerdown', function(e){ m3P[e.pointerId] = { x: e.clientX, y: e.clientY }; m3Grip(); m3Canvas.setPointerCapture(e.pointerId); });
   m3Canvas.addEventListener('pointerup', m3Up); m3Canvas.addEventListener('pointercancel', m3Up);
   m3Canvas.addEventListener('pointermove', function(e){
     var p = m3P[e.pointerId]; if (!p || !m3 || !m3.r) return;
-    var c = m3.c, dx = e.clientX - p.x, dy = e.clientY - p.y, ids = Object.keys(m3P);
-    if (ids.length === 1){ c.az -= dx * 0.006; c.tilt -= dy * 0.005; }
-    else {
-      var o = m3P[ids[0] === String(e.pointerId) ? ids[1] : ids[0]], d0 = Math.hypot(p.x - o.x, p.y - o.y), d1 = Math.hypot(e.clientX - o.x, e.clientY - o.y);
-      if (d0 > 10 && d1 > 10) c.d *= d0 / d1;
-      // (this finger moves the middle of the two by half its own move) a screen px on the ground, in image px; up/down is foreshortened by the tilt
-      var m = c.d * 2 * Math.tan(M3_FOV * Math.PI / 360) / innerHeight / WEB_METERS_PER_PX / 2, f = dy * m / Math.max(0.3, Math.cos(c.tilt)), s = dx * m;
-      c.px += -s * Math.cos(c.az) - f * Math.sin(c.az); c.py += s * Math.sin(c.az) - f * Math.cos(c.az);
+    var c = m3.c, x = e.clientX, y = e.clientY, ids = Object.keys(m3P), o = ids.length > 1 ? m3P[ids[0] === String(e.pointerId) ? ids[1] : ids[0]] : null;
+    var mx = o ? (x + o.x) / 2 : x, my = o ? (y + o.y) / 2 : y;   // the finger, or the middle of the two
+    if (m3.ty == null) m3.ty = m3Ground(c.px, c.py);
+    if (!m3G){   // a new grip: this move only decides what it is -- two fingers when both have moved a little (or one of them a lot)
+      if (!o) m3G = e.shiftKey || e.ctrlKey ? 'turn' : 'move';
+      else {
+        var ma = Math.hypot(x - p.x0, y - p.y0), mb = Math.hypot(o.x - o.x0, o.y - o.y0);
+        if (Math.min(ma, mb) >= 4 || Math.max(ma, mb) >= 24)
+          m3G = Math.abs(p.x0 - o.x0) > Math.abs(p.y0 - o.y0) && Math.abs(y - p.y0) > Math.abs(x - p.x0) && Math.abs(o.y - o.y0) > Math.abs(o.x - o.x0) && (y - p.y0) * (o.y - o.y0) > 0 ? 'tilt' : 'move';
+      }
+      if (m3G === 'move'){   // the point looked at to the height of what the fingers are on
+        var t = m3Cast(mx, my, m3Surf, 3);
+        if (t) m3Slide(c.d - m3At(mx, my, t).up / Math.cos(c.tilt));
+      }
     }
-    p.x = e.clientX; p.y = e.clientY; m3Touch();
+    else if (m3G === 'turn'){ c.az -= (x - p.x) * 0.006; c.tilt -= (y - p.y) * 0.005; }
+    else if (m3G === 'tilt') c.tilt -= (y - p.y) * 0.0025;   // (half each finger: as fast as the mouse)
+    else {
+      var g = m3At(o ? (p.x + o.x) / 2 : p.x, o ? (p.y + o.y) / 2 : p.y);   // what was under the finger (the middle of the two) ...
+      if (o){
+        var ux = p.x - o.x, uy = p.y - o.y, vx = x - o.x, vy = y - o.y, d0 = Math.hypot(ux, uy), d1 = Math.hypot(vx, vy);
+        if (d0 > 10 && d1 > 10){
+          c.d *= d0 / d1;
+          var da = Math.atan2(ux * vy - uy * vx, ux * vx + uy * vy);   // (clockwise on the screen = the map clockwise)
+          m3Tw += da; if (Math.abs(m3Tw) > 0.2) c.az += da;   // (not until they've twisted 11 degrees: a pinch alone shouldn't turn the map)
+        }
+      }
+      m3Clamp(c);
+      var h = m3At(mx, my); c.px += g.x - h.x; c.py += g.y - h.y;   // ... is under it still
+    }
+    p.x = x; p.y = y; m3Touch();
   });
   m3Canvas.addEventListener('wheel', function(e){ if (m3 && m3.r){ e.preventDefault(); m3.c.d *= Math.exp(e.deltaY * 0.0015); m3Touch(); } }, { passive: false });
   window.addEventListener('resize', m3Draw);
   m3Canvas.addEventListener('webglcontextlost', m3Close);   // (iOS took the 3D away, e.g. the app was put aside: close rather than show a black picture)
-  window.__ffMap3d = function(o){   // (for the tests: o = camera values to set)
-    if (o && !o.pic && m3 && m3.r){ Object.assign(m3.c, o); m3Touch(); }
-    var hit = null;   // where the middle of the screen meets the ground (the fine mesh where there is one): its height (m, unscaled) and place
+  window.__ffMap3d = function(o){   // (for the tests: o = camera values to set -- or o.at = [x, y]: "hit" for that place on the screen)
+    var at = o && o.at;
+    if (o && !o.pic && !at && m3 && m3.r){ Object.assign(m3.c, o); m3Touch(); }
+    var hit = null;   // where the middle of the screen meets the ground (the fine mesh where there is one): its height (m, unscaled), place and how far from the camera
     if (m3 && m3.far){
-      var rc = new m3.T.Raycaster(); rc.setFromCamera(new m3.T.Vector2(0, 0), m3.cam);
+      var rc = new m3.T.Raycaster(); rc.setFromCamera(new m3.T.Vector2(at ? at[0] / innerWidth * 2 - 1 : 0, at ? 1 - at[1] / innerHeight * 2 : 0), m3.cam);
       var h = (m3.near && rc.intersectObject(m3.near.mesh)[0]) || rc.intersectObject(m3.far.mesh)[0];
-      if (h) hit = { y: h.point.y / m3Cfg.ex, at: imgPxToLatLon(IMG_W / 2 + h.point.x / WEB_METERS_PER_PX, IMG_H / 2 + h.point.z / WEB_METERS_PER_PX) };
+      if (h) hit = { y: h.point.y / m3Cfg.ex, d: h.distance, at: imgPxToLatLon(IMG_W / 2 + h.point.x / WEB_METERS_PER_PX, IMG_H / 2 + h.point.z / WEB_METERS_PER_PX) };
     }
     var det = m3 && m3.det && m3.det.z ? { z: m3.det.z, n: m3.det.n || 0, X: m3.det.X, Y: m3.det.Y, url: o && o.pic ? m3.det.cv.toDataURL('image/jpeg', 0.6) : '' } : null;   // (the sharp patch; pic: its picture too)
-    return { land: !!(m3Land && m3Land.length), det: det, hit: hit, open: !!m3, ready: !!(m3 && m3.far && m3.at), n: m3 && m3.n, builds: m3 && m3.nb, c: m3 && m3.c, at: m3 && m3.at, marks: m3 && m3.marks ? m3.marks.length : 0, cfg: m3Cfg };
+    return { land: !!(m3Land && m3Land.length), det: det, hit: hit, open: !!m3, ready: !!(m3 && m3.far && m3.at), n: m3 && m3.n, builds: m3 && m3.nb, c: m3 && m3.c, cam: m3 && m3.cam ? m3.cam.position.toArray() : null, at: m3 && m3.at, marks: m3 && m3.marks ? m3.marks.length : 0, cfg: m3Cfg };
   };
   /* ---------------- init ---------------- */
   var appStarted = false; // true once geolocation + Firebase have been started for this page load

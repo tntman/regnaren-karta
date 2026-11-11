@@ -23,13 +23,25 @@ Test: `tests/test_map3d.py`. Höjdfilerna görs av `tools/land_height.py`.
   1,2 × avståndet (`m3DetLevel`); längre ut än lägsta nivån räcker = bara kartbilden. Flyttar man sig på samma nivå
   behålls det som redan är ihopsatt och bara nya bitar hämtas.
 - **Vattenytan:** genomskinlig blå yta i nivå 0, bara över sjön. "Vatten" av = sjön "tömd".
-- **Kameran:** ett finger = vrid och luta, två = flytta, nyp = zooma (egen kod – three.js-filen i appen har ingen
-  OrbitControls). Den vrids kring en punkt PÅ marken och går aldrig under marken (`m3Ground`). Ritas bara när något
+- **Fingrarna som i kartapparna** (Filip 2026-11-11; först vred och lutade ett finger och två flyttade, som i en
+  3D-modellvisare): ett finger = flytta kartan, nyp = zooma, vrid två fingrar = vrid kartan, två fingrar bredvid varandra
+  som båda dras upp/ner = luta (upp = mot horisonten). Mus: Shift/Ctrl + dra = vrid och luta, hjulet = zooma.
+  Egen kod – three.js-filen i appen har ingen OrbitControls.
+  - Vad ett grepp är avgörs av dess första rörelse (`m3G`): två fingrar när båda rört sig 4 px (eller ett av dem 24 px).
+    Kartan vrids först när fingrarna vridits 11° (`m3Tw`) – en nypning ska inte vrida kartan.
+  - **Det fingret tog tag i ligger kvar under fingret** (botten, en kulle): `m3Cast` letar upp vad som ritas under fingret
+    (mitten av två), och punkten man tittar på läggs i den höjden längs siktlinjen (`m3Slide` – kameran står still).
+    Annars gled botten undan på nära håll: vattenytan ligger ovanför den, ×3 eller mer.
+  - **Kameran håller höjden medan fingrar är nere** (`m3.ty`): annars åkte den upp och ner med marken under skärmens mitt
+    när man drog över land. När alla fingrar släppt läggs punkten man tittar på tillbaka på marken längs siktlinjen –
+    inget rör sig i bilden.
+  - Gränserna (4/24 px, 11°, lutningens fart) är satta utan prov på telefon – justera efter vad Filip tycker.
+- **Kameran** vrids kring en punkt PÅ marken och går aldrig under marken (`m3Ground`). Ritas bara när något
   ändrats, ingen loop. `logarithmicDepthBuffer`: en stor sjös bortre ände är 30 km bort och marken intill 50 m.
 - **Märken:** din båt (`.m3Me`), fiskeplatser och andras båtar är kopior av vanliga kartans märken (`pinEls`,
   `#boatsLayer`) – samma filter och ikoner. Uppdateras efter varje full ritning av kartan (`m3MarksSync` sist i `render()`).
   Bara att titta på.
-- **Reglage:** Höjd × 1–10, Vatten, Till mig, norrpil (tryck = norr upp), ✕. Sparas i `ffmap_3d_v1`. Överlever vridning (`st.m3`).
+- **Reglage:** Höjd × 1–10, Vatten, Till mig, norrpil (tryck = norr upp – behövs oftare nu när två fingrar kan vrida), ✕. Sparas i `ffmap_3d_v1`. Överlever vridning (`st.m3`).
 - **Minne:** allt lämnas tillbaka vid ✕: geometri, texturer, canvasen (16 MB), ritytan ner till 1 px, höjdnätet.
   Filip har kört det på sin iPhone på Regnaren ("funkade bra") och Mälaren (2026-11-11), ingen krasch rapporterad;
   inte mätt i siffror.

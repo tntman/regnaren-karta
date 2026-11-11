@@ -179,7 +179,7 @@ Uppdatera rätt anteckning när något ändras.
 - **3D-karta** (`js/73-map3d.js`, `css/79-map3d.css`, Filip 2026-11-11, `tools/NOTES_3D.md`): i kartlägeslistan direkt efter kartstilarna. Helskärm: botten (−djup) och
   marken (höjd över sjön ur `LAKE.land` = `lakes/<id>/land.json` + `docs/land/<id>_v2.txt`, Lantmäteriets laserdata nedräknad av `tools/land_height.py`, alla sju sjöar; sjö utan fil = platt mark)
   som två rutnät (högst 400 punkter per sida): hela kartan grovt (ingen dimma) + ett fint runt punkten man tittar på, med kartbilden som textur och zoomnivåns bitar ihopsatta till en skarp bit nära (`m3Detail`).
-  Ett finger = vrid/luta, två = flytta, nyp = zooma. Din båt, platser och andras båtar = kopior av kartans märken (bara titta). Höjd × 1–10, Vatten, Till mig, norrpil (`ffmap_3d_v1`).
+  Fingrarna som i kartapparna (Filip 2026-11-11): ett finger = flytta, nyp = zooma, vrid två fingrar = vrid, två fingrar upp/ner = luta; det man tog tag i ligger kvar under fingret. Din båt, platser och andras båtar = kopior av kartans märken (bara titta). Höjd × 1–10, Vatten, Till mig, norrpil (`ffmap_3d_v1`).
   "Höjddata: Lantmäteriet" ska stå i vyn (licensen). Nytt kartutsnitt för en sjö → kör om `land_height.py` (bygget varnar, marken är platt tills dess).
 - **Kraschlogg** (Inställningar → Avancerat → Senaste krasch, `js/91-crashlog.js`): en rad om vad appen gör sparas i localStorage var 2:a
   sekund; stängdes sidan inte rent (pagehide) visas raden vid nästa start. Rader samlas i `tools/KRASCHLOGG.md`.

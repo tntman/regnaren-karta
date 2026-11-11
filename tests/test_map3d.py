@@ -1,7 +1,8 @@
 # 3D-karta (js/73-map3d.js): in the map-style list (hold the map button), right after the map styles -> a full-screen
 # view of its own: the bottom in 3D (three.js) with the map picture on it, the map's pins and boats copied on top.
-# A drag turns it, the wheel (a pinch) zooms, zoomed in = a finer mesh; Vatten / Höjd are remembered; ✕ closes all of it.
-import json, io, base64, sys
+# The fingers as in the map apps (one moves the map, a pinch zooms, a twist turns, two up/down tilt), zoomed in = a finer
+# mesh; Vatten / Höjd are remembered; ✕ closes all of it.
+import json, io, base64, sys, math
 sys.path.insert(0, '../tools')
 from land_height import unpack          # (the land file read here, apart from the app)
 from PIL import Image, ImageChops, ImageStat
@@ -37,12 +38,63 @@ with sync_playwright() as p:
     pg.click('#m3Me'); pg.wait_for_timeout(600)
     bb = pg.locator('#m3Marks .m3Me').bounding_box()
     check('"Till mig": your boat in the middle of the screen', abs(bb['x'] + bb['width'] / 2 - 195) < 3 and abs(bb['y'] + bb['height'] / 2 - 422) < 3, bb)
-    c0 = M(pg)['c']
-    pg.mouse.move(195, 300); pg.mouse.down(); pg.mouse.move(275, 340, steps=5); pg.mouse.up(); pg.wait_for_timeout(300)
-    c1 = M(pg)['c']
-    check('a drag: sideways turns it, up/down tilts it', c1['az'] != c0['az'] and c1['tilt'] != c0['tilt'] and c1['d'] == c0['d'], (c0, c1))
+    # the fingers, as in the map apps. What the app draws at a place on the screen is asked of three.js itself (a ray
+    # against the mesh) -- apart from the app's own reckoning of what the fingers hold
+    c0 = M(pg)['c']; k0 = M(pg)['cam']
+    def spot(x, y): return M(pg, {'at': [x, y]})['hit']
+    def apart(a, b): return math.hypot((a['at']['lat'] - b['at']['lat']) * 111320, (a['at']['lon'] - b['at']['lon']) * 111320 * math.cos(math.radians(B3[0])))      # m
+    def px_m(c): return 2 * c['d'] * math.tan(math.radians(20)) / 844      # m a screen px, at the point looked at
+    def mid(sel): bb = pg.locator(sel).bounding_box(); return (bb['x'] + bb['width'] / 2, bb['y'] + bb['height'] / 2)
+    def ang(a, b): return math.atan2(b[1] - a[1], b[0] - a[0])      # (on the screen, y down: more = clockwise)
+    def drag(a, b):      # one finger (the mouse) from a to b and held there: what it took hold of, and how far (m) that is from the finger then
+        pg.mouse.move(*a); pg.mouse.down(); pg.mouse.move(a[0], a[1] - 1); pg.wait_for_timeout(120)      # (its first move only takes hold)
+        g = spot(a[0], a[1] - 1); pg.mouse.move(b[0], b[1], steps=8); pg.wait_for_timeout(120)
+        return g, apart(g, spot(*b))
+    g, off = drag((170, 500), (195, 422)); s = M(pg)      # (a hill south of the strait, to the middle of the screen)
+    check('one finger moves the map: the hill it took hold of stays under it -- nothing turns or tilts, and the camera keeps its height though the point looked at is up on land now',
+          g['y'] > 5 and s['hit']['y'] > 5 and off < 4 * px_m(c0) and (s['c']['az'], s['c']['tilt']) == (c0['az'], c0['tilt']) and abs(s['cam'][1] - k0[1]) < 0.01, (g, off, px_m(c0), k0, s['cam'], s['hit']))
+    pg.mouse.up(); pg.wait_for_timeout(500)
+    s2 = M(pg)
+    check('...the finger up: the point looked at is on the ground again, where the middle of the screen meets it -- and nothing moved in the picture',
+          abs(s2['hit']['d'] / s2['c']['d'] - 1) < 0.01 and max(abs(a - b) for a, b in zip(s2['cam'], s['cam'])) < 0.004 * c0['d'], (s2['hit'], s2['c'], s['cam'], s2['cam']))
+    pg.click('#m3Me'); pg.wait_for_timeout(600)
+    g, off = drag((195, 422), (150, 250)); pg.mouse.up(); pg.wait_for_timeout(300)
+    check('...and up into the far part of the tilted view: the bottom it took hold of is still under the finger', g['y'] < -1 and off < 4 * px_m(c0), (g, off, px_m(c0)))
+    pg.click('#m3Me'); M(pg, {'d': 300}); pg.wait_for_timeout(1200)
+    c = M(pg)['c']; g, off = drag((195, 440), (230, 330)); pg.mouse.up(); pg.wait_for_timeout(300)
+    check("near, over deep water: it is the bottom that stays under the finger (not the water's surface over it)", g['y'] < -3 and off < 4 * px_m(c), (g, off, px_m(c)))
+    cdp = ctx.new_cdp_session(pg)
+    def touch(typ, pts): cdp.send('Input.dispatchTouchEvent', {'type': typ, 'touchPoints': [{'x': x, 'y': y, 'id': i} for i, (x, y) in enumerate(pts)]})
+    def fingers(path, steps=12):      # two fingers down at path(0), along it to path(1), up: how far (m) what was under their middle is from it at the end
+        def m(f): a, b = path(f); return ((a[0] + b[0]) / 2, (a[1] + b[1]) / 2)
+        touch('touchStart', path(0)[:1]); touch('touchStart', path(0)); touch('touchMove', path(1 / steps)); pg.wait_for_timeout(80)
+        g = spot(*m(1 / steps))      # (their first moves only take hold)
+        for k in range(2, steps + 1): touch('touchMove', path(k / steps)); pg.wait_for_timeout(16)
+        pg.wait_for_timeout(80); off = apart(g, spot(*m(1)))
+        touch('touchEnd', []); pg.wait_for_timeout(300)
+        return off
+    pg.click('#m3Me'); M(pg, {'tilt': 0.05, 'd': 3000, 'az': 0}); pg.wait_for_timeout(900)      # (straight down: what the fingers do to the picture is plain to see)
+    s1 = M(pg); a1 = ang(mid('#m3Marks .m3Me'), mid('#m3Marks .wpFara'))
+    off = fingers(lambda f: [(130 + 50 * math.cos(f * 0.8), 300 + 50 * math.sin(f * 0.8)), (130 - 50 * math.cos(f * 0.8), 300 - 50 * math.sin(f * 0.8))])
+    s2 = M(pg); a2 = ang(mid('#m3Marks .m3Me'), mid('#m3Marks .wpFara')); turn = s2['c']['az'] - s1['c']['az']
+    check('two fingers twisted clockwise, away from the middle of the screen: the map turns clockwise with them, about the point between the fingers -- no zoom, no tilt',
+          0.3 < turn < 0.75 and abs((a2 - a1) - turn) < 0.1 and off < 4 * px_m(s1['c']) and abs(s2['cam'][1] / s1['cam'][1] - 1) < 0.002 and s2['c']['tilt'] == s1['c']['tilt'], (turn, a2 - a1, off, s1['cam'], s2['cam']))
+    off = fingers(lambda f: [(100 - 60 * f, 300), (160 + 60 * f, 300)])
+    s3 = M(pg)
+    check('a pinch, the fingers apart to 3 x: it zooms in on the point between them, nothing turns', 0.3 < s3['cam'][1] / s2['cam'][1] < 0.42 and off < 4 * px_m(s3['c']) and (s3['c']['az'], s3['c']['tilt']) == (s2['c']['az'], s2['c']['tilt']), (s2['cam'], s3['cam'], off, px_m(s3['c'])))
+    off = fingers(lambda f: [(110 + 60 * f, 560), (210 + 60 * f, 560)])
+    s4 = M(pg)
+    check('two fingers moved sideways together: the map goes with them (no tilt, turn or zoom)', off < 4 * px_m(s4['c']) and s4['c']['px'] != s3['c']['px'] and (s4['c']['az'], s4['c']['tilt']) == (s3['c']['az'], s3['c']['tilt']) and abs(s4['cam'][1] / s3['cam'][1] - 1) < 0.002, (off, s3['c'], s4['c'], s3['cam'], s4['cam']))
+    fingers(lambda f: [(140, 560 - 120 * f), (250, 560 - 120 * f)])
+    s5 = M(pg); tl = s5['c']['tilt'] - s4['c']['tilt']
+    check('two fingers side by side, both moved up: it tilts towards the horizon, nothing else', 0.5 < tl < 0.62 and s5['c']['az'] == s4['c']['az'] and abs(s5['c']['d'] / s4['c']['d'] - 1) < 0.005 and abs(s5['c']['px'] - s4['c']['px']) + abs(s5['c']['py'] - s4['c']['py']) < 2, (s4['c'], s5['c']))
     pg.click('#m3North'); pg.wait_for_timeout(300)
     check('the north arrow: north up again', M(pg)['c']['az'] == 0)
+    pg.keyboard.down('Shift'); pg.mouse.move(195, 300); pg.mouse.down(); pg.mouse.move(275, 340, steps=5); pg.mouse.up(); pg.keyboard.up('Shift'); pg.wait_for_timeout(300)
+    s6 = M(pg)
+    check('with a mouse: Shift + drag turns and tilts it (the map stays)', s6['c']['az'] != 0 and s6['c']['tilt'] != s5['c']['tilt'] and abs(s6['c']['d'] / s5['c']['d'] - 1) < 0.005 and abs(s6['c']['px'] - s5['c']['px']) + abs(s6['c']['py'] - s5['c']['py']) < 2, (s5['c'], s6['c']))
+    pg.click('#m3Me'); M(pg, {'d': c0['d'], 'az': 0, 'tilt': c0['tilt']}); pg.wait_for_timeout(800)      # (as it opened, for what follows)
+    c1 = M(pg)['c']
     b0 = M(pg)['builds']; r0 = M(pg)['at']['R']
     pg.mouse.move(195, 300); pg.mouse.wheel(0, -900); pg.wait_for_timeout(700)
     s = M(pg)
