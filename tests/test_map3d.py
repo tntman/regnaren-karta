@@ -92,6 +92,10 @@ with sync_playwright() as p:
     fingers(lambda f: [(140, 560 - 120 * f), (250, 560 - 120 * f)])
     s5 = M(pg); tl = s5['c']['tilt'] - s4['c']['tilt']
     check('two fingers side by side, both moved up: it tilts towards the horizon, nothing else', 0.5 < tl < 0.62 and s5['c']['az'] == s4['c']['az'] and abs(s5['c']['d'] / s4['c']['d'] - 1) < 0.005 and abs(s5['c']['px'] - s4['c']['px']) + abs(s5['c']['py'] - s4['c']['py']) < 2, (s4['c'], s5['c']))
+    fingers(lambda f: [(140 + 14 * f, 560 + 100 * f), (250 + 4 * f, 560 + 80 * f)])      # (as on a phone: a little askew and uneven -- down = back towards straight down)
+    s5b = M(pg)
+    check('...and a little askew and uneven, as fingers are: it still tilts (back), nothing turns', s5b['c']['tilt'] < s5['c']['tilt'] - 0.3 and s5b['c']['az'] == s5['c']['az'], (s5['c'], s5b['c']))
+    s5 = s5b
     pg.click('#m3North'); pg.wait_for_timeout(300)
     check('the north arrow: north up again', M(pg)['c']['az'] == 0)
     pg.keyboard.down('Shift'); pg.mouse.move(195, 300); pg.mouse.down(); pg.mouse.move(275, 340, steps=5); pg.mouse.up(); pg.keyboard.up('Shift'); pg.wait_for_timeout(300)

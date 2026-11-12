@@ -353,7 +353,11 @@
       else {
         var ma = Math.hypot(x - p.x0, y - p.y0), mb = Math.hypot(o.x - o.x0, o.y - o.y0);
         if (Math.min(ma, mb) >= 4 || Math.max(ma, mb) >= 24)
-          m3G = Math.abs(p.x0 - o.x0) > Math.abs(p.y0 - o.y0) && Math.abs(y - p.y0) > Math.abs(x - p.x0) && Math.abs(o.y - o.y0) > Math.abs(o.x - o.x0) && (y - p.y0) * (o.y - o.y0) > 0 ? 'tilt' : 'move';
+        { // tilt: both up (or down) together, roughly side by side, and not pinched -- forgiving, as in the map apps (Filip 2026-11-12: it was hard to hit)
+          var ya = y - p.y0, yb = o.y - o.y0, pinch = Math.abs(Math.hypot(x - o.x, y - o.y) - Math.hypot(p.x0 - o.x0, p.y0 - o.y0));
+          m3G = ya * yb > 0 && Math.abs(ya + yb) > 1.2 * Math.abs(x - p.x0 + o.x - o.x0) && pinch < 0.6 * Math.abs(ya + yb) / 2 + 3 &&
+                Math.abs(p.x0 - o.x0) > 0.5 * Math.abs(p.y0 - o.y0) ? 'tilt' : 'move';
+        }
       }
       if (m3G === 'move'){   // the point looked at to the height of what the fingers are on
         var t = m3Cast(mx, my, m3Surf, 3);
