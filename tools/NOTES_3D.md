@@ -54,6 +54,9 @@ Test: `tests/test_map3d.py`. Höjdfilerna görs av `tools/land_height.py`.
   (gulgrönt grunt → mörkblått djupt, över sjöns största lodade djup, `m3MaxDepth`) i stället för kartbilden – formen syns
   tydligare. Genesis kurvor och siffror syns då inte. I shadern (`uCol`). Prövat (bilder 2026-11-12): djupdimma (grumligt),
   sandbotten, ljusblå → mörkblå – Filip valde knappen Karta/Djupfärg.
+- **Skuggor** (knapp, av som standard, `m3Cfg.shadow`, Filip 2026-11-12): kastade skuggor från solen (three.js shadow map 2048²,
+  mjuka kanter). Skuggkartan täcker en ruta på 2 × avståndet runt punkten man tittar på – längre ut inga kastade skuggor.
+  16 MB på grafikkortet medan den är på, lämnas tillbaka när den slås av. Ljus och skugga på sluttningarna finns alltid.
 - **Ljuset:** lägre sol från nordväst (3,0, höjd 0,5) och mindre allmänljus (1,0) sedan 2026-11-12, så att botten och marken
   syns som former. Under ytan har samma ljus.
 - **Fingrarna som i kartapparna** (Filip 2026-11-11; först vred och lutade ett finger och två flyttade, som i en

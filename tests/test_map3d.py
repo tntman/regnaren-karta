@@ -143,7 +143,7 @@ with sync_playwright() as p:
     check('...whose heights they are is written in the controls', 'Höjddata' in pg.inner_text('#m3Src'), pg.inner_text('#m3Src'))
     pg.click('#m3Chips [data-k=water]'); pg.fill('#m3Ex', '6'); pg.dispatch_event('#m3Ex', 'input'); pg.wait_for_timeout(400)
     sv = json.loads(pg.evaluate("localStorage.getItem('ffmap_3d_v1')"))
-    check('Vatten off and Höjd × 6: shown and remembered', sv == {'ex': 6, 'water': False, 'col': False} and pg.inner_text('#m3ExVal') == '× 6' and not pg.evaluate("document.querySelector('#m3Chips [data-k=water]').classList.contains('on')"), sv)
+    check('Vatten off and Höjd × 6: shown and remembered', sv == {'ex': 6, 'water': False, 'col': False, 'shadow': False} and pg.inner_text('#m3ExVal') == '× 6' and not pg.evaluate("document.querySelector('#m3Chips [data-k=water]').classList.contains('on')"), sv)
     pg.screenshot(path='shot_map3d_dry.png')
     M(pg, {'px': 1050, 'py': 420, 'd': 1200, 'tilt': 1.1, 'az': 0.4}); pg.wait_for_timeout(1500)
     def look(): return ImageStat.Stat(Image.open(io.BytesIO(pg.screenshot())).convert('RGB').crop((0, 400, 390, 700))).mean
@@ -153,6 +153,13 @@ with sync_playwright() as p:
           sv['col'] is True and pg.evaluate("document.querySelector('#m3Chips [data-k=col]').classList.contains('on')") and sum(abs(x - y) for x, y in zip(a0, a1)) > 15, (a0, a1, sv))
     pg.screenshot(path='shot_map3d_col.png')
     pg.click('#m3Chips [data-k=col]'); pg.wait_for_timeout(300)
+    M(pg, {'px': 1000, 'py': 470, 'd': 550, 'tilt': 1.15, 'az': 0.9}); pg.wait_for_timeout(1500)      # (by an island in the lake: its shadow falls on the water's bottom)
+    a0 = look(); pg.click('#m3Chips [data-k=shadow]'); pg.wait_for_timeout(800); a1 = look()
+    sv = json.loads(pg.evaluate("localStorage.getItem('ffmap_3d_v1')"))
+    check('Skuggor: cast shadows (the picture gets darker where hills shade it), shown and remembered',
+          sv['shadow'] is True and pg.evaluate("document.querySelector('#m3Chips [data-k=shadow]').classList.contains('on')") and sum(a1) < sum(a0) - 3, (a0, a1, sv))
+    pg.screenshot(path='shot_map3d_shadow.png')
+    pg.click('#m3Chips [data-k=shadow]'); pg.wait_for_timeout(300)
     M(pg, {'d': 20000, 'tilt': 0.9}); pg.wait_for_timeout(700)
     s = M(pg)
     check('zoomed all the way out: the whole map in one mesh, the map picture itself (no sharp patch)', s['at']['full'] and s['n'] <= 401 and s['det'] is None, (s['at'], s['det']))

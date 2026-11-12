@@ -18,7 +18,7 @@
   var M3_RFULL = Math.max(IMG_W, IMG_H) * WEB_METERS_PER_PX / 2;   // half the map's long side (m): a fine mesh this far out would be no finer than the whole map's
   var M3_TEX = 2048;   // the sharp patch's canvas (px a side): 4 x 4 pieces
   var M3_REACH = 15;   // m: water nobody has charted takes its depth from what is known this close; further out it is a hole (m3Make)
-  var m3Cfg = { ex: 3, water: true, col: false };   // (col: Djupfärg -- the bottom coloured by depth instead of the map picture)
+  var m3Cfg = { ex: 3, water: true, col: false, shadow: false };   // (col: Djupfärg -- the bottom coloured by depth instead of the map picture; shadow: Skuggor -- cast shadows)
   try { m3Cfg = Object.assign(m3Cfg, JSON.parse(localStorage.getItem(M3_KEY) || '{}')); } catch(e){}
   var m3View = document.getElementById('m3View'), m3Canvas = document.getElementById('m3Canvas'), m3Marks = document.getElementById('m3Marks'), m3Msg = document.getElementById('m3Msg');
   var m3 = null;   // while open: { T, r, scene, cam, far: the whole map's mesh, near: the fine one (or null), tex, c: the camera { px, py (the image px looked at), d (m away), az, tilt (0 = straight down) }, at: what the fine mesh was built for }
@@ -107,6 +107,7 @@
     for (q = 1; q < wp.length; q += 3) wp[q] = 0;
     wg.setAttribute('position', new T.BufferAttribute(wp, 3)); wg.setIndex(widx);
     var o = { mesh: new T.Mesh(g, mat), water: new T.Mesh(wg, wmat), n: Math.max(nx, ny), step: k * M };
+    o.mesh.castShadow = o.mesh.receiveShadow = true;   // (Skuggor: only drawn when the sun casts them)
     m3.scene.add(o.mesh, o.water);
     return o;
   }
@@ -205,6 +206,11 @@
     cam.position.set(tx + c.d * st * Math.sin(c.az), ty + c.d * Math.cos(c.tilt), tz + c.d * st * Math.cos(c.az));   // (az 0 = from the south: north up)
     cam.position.y = Math.max(cam.position.y, m3Ground(CX + cam.position.x / M, CY + cam.position.z / M) + c.d * 0.04);   // (never under the ground: the land seen from inside is nothing at all)
     cam.lookAt(tx, ty, tz);
+    if (m3Cfg.shadow){   // Skuggor: the sun's shadow map over a square of 2 x the distance around the point looked at (further out: no cast shadows)
+      var sun = m3.sun, sc = sun.shadow.camera, sR = Math.min(M3_RFULL * 1.5, c.d * 2);
+      sun.position.set(tx - sR * 1.2, ty + sR * 0.6, tz - sR * 1.2); sun.target.position.set(tx, ty, tz); sun.target.updateMatrixWorld();   // (as the light's own direction: -1, 0.5, -1)
+      sc.left = sc.bottom = -sR; sc.right = sc.top = sR; sc.near = sR * 0.2; sc.far = sR * 4; sc.updateProjectionMatrix();
+    }
     cam.near = c.d / 50; cam.far = c.d + M3_RFULL * 3;   // (as far as the map's other corner)
     if (m3.w !== W || m3.h !== H){ m3.w = W; m3.h = H; m3.r.setSize(W, H, false); cam.aspect = W / H; }
     cam.updateProjectionMatrix();
@@ -245,10 +251,11 @@
       var T = m[0], r;
       // (logarithmicDepthBuffer: the far end of a big lake is 30 km away and the ground by you 50 m -- the water and the bottom under it flickered without)
       try { r = new T.WebGLRenderer({ canvas: m3Canvas, antialias: true, logarithmicDepthBuffer: true }); } catch(e){ m3Msg.textContent = 'Telefonen kan inte rita 3D'; return; }
-      r.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2)); r.setClearColor(0x141822, 1); r.localClippingEnabled = true;
+      r.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2)); r.setClearColor(0x141822, 1); r.localClippingEnabled = true; r.shadowMap.enabled = true; r.shadowMap.type = T.PCFSoftShadowMap;
       var scene = new T.Scene();
       scene.add(new T.HemisphereLight(0xffffff, 0x8a94a8, 1.0));
-      var sun = new T.DirectionalLight(0xffffff, 3.0); sun.position.set(-1, 0.5, -1); scene.add(sun);   // (from the north-west, as the maps' relief -- low, so the bottom's shape shows: Filip 2026-11-12)
+      var sun = new T.DirectionalLight(0xffffff, 3.0); sun.position.set(-1, 0.5, -1); scene.add(sun, sun.target);
+      sun.shadow.mapSize.set(2048, 2048); sun.shadow.bias = -0.0005; sun.shadow.normalBias = 0.02; sun.castShadow = m3Cfg.shadow;   // (Skuggor: 16 MB on the graphics card while on)   // (from the north-west, as the maps' relief -- low, so the bottom's shape shows: Filip 2026-11-12)
       // the map picture, fetched again as a picture of its own (from the browser's cache) -- NOT the map's <img>: three.js
       // sizes a texture by the element's size on the page, and a big lake's picture is shown at twice its own size (it came out black)
       var pic = new Image(), tex = new T.Texture(pic); tex.colorSpace = T.SRGBColorSpace; tex.anisotropy = r.capabilities.getMaxAnisotropy();
@@ -258,7 +265,7 @@
       function plane(x, z){ return new T.Plane(new T.Vector3(x, 0, z), 0); }
       function cut(){ return [plane(-1, 0), plane(1, 0), plane(0, -1), plane(0, 1)]; }   // (m3Hole)
       function ground(planes){   // the ground's look: the sharp patch's picture instead of the map picture's where it reaches (faded in at its edge)
-        var mt = new T.MeshLambertMaterial({ map: tex, clippingPlanes: planes, clipIntersection: true });
+        var mt = new T.MeshLambertMaterial({ map: tex, clippingPlanes: planes, clipIntersection: true, clipShadows: true });
         mt.onBeforeCompile = function(sh){
           sh.uniforms.uDet = detT; sh.uniforms.uDetR = detR;
           sh.uniforms.uCol = colU;
@@ -277,7 +284,7 @@
       // where the map looked, about as much of it: tilted, north up
       var c = cam || { px: (innerWidth / 2 - originX) / scale, py: (innerHeight / 2 - originY) / scale, d: innerHeight / scale * WEB_METERS_PER_PX * 1.2, az: 0, tilt: 0.95 };
       m3 = { T: T, r: r, scene: scene, cam: new T.PerspectiveCamera(M3_FOV, 1, 1, 1e5), tex: tex, v: new T.Vector3(), marks: [], t: 0, c: m3Clamp(c),
-             detT: detT, detR: detR, colU: colU, cut: cut(), cutW: cut(), far: null, near: null };
+             detT: detT, detR: detR, colU: colU, sun: sun, cut: cut(), cutW: cut(), far: null, near: null };
       m3.mat = ground(null); m3.wmat = wet(null); m3.matFar = ground(m3.cut); m3.wmatFar = wet(m3.cutW);   // (the whole map's: left out where the fine mesh lies)
       m3MarksSync(); m3Draw();
     }).catch(function(){ m3Msg.textContent = 'Kunde inte ladda 3D'; });
@@ -290,6 +297,7 @@
     if (m3.r){
       m3.scene.traverse(function(o){ if (o.geometry) o.geometry.dispose(); });
       [m3.mat, m3.wmat, m3.matFar, m3.wmatFar, m3.tex].forEach(function(o){ o.dispose(); });
+      if (m3.sun.shadow.map) m3.sun.shadow.map.dispose();
       m3.r.setSize(1, 1, false); m3.r.dispose();
     }
     if (m3.det){ m3.det.tex.dispose(); m3.det.cv.width = m3.det.cv.height = 1; }   // (the sharp patch: 16 MB of canvas)
@@ -302,6 +310,8 @@
     document.querySelector('#m3Chips [data-k=water]').classList.toggle('on', m3Cfg.water);
     document.querySelector('#m3Chips [data-k=col]').classList.toggle('on', m3Cfg.col);
     if (m3 && m3.colU) m3.colU.value.x = m3Cfg.col ? 1 : 0;
+    document.querySelector('#m3Chips [data-k=shadow]').classList.toggle('on', m3Cfg.shadow);
+    if (m3 && m3.sun){ m3.sun.castShadow = m3Cfg.shadow; if (!m3Cfg.shadow && m3.sun.shadow.map){ m3.sun.shadow.map.dispose(); m3.sun.shadow.map = null; } }   // (off: its 16 MB back)
     var src = document.getElementById('m3Src'); src.hidden = !LAKE.land; src.textContent = LAKE.land ? LAKE.land.credit : '';   // (whose heights: asked for by their licences)
   }
   document.getElementById('m3Ex').addEventListener('input', function(e){ m3Cfg.ex = +e.target.value; m3Save(); m3Ui(); m3Draw(); });
