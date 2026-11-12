@@ -13135,11 +13135,16 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
   }
   // the sharp patch: the sharpest zoom level whose M3_TEX px still reach 1,2 x the distance around the point you look at
   // (null: so far out that the map picture itself is as sharp)
+  // Tilted, the ground nearest you (the bottom of the screen) is about d * sin(tilt) out towards the camera: the patch lies
+  // between the point looked at and the camera and reaches from 0,6 d beyond the point to the ground under you (Filip
+  // 2026-11-12: near and tilted it stayed blurry until you zoomed out and in again)
+  function m3DetNeed(c){ return c.d * (1.2 + Math.sin(c.tilt)); }   // (m: the patch's side)
+  function m3DetAt(c){ var k = 0.5 * c.d * Math.sin(c.tilt) / WEB_METERS_PER_PX; return { x: c.px + k * Math.sin(c.az), y: c.py + k * Math.cos(c.az) }; }   // (its middle: map-picture px)
   function m3DetLevel(c){
     var best = null;
     ((DETAIL && DETAIL.levels) || []).forEach(function(L){
       if (L.styles && L.styles.indexOf(mapStyle) === -1) return;
-      if (M3_TEX / Math.pow(2, L.z - ZOOM) * S * WEB_METERS_PER_PX >= c.d * 1.2 && (!best || L.z > best.z)) best = L;
+      if (M3_TEX / Math.pow(2, L.z - ZOOM) * S * WEB_METERS_PER_PX >= m3DetNeed(c) && (!best || L.z > best.z)) best = L;
     });
     return best;
   }
@@ -13153,7 +13158,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
       var dt = new T.CanvasTexture(cv); dt.colorSpace = T.SRGBColorSpace; dt.anisotropy = m3.tex.anisotropy;
       m3.det = { cv: cv, ctx: cv.getContext('2d'), tex: dt, ok: {} }; m3.detT.value = dt;
     }
-    var D = m3.det, g = D.ctx, X = Math.round(c.px * s - N / 2), Y = Math.round(c.py * s - N / 2), id = D.id = (D.id || 0) + 1;   // (whole level px: the pieces are drawn 1:1)
+    var D = m3.det, g = D.ctx, at = m3DetAt(c), X = Math.round(at.x * s - N / 2), Y = Math.round(at.y * s - N / 2), id = D.id = (D.id || 0) + 1;   // (whole level px: the pieces are drawn 1:1)
     var old = D.z === L.z ? D.ok : {}, oX = D.X, oY = D.Y, ok = {};
     g.globalCompositeOperation = 'copy';
     if (D.z === L.z) g.drawImage(D.cv, oX - X, oY - Y); else g.clearRect(0, 0, N, N);   // (the same level: what's there, moved)
@@ -13161,7 +13166,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     var q = mapImgEl.naturalWidth / IMG_W / s, sx0 = Math.max(0, X * q), sy0 = Math.max(0, Y * q), sx1 = Math.min(mapImgEl.naturalWidth, (X + N) * q), sy1 = Math.min(mapImgEl.naturalHeight, (Y + N) * q);
     if (sx1 > sx0 && sy1 > sy0) g.drawImage(mapImgEl, sx0, sy0, sx1 - sx0, sy1 - sy0, sx0 / q - X, sy0 / q - Y, (sx1 - sx0) / q, (sy1 - sy0) / q);
     g.globalCompositeOperation = 'source-over';
-    D.z = L.z; D.X = X; D.Y = Y; D.px = c.px; D.py = c.py; D.ok = ok;
+    D.z = L.z; D.X = X; D.Y = Y; D.px = at.x; D.py = at.y; D.ok = ok;
     m3.detR.value.set(X / s / IMG_W, 1 - (Y + N) / s / IMG_H, IMG_W * s / N, IMG_H * s / N);   // where it lies, in the map picture's uv
     D.tex.needsUpdate = true;
     function piece(z, folder, pc, pr, k, then){   // k: its px on the canvas per px of its own (2 = a base from one level down, enlarged)
@@ -13202,7 +13207,7 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
     if (Date.now() - m3.t > 200){   // the sharp patch: for this zoom, around this point (again when you've moved 15 % of it)
       var L = m3DetLevel(c), D = m3.det;
       if (!L){ m3.detR.value.z = 0; if (D) D.z = 0; }
-      else if (!D || D.z !== L.z || Math.hypot(c.px - D.px, c.py - D.py) * Math.pow(2, L.z - ZOOM) / S > M3_TEX * 0.15) m3Detail(L);
+      else { var da = m3DetAt(c); if (!D || D.z !== L.z || Math.hypot(da.x - D.px, da.y - D.py) * Math.pow(2, L.z - ZOOM) / S > M3_TEX * 0.15) m3Detail(L); }
     }
     var tx = (c.px - CX) * M, tz = (c.py - CY) * M, st = Math.sin(c.tilt), cam = m3.cam;
     var ty = m3.ty != null ? m3.ty : m3Ground(c.px, c.py);   // (the point you look at is on the ground: a hill isn't turned about a point deep inside it -- or, while fingers are down, at the height they hold it)
@@ -13601,9 +13606,12 @@ html.boot body{opacity:0;background:none}html.booted body{transition:opacity 1.2
       var rc = new m3.T.Raycaster(); rc.setFromCamera(new m3.T.Vector2(at ? at[0] / innerWidth * 2 - 1 : 0, at ? 1 - at[1] / innerHeight * 2 : 0), m3.cam);
       // (the whole map's mesh only where it is drawn: not where it is cut out for the fine one -- the fine one may have a hole there)
       var h = (m3.near && rc.intersectObject(m3.near.mesh)[0]) || rc.intersectObject(m3.far.mesh).filter(function(f){ return !m3.cut.every(function(pl){ return pl.distanceToPoint(f.point) < 0; }); })[0];
-      if (h) hit = { y: h.point.y / m3Cfg.ex, d: h.distance, at: imgPxToLatLon(IMG_W / 2 + h.point.x / WEB_METERS_PER_PX, IMG_H / 2 + h.point.z / WEB_METERS_PER_PX) };
+      if (h){
+        var hx = IMG_W / 2 + h.point.x / WEB_METERS_PER_PX, hy = IMG_H / 2 + h.point.z / WEB_METERS_PER_PX, D = m3.det, ds = D && D.z ? Math.pow(2, D.z - ZOOM) / S : 0;
+        hit = { y: h.point.y / m3Cfg.ex, d: h.distance, at: imgPxToLatLon(hx, hy), inDet: !!ds && hx * ds >= D.X && hx * ds <= D.X + M3_TEX && hy * ds >= D.Y && hy * ds <= D.Y + M3_TEX };   // (inDet: inside the sharp patch)
+      }
     }
-    var det = m3 && m3.det && m3.det.z ? { z: m3.det.z, n: m3.det.n || 0, X: m3.det.X, Y: m3.det.Y, url: o && o.pic ? m3.det.cv.toDataURL('image/jpeg', 0.6) : '' } : null;   // (the sharp patch; pic: its picture too)
+    var det = m3 && m3.det && m3.det.z ? { z: m3.det.z, want: (m3DetLevel(m3.c) || {}).z, n: m3.det.n || 0, X: m3.det.X, Y: m3.det.Y, far: Math.hypot(m3DetAt(m3.c).x - m3.det.px, m3DetAt(m3.c).y - m3.det.py) * Math.pow(2, m3.det.z - ZOOM) / S / M3_TEX, url: o && o.pic ? m3.det.cv.toDataURL('image/jpeg', 0.6) : '' } : null;   // (the sharp patch; pic: its picture too)
     return { land: !!(m3Land && m3Land.length), det: det, hit: hit, open: !!m3, ready: !!(m3 && m3.far && m3.at), n: m3 && m3.n, builds: m3 && m3.nb, c: m3 && m3.c, cam: m3 && m3.cam ? m3.cam.position.toArray() : null, at: m3 && m3.at, marks: m3 && m3.marks ? m3.marks.length : 0, cfg: m3Cfg, trk: [m3Trk.mine.map(function(g){ return g.length; }), m3Trk.others.length, m3 && m3.tg ? m3.tg.children.length : 0],
              objs: m3 && m3.marks ? m3.marks.filter(function(k){ return k.o; }).map(function(k){ return { kind: k.kind, me: !!k.me, hdg: k.hdg, y: k.o.position.y, line: k.b.visible, icon: !!k.icon }; }) : [],
              fish: m3 && m3.fp ? m3.fp.geometry.attributes.position.count : 0, comp: !!(m3 && m3.comp && m3.comp.dial.visible), compRot: m3 && m3.comp ? m3.comp.wedge.rotation.y : null };

@@ -46,8 +46,9 @@ Test: `tests/test_map3d.py`. Höjdfilerna görs av `tools/land_height.py`.
   three.js mäter texturen efter elementets storlek på sidan, och Mälarens och Gryts bild visas i dubbel storlek mot filen –
   hela marken blev svart långt ut (Filip 2026-11-11).
 - **Skarp nära:** zoomnivåns bitar (samma som vanliga kartans: bas + kurvlager) sätts ihop på EN canvas om 2048 px
-  (`m3Detail`) och visas i stället för kartbilden där den når (i shadern, `uDet`/`uDetR`). Nivån väljs så att canvasen når
-  1,2 × avståndet (`m3DetLevel`); längre ut än lägsta nivån räcker = bara kartbilden. Flyttar man sig på samma nivå
+  (`m3Detail`) och visas i stället för kartbilden där den når (i shadern, `uDet`/`uDetR`). Lutad kamera: biten ligger mellan
+  punkten man tittar på och kameran och når ända fram till marken under dig (`m3DetAt`, `m3DetNeed` = (1,2 + sin lutning) ×
+  avståndet; Filip 2026-11-12: nära och lutat var förgrunden suddig). Nivån väljs så att canvasen når så långt (`m3DetLevel`); längre ut än lägsta nivån räcker = bara kartbilden. Flyttar man sig på samma nivå
   behålls det som redan är ihopsatt och bara nya bitar hämtas.
 - **Vattenytan:** genomskinlig blå yta i nivå 0, bara över sjön. "Vatten" av = sjön "tömd".
 - **Djupfärg** (knapp, av som standard, `m3Cfg.col`, Filip 2026-11-12): botten färgas efter djupet med Under ytans färger

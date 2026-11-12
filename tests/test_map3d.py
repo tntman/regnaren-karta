@@ -139,6 +139,10 @@ with sync_playwright() as p:
     z1 = M(pg)['det']['z']
     M(pg, {'d': 300}); pg.wait_for_timeout(1800)
     dt = M(pg, {'pic': True})['det']
+    M(pg, {'d': 250, 'tilt': 1.3}); pg.wait_for_timeout(1800)
+    nb = M(pg, {'at': [195, 790]})['hit']
+    check('near and tilted: the ground nearest you (the bottom of the screen) is in the sharp patch too', nb and nb['inDet'], nb)
+    M(pg, {'d': 300, 'tilt': c1['tilt']}); pg.wait_for_timeout(1800); dt = M(pg, {'pic': True})['det']
     check('zoomed in: a sharp patch around the point you look at -- nearer = a deeper zoom level, 300 m away = the deepest (18)', dt and 15 <= z1 < 18 and dt['z'] == 18 and dt['n'] >= 8, dt and (z1, dt['z'], dt['n']))
     lk = json.load(open('../lakes/regnaren/lake.json', encoding='utf-8'))
     base = Image.open('../docs/lakes/regnaren/' + lk['mapFile'].replace('{style}', lk['styles'][0]['id'])).convert('RGB')
