@@ -289,7 +289,7 @@
     m3.marks.forEach(function(k){
       var o = new T.Group(), kind = k.kind;
       if (kind === 'fara'){
-        var f = new T.Group(); f.position.y = 1.4;   // (on its pole)
+        var f = new T.Group(); f.position.y = 1.25;   // (its lower edge on the water)
         var e1 = new T.Mesh(G.oct, edge(0x111111)); e1.scale.set(1.24, 1.24, 1.1); var e2 = new T.Mesh(G.oct, flat(0xffffff)); e2.scale.set(1.13, 1.13, 0.8); e2.position.z = -0.03;
         var x1 = new T.Mesh(G.bar, flat(0xffffff)), x2 = new T.Mesh(G.bar, flat(0xffffff)); x1.rotation.z = Math.PI / 4; x2.rotation.z = -Math.PI / 4; x1.position.z = x2.position.z = 0.13;
         f.add(e1, e2, new T.Mesh(G.oct, flat(0xE5322D)), x1, x2); o.add(f); k.face = f;
@@ -315,7 +315,7 @@
     m3.marks.forEach(function(k){
       if (!k.o) return;
       var X = (k.p.x - CX) * M, Z = (k.p.y - CY) * M, g = m3Ground(k.p.x, k.p.y), wet = isLakeAtImgPx(k.p.x, k.p.y), bot = wet ? m3Surf(k.p.x, k.p.y) : g;
-      var up = k.kind === 'boat' ? 0.12 * s : k.kind === 'fara' ? 1.2 * s : 0;   // (a pin's tip and the beacon's foot on the water; the sign on a short pole; the arrow lying on it)
+      var up = k.kind === 'boat' ? 0.12 * s : 0;   // (a pin's tip, the stop sign's lower edge and the beacon's foot on the water; the arrow lying on it)
       k.o.scale.setScalar(s * (k.kind === 'boat' ? 1.6 : 1)); k.o.position.set(X, g + up, Z);
       if (k.me) k.hdg = compassOn && compassHdg !== null ? compassHdg : headingDeg;   // (your arrow: where the phone points while Kompass is on, else where you go)
       if (k.face) k.face.rotation.y = c.az; if (k.turn){ k.turn.rotation.y = -(k.hdg || 0) * Math.PI / 180; }
