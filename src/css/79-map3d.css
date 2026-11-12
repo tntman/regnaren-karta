@@ -9,6 +9,8 @@
   /* the map's own pins, copied on top of the picture: only to look at */
   #m3Marks{position:absolute;inset:0;overflow:hidden;pointer-events:none;}
   #m3Marks *{pointer-events:none;}
+  /* the marks are 3D objects (73-map3d.js m3Objs): only their labels are left on top */
+  #m3Marks .m3Obj.wpPin, #m3Marks .m3Obj.wpFara, #m3Marks .m3Obj.m3Me, #m3Marks .m3Obj .boatDot, #m3Marks .m3Obj .bcCore, #m3Marks .m3Obj .bcRing{visibility:hidden;}
   #m3Marks.othersDim .wpPin--other{opacity:.5;}
   .m3Me{position:absolute;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;background:var(--amber);border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.5);z-index:5;}
   #m3North{right:auto;left:16px;display:flex;align-items:center;justify-content:center;padding:0;}

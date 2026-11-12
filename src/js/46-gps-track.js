@@ -210,7 +210,7 @@
   function renderTrack(){
     trackLayer.classList.toggle('off', !showTrack);
     trackLayer.classList.toggle('solid', !trkCfg.dash);
-    if (!showTrack) return;
+    if (!showTrack){ m3TrkSync([], [], ''); return; }
     var c = trkCfg, from = trkRangeFrom(), stops = [], mine = [];
     if (c.mine){
       trkMineDays().forEach(function(dk){
@@ -236,6 +236,7 @@
       if (o.uid === c.who && o.day >= from) others.push.apply(others, pxSegs('o' + id, o, o.p.length, function(){ return unpackSegs(o.p); }));
     });
     setPath(trkOtherEl, others);
+    m3TrkSync(mine, others, c.color);   // (the same tracks in the 3D map, 73-map3d.js)
     if (!c.stops || !stops.length){ if (trkStopsEl.firstChild) trkStopsEl.textContent = ''; return; }
     var h = '';
     stops.forEach(function(s){

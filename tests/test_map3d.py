@@ -8,6 +8,7 @@ sys.path.insert(0, '../tools')
 from land_height import unpack, check as tool_check          # (the land file read here, apart from the app)
 from PIL import Image, ImageChops, ImageStat
 from playwright.sync_api import sync_playwright
+import fakefb
 from fakefb import new_page
 results = []
 def check(name, cond, info=''):
@@ -41,7 +42,21 @@ with sync_playwright() as p:
     check('your boat, the two spots and the other boat are copied on top (4)', s['marks'] == 4 and pg.locator('#m3Marks .m3Me').count() == 1 and pg.locator('#m3Marks .wpPin').count() == 1 and pg.locator('#m3Marks .wpFara').count() == 1 and pg.locator('#m3Marks .boatPip').count() == 1, s['marks'])
     pg.click('#m3Me'); pg.wait_for_timeout(600)
     bb = pg.locator('#m3Marks .m3Me').bounding_box()
-    check('"Till mig": your boat in the middle of the screen', abs(bb['x'] + bb['width'] / 2 - 195) < 3 and abs(bb['y'] + bb['height'] / 2 - 422) < 3, bb)
+    check('"Till mig": your boat in the middle of the screen', abs(bb['x'] + bb['width'] / 2 - 195) < 3 and abs(bb['y'] + bb['height'] / 2 - 422) < 8, bb)      # (its label is at the arrow, just over the water)
+    ob = M(pg)['objs']; kinds = sorted(o['kind'] + ('*' if o['me'] else '') for o in ob)
+    check('the marks are 3D objects: a pin, the stop sign, the other boat and your boat (the same arrow), each on the water with its mirror image in the surface and a line to the bottom (the other boat is on land here: none)',
+          kinds == ['boat', 'boat*', 'fara', 'pin'] and sum(o['refl'] for o in ob) == 3 and all(o['line'] and o['y'] >= 0 and abs(o['ry'] + o['y']) < 1e-6 for o in ob if o['refl'])
+          and pg.evaluate("[...document.querySelectorAll('#m3Marks .wpPin, #m3Marks .wpFara')].every(e => getComputedStyle(e).visibility === 'hidden')")
+          and pg.evaluate("getComputedStyle(document.querySelector('#m3Marks .boatName')).visibility") == 'visible', (kinds, ob))
+    pg.evaluate("DeviceOrientationEvent.requestPermission = () => Promise.resolve('granted'); 0")      # (as when you say yes on an iPhone)
+    pg.click('#m3Chips [data-k=compass]'); pg.wait_for_timeout(300)
+    for _ in range(25): pg.evaluate("window.dispatchEvent(new DeviceOrientationEvent('deviceorientationabsolute', {alpha: 300, absolute: true}))")      # (the phone points 60 degrees: north-east)
+    pg.wait_for_timeout(300); s = M(pg); me = [o for o in s['objs'] if o['me']][0]
+    check("Kompass: your arrow turns where the phone points, the compass rose and the wedge along the water with it -- and it is Filter's Kompass",
+          s['comp'] and abs(me['hdg'] - 60) < 1 and abs(s['compRot'] + math.radians(60)) < 0.02 and pg.evaluate("window.__ffCompass().on") and pg.evaluate("document.querySelector('#m3Chips [data-k=compass]').classList.contains('on')"), (s['comp'], me, s['compRot']))
+    pg.screenshot(path='shot_map3d_compass.png')
+    pg.click('#m3Chips [data-k=compass]'); pg.wait_for_timeout(300)
+    check('...off again: no compass', not M(pg)['comp'] and not pg.evaluate("window.__ffCompass().on"))
     # the fingers, as in the map apps. What the app draws at a place on the screen is asked of three.js itself (a ray
     # against the mesh) -- apart from the app's own reckoning of what the fingers hold
     c0 = M(pg)['c']; k0 = M(pg)['cam']
@@ -143,7 +158,7 @@ with sync_playwright() as p:
     check('...whose heights they are is written in the controls', 'Höjddata' in pg.inner_text('#m3Src'), pg.inner_text('#m3Src'))
     pg.click('#m3Chips [data-k=water]'); pg.fill('#m3Ex', '6'); pg.dispatch_event('#m3Ex', 'input'); pg.wait_for_timeout(400)
     sv = json.loads(pg.evaluate("localStorage.getItem('ffmap_3d_v1')"))
-    check('Vatten off and Höjd × 6: shown and remembered', sv == {'ex': 6, 'water': False, 'col': False, 'shadow': False} and pg.inner_text('#m3ExVal') == '× 6' and not pg.evaluate("document.querySelector('#m3Chips [data-k=water]').classList.contains('on')"), sv)
+    check('Vatten off and Höjd × 6: shown and remembered', sv == {'ex': 6, 'water': False, 'col': False, 'shadow': False, 'fish': False} and pg.inner_text('#m3ExVal') == '× 6' and not pg.evaluate("document.querySelector('#m3Chips [data-k=water]').classList.contains('on')"), sv)
     pg.screenshot(path='shot_map3d_dry.png')
     M(pg, {'px': 1050, 'py': 420, 'd': 1200, 'tilt': 1.1, 'az': 0.4}); pg.wait_for_timeout(1500)
     def look(): return ImageStat.Stat(Image.open(io.BytesIO(pg.screenshot())).convert('RGB').crop((0, 400, 390, 700))).mean
@@ -180,6 +195,24 @@ with sync_playwright() as p:
     M(pg, TOP); pg.wait_for_timeout(900)
     s = M(pg)
     check('no land heights to fetch: flat land, just over the water', not s['land'] and abs(s['hit']['y'] - 0.3) < 0.01 and not errs, (s['land'], s['hit'], errs))
+    b.close()
+
+    # the tracks and Fångster: today's track (on the phone) as a line in 3D, the lake's catches (the heatmap's data) as dots
+    import datetime
+    day = (datetime.datetime.now() - datetime.timedelta(hours=6)).strftime('%Y-%m-%d'); t0 = int(datetime.datetime.now().timestamp() * 1000) - 3600000
+    segs = [[[B3[0] + i * 0.00005, B3[1] + i * 0.0001, t0 + i * 20000] for i in range(30)]]
+    rows = [fakefb.api_row(t0 - 86400000 + i * 60000, 'regnaren1', 'Filip', ['abborre', 'gadda', 'gos'][i % 3], 40, B3[0] + i * 0.0001, B3[1]) for i in range(9)]
+    b, ctx, pg, errs = new_page(p, geo=B3, name='Filip', cfg={'api': {'heatmap': rows}})
+    ctx.add_init_script("if (!sessionStorage.getItem('seeded')){ sessionStorage.setItem('seeded', '1'); localStorage.setItem('ffmap_track_v1', %s); }" % json.dumps(json.dumps({'day': day, 'segs': segs})))
+    pg.reload(); pg.wait_for_timeout(2500)
+    hold_map_btn(pg); pg.click('#mapTypePop .m3Opt'); pg.wait_for_timeout(2500)
+    s = M(pg)
+    check("the tracks: today's track is a line in 3D too", s['trk'][0] and s['trk'][0][0] >= 60 and s['trk'][2] >= 1, s['trk'])
+    check('Fångster off: no dots', s['fish'] == 0)
+    pg.click('#m3Chips [data-k=fish]'); pg.wait_for_timeout(1500)
+    check("Fångster: every catch on the lake a dot (the heatmap's data), remembered", M(pg)['fish'] == 9 and json.loads(pg.evaluate("localStorage.getItem('ffmap_3d_v1')"))['fish'] is True, M(pg)['fish'])
+    pg.screenshot(path='shot_map3d_fish.png')
+    check('no page errors', not errs, errs)
     b.close()
 
     # a big lake (its map picture is stored at half size and shown at twice that): far out the whole map is there with its

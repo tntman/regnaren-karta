@@ -18,7 +18,7 @@
   var M3_RFULL = Math.max(IMG_W, IMG_H) * WEB_METERS_PER_PX / 2;   // half the map's long side (m): a fine mesh this far out would be no finer than the whole map's
   var M3_TEX = 2048;   // the sharp patch's canvas (px a side): 4 x 4 pieces
   var M3_REACH = 15;   // m: water nobody has charted takes its depth from what is known this close; further out it is a hole (m3Make)
-  var m3Cfg = { ex: 3, water: true, col: false, shadow: false };   // (col: Djupfärg -- the bottom coloured by depth instead of the map picture; shadow: Skuggor -- cast shadows)
+  var m3Cfg = { ex: 3, water: true, col: false, shadow: false, fish: false };   // (col: Djupfärg -- the bottom coloured by depth instead of the map picture; shadow: Skuggor -- cast shadows; fish: Fångster -- every catch as a dot where it was caught)
   try { m3Cfg = Object.assign(m3Cfg, JSON.parse(localStorage.getItem(M3_KEY) || '{}')); } catch(e){}
   var m3View = document.getElementById('m3View'), m3Canvas = document.getElementById('m3Canvas'), m3Marks = document.getElementById('m3Marks'), m3Msg = document.getElementById('m3Msg');
   var m3 = null;   // while open: { T, r, scene, cam, far: the whole map's mesh, near: the fine one (or null), tex, c: the camera { px, py (the image px looked at), d (m away), az, tilt (0 = straight down) }, at: what the fine mesh was built for }
@@ -215,12 +215,16 @@
     if (m3.w !== W || m3.h !== H){ m3.w = W; m3.h = H; m3.r.setSize(W, H, false); cam.aspect = W / H; }
     cam.updateProjectionMatrix();
     [m3.far, m3.near].forEach(function(o){ if (o){ o.mesh.scale.y = m3Cfg.ex; o.water.visible = m3Cfg.water; } });
+    if (m3.tgV !== m3Trk.v || m3.tgEx !== m3Cfg.ex) m3TrkBuild();   // (the tracks)
+    if (m3.fpV !== catchVer || m3.fpEx !== m3Cfg.ex || !!m3.fp !== (m3Cfg.fish && !!(catchData && catchData.list.length))) m3FishBuild();   // (Fångster)
+    m3ObjsPlace();
     m3.r.render(m3.scene, cam);
     m3.marks.forEach(function(k){   // the pins: where their spot on the ground is on the screen
-      var v = m3.v.set((k.p.x - CX) * M, m3Ground(k.p.x, k.p.y), (k.p.y - CY) * M).project(cam);
+      var ob = !!k.o, v = m3.v.set((k.p.x - CX) * M, ob ? k.top : m3Ground(k.p.x, k.p.y), (k.p.y - CY) * M).project(cam);   // (the label beside the 3D object's top)
       var on = v.z < 1 && Math.abs(v.x) < 1.2 && Math.abs(v.y) < 1.2;
       k.el.style.display = on ? '' : 'none';
-      if (on){ k.el.style.left = ((v.x + 1) / 2 * W) + 'px'; k.el.style.top = ((1 - v.y) / 2 * H + k.dy) + 'px'; }
+      if (on){ k.el.style.left = ((v.x + 1) / 2 * W) + 'px'; k.el.style.top = ((1 - v.y) / 2 * H + (ob ? 0 : k.dy)) + 'px'; }
+      k.el.classList.toggle('m3Obj', ob);   // (the 2D icon hidden, its label kept: 79-map3d.css)
     });
     document.getElementById('m3North').firstChild.style.transform = 'rotate(' + c.az + 'rad)';
     m3Msg.textContent = '';
@@ -229,17 +233,175 @@
   function m3MarksSync(){
     if (!m3 || !m3.r) return;
     m3Marks.innerHTML = ''; m3Marks.className = waypointsLayer.className; m3.marks = [];
-    function add(el, lat, lon, dy){
+    function add(el, lat, lon, dy, col, kind, me){
       var p = latLonToImgPx(lat, lon); m3Marks.appendChild(el);
-      m3.marks.push({ el: el, p: p, dy: dy || 0 });
+      m3.marks.push({ el: el, p: p, dy: dy || 0, col: col || '#E4E9EC', kind: kind || 'pin', me: me, hdg: me ? headingDeg : 0 });
     }
+    var COLS = { mark: '#E4E9EC', abborre: '#FF7A1A', gadda: '#35D24A', gos: '#3A86FF', hem: '#A8693A' };   // (the map's own, 40-spots-boats.css)
     waypoints.forEach(function(wp){
       var el = pinEls[wp.id];
-      if (el) add(el.cloneNode(true), wp.lat, wp.lon, el.classList.contains('wpPin') ? -PIN_TIP_OFFSET * wpScale * (isMine(wp) ? 1 : OTHER_PIN_SCALE) : 0);   // (a pin: its tip on the spot)
+      if (el) add(el.cloneNode(true), wp.lat, wp.lon, el.classList.contains('wpPin') ? -PIN_TIP_OFFSET * wpScale * (isMine(wp) ? 1 : OTHER_PIN_SCALE) : 0, COLS[wp.type], wp.type === 'fara' || wp.type === 'meet' ? wp.type : 'pin');   // (a pin: its tip on the spot)
     });
-    Array.prototype.forEach.call(boatsLayer.children, function(el){ var b = boatClustersById[el.getAttribute('data-cluster')]; if (b) add(el.cloneNode(true), b.lat, b.lon); });
-    if (lastOwnLatLon){ var me = document.createElement('div'); me.className = 'm3Me'; add(me, lastOwnLatLon.lat, lastOwnLatLon.lon); }
-    m3Draw();
+    Array.prototype.forEach.call(boatsLayer.children, function(el){ var b = boatClustersById[el.getAttribute('data-cluster')]; if (b) add(el.cloneNode(true), b.lat, b.lon, 0, '#ffffff', 'boat'); });
+    if (lastOwnLatLon){ var me = document.createElement('div'); me.className = 'm3Me'; add(me, lastOwnLatLon.lat, lastOwnLatLon.lon, 0, '#FF7A00', 'boat', true); }
+    m3Objs(); m3Draw();
+  }
+  // The marks as 3D objects (Filip 2026-11-12) -- 3D versions of the map's own: a pin (drop) in the type's colour with a white and a
+  // dark edge, Fara the red stop sign with a white X (turned to the camera), Träffpunkt a beacon with a ring on the water,
+  // your boat the orange arrow and the others' the same arrow in white (dark edges). Each has its mirror image in the
+  // water's surface and a thin line down to the bottom; the names stay flat labels beside them, turned to the camera.
+  function m3Geo(T){
+    var g = {};
+    var c = 1.6, rr = 0.8, ty = c - rr * rr / c, tx = rr * Math.sqrt(c * c - rr * rr) / c, pts = [new T.Vector2(0, 0)];   // the drop: its tip on the spot
+    for (var a = Math.atan2(ty - c, tx), i = 0; i <= 16; i++){ var t = a + (Math.PI / 2 - a) * i / 16; pts.push(new T.Vector2(Math.max(0, rr * Math.cos(t)), c + rr * Math.sin(t))); }
+    g.pin = new T.LatheGeometry(pts, 28);
+    g.oct = new T.CylinderGeometry(1, 1, 0.22, 8, 1, false, Math.PI / 8); g.oct.rotateX(Math.PI / 2);   // (its face to +z)
+    g.bar = new T.BoxGeometry(1.15, 0.26, 0.06);
+    g.ball = new T.SphereGeometry(0.75, 24, 16); g.ring = new T.TorusGeometry(2.2, 0.12, 8, 48); g.ring.rotateX(Math.PI / 2);
+    var sh = new T.Shape(); sh.moveTo(0, 8.75); sh.lineTo(7, -8.75); sh.lineTo(0, -4.55); sh.lineTo(-7, -8.75); sh.closePath();   // (the 2D arrow, 24-px box, its middle at 0)
+    g.arrow = new T.ExtrudeGeometry(sh, { depth: 1.6, bevelEnabled: false }); g.arrow.scale(1 / 7, 1 / 7, 1 / 7); g.arrow.rotateX(-Math.PI / 2);   // (flat: its point north, -z)
+    g.arrowEdge = new T.EdgesGeometry(g.arrow);
+    return g;
+  }
+  function m3Objs(){
+    var T = m3.T;
+    if (m3.og){ m3.scene.remove(m3.og); m3.og.traverse(function(o){ if (o.isLine) o.geometry.dispose(); if (o.material) o.material.dispose(); }); }
+    var G = m3.geo || (m3.geo = m3Geo(T)), og = m3.og = new T.Group(); m3.scene.add(og);
+    function lit(col){ return new T.MeshLambertMaterial({ color: col, emissive: col, emissiveIntensity: 0.3 }); }
+    function edge(col, k){ return new T.MeshBasicMaterial({ color: col, side: T.BackSide }); }
+    function line(op, dt){ var l = new T.Line(new T.BufferGeometry().setAttribute('position', new T.BufferAttribute(new Float32Array(6), 3)), new T.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: op, depthTest: dt })); l.frustumCulled = false; if (!dt) l.renderOrder = 3; return l; }
+    m3.marks.forEach(function(k){
+      var o = new T.Group(), kind = k.kind;
+      if (kind === 'fara'){
+        var f = new T.Group(); f.position.y = 1.4;   // (on its pole)
+        var e1 = new T.Mesh(G.oct, edge(0x111111)); e1.scale.set(1.22, 1.22, 1.05); var e2 = new T.Mesh(G.oct, lit(0xffffff)); e2.scale.set(1.12, 1.12, 0.8); e2.position.z = -0.03;
+        var x1 = new T.Mesh(G.bar, lit(0xffffff)), x2 = new T.Mesh(G.bar, lit(0xffffff)); x1.rotation.z = Math.PI / 4; x2.rotation.z = -Math.PI / 4; x1.position.z = x2.position.z = 0.13;
+        f.add(e1, e2, new T.Mesh(G.oct, lit(0xE5322D)), x1, x2); o.add(f); k.face = f;
+      } else if (kind === 'meet'){
+        var b = new T.Mesh(G.ball, lit(0xFFB23F)); b.position.y = 1.2; var be = new T.Mesh(G.ball, edge(0xffffff)); be.scale.setScalar(1.15); be.position.y = 1.2;
+        o.add(b, be); k.ring = new T.Mesh(G.ring, new T.MeshBasicMaterial({ color: 0xFFB23F, transparent: true, opacity: 0.7 })); og.add(k.ring);
+      } else if (kind === 'boat'){
+        var a = new T.Mesh(G.arrow, lit(k.col)), ae = new T.LineSegments(G.arrowEdge, new T.LineBasicMaterial({ color: k.me ? 0x1C212C : 0x0a141a }));
+        o.add(a, ae); k.turn = o;
+      } else {
+        var e3 = new T.Mesh(G.pin, edge(0x111111)), e4 = new T.Mesh(G.pin, edge(0xffffff));
+        e3.scale.set(1.2, 1.1, 1.2); e4.scale.set(1.12, 1.06, 1.12);
+        o.add(e3, e4, new T.Mesh(G.pin, lit(k.col)));
+      }
+      var rf = o.clone(true); k.fade = { value: 1 };
+      rf.traverse(function(m){
+        if (!m.material) return;
+        var mt = new T.MeshBasicMaterial({ color: m.material.color.clone().multiplyScalar(0.55).lerp(new T.Color(0x1f5f9e), 0.45), transparent: true, opacity: 0.55, depthTest: false, depthWrite: false });
+        mt.onBeforeCompile = function(sh){   // (fades out with the depth under the surface: what is mirrored furthest down, weakest)
+          sh.uniforms.uFade = k.fade;
+          sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying float vWY;').replace('#include <project_vertex>', '#include <project_vertex>\nvWY = (modelMatrix * vec4(transformed, 1.0)).y;');
+          sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying float vWY;\nuniform float uFade;').replace('#include <opaque_fragment>', '#include <opaque_fragment>\ngl_FragColor.a *= clamp(1.0 + vWY / uFade, 0.0, 1.0);');
+        };
+        m.material = mt; m.renderOrder = 3;
+      });
+      k.o = o; k.r = rf; k.l = line(0.75, true); k.b = line(0.9, false);
+      og.add(o, rf, k.l, k.b);
+    });
+  }
+  function m3ObjsPlace(){   // (every frame: their size goes with the distance; the stop sign turns to the camera)
+    var c = m3.c, M = WEB_METERS_PER_PX, s = c.d * 0.006, CX = IMG_W / 2, CY = IMG_H / 2;
+    m3.marks.forEach(function(k){
+      if (!k.o) return;
+      var X = (k.p.x - CX) * M, Z = (k.p.y - CY) * M, g = m3Ground(k.p.x, k.p.y), wet = isLakeAtImgPx(k.p.x, k.p.y), bot = wet ? m3Surf(k.p.x, k.p.y) : g;
+      var up = k.kind === 'boat' ? 0.02 * s : k.kind === 'fara' ? 1.2 * s : 0;   // (a pin's tip and the beacon's foot on the water; the sign on a short pole; the arrow just over it)
+      k.o.scale.setScalar(s * (k.kind === 'boat' ? 1.6 : 1)); k.o.position.set(X, g + up, Z);
+      k.r.scale.copy(k.o.scale); k.r.scale.y *= -1; k.r.position.set(X, -up, Z); k.r.visible = wet && m3Cfg.water; k.fade.value = 3 * s + up;   // (mirrored in the water's surface, y = 0)   // (the mirror image: upside down in the water's surface)
+      if (k.me) k.hdg = compassOn && compassHdg !== null ? compassHdg : headingDeg;   // (your arrow: where the phone points while Kompass is on, else where you go)
+      if (k.face) k.face.rotation.y = c.az; if (k.turn){ k.turn.rotation.y = -(k.hdg || 0) * Math.PI / 180; }
+      if (k.me) m3CompassPlace(X, Z, k.hdg, wet);
+      k.r.rotation.copy(k.o.rotation); if (k.face) k.r.children[0].rotation.y = c.az;
+      if (k.ring){ k.ring.position.set(X, g + 0.05, Z); k.ring.scale.setScalar(s); }
+      function set(l, y0, y1){ var a = l.geometry.attributes.position.array; a[0] = a[3] = X; a[2] = a[5] = Z; a[1] = y0; a[4] = y1; l.geometry.attributes.position.needsUpdate = true; }
+      set(k.l, g, g + up); set(k.b, g, bot); k.b.visible = wet; k.l.visible = up > 0 && k.kind === 'fara';
+      k.top = g + up + (k.kind === 'boat' ? 0 : 2.6 * s);   // (the label: beside the top)
+    });
+  }
+  // the tracks in 3D: what the map shows (46-gps-track.js renderTrack: yours in your colour, someone else's light blue) as
+  // lines just over the water / the ground -- built again when they change or Höjd × does
+  var m3Trk = { mine: [], others: [], col: '', v: 0 };
+  function m3TrkSync(mine, others, col){ m3Trk = { mine: mine, others: others, col: col, v: m3Trk.v + 1 }; m3Draw(); }
+  function m3TrkBuild(){
+    var T = m3.T, M = WEB_METERS_PER_PX, CX = IMG_W / 2, CY = IMG_H / 2;
+    if (m3.tg){ m3.scene.remove(m3.tg); m3.tg.traverse(function(o){ if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); }); }
+    var tg = m3.tg = new T.Group(); m3.scene.add(tg); m3.tgV = m3Trk.v; m3.tgEx = m3Cfg.ex;
+    function lines(list, col){
+      if (!list.length) return;
+      var mat = new T.LineBasicMaterial({ color: col });
+      list.forEach(function(seg){
+        var n = seg.length / 2; if (n < 2) return;
+        var a = new Float32Array(n * 3);
+        for (var i = 0; i < n; i++){ var x = seg[2 * i], y = seg[2 * i + 1]; a[3 * i] = (x - CX) * M; a[3 * i + 1] = m3Ground(x, y) + 0.4; a[3 * i + 2] = (y - CY) * M; }
+        tg.add(new T.Line(new T.BufferGeometry().setAttribute('position', new T.BufferAttribute(a, 3)), mat));
+      });
+    }
+    lines(m3Trk.mine, m3Trk.col || '#F09A60'); lines(m3Trk.others, '#7CC8FF');
+  }
+  // Fångster: every catch on the lake (the heatmap's data, 66-catches.js catchData) as a small dot in its species' colour,
+  // on the bottom where it was caught -- a few px whatever the distance, hidden behind hills
+  function m3FishBuild(){
+    var T = m3.T, M = WEB_METERS_PER_PX, CX = IMG_W / 2, CY = IMG_H / 2, list = (catchData && catchData.list) || [];
+    if (m3.fp){ m3.scene.remove(m3.fp); m3.fp.geometry.dispose(); }
+    m3.fpV = catchVer; m3.fpEx = m3Cfg.ex; m3.fp = null;
+    if (!m3Cfg.fish || !list.length) return;
+    var SP = { abborre: new T.Color('#FF7A1A'), gadda: new T.Color('#35D24A'), gos: new T.Color('#3A86FF') }, pos = new Float32Array(list.length * 3), col = new Float32Array(list.length * 3);
+    list.forEach(function(c, i){
+      var d = depthAtImgPx(c.px, c.py), y = d !== null ? -d * m3Cfg.ex + 0.3 : m3Ground(c.px, c.py) + 0.3, k = SP[c.sp] || SP.abborre;
+      pos[3 * i] = (c.px - CX) * M; pos[3 * i + 1] = y; pos[3 * i + 2] = (c.py - CY) * M; col[3 * i] = k.r; col[3 * i + 1] = k.g; col[3 * i + 2] = k.b;
+    });
+    if (!m3.fdot){   // (a round dot with a dark edge)
+      var cv = document.createElement('canvas'); cv.width = cv.height = 32; var g = cv.getContext('2d');
+      g.fillStyle = '#0a141a'; g.beginPath(); g.arc(16, 16, 15, 0, 7); g.fill(); g.fillStyle = '#fff'; g.beginPath(); g.arc(16, 16, 11, 0, 7); g.fill();
+      m3.fdot = new T.CanvasTexture(cv);
+      m3.fmat = new T.PointsMaterial({ size: 9, sizeAttenuation: false, vertexColors: true, map: m3.fdot, alphaTest: 0.5, transparent: true });
+    }
+    var geo = new T.BufferGeometry(); geo.setAttribute('position', new T.BufferAttribute(pos, 3)); geo.setAttribute('color', new T.BufferAttribute(col, 3));
+    m3.fp = new T.Points(geo, m3.fmat); m3.fp.frustumCulled = false; m3.scene.add(m3.fp);
+  }
+  catchListeners.push(function(){ if (m3 && m3.r) m3Draw(); });
+  // Kompass (the same as Filter's, 53-compass.js): a compass rose lying on the water round your boat -- N red, Ö S V,
+  // a tick every 30 degrees -- and a bright wedge along the water where the phone points (compassCfg: length, angle, colour)
+  function m3CompassMake(){
+    var T = m3.T, cv = document.createElement('canvas'), N = 512, g = cv.getContext('2d'), o = N / 2;
+    cv.width = cv.height = N;
+    g.strokeStyle = 'rgba(255,255,255,.9)'; g.lineWidth = 6; g.beginPath(); g.arc(o, o, o - 40, 0, 7); g.stroke();
+    g.lineWidth = 2; g.beginPath(); g.arc(o, o, o - 90, 0, 7); g.stroke();
+    for (var a = 0; a < 360; a += 10){
+      var r = a * Math.PI / 180, l = a % 90 === 0 ? 0 : a % 30 === 0 ? 34 : 16, x = Math.sin(r), y = -Math.cos(r);
+      if (!l) continue;
+      g.lineWidth = a % 30 === 0 ? 5 : 2.5; g.beginPath(); g.moveTo(o + x * (o - 40), o + y * (o - 40)); g.lineTo(o + x * (o - 40 - l), o + y * (o - 40 - l)); g.stroke();
+    }
+    g.font = 'bold 64px system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    [['N', 0, '#FF4D4D'], ['Ö', 90, '#fff'], ['S', 180, '#fff'], ['V', 270, '#fff']].forEach(function(t){
+      var r = t[1] * Math.PI / 180; g.fillStyle = t[2]; g.fillText(t[0], o + Math.sin(r) * (o - 40), o - Math.cos(r) * (o - 40));
+    });
+    var tex = new T.CanvasTexture(cv); tex.colorSpace = T.SRGBColorSpace;
+    var dial = new T.Mesh(new T.PlaneGeometry(2, 2), new T.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false }));
+    dial.rotation.x = -Math.PI / 2; dial.renderOrder = 4;
+    // the wedge: a slice from the boat, its tip at the boat, fading out at the far end
+    var wc = document.createElement('canvas'); wc.width = 4; wc.height = 128; var wg = wc.getContext('2d'), gr = wg.createLinearGradient(0, 0, 0, 128);
+    gr.addColorStop(0, 'rgba(255,255,255,0)'); gr.addColorStop(1, 'rgba(255,255,255,.75)'); wg.fillStyle = gr; wg.fillRect(0, 0, 4, 128);
+    var wtex = new T.CanvasTexture(wc), h = compassCfg.ang / 2 * Math.PI / 180, sh = new T.Shape();
+    sh.moveTo(0, 0); for (var i = 0; i <= 16; i++){ var t = -h + 2 * h * i / 16; sh.lineTo(Math.sin(t), Math.cos(t)); } sh.closePath();
+    var wgeo = new T.ShapeGeometry(sh); wgeo.rotateX(-Math.PI / 2);   // (lying on the water, pointing north: -z)
+    var uv = wgeo.attributes.uv, p = wgeo.attributes.position; for (i = 0; i < uv.count; i++) uv.setXY(i, 0.5, Math.hypot(p.getX(i), p.getZ(i)));   // (bright by the boat, fading out at the far end)
+    var wedge = new T.Mesh(wgeo, new T.MeshBasicMaterial({ map: wtex, color: compassCfg.c, transparent: true, depthWrite: false, side: T.DoubleSide }));
+    wedge.renderOrder = 4;
+    m3.comp = { dial: dial, wedge: wedge, tex: [tex, wtex] }; m3.scene.add(dial, wedge);
+  }
+  function m3CompassPlace(X, Z, hdg, wet){
+    var on = compassOn && compassHdg !== null;
+    document.querySelector('#m3Chips [data-k=compass]').classList.toggle('on', compassOn);   // (iOS's yes comes later than the tap)
+    if (!on){ if (m3.comp) m3.comp.dial.visible = m3.comp.wedge.visible = false; return; }
+    if (!m3.comp) m3CompassMake();
+    var R = m3.c.d * 0.11, y = 0.15;
+    m3.comp.dial.visible = m3.comp.wedge.visible = true;
+    m3.comp.dial.position.set(X, y, Z); m3.comp.dial.scale.set(R, R, 1);
+    m3.comp.wedge.position.set(X, y + 0.05, Z); m3.comp.wedge.scale.setScalar(compassCfg.len); m3.comp.wedge.rotation.y = -hdg * Math.PI / 180;
   }
   function m3Open(cam){   // cam: where it looked before a rotation reload
     if (m3) return;
@@ -298,6 +460,8 @@
       m3.scene.traverse(function(o){ if (o.geometry) o.geometry.dispose(); });
       [m3.mat, m3.wmat, m3.matFar, m3.wmatFar, m3.tex].forEach(function(o){ o.dispose(); });
       if (m3.sun.shadow.map) m3.sun.shadow.map.dispose();
+      if (m3.fdot){ m3.fdot.dispose(); m3.fmat.dispose(); }
+      if (m3.comp) m3.comp.tex.forEach(function(t){ t.dispose(); });
       m3.r.setSize(1, 1, false); m3.r.dispose();
     }
     if (m3.det){ m3.det.tex.dispose(); m3.det.cv.width = m3.det.cv.height = 1; }   // (the sharp patch: 16 MB of canvas)
@@ -311,6 +475,9 @@
     document.querySelector('#m3Chips [data-k=col]').classList.toggle('on', m3Cfg.col);
     if (m3 && m3.colU) m3.colU.value.x = m3Cfg.col ? 1 : 0;
     document.querySelector('#m3Chips [data-k=shadow]').classList.toggle('on', m3Cfg.shadow);
+    document.querySelector('#m3Chips [data-k=fish]').classList.toggle('on', m3Cfg.fish);
+    document.querySelector('#m3Chips [data-k=compass]').classList.toggle('on', compassOn);
+    if (m3Cfg.fish && !catchData && !catchLoading) loadCatches();   // (the heatmap's data: fetched once if this phone has none yet)
     if (m3 && m3.sun){ m3.sun.castShadow = m3Cfg.shadow; if (!m3Cfg.shadow && m3.sun.shadow.map){ m3.sun.shadow.map.dispose(); m3.sun.shadow.map = null; } }   // (off: its 16 MB back)
     var src = document.getElementById('m3Src'); src.hidden = !LAKE.land; src.textContent = LAKE.land ? LAKE.land.credit : '';   // (whose heights: asked for by their licences)
   }
@@ -318,7 +485,11 @@
   document.getElementById('m3Chips').addEventListener('click', function(e){
     var b = e.target.closest('button'); if (!b || !m3 || !m3.r) return;
     if (b.id === 'm3Me'){ if (lastOwnLatLon){ var p = latLonToImgPx(lastOwnLatLon.lat, lastOwnLatLon.lon); m3.c.px = p.x; m3.c.py = p.y; m3Touch(); } return; }
-    var k = b.getAttribute('data-k'); m3Cfg[k] = !m3Cfg[k]; m3Save(); m3Ui(); m3Draw();
+    var k = b.getAttribute('data-k');
+    if (k === 'compass'){   // (Filter's Kompass: iOS asks for permission in this tap)
+      toggleCompassEl.checked = !compassOn; toggleCompassEl.dispatchEvent(new Event('change')); m3Ui(); m3Draw(); return;
+    }
+    m3Cfg[k] = !m3Cfg[k]; m3Save(); m3Ui(); m3Draw();
   });
   document.getElementById('m3North').addEventListener('click', function(){ if (m3 && m3.r){ m3.c.az = 0; m3Touch(); } });
   document.getElementById('m3Close').addEventListener('click', m3Close);
@@ -421,5 +592,7 @@
       if (h) hit = { y: h.point.y / m3Cfg.ex, d: h.distance, at: imgPxToLatLon(IMG_W / 2 + h.point.x / WEB_METERS_PER_PX, IMG_H / 2 + h.point.z / WEB_METERS_PER_PX) };
     }
     var det = m3 && m3.det && m3.det.z ? { z: m3.det.z, n: m3.det.n || 0, X: m3.det.X, Y: m3.det.Y, url: o && o.pic ? m3.det.cv.toDataURL('image/jpeg', 0.6) : '' } : null;   // (the sharp patch; pic: its picture too)
-    return { land: !!(m3Land && m3Land.length), det: det, hit: hit, open: !!m3, ready: !!(m3 && m3.far && m3.at), n: m3 && m3.n, builds: m3 && m3.nb, c: m3 && m3.c, cam: m3 && m3.cam ? m3.cam.position.toArray() : null, at: m3 && m3.at, marks: m3 && m3.marks ? m3.marks.length : 0, cfg: m3Cfg };
+    return { land: !!(m3Land && m3Land.length), det: det, hit: hit, open: !!m3, ready: !!(m3 && m3.far && m3.at), n: m3 && m3.n, builds: m3 && m3.nb, c: m3 && m3.c, cam: m3 && m3.cam ? m3.cam.position.toArray() : null, at: m3 && m3.at, marks: m3 && m3.marks ? m3.marks.length : 0, cfg: m3Cfg, trk: [m3Trk.mine.map(function(g){ return g.length; }), m3Trk.others.length, m3 && m3.tg ? m3.tg.children.length : 0],
+             objs: m3 && m3.marks ? m3.marks.filter(function(k){ return k.o; }).map(function(k){ return { kind: k.kind, me: !!k.me, hdg: k.hdg, y: k.o.position.y, ry: k.r.position.y, refl: k.r.visible, line: k.b.visible }; }) : [],
+             fish: m3 && m3.fp ? m3.fp.geometry.attributes.position.count : 0, comp: !!(m3 && m3.comp && m3.comp.dial.visible), compRot: m3 && m3.comp ? m3.comp.wedge.rotation.y : null };
   };

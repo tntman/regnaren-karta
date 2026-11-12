@@ -78,9 +78,20 @@ Test: `tests/test_map3d.py`. Höjdfilerna görs av `tools/land_height.py`.
   - Gränserna (4/24 px, 11°, lutningens fart) är satta utan prov på telefon – justera efter vad Filip tycker.
 - **Kameran** vrids kring en punkt PÅ marken och går aldrig under marken (`m3Ground`). Ritas bara när något
   ändrats, ingen loop. `logarithmicDepthBuffer`: en stor sjös bortre ände är 30 km bort och marken intill 50 m.
-- **Märken:** din båt (`.m3Me`), fiskeplatser och andras båtar är kopior av vanliga kartans märken (`pinEls`,
-  `#boatsLayer`) – samma filter och ikoner. Uppdateras efter varje full ritning av kartan (`m3MarksSync` sist i `render()`).
-  Bara att titta på.
+- **Märken som 3D-föremål** (Filip 2026-11-12, `m3Objs`/`m3ObjsPlace`): 3D-versioner av kartans märken – droppen i typens färg
+  med vit och mörk kant, Fara stoppskylten med vitt X (vänds mot kameran), Träffpunkt en fyr med ring på vattnet, din båt
+  den orange pilen och andras samma pil i vitt med mörka kanter. Allt står på vattenytan (på land: på marken), speglas upp
+  och ner i ytan (mörkare, tonar bort neråt, `uFade`) och har en tunn linje ner till botten. Storleken går med avståndet.
+  Vilka som visas = kartans egna (`pinEls`, `#boatsLayer` – samma filter); namnen ligger kvar som platta etiketter bredvid
+  (2D-ikonen dold, `.m3Obj`). Uppdateras efter varje full ritning av kartan (`m3MarksSync` sist i `render()`). Bara att titta på.
+  Andras båtar skickar ingen kurs: deras pil pekar mot norr. Din pil = telefonens riktning när Kompass är på, annars GPS-kursen.
+- **Kompass** (knapp = Filters Kompass, `53-compass.js`; iOS frågar om lov i trycket): kompassros på vattnet runt din båt
+  (N rött, Ö S V, streck var 30:e grad) och en ljus kil längs vattnet dit telefonen pekar (kompassinställningarnas längd,
+  vinkel, färg). `m3CompassMake`/`m3CompassPlace`.
+- **Spår:** samma som kartan visar (`renderTrack` → `m3TrkSync`): ditt i din färg, andras ljusblått, som linjer strax över
+  vattnet/marken. Byggs om när de ändras eller Höjd × gör det.
+- **Fångster** (knapp, av som standard, `m3Cfg.fish`): sjöns alla fångster (heatmapens `catchData`) som små prickar på botten
+  där de togs, artens färg, några px oavsett avstånd (`T.Points`). Saknar telefonen kopian hämtas den en gång (`loadCatches`).
 - **Reglage:** Höjd × 1–10, Vatten, Till mig, norrpil (tryck = norr upp – behövs oftare nu när två fingrar kan vrida), ✕. Sparas i `ffmap_3d_v1`. Överlever vridning (`st.m3`).
 - **Minne:** allt lämnas tillbaka vid ✕: geometri, texturer, canvasen (16 MB), ritytan ner till 1 px, höjdnätet.
   Filip har kört det på sin iPhone på Regnaren ("funkade bra") och Mälaren (2026-11-11), ingen krasch rapporterad;

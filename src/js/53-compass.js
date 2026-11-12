@@ -38,6 +38,7 @@
   function compassDraw(sx, sy){
     if (typeof sx === 'number'){ compassSx = sx; compassSy = sy; }
     var live = compassOn && compassHdg !== null;
+    m3Draw();   // (3D-karta: your arrow and its compass go with it, 73-map3d.js)
     compassDial.style.display = live && compassCfg.dial ? 'block' : 'none';
     if (!live || !compassCfg.wedge){ compassWedge.style.display = 'none'; return; }
     cdWedge.setAttribute('transform', 'rotate(' + compassHdg.toFixed(1) + ' 40 40)');
