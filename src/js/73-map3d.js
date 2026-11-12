@@ -207,10 +207,14 @@
     cam.position.y = Math.max(cam.position.y, m3Ground(CX + cam.position.x / M, CY + cam.position.z / M) + c.d * 0.04);   // (never under the ground: the land seen from inside is nothing at all)
     cam.lookAt(tx, ty, tz);
     if (m3Cfg.shadow){   // Skuggor: the sun's shadow map over a square of 2 x the distance around the point looked at (further out: no cast shadows)
+      // (with them on the sun is lower and the sky's light weaker, so the shadows are long and dark enough to see -- Filip
+      // 2026-11-12: "skuggor fungerar inte", they were there but faint; the offset against shadow acne goes with a texel's size)
       var sun = m3.sun, sc = sun.shadow.camera, sR = Math.min(M3_RFULL * 1.5, c.d * 2);
-      sun.position.set(tx - sR * 1.2, ty + sR * 0.6, tz - sR * 1.2); sun.target.position.set(tx, ty, tz); sun.target.updateMatrixWorld();   // (as the light's own direction: -1, 0.5, -1)
+      sun.position.set(tx - sR * 1.2, ty + sR * 0.3, tz - sR * 1.2);   // (about 10 degrees up: the bottom's own slopes throw shadows too, Filip 2026-11-12) sun.target.position.set(tx, ty, tz); sun.target.updateMatrixWorld();
       sc.left = sc.bottom = -sR; sc.right = sc.top = sR; sc.near = sR * 0.2; sc.far = sR * 4; sc.updateProjectionMatrix();
-    }
+      sun.shadow.bias = 0; sun.shadow.normalBias = sR / 2048 * 1.5;
+    } else { m3.sun.position.set(-1, 0.5, -1); m3.sun.target.position.set(0, 0, 0); m3.sun.target.updateMatrixWorld(); }
+    m3.hemi.intensity = m3Cfg.shadow ? 0.55 : 1.0;
     cam.near = c.d / 50; cam.far = c.d + M3_RFULL * 3;   // (as far as the map's other corner)
     if (m3.w !== W || m3.h !== H){ m3.w = W; m3.h = H; m3.r.setSize(W, H, false); cam.aspect = W / H; }
     cam.updateProjectionMatrix();
@@ -233,23 +237,24 @@
   function m3MarksSync(){
     if (!m3 || !m3.r) return;
     m3Marks.innerHTML = ''; m3Marks.className = waypointsLayer.className; m3.marks = [];
-    function add(el, lat, lon, dy, col, kind, me){
+    function add(el, lat, lon, dy, col, kind, me, type, mine){
       var p = latLonToImgPx(lat, lon); m3Marks.appendChild(el);
-      m3.marks.push({ el: el, p: p, dy: dy || 0, col: col || '#E4E9EC', kind: kind || 'pin', me: me, hdg: me ? headingDeg : 0 });
+      m3.marks.push({ el: el, p: p, dy: dy || 0, col: col || '#E4E9EC', kind: kind || 'pin', me: me, hdg: me ? headingDeg : 0, type: type, mine: mine });
     }
     var COLS = { mark: '#E4E9EC', abborre: '#FF7A1A', gadda: '#35D24A', gos: '#3A86FF', hem: '#A8693A' };   // (the map's own, 40-spots-boats.css)
     waypoints.forEach(function(wp){
       var el = pinEls[wp.id];
-      if (el) add(el.cloneNode(true), wp.lat, wp.lon, el.classList.contains('wpPin') ? -PIN_TIP_OFFSET * wpScale * (isMine(wp) ? 1 : OTHER_PIN_SCALE) : 0, COLS[wp.type], wp.type === 'fara' || wp.type === 'meet' ? wp.type : 'pin');   // (a pin: its tip on the spot)
+      if (el) add(el.cloneNode(true), wp.lat, wp.lon, el.classList.contains('wpPin') ? -PIN_TIP_OFFSET * wpScale * (isMine(wp) ? 1 : OTHER_PIN_SCALE) : 0, COLS[wp.type], wp.type === 'fara' || wp.type === 'meet' ? wp.type : 'pin', false, wp.type || 'mark', isMine(wp));   // (a pin: its tip on the spot)
     });
     Array.prototype.forEach.call(boatsLayer.children, function(el){ var b = boatClustersById[el.getAttribute('data-cluster')]; if (b) add(el.cloneNode(true), b.lat, b.lon, 0, '#ffffff', 'boat'); });
     if (lastOwnLatLon){ var me = document.createElement('div'); me.className = 'm3Me'; add(me, lastOwnLatLon.lat, lastOwnLatLon.lon, 0, '#FF7A00', 'boat', true); }
     m3Objs(); m3Draw();
   }
-  // The marks as 3D objects (Filip 2026-11-12) -- 3D versions of the map's own: a pin (drop) in the type's colour with a white and a
-  // dark edge, Fara the red stop sign with a white X (turned to the camera), Träffpunkt a beacon with a ring on the water,
-  // your boat the orange arrow and the others' the same arrow in white (dark edges). Each has its mirror image in the
-  // water's surface and a thin line down to the bottom; the names stay flat labels beside them, turned to the camera.
+  // The marks as 3D objects (Filip 2026-11-12) -- 3D versions of the map's own, graphic: flat, clear colours with the 2D
+  // look's white and dark edges. A pin = the drop in the type's colour (your own with its icon on the head, as on the map),
+  // Fara the red stop sign with a white X (turned to the camera), Träffpunkt a beacon with a ring on the water, your boat
+  // the orange arrow and the others' the same arrow in white. On the water's surface, a thin line down to the bottom; the
+  // names stay flat labels beside them. (Tried and taken away: a mirror image in the water -- it looked fake.)
   function m3Geo(T){
     var g = {};
     var c = 1.6, rr = 0.8, ty = c - rr * rr / c, tx = rr * Math.sqrt(c * c - rr * rr) / c, pts = [new T.Vector2(0, 0)];   // the drop: its tip on the spot
@@ -259,65 +264,68 @@
     g.bar = new T.BoxGeometry(1.15, 0.26, 0.06);
     g.ball = new T.SphereGeometry(0.75, 24, 16); g.ring = new T.TorusGeometry(2.2, 0.12, 8, 48); g.ring.rotateX(Math.PI / 2);
     var sh = new T.Shape(); sh.moveTo(0, 8.75); sh.lineTo(7, -8.75); sh.lineTo(0, -4.55); sh.lineTo(-7, -8.75); sh.closePath();   // (the 2D arrow, 24-px box, its middle at 0)
-    g.arrow = new T.ExtrudeGeometry(sh, { depth: 1.6, bevelEnabled: false }); g.arrow.scale(1 / 7, 1 / 7, 1 / 7); g.arrow.rotateX(-Math.PI / 2);   // (flat: its point north, -z)
+    g.arrow = new T.ExtrudeGeometry(sh, { depth: 2.4, bevelEnabled: false }); g.arrow.scale(1 / 7, 1 / 7, 1 / 7); g.arrow.rotateX(-Math.PI / 2);   // (flat: its point north, -z)
     g.arrowEdge = new T.EdgesGeometry(g.arrow);
     return g;
+  }
+  // a pin's icon, as on the map (14-spots.js wpIconSvg): drawn once per type on a small canvas
+  function m3Icon(type){
+    var T = m3.T, ic = m3.icons || (m3.icons = {});
+    if (ic[type]) return ic[type];
+    var cv = document.createElement('canvas'); cv.width = cv.height = 128;
+    var tex = ic[type] = new T.CanvasTexture(cv); tex.colorSpace = T.SRGBColorSpace;
+    var col = type === 'gos' || type === 'hem' ? '#fff' : '#14181C', svg = wpIconSvg(type).replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" ').replace(/currentColor/g, col);
+    var im = new Image(); im.onload = function(){ cv.getContext('2d').drawImage(im, 14, 14, 100, 100); tex.needsUpdate = true; m3Draw(); };
+    im.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    return tex;
   }
   function m3Objs(){
     var T = m3.T;
     if (m3.og){ m3.scene.remove(m3.og); m3.og.traverse(function(o){ if (o.isLine) o.geometry.dispose(); if (o.material) o.material.dispose(); }); }
     var G = m3.geo || (m3.geo = m3Geo(T)), og = m3.og = new T.Group(); m3.scene.add(og);
-    function lit(col){ return new T.MeshLambertMaterial({ color: col, emissive: col, emissiveIntensity: 0.3 }); }
-    function edge(col, k){ return new T.MeshBasicMaterial({ color: col, side: T.BackSide }); }
-    function line(op, dt){ var l = new T.Line(new T.BufferGeometry().setAttribute('position', new T.BufferAttribute(new Float32Array(6), 3)), new T.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: op, depthTest: dt })); l.frustumCulled = false; if (!dt) l.renderOrder = 3; return l; }
+    function flat(col){ return new T.MeshLambertMaterial({ color: col, emissive: col, emissiveIntensity: 0.7 }); }   // (mostly flat: graphic, a touch of light for the shape)
+    function edge(col){ return new T.MeshBasicMaterial({ color: col, side: T.BackSide }); }
+    function line(op){ var l = new T.Line(new T.BufferGeometry().setAttribute('position', new T.BufferAttribute(new Float32Array(6), 3)), new T.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: op, depthTest: false })); l.frustumCulled = false; l.renderOrder = 3; return l; }
     m3.marks.forEach(function(k){
       var o = new T.Group(), kind = k.kind;
       if (kind === 'fara'){
         var f = new T.Group(); f.position.y = 1.4;   // (on its pole)
-        var e1 = new T.Mesh(G.oct, edge(0x111111)); e1.scale.set(1.22, 1.22, 1.05); var e2 = new T.Mesh(G.oct, lit(0xffffff)); e2.scale.set(1.12, 1.12, 0.8); e2.position.z = -0.03;
-        var x1 = new T.Mesh(G.bar, lit(0xffffff)), x2 = new T.Mesh(G.bar, lit(0xffffff)); x1.rotation.z = Math.PI / 4; x2.rotation.z = -Math.PI / 4; x1.position.z = x2.position.z = 0.13;
-        f.add(e1, e2, new T.Mesh(G.oct, lit(0xE5322D)), x1, x2); o.add(f); k.face = f;
+        var e1 = new T.Mesh(G.oct, edge(0x111111)); e1.scale.set(1.24, 1.24, 1.1); var e2 = new T.Mesh(G.oct, flat(0xffffff)); e2.scale.set(1.13, 1.13, 0.8); e2.position.z = -0.03;
+        var x1 = new T.Mesh(G.bar, flat(0xffffff)), x2 = new T.Mesh(G.bar, flat(0xffffff)); x1.rotation.z = Math.PI / 4; x2.rotation.z = -Math.PI / 4; x1.position.z = x2.position.z = 0.13;
+        f.add(e1, e2, new T.Mesh(G.oct, flat(0xE5322D)), x1, x2); o.add(f); k.face = f;
       } else if (kind === 'meet'){
-        var b = new T.Mesh(G.ball, lit(0xFFB23F)); b.position.y = 1.2; var be = new T.Mesh(G.ball, edge(0xffffff)); be.scale.setScalar(1.15); be.position.y = 1.2;
-        o.add(b, be); k.ring = new T.Mesh(G.ring, new T.MeshBasicMaterial({ color: 0xFFB23F, transparent: true, opacity: 0.7 })); og.add(k.ring);
+        var b = new T.Mesh(G.ball, flat(0xFFB23F)); b.position.y = 1.2;
+        var bw = new T.Mesh(G.ball, edge(0xffffff)); bw.scale.setScalar(1.15); bw.position.y = 1.2; var bk = new T.Mesh(G.ball, edge(0x14181C)); bk.scale.setScalar(1.25); bk.position.y = 1.2;
+        o.add(b, bw, bk); k.ring = new T.Mesh(G.ring, new T.MeshBasicMaterial({ color: 0xFFB23F, transparent: true, opacity: 0.8 })); og.add(k.ring);
       } else if (kind === 'boat'){
-        var a = new T.Mesh(G.arrow, lit(k.col)), ae = new T.LineSegments(G.arrowEdge, new T.LineBasicMaterial({ color: k.me ? 0x1C212C : 0x0a141a }));
-        o.add(a, ae); k.turn = o;
+        var ak = new T.Mesh(G.arrow, edge(k.me ? 0x1C212C : 0x0a141a)); ak.scale.set(1.18, 1.25, 1.18); ak.position.y = -0.03;   // (the dark edge round it)
+        o.add(new T.Mesh(G.arrow, flat(k.col)), ak, new T.LineSegments(G.arrowEdge, new T.LineBasicMaterial({ color: k.me ? 0x1C212C : 0x0a141a }))); k.turn = o;
       } else {
         var e3 = new T.Mesh(G.pin, edge(0x111111)), e4 = new T.Mesh(G.pin, edge(0xffffff));
-        e3.scale.set(1.2, 1.1, 1.2); e4.scale.set(1.12, 1.06, 1.12);
-        o.add(e3, e4, new T.Mesh(G.pin, lit(k.col)));
+        e3.scale.set(1.24, 1.12, 1.24); e4.scale.set(1.14, 1.07, 1.14);
+        o.add(e3, e4, new T.Mesh(G.pin, flat(k.col)));
+        if (k.mine){ k.icon = new T.Sprite(new T.SpriteMaterial({ map: m3Icon(k.type), depthWrite: false })); og.add(k.icon); }   // (your own: its icon on the head)
       }
-      var rf = o.clone(true); k.fade = { value: 1 };
-      rf.traverse(function(m){
-        if (!m.material) return;
-        var mt = new T.MeshBasicMaterial({ color: m.material.color.clone().multiplyScalar(0.55).lerp(new T.Color(0x1f5f9e), 0.45), transparent: true, opacity: 0.55, depthTest: false, depthWrite: false });
-        mt.onBeforeCompile = function(sh){   // (fades out with the depth under the surface: what is mirrored furthest down, weakest)
-          sh.uniforms.uFade = k.fade;
-          sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying float vWY;').replace('#include <project_vertex>', '#include <project_vertex>\nvWY = (modelMatrix * vec4(transformed, 1.0)).y;');
-          sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying float vWY;\nuniform float uFade;').replace('#include <opaque_fragment>', '#include <opaque_fragment>\ngl_FragColor.a *= clamp(1.0 + vWY / uFade, 0.0, 1.0);');
-        };
-        m.material = mt; m.renderOrder = 3;
-      });
-      k.o = o; k.r = rf; k.l = line(0.75, true); k.b = line(0.9, false);
-      og.add(o, rf, k.l, k.b);
+      k.o = o; k.b = line(0.9);
+      og.add(o, k.b);
     });
   }
-  function m3ObjsPlace(){   // (every frame: their size goes with the distance; the stop sign turns to the camera)
-    var c = m3.c, M = WEB_METERS_PER_PX, s = c.d * 0.006, CX = IMG_W / 2, CY = IMG_H / 2;
+  function m3ObjsPlace(){   // (every frame: their size goes with the distance; the stop sign and the icons turn to the camera)
+    var c = m3.c, M = WEB_METERS_PER_PX, s = c.d * 0.008, CX = IMG_W / 2, CY = IMG_H / 2, cp = m3.cam.position;
     m3.marks.forEach(function(k){
       if (!k.o) return;
       var X = (k.p.x - CX) * M, Z = (k.p.y - CY) * M, g = m3Ground(k.p.x, k.p.y), wet = isLakeAtImgPx(k.p.x, k.p.y), bot = wet ? m3Surf(k.p.x, k.p.y) : g;
-      var up = k.kind === 'boat' ? 0.02 * s : k.kind === 'fara' ? 1.2 * s : 0;   // (a pin's tip and the beacon's foot on the water; the sign on a short pole; the arrow just over it)
+      var up = k.kind === 'boat' ? 0.12 * s : k.kind === 'fara' ? 1.2 * s : 0;   // (a pin's tip and the beacon's foot on the water; the sign on a short pole; the arrow lying on it)
       k.o.scale.setScalar(s * (k.kind === 'boat' ? 1.6 : 1)); k.o.position.set(X, g + up, Z);
-      k.r.scale.copy(k.o.scale); k.r.scale.y *= -1; k.r.position.set(X, -up, Z); k.r.visible = wet && m3Cfg.water; k.fade.value = 3 * s + up;   // (mirrored in the water's surface, y = 0)   // (the mirror image: upside down in the water's surface)
       if (k.me) k.hdg = compassOn && compassHdg !== null ? compassHdg : headingDeg;   // (your arrow: where the phone points while Kompass is on, else where you go)
       if (k.face) k.face.rotation.y = c.az; if (k.turn){ k.turn.rotation.y = -(k.hdg || 0) * Math.PI / 180; }
       if (k.me) m3CompassPlace(X, Z, k.hdg, wet);
-      k.r.rotation.copy(k.o.rotation); if (k.face) k.r.children[0].rotation.y = c.az;
       if (k.ring){ k.ring.position.set(X, g + 0.05, Z); k.ring.scale.setScalar(s); }
-      function set(l, y0, y1){ var a = l.geometry.attributes.position.array; a[0] = a[3] = X; a[2] = a[5] = Z; a[1] = y0; a[4] = y1; l.geometry.attributes.position.needsUpdate = true; }
-      set(k.l, g, g + up); set(k.b, g, bot); k.b.visible = wet; k.l.visible = up > 0 && k.kind === 'fara';
+      if (k.icon){   // (on the head, a little out towards the camera)
+        var h = m3.v.set(X, g + 1.6 * s, Z), dx = cp.x - h.x, dy = cp.y - h.y, dz = cp.z - h.z, dl = Math.hypot(dx, dy, dz) || 1;
+        k.icon.position.set(h.x + dx / dl * 0.85 * s, h.y + dy / dl * 0.85 * s, h.z + dz / dl * 0.85 * s); k.icon.scale.setScalar(1.05 * s);
+      }
+      var a = k.b.geometry.attributes.position.array; a[0] = a[3] = X; a[2] = a[5] = Z; a[1] = g; a[4] = bot; k.b.geometry.attributes.position.needsUpdate = true; k.b.visible = wet;
       k.top = g + up + (k.kind === 'boat' ? 0 : 2.6 * s);   // (the label: beside the top)
     });
   }
@@ -415,7 +423,7 @@
       try { r = new T.WebGLRenderer({ canvas: m3Canvas, antialias: true, logarithmicDepthBuffer: true }); } catch(e){ m3Msg.textContent = 'Telefonen kan inte rita 3D'; return; }
       r.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2)); r.setClearColor(0x141822, 1); r.localClippingEnabled = true; r.shadowMap.enabled = true; r.shadowMap.type = T.PCFSoftShadowMap;
       var scene = new T.Scene();
-      scene.add(new T.HemisphereLight(0xffffff, 0x8a94a8, 1.0));
+      var hemi = new T.HemisphereLight(0xffffff, 0x8a94a8, 1.0); scene.add(hemi);
       var sun = new T.DirectionalLight(0xffffff, 3.0); sun.position.set(-1, 0.5, -1); scene.add(sun, sun.target);
       sun.shadow.mapSize.set(2048, 2048); sun.shadow.bias = -0.0005; sun.shadow.normalBias = 0.02; sun.castShadow = m3Cfg.shadow;   // (Skuggor: 16 MB on the graphics card while on)   // (from the north-west, as the maps' relief -- low, so the bottom's shape shows: Filip 2026-11-12)
       // the map picture, fetched again as a picture of its own (from the browser's cache) -- NOT the map's <img>: three.js
@@ -446,7 +454,7 @@
       // where the map looked, about as much of it: tilted, north up
       var c = cam || { px: (innerWidth / 2 - originX) / scale, py: (innerHeight / 2 - originY) / scale, d: innerHeight / scale * WEB_METERS_PER_PX * 1.2, az: 0, tilt: 0.95 };
       m3 = { T: T, r: r, scene: scene, cam: new T.PerspectiveCamera(M3_FOV, 1, 1, 1e5), tex: tex, v: new T.Vector3(), marks: [], t: 0, c: m3Clamp(c),
-             detT: detT, detR: detR, colU: colU, sun: sun, cut: cut(), cutW: cut(), far: null, near: null };
+             detT: detT, detR: detR, colU: colU, sun: sun, hemi: hemi, cut: cut(), cutW: cut(), far: null, near: null };
       m3.mat = ground(null); m3.wmat = wet(null); m3.matFar = ground(m3.cut); m3.wmatFar = wet(m3.cutW);   // (the whole map's: left out where the fine mesh lies)
       m3MarksSync(); m3Draw();
     }).catch(function(){ m3Msg.textContent = 'Kunde inte ladda 3D'; });
@@ -462,6 +470,7 @@
       if (m3.sun.shadow.map) m3.sun.shadow.map.dispose();
       if (m3.fdot){ m3.fdot.dispose(); m3.fmat.dispose(); }
       if (m3.comp) m3.comp.tex.forEach(function(t){ t.dispose(); });
+      Object.keys(m3.icons || {}).forEach(function(t){ m3.icons[t].dispose(); });
       m3.r.setSize(1, 1, false); m3.r.dispose();
     }
     if (m3.det){ m3.det.tex.dispose(); m3.det.cv.width = m3.det.cv.height = 1; }   // (the sharp patch: 16 MB of canvas)
@@ -593,6 +602,6 @@
     }
     var det = m3 && m3.det && m3.det.z ? { z: m3.det.z, n: m3.det.n || 0, X: m3.det.X, Y: m3.det.Y, url: o && o.pic ? m3.det.cv.toDataURL('image/jpeg', 0.6) : '' } : null;   // (the sharp patch; pic: its picture too)
     return { land: !!(m3Land && m3Land.length), det: det, hit: hit, open: !!m3, ready: !!(m3 && m3.far && m3.at), n: m3 && m3.n, builds: m3 && m3.nb, c: m3 && m3.c, cam: m3 && m3.cam ? m3.cam.position.toArray() : null, at: m3 && m3.at, marks: m3 && m3.marks ? m3.marks.length : 0, cfg: m3Cfg, trk: [m3Trk.mine.map(function(g){ return g.length; }), m3Trk.others.length, m3 && m3.tg ? m3.tg.children.length : 0],
-             objs: m3 && m3.marks ? m3.marks.filter(function(k){ return k.o; }).map(function(k){ return { kind: k.kind, me: !!k.me, hdg: k.hdg, y: k.o.position.y, ry: k.r.position.y, refl: k.r.visible, line: k.b.visible }; }) : [],
+             objs: m3 && m3.marks ? m3.marks.filter(function(k){ return k.o; }).map(function(k){ return { kind: k.kind, me: !!k.me, hdg: k.hdg, y: k.o.position.y, line: k.b.visible, icon: !!k.icon }; }) : [],
              fish: m3 && m3.fp ? m3.fp.geometry.attributes.position.count : 0, comp: !!(m3 && m3.comp && m3.comp.dial.visible), compRot: m3 && m3.comp ? m3.comp.wedge.rotation.y : null };
   };

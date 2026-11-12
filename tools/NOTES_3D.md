@@ -55,7 +55,8 @@ Test: `tests/test_map3d.py`. Höjdfilerna görs av `tools/land_height.py`.
   tydligare. Genesis kurvor och siffror syns då inte. I shadern (`uCol`). Prövat (bilder 2026-11-12): djupdimma (grumligt),
   sandbotten, ljusblå → mörkblå – Filip valde knappen Karta/Djupfärg.
 - **Skuggor** (knapp, av som standard, `m3Cfg.shadow`, Filip 2026-11-12): kastade skuggor från solen (three.js shadow map 2048²,
-  mjuka kanter). Skuggkartan täcker en ruta på 2 × avståndet runt punkten man tittar på – längre ut inga kastade skuggor.
+  mjuka kanter), även från bottnens egen form. Med Skuggor på står solen lägre (ca 10°) och himlens ljus är svagare – först var
+  de för svaga ("fungerar inte"). Förskjutningen mot skuggfläckar går med en ruta i skuggkartan (`normalBias`). Skuggkartan täcker en ruta på 2 × avståndet runt punkten man tittar på – längre ut inga kastade skuggor.
   16 MB på grafikkortet medan den är på, lämnas tillbaka när den slås av. Ljus och skugga på sluttningarna finns alltid.
 - **Ljuset:** lägre sol från nordväst (3,0, höjd 0,5) och mindre allmänljus (1,0) sedan 2026-11-12, så att botten och marken
   syns som former. Under ytan har samma ljus.
@@ -78,10 +79,10 @@ Test: `tests/test_map3d.py`. Höjdfilerna görs av `tools/land_height.py`.
   - Gränserna (4/24 px, 11°, lutningens fart) är satta utan prov på telefon – justera efter vad Filip tycker.
 - **Kameran** vrids kring en punkt PÅ marken och går aldrig under marken (`m3Ground`). Ritas bara när något
   ändrats, ingen loop. `logarithmicDepthBuffer`: en stor sjös bortre ände är 30 km bort och marken intill 50 m.
-- **Märken som 3D-föremål** (Filip 2026-11-12, `m3Objs`/`m3ObjsPlace`): 3D-versioner av kartans märken – droppen i typens färg
-  med vit och mörk kant, Fara stoppskylten med vitt X (vänds mot kameran), Träffpunkt en fyr med ring på vattnet, din båt
-  den orange pilen och andras samma pil i vitt med mörka kanter. Allt står på vattenytan (på land: på marken), speglas upp
-  och ner i ytan (mörkare, tonar bort neråt, `uFade`) och har en tunn linje ner till botten. Storleken går med avståndet.
+- **Märken som 3D-föremål** (Filip 2026-11-12, `m3Objs`/`m3ObjsPlace`): 3D-versioner av kartans märken, grafiska (nästan platta
+  färger) – droppen i typens färg med vit och mörk kant (dina egna med ikonen på huvudet, `m3Icon`), Fara stoppskylten med vitt X (vänds mot kameran), Träffpunkt en fyr med ring på vattnet, din båt
+  den orange pilen och andras samma pil i vitt med mörk kant (inte genomskinliga). Allt står på vattenytan (på land: på
+  marken) och har en tunn linje ner till botten. Spegelbild i vattnet prövad och borttagen ("ser fake ut"). Storleken går med avståndet.
   Vilka som visas = kartans egna (`pinEls`, `#boatsLayer` – samma filter); namnen ligger kvar som platta etiketter bredvid
   (2D-ikonen dold, `.m3Obj`). Uppdateras efter varje full ritning av kartan (`m3MarksSync` sist i `render()`). Bara att titta på.
   Andras båtar skickar ingen kurs: deras pil pekar mot norr. Din pil = telefonens riktning när Kompass är på, annars GPS-kursen.

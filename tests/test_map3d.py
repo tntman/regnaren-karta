@@ -44,8 +44,8 @@ with sync_playwright() as p:
     bb = pg.locator('#m3Marks .m3Me').bounding_box()
     check('"Till mig": your boat in the middle of the screen', abs(bb['x'] + bb['width'] / 2 - 195) < 3 and abs(bb['y'] + bb['height'] / 2 - 422) < 8, bb)      # (its label is at the arrow, just over the water)
     ob = M(pg)['objs']; kinds = sorted(o['kind'] + ('*' if o['me'] else '') for o in ob)
-    check('the marks are 3D objects: a pin, the stop sign, the other boat and your boat (the same arrow), each on the water with its mirror image in the surface and a line to the bottom (the other boat is on land here: none)',
-          kinds == ['boat', 'boat*', 'fara', 'pin'] and sum(o['refl'] for o in ob) == 3 and all(o['line'] and o['y'] >= 0 and abs(o['ry'] + o['y']) < 1e-6 for o in ob if o['refl'])
+    check('the marks are 3D objects: a pin, the stop sign, the other boat and your boat (the same arrow), each on the water with a line to the bottom (the other boat is on land here: none)',
+          kinds == ['boat', 'boat*', 'fara', 'pin'] and sum(o['line'] for o in ob) == 3 and all(o['y'] >= 0 for o in ob)
           and pg.evaluate("[...document.querySelectorAll('#m3Marks .wpPin, #m3Marks .wpFara')].every(e => getComputedStyle(e).visibility === 'hidden')")
           and pg.evaluate("getComputedStyle(document.querySelector('#m3Marks .boatName')).visibility") == 'visible', (kinds, ob))
     pg.evaluate("DeviceOrientationEvent.requestPermission = () => Promise.resolve('granted'); 0")      # (as when you say yes on an iPhone)
