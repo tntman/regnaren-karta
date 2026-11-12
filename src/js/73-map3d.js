@@ -18,7 +18,7 @@
   var M3_RFULL = Math.max(IMG_W, IMG_H) * WEB_METERS_PER_PX / 2;   // half the map's long side (m): a fine mesh this far out would be no finer than the whole map's
   var M3_TEX = 2048;   // the sharp patch's canvas (px a side): 4 x 4 pieces
   var M3_REACH = 15;   // m: water nobody has charted takes its depth from what is known this close; further out it is a hole (m3Make)
-  var m3Cfg = { ex: 3, water: true };
+  var m3Cfg = { ex: 3, water: true, col: false };   // (col: Djupfärg -- the bottom coloured by depth instead of the map picture)
   try { m3Cfg = Object.assign(m3Cfg, JSON.parse(localStorage.getItem(M3_KEY) || '{}')); } catch(e){}
   var m3View = document.getElementById('m3View'), m3Canvas = document.getElementById('m3Canvas'), m3Marks = document.getElementById('m3Marks'), m3Msg = document.getElementById('m3Msg');
   var m3 = null;   // while open: { T, r, scene, cam, far: the whole map's mesh, near: the fine one (or null), tex, c: the camera { px, py (the image px looked at), d (m away), az, tilt (0 = straight down) }, at: what the fine mesh was built for }
@@ -44,6 +44,10 @@
     if (!m3Land || !m3Land.length) return false;
     var L = LAKE.land, xi = Math.floor(x / IMG_W * L.w), yi = Math.floor(y / IMG_H * L.h);
     return xi >= 0 && yi >= 0 && xi < L.w && yi < L.h && m3Land[yi * L.w + xi] === 252;
+  }
+  function m3MaxDepth(){   // the lake's deepest charted water (m): Djupfärg's darkest colour
+    var g = loadDepthGrid(), m = 1; if (g) for (var i = 0; i < g.length; i++) if (g[i] < 251 && g[i] > m) m = g[i];
+    return Math.max(2, m * DEPTH_STEP);
   }
   function m3Clamp(c){
     c.px = Math.max(0, Math.min(IMG_W, c.px)); c.py = Math.max(0, Math.min(IMG_H, c.py));
@@ -243,23 +247,29 @@
       try { r = new T.WebGLRenderer({ canvas: m3Canvas, antialias: true, logarithmicDepthBuffer: true }); } catch(e){ m3Msg.textContent = 'Telefonen kan inte rita 3D'; return; }
       r.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2)); r.setClearColor(0x141822, 1); r.localClippingEnabled = true;
       var scene = new T.Scene();
-      scene.add(new T.HemisphereLight(0xffffff, 0x8a94a8, 1.6));
-      var sun = new T.DirectionalLight(0xffffff, 2.2); sun.position.set(-1, 1.3, -1); scene.add(sun);   // (from the north-west, as the maps' relief)
+      scene.add(new T.HemisphereLight(0xffffff, 0x8a94a8, 1.0));
+      var sun = new T.DirectionalLight(0xffffff, 3.0); sun.position.set(-1, 0.5, -1); scene.add(sun);   // (from the north-west, as the maps' relief -- low, so the bottom's shape shows: Filip 2026-11-12)
       // the map picture, fetched again as a picture of its own (from the browser's cache) -- NOT the map's <img>: three.js
       // sizes a texture by the element's size on the page, and a big lake's picture is shown at twice its own size (it came out black)
       var pic = new Image(), tex = new T.Texture(pic); tex.colorSpace = T.SRGBColorSpace; tex.anisotropy = r.capabilities.getMaxAnisotropy();
       pic.onload = function(){ tex.needsUpdate = true; m3Draw(); };
       pic.src = mapImgEl.src;
-      var detT = { value: tex }, detR = { value: new T.Vector4(0, 0, 0, 0) };   // the sharp patch's picture and where it lies (z = 0: none)
+      var detT = { value: tex }, detR = { value: new T.Vector4(0, 0, 0, 0) }, colU = { value: new T.Vector2(m3Cfg.col ? 1 : 0, m3MaxDepth()) };   // (Djupfärg: on, the lake's deepest m)   // the sharp patch's picture and where it lies (z = 0: none)
       function plane(x, z){ return new T.Plane(new T.Vector3(x, 0, z), 0); }
       function cut(){ return [plane(-1, 0), plane(1, 0), plane(0, -1), plane(0, 1)]; }   // (m3Hole)
       function ground(planes){   // the ground's look: the sharp patch's picture instead of the map picture's where it reaches (faded in at its edge)
         var mt = new T.MeshLambertMaterial({ map: tex, clippingPlanes: planes, clipIntersection: true });
         mt.onBeforeCompile = function(sh){
           sh.uniforms.uDet = detT; sh.uniforms.uDetR = detR;
-          sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nuniform sampler2D uDet;\nuniform vec4 uDetR;')
+          sh.uniforms.uCol = colU;
+          sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying float vDY;').replace('#include <begin_vertex>', '#include <begin_vertex>\nvDY = transformed.y;');
+          sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nuniform sampler2D uDet;\nuniform vec4 uDetR;\nuniform vec2 uCol;\nvarying float vDY;')
             .replace('#include <map_fragment>', '#include <map_fragment>\nvec2 dUv = (vMapUv - uDetR.xy) * uDetR.zw; vec2 dE = min(dUv, 1.0 - dUv);\n' +
-              'diffuseColor.rgb = mix(diffuseColor.rgb, texture2D(uDet, dUv).rgb, uDetR.z > 0.0 ? smoothstep(0.0, 0.05, min(dE.x, dE.y)) : 0.0);');
+              'diffuseColor.rgb = mix(diffuseColor.rgb, texture2D(uDet, dUv).rgb, uDetR.z > 0.0 ? smoothstep(0.0, 0.05, min(dE.x, dE.y)) : 0.0);\n' +
+              // Djupfärg: Under ytan's colours (72-ar.js AR_COLS), shallow yellow-green to deep dark blue, over the lake's whole depth
+              'float pf = clamp(-vDY / uCol.y, 0.0, 1.0); vec3 pg = mix(vec3(0.847, 0.961, 0.627), vec3(0.345, 0.816, 0.659), smoothstep(0.0, 0.2, pf));\n' +
+              'pg = mix(pg, vec3(0.165, 0.604, 0.816), smoothstep(0.2, 0.45, pf)); pg = mix(pg, vec3(0.165, 0.361, 0.753), smoothstep(0.45, 0.7, pf)); pg = mix(pg, vec3(0.157, 0.110, 0.439), smoothstep(0.7, 1.0, pf));\n' +
+              'if (uCol.x > 0.5 && vDY < -0.05) diffuseColor.rgb = pow(pg, vec3(2.2));');
         };
         return mt;
       }
@@ -267,7 +277,7 @@
       // where the map looked, about as much of it: tilted, north up
       var c = cam || { px: (innerWidth / 2 - originX) / scale, py: (innerHeight / 2 - originY) / scale, d: innerHeight / scale * WEB_METERS_PER_PX * 1.2, az: 0, tilt: 0.95 };
       m3 = { T: T, r: r, scene: scene, cam: new T.PerspectiveCamera(M3_FOV, 1, 1, 1e5), tex: tex, v: new T.Vector3(), marks: [], t: 0, c: m3Clamp(c),
-             detT: detT, detR: detR, cut: cut(), cutW: cut(), far: null, near: null };
+             detT: detT, detR: detR, colU: colU, cut: cut(), cutW: cut(), far: null, near: null };
       m3.mat = ground(null); m3.wmat = wet(null); m3.matFar = ground(m3.cut); m3.wmatFar = wet(m3.cutW);   // (the whole map's: left out where the fine mesh lies)
       m3MarksSync(); m3Draw();
     }).catch(function(){ m3Msg.textContent = 'Kunde inte ladda 3D'; });
@@ -290,13 +300,15 @@
     var el = document.getElementById('m3Ex'); el.value = m3Cfg.ex; rangeFill(el);
     document.getElementById('m3ExVal').textContent = '× ' + String(m3Cfg.ex).replace('.', ',');
     document.querySelector('#m3Chips [data-k=water]').classList.toggle('on', m3Cfg.water);
+    document.querySelector('#m3Chips [data-k=col]').classList.toggle('on', m3Cfg.col);
+    if (m3 && m3.colU) m3.colU.value.x = m3Cfg.col ? 1 : 0;
     var src = document.getElementById('m3Src'); src.hidden = !LAKE.land; src.textContent = LAKE.land ? LAKE.land.credit : '';   // (whose heights: asked for by their licences)
   }
   document.getElementById('m3Ex').addEventListener('input', function(e){ m3Cfg.ex = +e.target.value; m3Save(); m3Ui(); m3Draw(); });
   document.getElementById('m3Chips').addEventListener('click', function(e){
     var b = e.target.closest('button'); if (!b || !m3 || !m3.r) return;
     if (b.id === 'm3Me'){ if (lastOwnLatLon){ var p = latLonToImgPx(lastOwnLatLon.lat, lastOwnLatLon.lon); m3.c.px = p.x; m3.c.py = p.y; m3Touch(); } return; }
-    m3Cfg.water = !m3Cfg.water; m3Save(); m3Ui(); m3Draw();
+    var k = b.getAttribute('data-k'); m3Cfg[k] = !m3Cfg[k]; m3Save(); m3Ui(); m3Draw();
   });
   document.getElementById('m3North').addEventListener('click', function(){ if (m3 && m3.r){ m3.c.az = 0; m3Touch(); } });
   document.getElementById('m3Close').addEventListener('click', m3Close);
@@ -341,7 +353,8 @@
     m3.ty = null; m3Touch();
   }
   function m3Up(e){ delete m3P[e.pointerId]; m3Grip(); }
-  m3Canvas.addEventListener('pointerdown', function(e){ m3P[e.pointerId] = { x: e.clientX, y: e.clientY }; m3Grip(); m3Canvas.setPointerCapture(e.pointerId); });
+  m3Canvas.addEventListener('pointerdown', function(e){ if (e.altKey || e.button === 1) e.preventDefault(); m3P[e.pointerId] = { x: e.clientX, y: e.clientY, b: e.button, alt: e.altKey }; m3Grip(); m3Canvas.setPointerCapture(e.pointerId); });
+  m3Canvas.addEventListener('contextmenu', function(e){ e.preventDefault(); });   // (Alt + right = zoom: no menu)
   m3Canvas.addEventListener('pointerup', m3Up); m3Canvas.addEventListener('pointercancel', m3Up);
   m3Canvas.addEventListener('pointermove', function(e){
     var p = m3P[e.pointerId]; if (!p || !m3 || !m3.r) return;
@@ -349,7 +362,9 @@
     var mx = o ? (x + o.x) / 2 : x, my = o ? (y + o.y) / 2 : y;   // the finger, or the middle of the two
     if (m3.ty == null) m3.ty = m3Ground(c.px, c.py);
     if (!m3G){   // a new grip: this move only decides what it is -- two fingers when both have moved a little (or one of them a lot)
-      if (!o) m3G = e.shiftKey || e.ctrlKey ? 'turn' : 'move';
+      // a mouse as in Maya / Houdini (Filip 2026-11-12): Alt + left = turn and tilt, Alt + middle (or middle alone) = move,
+      // Alt + right = zoom; Shift / Ctrl + left = turn too
+      if (!o) m3G = p.alt && p.b === 2 ? 'dolly' : p.b !== 1 && (p.alt || e.shiftKey || e.ctrlKey) ? 'turn' : 'move';
       else {
         var ma = Math.hypot(x - p.x0, y - p.y0), mb = Math.hypot(o.x - o.x0, o.y - o.y0);
         if (Math.min(ma, mb) >= 4 || Math.max(ma, mb) >= 24)
@@ -365,6 +380,7 @@
       }
     }
     else if (m3G === 'turn'){ c.az -= (x - p.x) * 0.006; c.tilt -= (y - p.y) * 0.005; }
+    else if (m3G === 'dolly'){ c.d *= Math.exp(-(x - p.x + y - p.y) * 0.005); m3Clamp(c); }   // (right or down = nearer, as in Maya)
     else if (m3G === 'tilt') c.tilt -= (y - p.y) * 0.0025;   // (half each finger: as fast as the mouse)
     else {
       var g = m3At(o ? (p.x + o.x) / 2 : p.x, o ? (p.y + o.y) / 2 : p.y);   // what was under the finger (the middle of the two) ...

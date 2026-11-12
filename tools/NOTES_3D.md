@@ -50,10 +50,20 @@ Test: `tests/test_map3d.py`. Höjdfilerna görs av `tools/land_height.py`.
   1,2 × avståndet (`m3DetLevel`); längre ut än lägsta nivån räcker = bara kartbilden. Flyttar man sig på samma nivå
   behålls det som redan är ihopsatt och bara nya bitar hämtas.
 - **Vattenytan:** genomskinlig blå yta i nivå 0, bara över sjön. "Vatten" av = sjön "tömd".
+- **Djupfärg** (knapp, av som standard, `m3Cfg.col`, Filip 2026-11-12): botten färgas efter djupet med Under ytans färger
+  (gulgrönt grunt → mörkblått djupt, över sjöns största lodade djup, `m3MaxDepth`) i stället för kartbilden – formen syns
+  tydligare. Genesis kurvor och siffror syns då inte. I shadern (`uCol`). Prövat (bilder 2026-11-12): djupdimma (grumligt),
+  sandbotten, ljusblå → mörkblå – Filip valde knappen Karta/Djupfärg.
+- **Ljuset:** lägre sol från nordväst (3,0, höjd 0,5) och mindre allmänljus (1,0) sedan 2026-11-12, så att botten och marken
+  syns som former. Under ytan har samma ljus.
 - **Fingrarna som i kartapparna** (Filip 2026-11-11; först vred och lutade ett finger och två flyttade, som i en
   3D-modellvisare): ett finger = flytta kartan, nyp = zooma, vrid två fingrar = vrid kartan, två fingrar bredvid varandra
   som båda dras upp/ner = luta (upp = mot horisonten). Mus: Shift/Ctrl + dra = vrid och luta, hjulet = zooma.
   Egen kod – three.js-filen i appen har ingen OrbitControls.
+  - **Mus som i Maya/Houdini** (Filip 2026-11-12): Alt + vänster = vrid och luta, Alt + mitten (eller bara mitten) = flytta,
+    Alt + höger = zooma (dra höger/ner = närmare); högerklicksmenyn av i vyn.
+  - Lutningen med två fingrar är förlåtande (2026-11-12, Filip: "kan inte ändra vinkeln"): båda ungefär upp eller ner, åt samma
+    håll, utan att nypa – även om de börjar lite snett.
   - Vad ett grepp är avgörs av dess första rörelse (`m3G`): två fingrar när båda rört sig 4 px (eller ett av dem 24 px).
     Kartan vrids först när fingrarna vridits 11° (`m3Tw`) – en nypning ska inte vrida kartan.
   - **Det fingret tog tag i ligger kvar under fingret** (botten, en kulle): `m3Cast` letar upp vad som ritas under fingret

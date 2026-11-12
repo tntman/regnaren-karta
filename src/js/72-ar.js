@@ -172,8 +172,8 @@
       try { r = new T.WebGLRenderer({ canvas: c, antialias: true, alpha: true }); } catch(e){ arMsg.textContent = 'Telefonen kan inte rita 3D'; return; }
       r.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2)); r.setClearColor(0, 0);
       var scene = new T.Scene(), cam = new T.PerspectiveCamera(AR_FOV, 1, 0.3, 3000);
-      scene.add(new T.HemisphereLight(0xdfefff, 0x101828, 0.9));
-      var sun = new T.DirectionalLight(0xffffff, 2.4); sun.position.set(-0.8, 0.6, -0.4); scene.add(sun);
+      scene.add(new T.HemisphereLight(0xffffff, 0x8a94a8, 1.0));   // (the same light as 3D-karta's Djupfärg, 73-map3d.js: Filip 2026-11-12)
+      var sun = new T.DirectionalLight(0xffffff, 3.0); sun.position.set(-1, 0.5, -1); scene.add(sun);
       // the surface itself: faint flat; Vågor = moving ripples near you (mode 1, clear near / hazy far, tried and left out)
       var surfU = { uMode: { value: 0 }, uT: { value: 0 } };
       var surf = new T.Mesh(new T.CircleGeometry(3000, 64), new T.ShaderMaterial({ uniforms: surfU, transparent: true, side: T.DoubleSide, depthWrite: false,

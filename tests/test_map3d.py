@@ -101,6 +101,18 @@ with sync_playwright() as p:
     pg.keyboard.down('Shift'); pg.mouse.move(195, 300); pg.mouse.down(); pg.mouse.move(275, 340, steps=5); pg.mouse.up(); pg.keyboard.up('Shift'); pg.wait_for_timeout(300)
     s6 = M(pg)
     check('with a mouse: Shift + drag turns and tilts it (the map stays)', s6['c']['az'] != 0 and s6['c']['tilt'] != s5['c']['tilt'] and abs(s6['c']['d'] / s5['c']['d'] - 1) < 0.005 and abs(s6['c']['px'] - s5['c']['px']) + abs(s6['c']['py'] - s5['c']['py']) < 2, (s5['c'], s6['c']))
+    def maya(button, alt, a, b):      # a mouse drag as in Maya / Houdini: -> the camera before and after
+        k0 = M(pg)['c'].copy()
+        if alt: pg.keyboard.down('Alt')
+        pg.mouse.move(*a); pg.mouse.down(button=button); pg.mouse.move(*b, steps=6); pg.mouse.up(button=button)
+        if alt: pg.keyboard.up('Alt')
+        pg.wait_for_timeout(300); return k0, M(pg)['c']
+    k0, k1 = maya('left', True, (195, 350), (265, 300))      # (up: it looks straight down here, it can only tilt towards the horizon)
+    check('a mouse as in Maya / Houdini: Alt + left drag turns and tilts (the map stays)', k1['az'] != k0['az'] and k1['tilt'] != k0['tilt'] and abs(k1['d'] / k0['d'] - 1) < 0.005, (k0, k1))
+    k0, k1 = maya('right', True, (195, 300), (265, 350))
+    check('...Alt + right drag zooms (right / down = nearer), nothing turns', k1['d'] < k0['d'] * 0.7 and k1['az'] == k0['az'] and k1['tilt'] == k0['tilt'], (k0, k1))
+    k0, k1 = maya('middle', False, (195, 300), (265, 350))
+    check('...the middle button moves the map (no turn, no zoom)', (k1['px'], k1['py']) != (k0['px'], k0['py']) and k1['az'] == k0['az'] and abs(k1['d'] / k0['d'] - 1) < 0.005, (k0, k1))
     pg.click('#m3Me'); M(pg, {'d': c0['d'], 'az': 0, 'tilt': c0['tilt']}); pg.wait_for_timeout(800)      # (as it opened, for what follows)
     c1 = M(pg)['c']
     b0 = M(pg)['builds']; r0 = M(pg)['at']['R']
@@ -131,8 +143,16 @@ with sync_playwright() as p:
     check('...whose heights they are is written in the controls', 'Höjddata' in pg.inner_text('#m3Src'), pg.inner_text('#m3Src'))
     pg.click('#m3Chips [data-k=water]'); pg.fill('#m3Ex', '6'); pg.dispatch_event('#m3Ex', 'input'); pg.wait_for_timeout(400)
     sv = json.loads(pg.evaluate("localStorage.getItem('ffmap_3d_v1')"))
-    check('Vatten off and Höjd × 6: shown and remembered', sv == {'ex': 6, 'water': False} and pg.inner_text('#m3ExVal') == '× 6' and not pg.evaluate("document.querySelector('#m3Chips [data-k=water]').classList.contains('on')"), sv)
+    check('Vatten off and Höjd × 6: shown and remembered', sv == {'ex': 6, 'water': False, 'col': False} and pg.inner_text('#m3ExVal') == '× 6' and not pg.evaluate("document.querySelector('#m3Chips [data-k=water]').classList.contains('on')"), sv)
     pg.screenshot(path='shot_map3d_dry.png')
+    M(pg, {'px': 1050, 'py': 420, 'd': 1200, 'tilt': 1.1, 'az': 0.4}); pg.wait_for_timeout(1500)
+    def look(): return ImageStat.Stat(Image.open(io.BytesIO(pg.screenshot())).convert('RGB').crop((0, 400, 390, 700))).mean
+    a0 = look(); pg.click('#m3Chips [data-k=col]'); pg.wait_for_timeout(600); a1 = look()
+    sv = json.loads(pg.evaluate("localStorage.getItem('ffmap_3d_v1')"))
+    check('Djupfärg: the bottom coloured by depth instead of the map picture (another picture), shown and remembered',
+          sv['col'] is True and pg.evaluate("document.querySelector('#m3Chips [data-k=col]').classList.contains('on')") and sum(abs(x - y) for x, y in zip(a0, a1)) > 15, (a0, a1, sv))
+    pg.screenshot(path='shot_map3d_col.png')
+    pg.click('#m3Chips [data-k=col]'); pg.wait_for_timeout(300)
     M(pg, {'d': 20000, 'tilt': 0.9}); pg.wait_for_timeout(700)
     s = M(pg)
     check('zoomed all the way out: the whole map in one mesh, the map picture itself (no sharp patch)', s['at']['full'] and s['n'] <= 401 and s['det'] is None, (s['at'], s['det']))
