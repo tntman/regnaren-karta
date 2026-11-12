@@ -177,14 +177,32 @@ with sync_playwright() as p:
     void = win(lg == 252, (25, 14)).all((2, 3)); deep = win((dg < 251) & (dg * md['step'] > 3), (25, 8)).all((2, 3))
     j, i = (int(v) for v in np.argwhere(void[:, :deep.shape[1] - 14] & deep[:, 14:])[0])
     M(pg, {'px': (i + 14) / md['w'] * mk['geo']['imgW'], 'py': (j + 12.5) / md['h'] * mk['geo']['imgH'], 'd': 400, 'tilt': 0.05, 'az': 0}); pg.wait_for_timeout(1800)
-    hits = [(dx, M(pg, {'at': [195 + dx, 422]})['hit']) for dx in (-120, -80, -40, -15, 0, 15, 40, 80, 120)]      # (a cell is 28 px here)
-    px = Image.open(io.BytesIO(pg.screenshot())).convert('RGB').getpixel((195 - 80, 422))
-    check('water nobody has charted is a hole: at the edge of the chart the bottom is drawn on one side and nothing on the other -- no wall up to the surface between them',
-          all(h is None for dx, h in hits if dx <= -40) and all(h and h['y'] < -3 for dx, h in hits if dx >= 40) and all(h is None or h['y'] < -3 for dx, h in hits),
+    hits = [(dx, M(pg, {'at': [195 + dx, 422]})['hit']) for dx in (-180, -150, -40, -15, 0, 15, 40, 80, 120)]      # (a cell is 28 px here)
+    px = Image.open(io.BytesIO(pg.screenshot())).convert('RGB').getpixel((195 - 150, 422))
+    check("water nobody has charted is a hole: the bottom goes on a little way past the chart's edge at the depth it has there, then there is nothing -- no wall up to the surface",
+          all(h is None for dx, h in hits if dx <= -150) and all(h and h['y'] < -3 for dx, h in hits if dx >= 40) and all(h is None or h['y'] < -3 for dx, h in hits),
           [(dx, h and round(h['y'], 1)) for dx, h in hits])
     check("...the water's surface lies over the hole all the same (Vatten on): dark blue, nothing under it", px[2] > px[0] + 25 and px[0] < 60, px)
     M(pg, {'d': 1500, 'tilt': 1.1}); pg.wait_for_timeout(1800)
     pg.screenshot(path='shot_map3d_hole.png')
+    # ...and no pillars at a hole's ragged edge (Filip 2026-11-12: thin bits nobody had charted stood up to the surface from
+    # 27 m down). A gap in the chart in deep water is found in the files -- the biggest with nothing shallower than 15 m
+    # within 4 cells of it -- and three.js is asked what is drawn over it and 3 cells around it
+    from scipy.ndimage import label, find_objects, binary_dilation
+    lab, n = label(dg == 252, np.ones((3, 3))); gap = None
+    for k, sl in enumerate(find_objects(lab), 1):
+        box = (slice(max(0, sl[0].start - 5), sl[0].stop + 5), slice(max(0, sl[1].start - 5), sl[1].stop + 5)); m = lab[box] == k
+        if m.sum() < 100 or (gap and m.sum() <= gap[0]): continue
+        ring = dg[box][binary_dilation(m, np.ones((3, 3)), iterations=4) & (dg[box] < 251)] * md['step']
+        if ring.size and ring.min() > 15 and not (dg[box] == 255).any(): gap = (m.sum(), sl)
+    sl = gap[1]; cell = mk['geo']['metersPerPx'] * mk['geo']['fullW'] / md['w']
+    M(pg, {'px': (sl[1].start + sl[1].stop) / 2 / md['w'] * mk['geo']['imgW'], 'py': (sl[0].start + sl[0].stop) / 2 / md['h'] * mk['geo']['imgH'], 'd': 600, 'tilt': 0.05, 'az': 0}); pg.wait_for_timeout(1800)
+    k = cell / px_m(M(pg)['c']); hw = min(189, ((sl[1].stop - sl[1].start) / 2 + 3) * k); hh = min(240, ((sl[0].stop - sl[0].start) / 2 + 3) * k)      # (k: a cell's px on the screen)
+    ys = pg.evaluate("(([hw, hh]) => { const o = []; for (let y = 422 - hh; y <= 422 + hh; y += 9) for (let x = 195 - hw; x <= 195 + hw; x += 9) { const h = window.__ffMap3d({at: [x, y]}).hit; o.push(h ? h.y : null); } return o; })", [hw, hh])
+    high = sorted(v for v in ys if v is not None and v > -10)
+    check("...and no pillars at a hole's ragged edge: around a gap in the chart in deep water, all that is drawn is far down",
+          ys.count(None) > 20 and len(ys) - ys.count(None) > 100 and not high, (gap[0], len(ys), ys.count(None), high[-5:]))
+    pg.screenshot(path='shot_map3d_gap.png')
     check('no page errors', not errs, errs)
     b.close()
 print('\n%d/%d passed' % (sum(results), len(results)))

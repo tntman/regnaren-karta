@@ -7,7 +7,8 @@
      that is drawn here), lit from the north-west like the maps' relief. y = -depth in the water; on land the height
      above the lake from LAKE.land (tools/land_height.py: a small file per lake, fetched when the view opens; a lake
      without one, or no coverage the first time = flat land). Water nobody has charted -- the lake's own, or outside the
-     chart -- is left as a hole (the same file says where, m3Void): only the water's surface lies over it.
+     chart; the same file says where, m3Void -- takes its depth from what is known close by and is a hole further out:
+     only the water's surface lies over it (m3Make).
      Near the point you look at the picture is sharp: the zoom level's pieces (the same as the map's own, 12-map.js) put
      together on ONE canvas of M3_TEX px, shown instead of the map picture where it reaches (m3Detail).
      The fingers as in the map apps: one = move, pinch = zoom, twist = turn, two up/down = tilt (own code, further down).
@@ -16,12 +17,13 @@
   var M3_KEY = 'ffmap_3d_v1', M3_NMAX = 400, M3_FOV = 40;
   var M3_RFULL = Math.max(IMG_W, IMG_H) * WEB_METERS_PER_PX / 2;   // half the map's long side (m): a fine mesh this far out would be no finer than the whole map's
   var M3_TEX = 2048;   // the sharp patch's canvas (px a side): 4 x 4 pieces
+  var M3_REACH = 15;   // m: water nobody has charted takes its depth from what is known this close; further out it is a hole (m3Make)
   var m3Cfg = { ex: 3, water: true };
   try { m3Cfg = Object.assign(m3Cfg, JSON.parse(localStorage.getItem(M3_KEY) || '{}')); } catch(e){}
   var m3View = document.getElementById('m3View'), m3Canvas = document.getElementById('m3Canvas'), m3Marks = document.getElementById('m3Marks'), m3Msg = document.getElementById('m3Msg');
   var m3 = null;   // while open: { T, r, scene, cam, far: the whole map's mesh, near: the fine one (or null), tex, c: the camera { px, py (the image px looked at), d (m away), az, tilt (0 = straight down) }, at: what the fine mesh was built for }
   function m3Save(){ try { localStorage.setItem(M3_KEY, JSON.stringify(m3Cfg)); } catch(e){} }
-  var m3Land = null;   // the land's heights while the view is open: a byte per cell, LAKE.land.max x (byte / 250)^2 = m above the lake, 255 = lake, 252 = a hole (1 = asked for)
+  var m3Land = null;   // the land's heights while the view is open: a byte per cell, LAKE.land.max x (byte / 250)^2 = m above the lake, 255 = lake, 252 = water nobody has charted (1 = asked for)
   function m3LoadLand(){
     if (!LAKE.land || m3Land) return;
     m3Land = 1;
@@ -36,8 +38,8 @@
     var v = m3Land && m3Land.length ? gridValAt(m3Land, LAKE.land.w, LAKE.land.h, x, y) : null;
     return v === null ? 0 : v * v / 62500 * LAKE.land.max;   // (square-root steps: fine low down, by the shore -- tools/land_height.py)
   }
-  // water nobody has charted, 30 m wide or more (the land file's 252: the lake's own, or outside the chart -- which the
-  // depth grid calls land): left as a hole. Drawn at the surface it stood as big hills beside the charted bottom (Filip 2026-11-12)
+  // water nobody has charted (the land file's 252: the lake's own, or outside the chart -- which the depth grid calls
+  // land). Drawn at the surface it stood as big hills beside the charted bottom (Filip 2026-11-12): see m3Make
   function m3Void(x, y){
     if (!m3Land || !m3Land.length) return false;
     var L = LAKE.land, xi = Math.floor(x / IMG_W * L.w), yi = Math.floor(y / IMG_H * L.h);
@@ -54,10 +56,11 @@
   function m3Make(x0, y0, x1, y1, mat, wmat){
     var T = m3.T, M = WEB_METERS_PER_PX, k = Math.max(AR_CELL / M, Math.max(x1 - x0, y1 - y0) / M3_NMAX);   // image px a step: never finer than the depth cells
     var nx = Math.max(2, Math.floor((x1 - x0) / k) + 1), ny = Math.max(2, Math.floor((y1 - y0) / k) + 1);
-    var pos = new Float32Array(nx * ny * 3), uv = new Float32Array(nx * ny * 2), wet = new Uint8Array(nx * ny), idx = [], widx = [];
+    var pos = new Float32Array(nx * ny * 3), uv = new Float32Array(nx * ny * 2), wet = new Uint8Array(nx * ny), idx = [], widx = [], unk = [];
     for (var j = 0; j < ny; j++) for (var i = 0; i < nx; i++){
       var q = j * nx + i, x = x0 + i * k, y = y0 + j * k, d = depthAtImgPx(x, y);
-      wet[q] = d !== null ? 1 : m3Void(x, y) ? 2 : isLakeAtImgPx(x, y) ? 1 : 0;   // 0 land, 1 water, 2 a hole (a depth wins: sounded since the land file was made)
+      wet[q] = d !== null ? 1 : m3Void(x, y) ? 2 : isLakeAtImgPx(x, y) ? 1 : 0;   // 0 land, 1 water, 2 water nobody has charted (a depth wins: sounded since the land file was made)
+      if (wet[q] === 2) unk.push(q);
       pos[q * 3] = (x - IMG_W / 2) * M; pos[q * 3 + 2] = (y - IMG_H / 2) * M;
       pos[q * 3 + 1] = d !== null ? -d : wet[q] ? -0.2 : Math.max(0.3, m3LandAt(x, y));   // (lake nobody has logged: just under the surface; land: never lower than just over it -- the water's surface never lies on the land)
       uv[q * 2] = x / IMG_W; uv[q * 2 + 1] = 1 - y / IMG_H;
@@ -68,9 +71,28 @@
       q = j * nx + i;
       if (!wet[q] && ((i && wet[q - 1]) || (i < nx - 1 && wet[q + 1]) || (j && wet[q - nx]) || (j < ny - 1 && wet[q + nx]))) pos[q * 3 + 1] = 0.3;
     }
-    // the ground's triangles -- none where all three corners are holes, and none between a hole and the bottom beside it
-    // (that was the wall up to the surface); a hole's corner with the land's: drawn, the shore down to the water
-    function tri(p, q, r){ if ((wet[p] | wet[q] | wet[r]) < 3 && (wet[p] & wet[q] & wet[r]) < 2) idx.push(p, q, r); }
+    // Water nobody has charted: within M3_REACH m of something known it takes its depth from that -- the bottom goes on a
+    // little way past the chart's edge, comes up to the shore, bridges a narrow gap in the chart -- and further out it is
+    // left as a hole. (First all of it lay at the surface: big hills beside the charted bottom, Filip 2026-11-12. Then it
+    // was a hole where it was 30 m wide and at the surface where it wasn't: those bits stood as pillars at the holes'
+    // ragged edges, 27 m high.)
+    function known(q){   // the mean of what is known around a point (the land's edge = just under the surface); null: nothing is
+      var i = q % nx, j = (q - i) / nx, s = 0, n = 0;
+      for (var dj = -1; dj <= 1; dj++) for (var di = -1; di <= 1; di++){
+        var p = q + dj * nx + di;
+        if ((di || dj) && i + di >= 0 && i + di < nx && j + dj >= 0 && j + dj < ny && wet[p] !== 2){ s += wet[p] ? pos[p * 3 + 1] : -0.2; n++; }
+      }
+      return n ? Math.min(-0.2, s / n) : null;
+    }
+    var reach = Math.max(1, Math.round(M3_REACH / (k * M))), fill = [];
+    for (var r = 0; r < reach; r++){   // (a step further out each round)
+      var got = [];
+      unk.forEach(function(q){ var v = wet[q] === 2 ? known(q) : null; if (v !== null) got.push(q, v); });
+      for (var t = 0; t < got.length; t += 2){ wet[got[t]] = 3; pos[got[t] * 3 + 1] = got[t + 1]; fill.push(got[t]); }
+    }
+    for (r = 0; r < reach * reach + 2; r++) fill.forEach(function(q){ pos[q * 3 + 1] = known(q); });   // ...evened out: a slope from the chart's depth up to the shore, not a step halfway
+    // the ground's triangles: none with a corner that is still a hole
+    function tri(p, q, r){ if (wet[p] !== 2 && wet[q] !== 2 && wet[r] !== 2) idx.push(p, q, r); }
     for (j = 0; j < ny - 1; j++) for (i = 0; i < nx - 1; i++){
       var a = j * nx + i, b = a + 1, e = a + nx; tri(a, e, b); tri(b, e, e + 1);
       if (wet[a] || wet[b] || wet[e] || wet[e + 1]) widx.push(a, e, b, b, e, e + 1);   // (the water's surface: where the lake is, a cell in over the shore -- over the holes too)
@@ -302,7 +324,7 @@
     }
     return 0;
   }
-  function m3Surf(x, y){ var d = depthAtImgPx(x, y); return (d !== null ? -d : isLakeAtImgPx(x, y) ? -0.2 : Math.max(0.3, m3LandAt(x, y))) * m3Cfg.ex; }   // what is drawn at a map-picture px: the bottom, or the land (as m3Make's points; in a hole: about the water's level, which is what a finger takes hold of there)
+  function m3Surf(x, y){ var d = depthAtImgPx(x, y); return (d !== null ? -d : isLakeAtImgPx(x, y) ? -0.2 : Math.max(0.3, m3LandAt(x, y))) * m3Cfg.ex; }   // what is drawn at a map-picture px: the bottom, or the land (as m3Make's points; water nobody has charted: about the water's level, which is what a finger takes hold of there)
   // the point looked at, moved along the line of sight to s m from the camera -- which stays where it is
   function m3Slide(s){
     var c = m3.c, k = (c.d - s) * Math.sin(c.tilt) / WEB_METERS_PER_PX;
@@ -364,7 +386,8 @@
     var hit = null;   // where the middle of the screen meets the ground (the fine mesh where there is one): its height (m, unscaled), place and how far from the camera
     if (m3 && m3.far){
       var rc = new m3.T.Raycaster(); rc.setFromCamera(new m3.T.Vector2(at ? at[0] / innerWidth * 2 - 1 : 0, at ? 1 - at[1] / innerHeight * 2 : 0), m3.cam);
-      var h = (m3.near && rc.intersectObject(m3.near.mesh)[0]) || rc.intersectObject(m3.far.mesh)[0];
+      // (the whole map's mesh only where it is drawn: not where it is cut out for the fine one -- the fine one may have a hole there)
+      var h = (m3.near && rc.intersectObject(m3.near.mesh)[0]) || rc.intersectObject(m3.far.mesh).filter(function(f){ return !m3.cut.every(function(pl){ return pl.distanceToPoint(f.point) < 0; }); })[0];
       if (h) hit = { y: h.point.y / m3Cfg.ex, d: h.distance, at: imgPxToLatLon(IMG_W / 2 + h.point.x / WEB_METERS_PER_PX, IMG_H / 2 + h.point.z / WEB_METERS_PER_PX) };
     }
     var det = m3 && m3.det && m3.det.z ? { z: m3.det.z, n: m3.det.n || 0, X: m3.det.X, Y: m3.det.Y, url: o && o.pic ? m3.det.cv.toDataURL('image/jpeg', 0.6) : '' } : null;   // (the sharp patch; pic: its picture too)

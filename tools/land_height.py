@@ -14,10 +14,10 @@ EU-DEM/SRTM) -- the tree tops are in it, so the land jumped up in teeth along th
 Out (nothing of the map chat's is touched -- its tools empty docs/lakes/<id>/ on every render, so the file lies beside):
   docs/land/<id>_v<V>.txt   a byte per cell (0-250): height above the lake = max x (byte / 250)^2 -- fine steps low down,
                             where the shore is (Regnaren: 6 cm at 1 m, 44 cm at the top; linear steps of 1 m showed as
-                            stairs on flat ground by a lake with 150 m hills); 255 = lake; 252 = water nobody has charted,
-                            beside the charted bottom -- a hole in the 3D map (holes(), below); runs of 255 and of
-                            252 packed (251 / 253, count lo, count hi), base64 -- the depth file's packing, unpacked
-                            by the same code
+                            stairs on flat ground by a lake with 150 m hills); 255 = lake; 252 = water nobody has charted
+                            (uncharted(), below: close to what is known the 3D map takes its depth from that, further
+                            out it leaves a hole); runs of 255 and of 252 packed (251 / 253, count lo, count hi),
+                            base64 -- the depth file's packing, unpacked by the same code
   lakes/<id>/land.json      file, w, h, max, level (the lake's surface, m above the sea), credit, and the map
                             rectangle it was made for ("geo": tools/build.py leaves a stale one out)
 A new map rectangle for a lake (the map chat): run this again. New data for a lake that is already out: V + 1.
@@ -25,12 +25,11 @@ A new map rectangle for a lake (the map chat): run this again. New data for a la
 import os, sys, json, math, base64, site
 if sys.flags.isolated: site.addsitedir(site.getusersitepackages())   # (-I leaves out the user's own packages: they are wanted)
 import numpy as np
-from scipy.ndimage import map_coordinates, maximum_filter, minimum_filter, label, binary_opening
+from scipy.ndimage import map_coordinates, maximum_filter, minimum_filter, label, maximum as piece_max
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-V = 3          # in the file's name: the service worker keeps a file for good, new data = a new name (1: linear steps; 2: no holes)
-WIDE = 30      # m: water nobody has charted is a hole in the 3D map where it is at least this wide ...
-SHOAL = 1.0    # m: ...and the charted water beside it is deeper than this (holes())
+V = 4          # in the file's name: the service worker keeps a file for good, new data = a new name (1: linear steps; 2: no 252; 3: only what was 30 m wide)
+SHOAL = 1.0    # m: water nobody has charted is marked where the charted water beside it is deeper than this (uncharted())
 LM = 'https://dl1.lantmateriet.se/hojd/data/grid/mhm/%d_%d/m%d_%d.tif'
 
 def unpack(b64, n):
@@ -55,26 +54,25 @@ def pack(g):
     out += f[i:].tobytes()
     return base64.b64encode(bytes(out)).decode()
 
-def holes(rel, depth, step, cell):
-    """-> the cells of water nobody has charted where the 3D map leaves a hole (drawn at the surface they stood as big
-    hills beside the charted bottom, Filip 2026-11-12).
+def uncharted(rel, depth, step):
+    """-> the cells of water nobody has charted (252 in the file). Drawn at the surface they stood as big hills beside the
+    charted bottom (Filip 2026-11-12); the 3D map takes their depth from what is known close by and leaves a hole
+    further out (m3Make, src/js/73-map3d.js).
     A cell without a depth -- the lake's own (252 in the depth grid: on Regnaren those are islets) or outside the chart
     (255 there: land, or unknown) -- is water by Lantmäteriet's heights when it is planed: the same to the cm as its 8
     neighbours (measured 2026-11-12: 0,000 m on open water in all seven lakes; a low shore, reeds or an islet are not),
     at the lake's level (within 0,5 m: the sea stands differently from one scan to the next) and joined to the lake (a
-    pond of its own stays land). Of that water:
-    - what is at least WIDE m wide: a narrower strip between the chart and the shore stays as it was (a hole there
-      would be a gap along the shore);
-    - in pieces with charted water deeper than SHOAL m beside them: a shoal or a reedy bay in shallow water stays as it
-      was too, just under the surface -- no hill stands there.
-    rel: m above the lake's level; depth: the depth grid (x step = m); cell: m."""
+    pond of its own stays land).
+    Not the pieces of it with no charted water deeper than SHOAL m within 2 cells: a shoal or a reedy bay in shallow
+    water stays as it was, just under the surface -- no hill stands there. (Every other bit is marked, however thin:
+    the first version left out what was narrower than 30 m, and those bits stood as pillars at the holes' ragged
+    edges, 27 m high.) rel: m above the lake's level; depth: the depth grid (x step = m)."""
     lake = depth != 255
     water = (depth > 250) & (np.abs(rel) <= 0.5) & (maximum_filter(rel, 3) - minimum_filter(rel, 3) <= 0.02)
     lab, _ = label(water | lake, np.ones((3, 3))); water &= np.isin(lab, np.unique(lab[lake]))
-    k = max(3, int(WIDE / cell) | 1)                                                         # (odd: a square with a middle cell)
-    lab, n = label(binary_opening(water, np.ones((k, k))), np.ones((3, 3)))                  # the pieces
-    near = maximum_filter(lab, 5); at = (depth < 251) & (near > 0); near, d = near[at], depth[at] * step   # the charted cells within 2 cells of a piece
-    return np.isin(lab, [p for p in range(1, n + 1) if (near == p).any() and np.percentile(d[near == p], 90) > SHOAL])
+    lab, n = label(water, np.ones((3, 3)))                                                   # the pieces
+    deep = maximum_filter(np.where(depth < 251, depth, 0), 5) * step                         # the deepest charted water within 2 cells
+    return water & (piece_max(deep, lab, np.arange(n + 1))[lab] > SHOAL)
 
 def latlon(gx, gy, zoom):            # global px at a zoom (256 px tiles) -> lat, lon (degrees)
     n = 256 * 2 ** zoom
@@ -108,24 +106,23 @@ def check():
     g = np.random.default_rng(1).integers(0, 251, 5000).astype(np.uint8); g[100:104] = 255; g[2000:4000] = 255; g[-1] = 255; g[7] = 255
     g[300:900] = 252; g[4000:4002] = 252                                                # (holes: right after a run of lake, too)
     assert (unpack(pack(g), g.size) == g).all()
-    # holes() on a toy map of 10 m cells (a hole = at least 3 cells wide) and depth steps of 0,3 m: rough land, in it a
-    # lake that is flat at level 0 and charted, 12 m deep
+    # uncharted() on a toy map with depth steps of 0,3 m: rough land, in it a lake that is flat at level 0 and charted, 12 m deep
     d = np.full((60, 90), 255, np.uint8); rel = np.random.default_rng(2).uniform(0.6, 3, d.shape)
     d[10:40, 10:30] = 40; rel[10:40, 10:30] = 0
-    d[10:20, 20:30] = 252                               # a wide bay of it nobody has charted                      -> a hole (but for its shore cells)
-    d[22:38, 10:12] = 252                               # ...and a strip of two cells along its shore              -> left as it is
-    d[29:39, 18:28] = 2; d[31:37, 20:26] = 252          # a patch nobody has charted in 0,6 m of water: a shoal    -> left
+    d[10:20, 20:30] = 252                               # a wide bay of it nobody has charted                      -> marked (but for its shore cells)
+    d[22:38, 10:12] = 252                               # ...and a strip of two cells along its shore              -> marked too (but for its shore cells)
+    d[29:39, 18:28] = 2; d[31:37, 20:26] = 252          # a patch nobody has charted in 0,6 m of water: a shoal    -> left as it is
     d[24:30, 14:20] = 252; rel[24:30, 14:20] = np.random.default_rng(4).uniform(1, 2, (6, 6))   # an islet the depth grid calls lake -> left
-    rel[10:40, 30:50] = 0                               # flat water outside the chart, joined to the lake         -> a hole (but for its shore cells)
-    rel[40:42, 10:30] = 0                               # ...a narrow strip of it along the lake                   -> left
+    rel[10:40, 30:50] = 0                               # flat water outside the chart, joined to the lake         -> marked (but for its shore cells)
+    rel[40:42, 10:30] = 0                               # ...a narrow strip of it along the lake                   -> marked too
     rel[48:56, 60:75] = 0                               # a pond of its own at the lake's level                    -> land
     rel[4:10, 10:20] = -2                               # flat water 2 m lower, next to the lake                   -> land
     rel[22:38, 4:10] = np.random.default_rng(3).uniform(0, 0.3, (16, 6))                # a low, rough shore        -> land
-    want = np.zeros(d.shape, bool); want[11:20, 20:30] = True; want[11:39, 30:49] = True
-    got = holes(rel, d, 0.3, 10.0)
+    want = np.zeros(d.shape, bool); want[11:20, 20:30] = True; want[11:39, 30:49] = True; want[22:38, 11:12] = True; want[40:41, 11:29] = True
+    got = uncharted(rel, d, 0.3)
     assert (got == want).all(), np.argwhere(got != want)[:8]
-    print("check ok: sweref() makes Lantmateriet's own box for the square 652_54; pack/unpack give the same grid back; holes() "
-          "finds wide water without depth, and nothing else")
+    print("check ok: sweref() makes Lantmateriet's own box for the square 652_54; pack/unpack give the same grid back; uncharted() "
+          "finds the water without depth, and nothing else")
 
 def make(lake, dem):
     import tifffile
@@ -154,7 +151,7 @@ def make(lake, dem):
     # the lake: by the depth grid (255 = land there, or unknown)
     depth = unpack(open(os.path.join(ROOT, 'docs', 'lakes', lake, dp['file'])).read().strip(), w * h).reshape(h, w); inlake = depth != 255
     level = float(np.nanmedian(hm[inlake]))                                 # the lake's surface in the height data
-    rel = np.nan_to_num(hm, nan=level) - level; hole = holes(rel, depth, dp['step'], cell)
+    rel = np.nan_to_num(hm, nan=level) - level; hole = uncharted(rel, depth, dp['step'])
     up = np.clip(rel, 0, None)
     mx = math.ceil(float(up[~inlake].max()))                                # ponytail: a byte per cell, square-root steps; two bytes if stairs still show
     g = np.clip(np.round(250 * np.sqrt(up / mx)), 0, 250).astype(np.uint8); g[inlake] = 255; g[hole] = 252
@@ -172,8 +169,8 @@ def make(lake, dem):
     print('%s: %d x %d cells of %.1f m from the %d m level, steps of %.2f m at 1 m and %.2f m at the top, lake %.1f m above the sea (%.0f %% of its '
           'cells within 0,5 m of that), highest %.0f m above the lake at %.5f, %.5f, %.0f kB' % (lake, w, h, cell, r, 2 * math.sqrt(mx) / 250, 2 * mx / 250,
           level, 100 * float(np.mean(np.abs(hm[inlake] - level) <= 0.5)), up[j, i], la, lo, len(txt) / 1024))
-    print('   holes (water nobody has charted, %d m wide or more, beside charted water deeper than %g m): %.1f %% of what the depth grid calls land -- water outside the chart -- and %.0f %% of '
-          "the lake's own cells without a depth (which are %.1f %% of the lake)" % (WIDE, SHOAL, 100 * float(hole[~inlake].mean()),
+    print('   water nobody has charted (beside charted water deeper than %g m): %.1f %% of what the depth grid calls land -- water outside the chart -- and %.0f %% of '
+          "the lake's own cells without a depth (which are %.1f %% of the lake)" % (SHOAL, 100 * float(hole[~inlake].mean()),
           100 * float(hole[depth == 252].mean()) if (depth == 252).any() else 0, 100 * float((depth == 252).sum()) / inlake.sum()))
 
 if __name__ == '__main__':
