@@ -14,7 +14,8 @@ EU-DEM/SRTM) -- the tree tops are in it, so the land jumped up in teeth along th
 Out (nothing of the map chat's is touched -- its tools empty docs/lakes/<id>/ on every render, so the file lies beside):
   docs/land/<id>_v<V>.txt   a byte per cell (0-250): height above the lake = max x (byte / 250)^2 -- fine steps low down,
                             where the shore is (Regnaren: 6 cm at 1 m, 44 cm at the top; linear steps of 1 m showed as
-                            stairs on flat ground by a lake with 150 m hills); 255 = lake; 252 = water nobody has charted
+                            stairs on flat ground by a lake with 150 m hills); 255 = lake (but an islet the depth grid
+                            calls lake has its height: islets()); 252 = water nobody has charted
                             (uncharted(), below: close to what is known the 3D map takes its depth from that, further
                             out it leaves a hole); runs of 255 and of 252 packed (251 / 253, count lo, count hi),
                             base64 -- the depth file's packing, unpacked by the same code
@@ -28,7 +29,8 @@ import numpy as np
 from scipy.ndimage import map_coordinates, maximum_filter, minimum_filter, label, maximum as piece_max
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-V = 4          # in the file's name: the service worker keeps a file for good, new data = a new name (1: linear steps; 2: no 252; 3: only what was 30 m wide)
+V = 5          # in the file's name: the service worker keeps a file for good, new data = a new name (1: linear steps; 2: no 252; 3: only what was 30 m wide; 4: the islets were lake)
+ISLET = 0.3    # m: a cell the depth grid calls lake without a depth is an islet when it stands higher than this over the lake (islets())
 SHOAL = 1.0    # m: water nobody has charted is marked where the charted water beside it is deeper than this (uncharted())
 LM = 'https://dl1.lantmateriet.se/hojd/data/grid/mhm/%d_%d/m%d_%d.tif'
 
@@ -53,6 +55,12 @@ def pack(g):
         out += bytes([v] * (b - a)); i = b
     out += f[i:].tobytes()
     return base64.b64encode(bytes(out)).decode()
+
+def islets(rel, depth, hole):
+    """-> the cells the depth grid calls lake without a depth (252) that are land in the height data: islets and rocks. They
+    keep their height in the file (as land) -- drawn as lake they were shelves just under the surface in the 3D map
+    (Regnaren's islets, up to 5 m high; Filip 2026-11-13). hole: uncharted()'s water, never an islet."""
+    return (depth == 252) & (rel > ISLET) & ~hole
 
 def uncharted(rel, depth, step):
     """-> the cells of water nobody has charted (252 in the file). Drawn at the surface they stood as big hills beside the
@@ -121,6 +129,8 @@ def check():
     want = np.zeros(d.shape, bool); want[11:20, 20:30] = True; want[11:39, 30:49] = True; want[22:38, 11:12] = True; want[40:41, 11:29] = True
     got = uncharted(rel, d, 0.3)
     assert (got == want).all(), np.argwhere(got != want)[:8]
+    wi = np.zeros(d.shape, bool); wi[24:30, 14:20] = True                           # ...and the islet is the only islet
+    assert (islets(rel, d, got) == wi).all(), np.argwhere(islets(rel, d, got) != wi)[:8]
     print("check ok: sweref() makes Lantmateriet's own box for the square 652_54; pack/unpack give the same grid back; uncharted() "
           "finds the water without depth, and nothing else")
 
@@ -153,8 +163,9 @@ def make(lake, dem):
     level = float(np.nanmedian(hm[inlake]))                                 # the lake's surface in the height data
     rel = np.nan_to_num(hm, nan=level) - level; hole = uncharted(rel, depth, dp['step'])
     up = np.clip(rel, 0, None)
-    mx = math.ceil(float(up[~inlake].max()))                                # ponytail: a byte per cell, square-root steps; two bytes if stairs still show
-    g = np.clip(np.round(250 * np.sqrt(up / mx)), 0, 250).astype(np.uint8); g[inlake] = 255; g[hole] = 252
+    isl = islets(rel, depth, hole)
+    mx = math.ceil(float(up[~inlake | isl].max()))                                # ponytail: a byte per cell, square-root steps; two bytes if stairs still show
+    g = np.clip(np.round(250 * np.sqrt(up / mx)), 0, 250).astype(np.uint8); g[inlake & ~isl] = 255; g[hole] = 252
     txt = pack(g)
     assert (unpack(txt, w * h) == g.ravel()).all()                          # what the app unpacks is what was made
     os.makedirs(os.path.join(ROOT, 'docs', 'land'), exist_ok=True)
@@ -170,8 +181,8 @@ def make(lake, dem):
           'cells within 0,5 m of that), highest %.0f m above the lake at %.5f, %.5f, %.0f kB' % (lake, w, h, cell, r, 2 * math.sqrt(mx) / 250, 2 * mx / 250,
           level, 100 * float(np.mean(np.abs(hm[inlake] - level) <= 0.5)), up[j, i], la, lo, len(txt) / 1024))
     print('   water nobody has charted (beside charted water deeper than %g m): %.1f %% of what the depth grid calls land -- water outside the chart -- and %.0f %% of '
-          "the lake's own cells without a depth (which are %.1f %% of the lake)" % (SHOAL, 100 * float(hole[~inlake].mean()),
-          100 * float(hole[depth == 252].mean()) if (depth == 252).any() else 0, 100 * float((depth == 252).sum()) / inlake.sum()))
+          "the lake's own cells without a depth (which are %.1f %% of the lake); islets among those: %d cells, the highest %.1f m" % (SHOAL, 100 * float(hole[~inlake].mean()),
+          100 * float(hole[depth == 252].mean()) if (depth == 252).any() else 0, 100 * float((depth == 252).sum()) / inlake.sum(), int(isl.sum()), float(up[isl].max()) if isl.any() else 0))
 
 if __name__ == '__main__':
     if len(sys.argv) < 2: sys.exit(__doc__)

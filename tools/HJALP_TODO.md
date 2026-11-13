@@ -38,7 +38,7 @@ spåren, Ledare, Kompass, Namn, Fog of war, tävlingslåset, Storlek/När, start
 - [ ] 2026-11-11 – Nytt kartläge: 3D-karta (håll kartknappen → 3D-karta). Botten och marken runt sjön i 3D med kartbilden på, skarp på nära håll.
   Ett finger flyttar kartan, nyp zoomar, vrid med två fingrar vrider, två fingrar upp/ner lutar (som i Google Maps); Höjd ×, Vatten, Till mig, norrpil. Marken har riktiga höjder på alla sjöar (Lantmäteriet).
   Där djup saknas (olodat, eller utanför sjökortet) är det hål i botten – bara vattenytan syns (2026-11-12).
-  Knappen Djupfärg: botten i färger efter djupet. Knappen Skuggor: kastade skuggor. Märkena i 3D med spegelbild och linje
+  Knappen Djupfärg: botten i färger efter djupet. Knappen Skuggor: kastade skuggor. Märkena i 3D med linje
   till botten, spåren, knappen Fångster (prickar), knappen Kompass (ros + kil, pilen vrids dit telefonen pekar). På datorn: Alt + mus som i Maya/Houdini (2026-11-12).
   Hjälp: nytt avsnitt vid kartlägena + animering `map3d`.
   Nyhet: "Ny 3D-karta: se botten och marken runt sjön i 3D – håll kartknappen" (NYTT)

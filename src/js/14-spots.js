@@ -83,6 +83,7 @@
         lat: latSum / members.length,
         lon: lonSum / members.length,
         names: members.map(function(m){ return m.name || 'Okänd'; }),
+        hdg: (members.filter(function(m){ return typeof m.hdg === 'number'; })[0] || {}).hdg,   // (the boat's course, if anyone in it has one: 24-boats.js)
         updatedAt: maxUpdated
       });
     });
@@ -248,6 +249,7 @@
       if (!seen[id]){ pinEls[id].remove(); delete pinEls[id]; }
     });
     if (typeof logView !== 'undefined' && logView.classList.contains('show')) renderLogList();
+    m3MarksDirty();   // (3D-karta open: the spots there too, 73-map3d.js)
   }
   // Träffpunkt: when the hour is up it disappears for everyone (hidden right
   // away); your own is then also removed from the database. The minutes left

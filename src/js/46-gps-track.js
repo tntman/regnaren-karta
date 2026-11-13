@@ -413,6 +413,7 @@
     if (demoMode || !loadDepthGrid() ? isNearLake(lat, lon) : isLakeAtImgPx(tp.x, tp.y)) recordTrack(lat, lon, accM);
     updateHeading(lat, lon, gpsHeading);  // the arrow in your GPS dot
     lastOwnLatLon = { lat: lat, lon: lon };
+    m3MarksDirty();   // (3D-karta open: your arrow moves there too, 73-map3d.js)
     var p = latLonToImgPx(lat, lon);
     var onMap = isNearLake(lat, lon);
     lastFix = { px:p.x, py:p.y, accM: accM || 15, onMap: onMap };

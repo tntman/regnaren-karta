@@ -160,6 +160,15 @@ with sync_playwright() as p:
     s = M(pg)
     check('the land has its height (the land file read apart from the app says the same)', s['land'] and top > 20 and abs(s['hit']['y'] - top) < 3, (top, s['hit']))
     check('...whose heights they are is written in the controls', 'Höjddata' in pg.inner_text('#m3Src'), pg.inner_text('#m3Src'))
+    # an islet the depth grid calls lake without a depth (252) stands up out of the water: found in the files, apart from
+    # the app -- the highest cell that is 252 in the depth grid and has a height in the land file. It lay 0,2 m under the surface
+    dr = unpack(open('../docs/lakes/regnaren/' + lk['depth']['file']).read().strip(), lk['depth']['w'] * lk['depth']['h']).reshape(lk['depth']['h'], lk['depth']['w'])
+    lr = unpack(open('../docs/' + ld['file']).read().strip(), ld['w'] * ld['h']).reshape(ld['h'], ld['w']).astype(float)
+    isl = np.where((dr == 252) & (lr <= 250), lr, -1); ij, ii = divmod(int(isl.argmax()), isl.shape[1]); ih = (isl[ij, ii] / 250) ** 2 * ld['max']
+    M(pg, {'px': (ii + 0.5) / ld['w'] * lk['geo']['imgW'], 'py': (ij + 0.5) / ld['h'] * lk['geo']['imgH'], 'd': 200, 'tilt': 0.05, 'az': 0}); pg.wait_for_timeout(1200)
+    s = M(pg)
+    check('an islet the depth grid calls lake stands up out of the water, with its height from the land file', ih > 3 and s['hit'] and s['hit']['y'] > 2 and abs(s['hit']['y'] - ih) < 2.5, (round(ih, 1), s['hit']))
+    pg.screenshot(path='shot_map3d_islet.png')
     pg.click('#m3Chips [data-k=water]'); pg.fill('#m3Ex', '6'); pg.dispatch_event('#m3Ex', 'input'); pg.wait_for_timeout(400)
     sv = json.loads(pg.evaluate("localStorage.getItem('ffmap_3d_v1')"))
     check('Vatten off and Höjd × 6: shown and remembered', sv == {'ex': 6, 'water': False, 'col': False, 'shadow': False, 'fish': False} and pg.inner_text('#m3ExVal') == '× 6' and not pg.evaluate("document.querySelector('#m3Chips [data-k=water]').classList.contains('on')"), sv)
@@ -206,7 +215,11 @@ with sync_playwright() as p:
     day = (datetime.datetime.now() - datetime.timedelta(hours=6)).strftime('%Y-%m-%d'); t0 = int(datetime.datetime.now().timestamp() * 1000) - 3600000
     segs = [[[B3[0] + i * 0.00005, B3[1] + i * 0.0001, t0 + i * 20000] for i in range(30)]]
     rows = [fakefb.api_row(t0 - 86400000 + i * 60000, 'regnaren1', 'Filip', ['abborre', 'gadda', 'gos'][i % 3], 40, B3[0] + i * 0.0001, B3[1]) for i in range(9)]
-    b, ctx, pg, errs = new_page(p, geo=B3, name='Filip', cfg={'api': {'heatmap': rows}})
+    W1 = (B3[0] + 0.0006, B3[1] + 0.0012)      # (on the water, north-east of you)
+    b, ctx, pg, errs = new_page(p, geo=B3, name='Filip', cfg={'api': {'heatmap': rows},
+        'positions': [{'uid': 'pia', 'name': 'Pia', 'lat': W1[0], 'lon': W1[1]}, {'uid': 'olle', 'name': 'Olle', 'lat': W1[0] + 0.0008, 'lon': W1[1], 'ageMin': 20}],
+        'waypoints': [{'uid': 'filip', 'by': 'Filip', 'name': 'Min gös', 'lat': B3[0] + 0.0004, 'lon': B3[1] + 0.0004, 'type': 'gos'},
+                      {'uid': 'kalle', 'by': 'Calle', 'name': 'Lunch', 'lat': B3[0] - 0.0003, 'lon': B3[1] + 0.0008, 'type': 'meet', 'expiresAt': t0 + 3600000 + 30 * 60000}]})
     ctx.add_init_script("if (!sessionStorage.getItem('seeded')){ sessionStorage.setItem('seeded', '1'); localStorage.setItem('ffmap_track_v1', %s); }" % json.dumps(json.dumps({'day': day, 'segs': segs})))
     pg.reload(); pg.wait_for_timeout(2500)
     hold_map_btn(pg); pg.click('#mapTypePop .m3Opt'); pg.wait_for_timeout(2500)
@@ -216,6 +229,25 @@ with sync_playwright() as p:
     pg.click('#m3Chips [data-k=fish]'); pg.wait_for_timeout(1500)
     check("Fångster: every catch on the lake a dot (the heatmap's data), remembered", M(pg)['fish'] == 9 and json.loads(pg.evaluate("localStorage.getItem('ffmap_3d_v1')"))['fish'] is True, M(pg)['fish'])
     pg.screenshot(path='shot_map3d_fish.png')
+    pg.click('#m3Chips [data-k=fish]'); pg.wait_for_timeout(300)
+    # the marks: a spot of your own has its icon on the pin, a Träffpunkt is a beacon with its ring and its name tag
+    ob = M(pg)['objs']; mine = [o for o in ob if o['kind'] == 'pin']; meet = [o for o in ob if o['kind'] == 'meet']
+    check('a spot of your own: its icon is on the pin (drawn, not an empty picture)', len(mine) == 1 and mine[0]['icon'] and mine[0]['iconDrawn'], mine)
+    check('a Träffpunkt: a beacon with its ring on the water -- its name tag is shown, the 2D beacon is not',
+          len(meet) == 1 and meet[0]['ring'] and pg.evaluate("(() => { const b = document.querySelector('#m3Marks .wpBeacon'); return !!b && getComputedStyle(b.querySelector('.bcTag')).visibility === 'visible' && getComputedStyle(b.querySelector('.bcCore')).visibility === 'hidden'; })()"), meet)
+    # the others' boats: an arrow that points where the boat goes (north until it has moved), grey when it is an old position
+    def boats(): return sorted([o for o in M(pg)['objs'] if o['kind'] == 'boat' and not o['me']], key=lambda o: o['col'])
+    o_old, o_new = boats()      # ('#9aa6ab' sorts before '#ffffff')
+    check("another boat is a white arrow, north until it has moved; one not heard from for 20 min is grey", (o_old['col'], o_new['col']) == ('#9aa6ab', '#ffffff') and o_new['hdg'] == 0, (o_old, o_new))
+    pg.evaluate("([la, lo]) => { const d = window.__posDocs.pia; d.lat = la; d.lon = lo; d.updatedAt = { toMillis: () => Date.now() }; window.__firePos(); }", [W1[0], W1[1] + 0.0011])      # (Pia: 63 m east)
+    pg.wait_for_timeout(1200)
+    o_new = boats()[1]
+    check('...Pia has gone 63 m east: her arrow points east', abs(o_new['hdg'] - 90) < 3, o_new)
+    pg.evaluate("() => { const d = window.__posDocs.pia; d.lat += 0.00002; d.updatedAt = { toMillis: () => Date.now() }; window.__firePos(); }")      # (2 m: the GPS's jitter at rest)
+    pg.wait_for_timeout(1200)
+    check('...2 m more (lying still): the arrow keeps pointing east', abs(boats()[1]['hdg'] - 90) < 3, boats()[1])
+    M(pg, {'px': M(pg)['c']['px'] + 12, 'd': 420, 'tilt': 1.15, 'az': 0.2}); pg.wait_for_timeout(1500)
+    pg.screenshot(path='shot_map3d_marks.png')
     check('no page errors', not errs, errs)
     b.close()
 

@@ -85,8 +85,17 @@ Test: `tests/test_map3d.py`. Höjdfilerna görs av `tools/land_height.py`.
   den orange pilen och andras samma pil i vitt med mörk kant (inte genomskinliga). Allt står på vattenytan (på land: på
   marken) och har en tunn linje ner till botten. Spegelbild i vattnet prövad och borttagen ("ser fake ut"). Storleken går med avståndet.
   Vilka som visas = kartans egna (`pinEls`, `#boatsLayer` – samma filter); namnen ligger kvar som platta etiketter bredvid
-  (2D-ikonen dold, `.m3Obj`). Uppdateras efter varje full ritning av kartan (`m3MarksSync` sist i `render()`). Bara att titta på.
-  Andras båtar skickar ingen kurs: deras pil pekar mot norr. Din pil = telefonens riktning när Kompass är på, annars GPS-kursen.
+  (2D-ikonen dold, `.m3Obj`). Bara att titta på.
+  - **Följer kartans märken:** den som ritar om kartans platser, båtar eller din position säger till (`m3MarksDirty()` i
+    `renderWaypoints`, `renderBoats`, `onFix`, `render`), och nästa bild tar över dem – en gång, hur många som än sa till
+    (`m3MarksSync`). Samma märken som förut (en båt har flyttat sig) = 3D-föremålen behålls, bara läget byts. Först
+    uppdaterades de bara vid en full ritning av kartan: andras båtar stod stilla i 3D medan de rörde sig (rättat 2026-11-13).
+  - **Andras pilar pekar dit båten rör sig** (2026-11-13): kursen räknas ur båtens förra position när en ny kommer
+    (`applyPositionsSnapshot`, `24-boats.js`: flyttat minst 8 m inom 5 min → `bearingDeg`; annars behålls den förra), `hdg` på
+    båten (`clusterBoatPositions`). Ingen ändring i databasen. Okänd tills båten rört sig sedan appen öppnades = mot norr
+    (Filips val: alltid pil). Gammal båt (inte hörd på 15 min) = grå som i 2D.
+  - Din pil = telefonens riktning när Kompass är på, annars GPS-kursen.
+  - Kontrollerat med bilder och test 2026-11-13: ikonen på egna platser, Träffpunktens fyr, ring och namnskylt.
 - **Kompass** (knapp = Filters Kompass, `53-compass.js`; iOS frågar om lov i trycket): kompassros på vattnet runt din båt
   (N rött, Ö S V, streck var 30:e grad) och en ljus kil längs vattnet dit telefonen pekar (kompassinställningarnas längd,
   vinkel, färg). `m3CompassMake`/`m3CompassPlace`.
@@ -111,9 +120,14 @@ Test: `tests/test_map3d.py`. Höjdfilerna görs av `tools/land_height.py`.
   Saknas någon skrivs länkarna ut och inget görs. Verktyget läser nivån strax under djupnätets ruta (Regnaren: 4 m-nivån
   → 4,9 m), räknar om SWEREF 99 TM till kartbildens rutnät (Krügers formler) och sparar höjd över sjön (sjöns nivå =
   medianen över vattenrutorna). `py -3 -I tools/land_height.py check` jämför omräkningen med Lantmäteriets egna hörn.
-- **Filer:** `docs/land/<id>_v4.txt` och `lakes/<id>/land.json` (fil, storlek, `max`, nivå, källa, vilket kartutsnitt).
+- **Filer:** `docs/land/<id>_v5.txt` och `lakes/<id>/land.json` (fil, storlek, `max`, nivå, källa, vilket kartutsnitt).
   - Samma packning som djupfilen (255 = sjö, 252 = vatten utan djup – se ovan –, packade rader, base64), samma rutnät
-    som djupet. v2 hade inga 252, v3 bara det som var minst 30 m brett.
+    som djupet. v2 hade inga 252, v3 bara det som var minst 30 m brett, v4 saknade öarnas höjd.
+  - **Småöar** (2026-11-13): en ruta som djupfilen kallar sjö utan djup (252) men som ligger mer än 0,3 m över sjön i
+    höjddatan (`ISLET`, `islets()`) och inte är olodat vatten behåller sin höjd i filen i stället för 255. Appen räknar den
+    som land (`m3Lake` = sjö enligt djupfilen och inte ö enligt höjdfilen; `m3Cell`). Förut låg öarna 0,2 m under ytan som
+    platta fläckar. Regnaren 1 466 rutor (högst 5,4 m), Mälaren 1 313 (10,6 m), Gryt 954 (11,4 m), Sjösjön 285, Östra
+    Vitten 115, Vågsfjärden 115, Sibbofjärden 17.
   - En byte per ruta: höjd över sjön = `max` × (byte / 250)². Stegen är alltså fina lågt ner, där stranden är (Regnaren:
     6 cm vid 1 m, 38 cm högst upp). v1 hade jämna steg – 1 m på Vågsfjärden (154 m höga berg) hade synts som trappsteg.
   - De ligger utanför `docs/lakes/<id>/`, som kart-chattens verktyg tömmer. `tools/build.py` bäddar in land.json som
@@ -139,10 +153,10 @@ Test: `tests/test_map3d.py`. Höjdfilerna görs av `tools/land_height.py`.
 
 ## Kvar och att tänka på
 - iPhone-appen packar sjöfilerna i appen: app-chatten måste ta med mappen `land/`.
-- Märkena syns genom kullar, eftersom de ligger ovanpå bilden.
-- Småöar som djupfilen räknar som sjö utan djup (Regnaren: upp till 5 m höga) ritas strax under ytan. Höjdfilen kunde
-  ge dem sin höjd (verktyget vet redan att de inte är vatten) – inte gjort.
+- Märkenas namnskyltar syns genom kullar (de ligger ovanpå bilden); själva 3D-föremålen göms bakom kullarna.
+- Medan 3D-vyn är öppen syns inte notiserna (Hotzone, PB), Ledarlistan eller andras snabbmeddelanden – vyn täcker dem.
+  Föreslaget 2026-11-13, Filip valde bort det då. Hus (Lantmäteriets byggnader) skippade han också ("för mkt jobb").
 - Vatten utan djup som inte gränsar till lodat djup (en vik bakom en smal kanal, en annan sjö) ligger kvar som platt mark
   med flygfotot på.
-- Inte i vyn: heatmap, Kartanalys, spår, väder, lodet, lägga eller ändra platser. Kartans färgreglage gäller inte heller där.
+- Inte i vyn: heatmap, Kartanalys, väder, platsnamn, Hotzone-ringen, lodet, lägga eller ändra platser. Kartans färgreglage gäller inte heller där.
 - Rutorna i Hämtade filer (5,6 GB) behövs bara om en höjdfil ska göras om, t.ex. efter ett nytt kartutsnitt.

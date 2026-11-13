@@ -249,7 +249,7 @@
     if (!(pan === true && layerShift(waypointsLayer))) renderWaypoints();
     if (!(pan === true && layerShift(boatsLayer))) renderBoats();
     renderMeasure();
-    if (m3) m3MarksSync();                   // (3D-karta open: its copies of the pins and boats, further down)
+    m3MarksDirty();                          // (3D-karta open: its copies of the pins and boats, 73-map3d.js)
   }
 
   // Touch/wheel events can fire far more often than the screen redraws

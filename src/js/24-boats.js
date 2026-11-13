@@ -79,6 +79,7 @@
     Array.from(boatsLayer.children).forEach(function(el){
       if (!seen[el.getAttribute('data-cluster')]) el.remove();
     });
+    m3MarksDirty();   // (3D-karta open: the boats there too, 73-map3d.js)
   }
 
   var toggleBoatsEl = document.getElementById('toggleBoats');
@@ -149,7 +150,11 @@
       var pv = boatPositions[doc.id], spd = pv ? pv.spd || 0 : 0, dt = pv ? (updatedMs - pv.updatedAt) / 1000 : 0;
       if (dt >= 5 && dt <= 300) spd = Math.min(15, haversineKm(pv.lat, pv.lon, d.lat, d.lon) * 1000 / dt);
       else if (dt > 300) spd = 0;
-      fresh[doc.id] = { lat: d.lat, lon: d.lon, name: d.name || '', uid: d.uid, updatedAt: updatedMs, spd: spd, msg: d.msg || null, msgAt: d.msgAt || 0, msgSp: d.msgSp || null, msgImg: d.msgImg || null, msgPb: !!d.msgPb };
+      // ...and their course (degrees from north), for their arrow in the 3D map: kept while they lie still (a GPS's
+      // jitter under 8 m doesn't turn it); not known until they have moved since this app was opened
+      var hdg = pv && typeof pv.hdg === 'number' ? pv.hdg : null;
+      if (pv && dt <= 300 && haversineKm(pv.lat, pv.lon, d.lat, d.lon) * 1000 >= 8) hdg = bearingDeg(pv.lat, pv.lon, d.lat, d.lon);
+      fresh[doc.id] = { lat: d.lat, lon: d.lon, name: d.name || '', uid: d.uid, updatedAt: updatedMs, spd: spd, hdg: hdg, msg: d.msg || null, msgAt: d.msgAt || 0, msgSp: d.msgSp || null, msgImg: d.msgImg || null, msgPb: !!d.msgPb };
     });
     boatPositions = fresh;
     allPositions = raw;

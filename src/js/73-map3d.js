@@ -30,21 +30,28 @@
     fetch(lakeUrl(LAKE.land.file)).then(function(r){ return r.ok ? r.text() : Promise.reject(); }).then(function(t){
       if (!m3) return;
       m3Land = unpackGrid(t.trim(), LAKE.land.w * LAKE.land.h);
-      if (m3.r){ m3Drop(m3.far); m3.far = m3.at = null; m3MarksSync(); }   // (the meshes and the pins again, with the land)
+      if (m3.r){ m3Drop(m3.far); m3.far = m3.at = null; m3MarksDirty(); }   // (the meshes and the pins again, with the land)
     }).catch(function(){ m3Land = null; });        // (no coverage: flat land; asked again the next time it opens)
   }
-  function m3Ground(x, y){ return isLakeAtImgPx(x, y) ? 0 : m3LandAt(x, y) * m3Cfg.ex; }   // the ground's (the water's) height in the picture at a map-picture px
+  function m3Ground(x, y){ return m3Lake(x, y) ? 0 : m3LandAt(x, y) * m3Cfg.ex; }   // the ground's (the water's) height in the picture at a map-picture px
   function m3LandAt(x, y){   // m above the lake at a map-picture px (0: in the lake, or no heights)
     var v = m3Land && m3Land.length ? gridValAt(m3Land, LAKE.land.w, LAKE.land.h, x, y) : null;
     return v === null ? 0 : v * v / 62500 * LAKE.land.max;   // (square-root steps: fine low down, by the shore -- tools/land_height.py)
   }
+  // the land file's value at a map-picture px: 0-250 a height (land -- or an islet the depth grid calls lake), 252 water
+  // nobody has charted, 255 lake (and outside the map, or no file)
+  function m3Cell(x, y){
+    if (!m3Land || !m3Land.length) return 255;
+    var L = LAKE.land, xi = Math.floor(x / IMG_W * L.w), yi = Math.floor(y / IMG_H * L.h);
+    return xi >= 0 && yi >= 0 && xi < L.w && yi < L.h ? m3Land[yi * L.w + xi] : 255;
+  }
   // water nobody has charted (the land file's 252: the lake's own, or outside the chart -- which the depth grid calls
   // land). Drawn at the surface it stood as big hills beside the charted bottom (Filip 2026-11-12): see m3Make
-  function m3Void(x, y){
-    if (!m3Land || !m3Land.length) return false;
-    var L = LAKE.land, xi = Math.floor(x / IMG_W * L.w), yi = Math.floor(y / IMG_H * L.h);
-    return xi >= 0 && yi >= 0 && xi < L.w && yi < L.h && m3Land[yi * L.w + xi] === 252;
-  }
+  function m3Void(x, y){ return m3Cell(x, y) === 252; }
+  // lake or land in the 3D map: the depth grid's lake, but not its islets -- cells it calls lake without a depth that
+  // stand over the water in the height data (the land file has their height). Drawn as lake they were shelves just
+  // under the surface: Regnaren's islets, up to 5 m high (Filip 2026-11-13)
+  function m3Lake(x, y){ return isLakeAtImgPx(x, y) && m3Cell(x, y) > 250; }
   function m3MaxDepth(){   // the lake's deepest charted water (m): Djupfärg's darkest colour
     var g = loadDepthGrid(), m = 1; if (g) for (var i = 0; i < g.length; i++) if (g[i] < 251 && g[i] > m) m = g[i];
     return Math.max(2, m * DEPTH_STEP);
@@ -63,7 +70,7 @@
     var pos = new Float32Array(nx * ny * 3), uv = new Float32Array(nx * ny * 2), wet = new Uint8Array(nx * ny), idx = [], widx = [], unk = [];
     for (var j = 0; j < ny; j++) for (var i = 0; i < nx; i++){
       var q = j * nx + i, x = x0 + i * k, y = y0 + j * k, d = depthAtImgPx(x, y);
-      wet[q] = d !== null ? 1 : m3Void(x, y) ? 2 : isLakeAtImgPx(x, y) ? 1 : 0;   // 0 land, 1 water, 2 water nobody has charted (a depth wins: sounded since the land file was made)
+      wet[q] = d !== null ? 1 : m3Void(x, y) ? 2 : m3Lake(x, y) ? 1 : 0;   // 0 land, 1 water, 2 water nobody has charted (a depth wins: sounded since the land file was made)
       if (wet[q] === 2) unk.push(q);
       pos[q * 3] = (x - IMG_W / 2) * M; pos[q * 3 + 2] = (y - IMG_H / 2) * M;
       pos[q * 3 + 1] = d !== null ? -d : wet[q] ? -0.2 : Math.max(0.3, m3LandAt(x, y));   // (lake nobody has logged: just under the surface; land: never lower than just over it -- the water's surface never lies on the land)
@@ -226,6 +233,7 @@
     [m3.far, m3.near].forEach(function(o){ if (o){ o.mesh.scale.y = m3Cfg.ex; o.water.visible = m3Cfg.water; } });
     if (m3.tgV !== m3Trk.v || m3.tgEx !== m3Cfg.ex) m3TrkBuild();   // (the tracks)
     if (m3.fpV !== catchVer || m3.fpEx !== m3Cfg.ex || !!m3.fp !== (m3Cfg.fish && !!(catchData && catchData.list.length))) m3FishBuild();   // (Fångster)
+    if (m3.md){ m3.md = 0; m3MarksSync(); }   // (the map's marks have been drawn again: m3MarksDirty)
     m3ObjsPlace();
     m3.r.render(m3.scene, cam);
     m3.marks.forEach(function(k){   // the pins: where their spot on the ground is on the screen
@@ -239,21 +247,31 @@
     m3Msg.textContent = '';
   }
   // the map's own pins and boats, copied (whatever the filter shows there, with the same icons) + you; called after every full render of the map
+  // The 3D view's marks follow the map's: whoever draws the map's spots, boats or your position again says so here
+  // (renderWaypoints, renderBoats, onFix, render), and the next frame takes them over -- once, however many said so.
+  // (First only a full render of the map did: another boat stood still in 3D while it moved on the map, Filip 2026-11-13.)
+  function m3MarksDirty(){ if (m3 && m3.r){ m3.md = 1; m3Draw(); } }
   function m3MarksSync(){
     if (!m3 || !m3.r) return;
-    m3Marks.innerHTML = ''; m3Marks.className = waypointsLayer.className; m3.marks = [];
-    function add(el, lat, lon, dy, col, kind, me, type, mine){
+    m3Marks.innerHTML = ''; m3Marks.className = waypointsLayer.className;
+    var old = m3.marks, list = [];
+    function add(id, el, lat, lon, dy, col, kind, me, type, mine, hdg){
       var p = latLonToImgPx(lat, lon); m3Marks.appendChild(el);
-      m3.marks.push({ el: el, p: p, dy: dy || 0, col: col || '#E4E9EC', kind: kind || 'pin', me: me, hdg: me ? headingDeg : 0, type: type, mine: mine });
+      list.push({ key: [id, kind, col, type, mine].join('|'), el: el, p: p, dy: dy || 0, col: col || '#E4E9EC', kind: kind || 'pin', me: me, hdg: me ? headingDeg : hdg || 0, type: type, mine: mine });
     }
     var COLS = { mark: '#E4E9EC', abborre: '#FF7A1A', gadda: '#35D24A', gos: '#3A86FF', hem: '#A8693A' };   // (the map's own, 40-spots-boats.css)
     waypoints.forEach(function(wp){
       var el = pinEls[wp.id];
-      if (el) add(el.cloneNode(true), wp.lat, wp.lon, el.classList.contains('wpPin') ? -PIN_TIP_OFFSET * wpScale * (isMine(wp) ? 1 : OTHER_PIN_SCALE) : 0, COLS[wp.type], wp.type === 'fara' || wp.type === 'meet' ? wp.type : 'pin', false, wp.type || 'mark', isMine(wp));   // (a pin: its tip on the spot)
+      if (el) add(wp.id, el.cloneNode(true), wp.lat, wp.lon, el.classList.contains('wpPin') ? -PIN_TIP_OFFSET * wpScale * (isMine(wp) ? 1 : OTHER_PIN_SCALE) : 0, COLS[wp.type], wp.type === 'fara' || wp.type === 'meet' ? wp.type : 'pin', false, wp.type || 'mark', isMine(wp));   // (a pin: its tip on the spot)
     });
-    Array.prototype.forEach.call(boatsLayer.children, function(el){ var b = boatClustersById[el.getAttribute('data-cluster')]; if (b) add(el.cloneNode(true), b.lat, b.lon, 0, '#ffffff', 'boat'); });
-    if (lastOwnLatLon){ var me = document.createElement('div'); me.className = 'm3Me'; add(me, lastOwnLatLon.lat, lastOwnLatLon.lon, 0, '#FF7A00', 'boat', true); }
-    m3Objs(); m3Draw();
+    // (a boat is grey when it hasn't been heard from for a while, as on the map; its arrow points where it last went -- north until it has moved, 24-boats.js)
+    Array.prototype.forEach.call(boatsLayer.children, function(el){ var id = el.getAttribute('data-cluster'), b = boatClustersById[id]; if (b) add(id, el.cloneNode(true), b.lat, b.lon, 0, el.classList.contains('boatPip--stale') ? '#9aa6ab' : '#ffffff', 'boat', false, null, false, b.hdg); });
+    if (lastOwnLatLon){ var me = document.createElement('div'); me.className = 'm3Me'; add('me', me, lastOwnLatLon.lat, lastOwnLatLon.lon, 0, '#FF7A00', 'boat', true); }
+    // the same marks as before -- a boat has moved, a name has changed: their 3D objects are kept. Built again only when
+    // a mark has come, gone or changed its look (you following the GPS draws the map every second)
+    if (old.length === list.length && list.every(function(k, n){ return old[n].o && old[n].key === k.key; }))
+      list.forEach(function(k, n){ var o = old[n]; o.el = k.el; o.p = k.p; o.dy = k.dy; o.hdg = k.hdg; });
+    else { m3.marks = list; m3Objs(); }
   }
   // The marks as 3D objects (Filip 2026-11-12) -- 3D versions of the map's own, graphic: flat, clear colours with the 2D
   // look's white and dark edges. A pin = the drop in the type's colour (your own with its icon on the head, as on the map),
@@ -319,7 +337,7 @@
     var c = m3.c, M = WEB_METERS_PER_PX, s = c.d * 0.008, CX = IMG_W / 2, CY = IMG_H / 2, cp = m3.cam.position;
     m3.marks.forEach(function(k){
       if (!k.o) return;
-      var X = (k.p.x - CX) * M, Z = (k.p.y - CY) * M, g = m3Ground(k.p.x, k.p.y), wet = isLakeAtImgPx(k.p.x, k.p.y), bot = wet ? m3Surf(k.p.x, k.p.y) : g;
+      var X = (k.p.x - CX) * M, Z = (k.p.y - CY) * M, g = m3Ground(k.p.x, k.p.y), wet = m3Lake(k.p.x, k.p.y), bot = wet ? m3Surf(k.p.x, k.p.y) : g;
       var up = k.kind === 'boat' ? 0.12 * s : 0;   // (a pin's tip, the stop sign's lower edge and the beacon's foot on the water; the arrow lying on it)
       k.o.scale.setScalar(s * (k.kind === 'boat' ? 1.6 : 1)); k.o.position.set(X, g + up, Z);
       if (k.me) k.hdg = compassOn && compassHdg !== null ? compassHdg : headingDeg;   // (your arrow: where the phone points while Kompass is on, else where you go)
@@ -331,13 +349,13 @@
         k.icon.position.set(h.x + dx / dl * 0.85 * s, h.y + dy / dl * 0.85 * s, h.z + dz / dl * 0.85 * s); k.icon.scale.setScalar(1.05 * s);
       }
       var a = k.b.geometry.attributes.position.array; a[0] = a[3] = X; a[2] = a[5] = Z; a[1] = g; a[4] = bot; k.b.geometry.attributes.position.needsUpdate = true; k.b.visible = wet;
-      k.top = g + up + (k.kind === 'boat' ? 0 : 2.6 * s);   // (the label: beside the top)
+      k.top = g + up + (k.kind === 'boat' ? 0 : k.kind === 'meet' ? 1.2 * s : 2.6 * s);   // (the label: beside the top -- a beacon's name tag beside its ball)
     });
   }
   // the tracks in 3D: what the map shows (46-gps-track.js renderTrack: yours in your colour, someone else's light blue) as
   // lines just over the water / the ground -- built again when they change or Höjd × does
   var m3Trk = { mine: [], others: [], col: '', v: 0 };
-  function m3TrkSync(mine, others, col){ m3Trk = { mine: mine, others: others, col: col, v: m3Trk.v + 1 }; m3Draw(); }
+  function m3TrkSync(mine, others, col){ m3Trk = { mine: mine, others: others, col: col, v: (m3Trk ? m3Trk.v : 0) + 1 }; m3Draw(); }   // (m3Trk: not set yet if the map is drawn before this file has run)
   function m3TrkBuild(){
     var T = m3.T, M = WEB_METERS_PER_PX, CX = IMG_W / 2, CY = IMG_H / 2;
     if (m3.tg){ m3.scene.remove(m3.tg); m3.tg.traverse(function(o){ if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); }); }
@@ -461,7 +479,7 @@
       m3 = { T: T, r: r, scene: scene, cam: new T.PerspectiveCamera(M3_FOV, 1, 1, 1e5), tex: tex, v: new T.Vector3(), marks: [], t: 0, c: m3Clamp(c),
              detT: detT, detR: detR, colU: colU, sun: sun, hemi: hemi, cut: cut(), cutW: cut(), far: null, near: null };
       m3.mat = ground(null); m3.wmat = wet(null); m3.matFar = ground(m3.cut); m3.wmatFar = wet(m3.cutW);   // (the whole map's: left out where the fine mesh lies)
-      m3MarksSync(); m3Draw();
+      m3MarksDirty();
     }).catch(function(){ m3Msg.textContent = 'Kunde inte ladda 3D'; });
   }
   function m3Close(){
@@ -531,7 +549,7 @@
     }
     return 0;
   }
-  function m3Surf(x, y){ var d = depthAtImgPx(x, y); return (d !== null ? -d : isLakeAtImgPx(x, y) ? -0.2 : Math.max(0.3, m3LandAt(x, y))) * m3Cfg.ex; }   // what is drawn at a map-picture px: the bottom, or the land (as m3Make's points; water nobody has charted: about the water's level, which is what a finger takes hold of there)
+  function m3Surf(x, y){ var d = depthAtImgPx(x, y); return (d !== null ? -d : m3Lake(x, y) ? -0.2 : Math.max(0.3, m3LandAt(x, y))) * m3Cfg.ex; }   // what is drawn at a map-picture px: the bottom, or the land (as m3Make's points; water nobody has charted: about the water's level, which is what a finger takes hold of there)
   // the point looked at, moved along the line of sight to s m from the camera -- which stays where it is
   function m3Slide(s){
     var c = m3.c, k = (c.d - s) * Math.sin(c.tilt) / WEB_METERS_PER_PX;
@@ -610,6 +628,6 @@
     }
     var det = m3 && m3.det && m3.det.z ? { z: m3.det.z, want: (m3DetLevel(m3.c) || {}).z, n: m3.det.n || 0, X: m3.det.X, Y: m3.det.Y, far: Math.hypot(m3DetAt(m3.c).x - m3.det.px, m3DetAt(m3.c).y - m3.det.py) * Math.pow(2, m3.det.z - ZOOM) / S / M3_TEX, url: o && o.pic ? m3.det.cv.toDataURL('image/jpeg', 0.6) : '' } : null;   // (the sharp patch; pic: its picture too)
     return { land: !!(m3Land && m3Land.length), det: det, hit: hit, open: !!m3, ready: !!(m3 && m3.far && m3.at), n: m3 && m3.n, builds: m3 && m3.nb, c: m3 && m3.c, cam: m3 && m3.cam ? m3.cam.position.toArray() : null, at: m3 && m3.at, marks: m3 && m3.marks ? m3.marks.length : 0, cfg: m3Cfg, trk: [m3Trk.mine.map(function(g){ return g.length; }), m3Trk.others.length, m3 && m3.tg ? m3.tg.children.length : 0],
-             objs: m3 && m3.marks ? m3.marks.filter(function(k){ return k.o; }).map(function(k){ return { kind: k.kind, me: !!k.me, hdg: k.hdg, y: k.o.position.y, line: k.b.visible, icon: !!k.icon }; }) : [],
+             objs: m3 && m3.marks ? m3.marks.filter(function(k){ return k.o; }).map(function(k){ return { kind: k.kind, me: !!k.me, hdg: k.hdg, y: k.o.position.y, line: k.b.visible, col: k.col, ring: !!k.ring, icon: !!k.icon, iconDrawn: !!k.icon && (function(d){ for (var i = 3; i < d.length; i += 148) if (d[i]) return true; return false; })(k.icon.material.map.image.getContext('2d').getImageData(0, 0, 128, 128).data) }; }) : [],
              fish: m3 && m3.fp ? m3.fp.geometry.attributes.position.count : 0, comp: !!(m3 && m3.comp && m3.comp.dial.visible), compRot: m3 && m3.comp ? m3.comp.wedge.rotation.y : null };
   };
