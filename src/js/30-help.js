@@ -5,6 +5,11 @@
      made by tools/help_anim.py (docs/help/*.webp; one that's missing is just left out). */
   // newest first. t: 'new' (NYTT), 'better' (BÄTTRE), 'fixed' (FIXAT)
   var HELP_NEWS = [
+    { d: '2026-11-13', t: 'new',    x: '<b>3D-karta</b>: botten och marken runt sjön i 3D – håll inne kartlägesknappen. Vrid och luta med två fingrar, se platser, båtar och spår, och slå på <b>Djupfärg</b>, <b>Skuggor</b>, <b>Fångster</b> eller <b>Kompass</b>' },
+    { d: '2026-11-13', t: 'new',    x: 'Ny karta: <b>Gryts Skärgård</b> – Valdemarsviken ut till Flisdjupet, med djupfärger i hela skärgården' },
+    { d: '2026-11-13', t: 'better', x: '<b>Regnaren och Mälaren</b> har djupfärger i nästan hela sjön' },
+    { d: '2026-11-13', t: 'new',    x: 'Pågående <b>tävling</b> står under sjöns namn uppe till vänster – tryck för att byta' },
+    { d: '2026-11-13', t: 'better', x: 'Valt sjö eller tävling själv? Nästa dag väljer appen <b>automatiskt</b> igen' },
     { d: '2026-11-08', t: 'new',    x: '<b>Sjö och Tävling</b> överst i menyn: sjön byts av sig själv när du kommer dit, och du ser vilken tävling du är med i' },
     { d: '2026-11-08', t: 'better', x: '<b>Hotzone</b>: tätare ställen (fiskarna inom 50 m från mitten) – ringen visar var det nappar just nu och försvinner 30 min efter sista fisken' },
     { d: '2026-11-08', t: 'better', x: '<b>GPS-knappen</b> är vit och blir orange när kartan följer båten' },

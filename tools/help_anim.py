@@ -60,6 +60,23 @@ FINGER_JS = r"""(function(){
   addEventListener('pointerup', function(){ if (f) f.style.opacity = '0'; }, true);
 })();"""
 
+# two fingers (touch events sent by fingers2): a dot at each -- the one-finger dot is hidden meanwhile
+F2_JS = r"""(function(){
+  window.__f2 = function(pts){
+    var d = window.__f2d;
+    if (!d){
+      var st = document.createElement('style'); st.textContent = 'html.f2 > div[style*="2147483647"]{display:none !important}'; document.documentElement.appendChild(st);
+      d = window.__f2d = [0, 1].map(function(){ var f = document.createElement('div');
+        f.style.cssText = 'position:fixed;left:0;top:0;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;' +
+          'background:rgba(255,255,255,.38);border:2.5px solid rgba(255,255,255,.95);box-shadow:0 0 0 3px rgba(0,0,0,.28),0 3px 10px rgba(0,0,0,.4);' +
+          'z-index:2147483646;pointer-events:none;opacity:0;transition:opacity .12s;';
+        document.documentElement.appendChild(f); return f; });
+    }
+    document.documentElement.classList.toggle('f2', !!pts);
+    d.forEach(function(f, i){ f.style.opacity = pts ? '1' : '0'; if (pts) f.style.transform = 'translate(' + pts[i][0] + 'px,' + pts[i][1] + 'px)'; });
+  };
+})();"""
+
 def Y(y0, y1): return {'x': 0, 'y': y0, 'width': 390, 'height': y1 - y0}   # a band of the screen (css px)
 
 class Rec:
@@ -165,6 +182,14 @@ def drag(pg, rec, a, b, steps=14):
     for i in range(1, steps + 1):
         pg.mouse.move(a[0] + (b[0] - a[0]) * i / steps, a[1] + (b[1] - a[1]) * i / steps); rec.snap()
     pg.mouse.up()
+def fingers2(pg, rec, path, steps=24, dt=45):
+    """two fingers from path(0) to path(1) -- path(f) = [(x, y), (x, y)] -- as touch events (open_app(init=F2_JS))"""
+    def touch(typ, pts): rec.cdp.send('Input.dispatchTouchEvent', {'type': typ, 'touchPoints': [{'x': x, 'y': y, 'id': i} for i, (x, y) in enumerate(pts)]})
+    def dots(pts): pg.evaluate('p => __f2(p)', [list(q) for q in pts] if pts else None)
+    a = path(0); dots(a); touch('touchStart', a[:1]); touch('touchStart', a); rec.hold(220)
+    for k in range(1, steps + 1):
+        pts = path(k / steps); dots(pts); touch('touchMove', pts); rec.hold(dt)
+    rec.hold(220); touch('touchEnd', []); dots(None); rec.hold(700)
 def sail(pg, ctx, rec, a, b, metres_max=None, speed=8.0, dt=0.5):
     """GPS fixes from a towards b at a boat's speed (m/s), one every dt s -- only on the water"""
     L = metres(a, b); L = min(L, metres_max) if metres_max else L
@@ -224,6 +249,31 @@ def s_kartlagen(p):
     press(pg, rec, bb['x'] + 20, bb['y'] + 20, ms=900, after=1600)
     tap_el(pg, rec, '#mapTypePop .styleOpt[data-style="s3"]', after=1700)
     rec.save('kartlagen'); b.close()
+
+def s_map3d(p):
+    """hold the map button -> 3D-karta: the bottom and the land in 3D. Two fingers twist, tilt and pinch (one finger
+    moving the map is left out: everybody knows it, and it cost 150 kB); Djupfärg; Till mig; Kompass (the rose round
+    your boat, the wedge where the phone points -- your arrow turns with it)"""
+    b, ctx, pg = open_app(p, init=F2_JS)
+    rec = Rec(pg); rec.hold(500)
+    bb = pg.locator('#mapTypeBtn').bounding_box()
+    press(pg, rec, bb['x'] + 20, bb['y'] + 20, ms=900, after=1200)
+    pg.evaluate("document.querySelector('#mapTypePop .m3Opt').scrollIntoView({block:'nearest'})")
+    tap_el(pg, rec, '#mapTypePop .m3Opt', after=3400)                    # (the land's heights and the sharp picture arrive)
+    tw = lambda f: [(195 + 85 * math.cos(3.5 + f * 0.95), 440 + 85 * math.sin(3.5 + f * 0.95)), (195 - 85 * math.cos(3.5 + f * 0.95), 440 - 85 * math.sin(3.5 + f * 0.95))]
+    fingers2(pg, rec, tw, steps=20)                                      # a twist: it turns
+    fingers2(pg, rec, lambda f: [(140, 560 - 60 * f), (250, 560 - 60 * f)], steps=18)    # both up: tilted towards the horizon
+    fingers2(pg, rec, lambda f: [(155 - 40 * f, 470), (235 + 40 * f, 470)], steps=18)    # a pinch: nearer
+    tap_el(pg, rec, '#m3Chips [data-k=col]', after=1700)                 # Djupfärg: the bottom coloured by its depth
+    tap_el(pg, rec, '#m3Me', after=1300)                                 # Till mig
+    pg.evaluate("DeviceOrientationEvent.requestPermission = () => Promise.resolve('granted'); 0")   # (as when you say yes on an iPhone)
+    tap_el(pg, rec, '#m3Chips [data-k=compass]', after=500)              # Kompass
+    for i in range(30):                                                  # the phone is turned: the wedge and your arrow follow
+        pg.evaluate("h => window.dispatchEvent(new DeviceOrientationEvent('deviceorientationabsolute', {alpha: (360 - h) % 360, absolute: true}))", 20 + i * 5); rec.hold(90)
+    rec.hold(900)
+    tap_el(pg, rec, '#m3Chips [data-k=compass]', after=600)              # (off again: it is Filter's Kompass -- the map would keep it)
+    tap_el(pg, rec, '#m3Close', after=900)                               # (size: every moving picture of the 3D view is new all over, ~25 kB --
+    rec.save('map3d'); b.close()                                         #  test_help allows 1,2 MB; this is ~1 MB, give or take 60 kB between runs)
 
 def s_position(p):
     b, ctx, pg = open_app(p)
@@ -547,7 +597,7 @@ SCENES = [('installera', s_installera), ('kartan', s_kartan), ('kartlagen', s_ka
           ('lodet', s_lodet), ('platser', s_platser), ('andra', s_andra), ('fara', s_fara), ('batar', s_batar), ('mat', s_mat),
           ('vader', s_vader), ('blixtar', s_blixtar), ('filter', s_filter), ('logg', s_logg), ('installningar', s_installningar),
           ('analys', s_analys), ('heatmap', s_heatmap), ('akhit', s_akhit), ('meddelanden', s_meddelanden), ('hotzone', s_hotzone),
-          ('underytan', s_underytan)]
+          ('underytan', s_underytan), ('map3d', s_map3d)]
 
 if __name__ == '__main__':
     want = sys.argv[1:] or [n for n, f in SCENES]

@@ -13,8 +13,9 @@ I stället skrivs det som behöver ändras upp här, och Filip väljer när allt
 - Vid en Hjälp-omgång: gör allt i listan (texter, `HELP_NEWS`, animeringar som påverkas –
   `py -3 tools/help_anim.py <namn>`, bygg, testa), flytta raderna till "Klart" med datum.
 
-**Senaste Hjälp-omgång:** 2026-11-08 (omgång 7: Sjö och Tävling, Hotzone 50 m, GPS-knappen, Mörk karta).
-Föregående: 2026-10-29 (omgång 6: PB, Under ytan, GPS-knappen följer).
+**Senaste Hjälp-omgång:** 2026-11-13 (omgång 8: 3D-karta, Gryts Skärgård, egna lodningar, tävlingens namn under sjön).
+Föregående: 2026-11-08 (omgång 7: Sjö och Tävling, Hotzone 50 m, GPS-knappen, Mörk karta).
+Innan dess: 2026-10-29 (omgång 6: PB, Under ytan, GPS-knappen följer).
 Innan dess: 2026-10-08 (omgång 5: Kartanalys Skala/Fiska nu, låset → påminnelse, Hotzone, Loggens filter).
 Innan dess: 2026-10-06 (omgång 4: allt sedan 2026-09-30 – ny design, Kom igång, Tävlingarna, profiler,
 spåren, Ledare, Kompass, Namn, Fog of war, tävlingslåset, Storlek/När, startfilmen, Mälaren och Östra Vitten m.m.).
@@ -26,26 +27,16 @@ spåren, Ledare, Kompass, Namn, Fog of war, tävlingslåset, Storlek/När, start
 <!-- mall:
 - [ ] ÅÅÅÅ-MM-DD – Vad som ändrats. Hjälp: avsnitt X (text) + animering `namn`. Nyhet: "…" (NYTT/BÄTTRE/FIXAT)
 -->
-- [ ] 2026-11-08 – Ny sjö: Gryts Skärgård (Valdemarsviken ut till Flisdjupet). Bara Djupfärger; djup bara i en liten Genesis-remsa,
-  flygfoto i övrigt. Hjälp: avsnittet om sjöar/kartlägen (att en sjö kan ha färre kartlägen och sakna djup där inget är lodat).
-- [ ] 2026-11-09 – Tävlingens namn i liten text under sjönamnet uppe till vänster (pågående tävling, tryck = Välj tävling). Hjälp: Kartan /
-  Tävlingarna (text). Nyhet: "Pågående tävling syns under sjöns namn – tryck för att byta" (NYTT)
-- [ ] 2026-11-09 – Sjö och Tävling går tillbaka till Automatiskt varje ny dag. Hjälp: Kartan (Sjö) / Tävlingarna (Tävling-raden).
-  Nyhet: "Valt sjö eller tävling själv? Nästa dag väljer appen automatiskt igen" (BÄTTRE)
-  Nyhet: "Ny karta: Gryts Skärgård – Valdemarsviken ut till Flisdjupet, med djupfärger i hela skärgården" (NYTT)
-- [ ] 2026-11-11 – Regnaren och Mälaren: djupfärger i nästan hela sjön – Filips egen loggning fyller där Genesis saknar djup (Genesis
-  överst, kurvorna bara från Genesis). Hjälp: Kartan (var djupet kommer ifrån). Nyhet: "Regnaren och Mälaren har nu djupfärger i nästan hela sjön" (BÄTTRE)
-- [ ] 2026-11-11 – Nytt kartläge: 3D-karta (håll kartknappen → 3D-karta). Botten och marken runt sjön i 3D med kartbilden på, skarp på nära håll.
-  Ett finger flyttar kartan, nyp zoomar, vrid med två fingrar vrider, två fingrar upp/ner lutar (som i Google Maps); Höjd ×, Vatten, Till mig, norrpil. Marken har riktiga höjder på alla sjöar (Lantmäteriet).
-  Där djup saknas (olodat, eller utanför sjökortet) är det hål i botten – bara vattenytan syns (2026-11-12).
-  Knappen Djupfärg: botten i färger efter djupet. Knappen Skuggor: kastade skuggor. Märkena i 3D med linje
-  till botten, spåren, knappen Fångster (prickar), knappen Kompass (ros + kil, pilen vrids dit telefonen pekar). På datorn: Alt + mus som i Maya/Houdini (2026-11-12).
-  Hjälp: nytt avsnitt vid kartlägena + animering `map3d`.
-  Nyhet: "Ny 3D-karta: se botten och marken runt sjön i 3D – håll kartknappen" (NYTT)
 
 ---
 
 ## Klart
+
+- 2026-11-13 – Hjälp-omgång 8 (5 rader): nytt avsnitt **3D-karta** (ny animering `map3d` – två fingrar via `fingers2`), **Under ytan**
+  eget avsnitt (låg i Kartlägen) – innehållet nu 24 länkar; Kartan (Gryts Skärgård, var djupet kommer ifrån: Genesis + Filips
+  lodningar, Automatiskt igen nästa dag), Kartlägen (listans tre tillägg, Gryt har bara Djupfärger), Tävlingarna (namnet under
+  sjöns namn, Automatiskt nästa dag). 5 nyhetsrader. Alla 22 animeringar inspelade igen (Regnarens nya djupfärger, 3D-raden
+  i kartlägeslistan, Under ytans nya ljus).
 
 - 2026-11-08 – Hjälp-omgång 7 (3 rader): Sjö och Tävling i menyn (Kom igång, Kartan, Tävlingarna), GPS-knappen vit/orange
   (Din position), Hotzone 50 m / 30 min (Tävlingarna), Heatmap 🌙 Mörk karta, PB-meddelanden 14 min, Platsnamn (Kartan, Filter).

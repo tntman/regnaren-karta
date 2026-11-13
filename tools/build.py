@@ -14,7 +14,7 @@ lakes/<id>/       one folder per lake: lake.json (name, geo-reference, depth
                   into docs/lakes/<id>/.
 assets/           icons, manifest, iOS's launch images (copied as is)
 """
-import os, shutil, json, base64, sys
+import os, shutil, json, base64, sys, re, zlib
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from launch_images import LAUNCH
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -55,6 +55,12 @@ rest = rest.replace('__LAKES__', json.dumps(lakes, ensure_ascii=False, separator
 html = head.rstrip('\n') + '\n' + style + '\n</head>\n<body>\n' + rest + '\n</body>\n</html>\n'
 
 out = os.path.join(ROOT, 'docs'); os.makedirs(out, exist_ok=True)
+# Hjälp's animations: the service worker keeps pictures for good (cache first), so one recorded again under the same name
+# never reached a phone that had the old one -- its address gets the file's checksum (new picture = new address)
+def anim_v(m):
+    f = os.path.join(out, 'help', m.group(1) + '.webp')
+    return 'src="help/%s.webp%s"' % (m.group(1), '?%08x' % zlib.crc32(open(f, 'rb').read()) if os.path.exists(f) else '')
+html = re.sub(r'src="help/([a-z0-9]+)\.webp"', anim_v, html)
 open(os.path.join(out, 'index.html'), 'w', encoding='utf-8').write(html)
 shutil.copy(os.path.join(ROOT, 'src', 'sw.js'), out)
 for f in os.listdir(os.path.join(ROOT, 'assets')):

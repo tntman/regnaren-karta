@@ -41,7 +41,7 @@ with sync_playwright() as p:
     b, pg, errs = fresh(p, UA['ios'])
     check('a name chosen: the welcome card; its link: Hjälp, with a welcome', pg.__welcome and not pg.is_visible('#welcomeNote') and pg.is_visible('#helpView') and pg.is_visible('#helpWelcome') and 'Välkommen, Filip!' in pg.inner_text('#helpWelcome'), pg.inner_text('#helpWelcome') if pg.is_visible('#helpWelcome') else '')
     toc = pg.eval_on_selector_all('#helpToc a', 'e => e.map(x => x.textContent.trim())')
-    check('contents: 22 sections', len(toc) == 22 and 'Blixtar' in ''.join(toc) and 'Installera appen' in ''.join(toc), toc)
+    check('contents: 24 sections', len(toc) == 24 and 'Blixtar' in ''.join(toc) and 'Installera appen' in ''.join(toc), toc)
     check('iPhone Safari: the Safari steps are shown, not "✓ installed"', os_tab(pg) == 'ios' and pg.is_visible('.helpSteps[data-os="ios"]') and not pg.is_visible('#helpInstalled'), os_tab(pg))
     news = pg.eval_on_selector_all('#helpNewsList .helpNewsItem', 'e => e.filter(x => x.offsetParent).length')
     check('Nytt i appen: 5 shown, the rest behind "Visa äldre"', news == 5 and pg.is_visible('#helpNewsMore'), news)
@@ -128,12 +128,16 @@ with sync_playwright() as p:
 
 # every animation the page asks for exists (tools/help_anim.py makes them)
 html = open(os.path.join(os.path.dirname(HELP), 'index.html'), encoding='utf-8').read()
-want = re.findall(r'src="help/([a-z]+)\.webp"', html)
+want = re.findall(r'src="help/([a-z0-9]+)\.webp(?:\?[0-9a-f]+)?"', html)
 missing = [w for w in want if not os.path.exists(os.path.join(HELP, w + '.webp'))]
-check('all %d animations exist in docs/help/' % len(want), len(want) == 21 and not missing, missing)
+check('all %d animations exist in docs/help/' % len(want), len(want) == 22 and not missing, missing)
 from PIL import Image
-wrong = [w for w in want if w not in missing and ('width="%d" height="%d" src="help/%s.webp"' % (Image.open(os.path.join(HELP, w + '.webp')).size + (w,))) not in html]
+wrong = [w for w in want if w not in missing and ('width="%d" height="%d" src="help/%s.webp?' % (Image.open(os.path.join(HELP, w + '.webp')).size + (w,))) not in html]
 check('the page has the size of each animation (no jumping while they load; tools/help_anim.py writes them)', not wrong, wrong)
+# the service worker keeps pictures for good: an animation recorded again must get a new address (tools/build.py: its checksum)
+import zlib
+stale = [w for w in want if w not in missing and ('src="help/%s.webp?%08x"' % (w, zlib.crc32(open(os.path.join(HELP, w + '.webp'), 'rb').read()))) not in html]
+check("each animation's address carries the file's checksum (recorded again = fetched again; build after recording)", not stale, stale)
 sizes = {w: os.path.getsize(os.path.join(HELP, w + '.webp')) // 1024 for w in want if w not in missing}
 check('each animation under 1,2 MB', all(v < 1200 for v in sizes.values()), sizes)
 print('\n%d/%d passed' % (sum(results), len(results)))

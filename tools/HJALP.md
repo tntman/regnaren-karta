@@ -32,7 +32,9 @@ animeringarna igen.
 | Installera appen (`help-installera`) | `installera` | `s_installera` (ritad Safari) |
 | Kom igång (`help-start`): Vem är du?, startfilmen, välkomstrutan, menyn | – (bara text) | – |
 | Kartan (`help-kartan`) | `kartan` | `s_kartan` |
-| Kartlägen (`help-kartlagen`) | `kartlagen`, `underytan` (Under ytan, utan kamera: vrid, Yta av, Djup ×, Djupfog) | `s_kartlagen`, `s_underytan` (orienteringen via `window.__ffAr`) |
+| Kartlägen (`help-kartlagen`) | `kartlagen` | `s_kartlagen` |
+| 3D-karta (`help-3d`, eget avsnitt sedan 2026-11-13) | `map3d` (håll kartknappen → 3D-karta, två fingrar vrider/lutar/nyper, Djupfärg, Till mig, Kompass, ✕; inget enfingerdrag – varje rörlig bild i 3D-vyn är ny överallt (~25 kB) och filen ska hålla sig under 1,2 MB: nu ~1 MB, ± 60 kB mellan körningar) | `s_map3d` (två fingrar = `fingers2()` + `F2_JS`: pekhändelser via CDP med en prick per finger; kompassen via låtsade `deviceorientationabsolute`) |
+| Under ytan (`help-underytan`, eget avsnitt sedan 2026-11-13 – låg förut i Kartlägen) | `underytan` (utan kamera: vrid, Yta av, Djup ×, Djupfog) | `s_underytan` (orienteringen via `window.__ffAr`) |
 | Din position (`help-position`) | `position` (sikteknappen följer båten) | `s_position` |
 | Lodet (`help-lodet`) | `lodet` (+ tryck på lodets ruta = markering) | `s_lodet` |
 | Fiskeplatser och markeringar (`help-platser`) | `platser` (lägg till), `andra` (ändra/ta bort) | `s_platser`, `s_andra` |
@@ -78,7 +80,7 @@ Filip väljer det (påminn honom när listan har ≥ 5 rader eller är > 1 vecka
    korta punkter. `<b class="hA">…</b>` = orange (det man ska göra, t.ex. "Tryck").
    Flera animeringar i ett avsnitt: rubrik över varje med `<p class="helpSub">…</p>`.
 2. Lägg till en länk i innehållsförteckningen `#helpToc`: `<a href="#help-…"><span>EMOJI</span>Titel</a>`.
-   (Håll antalet jämnt – två kolumner, nu 22. test_help räknar länkarna och animeringarna (21): uppdatera siffrorna.)
+   (Håll antalet jämnt – två kolumner, nu 24. test_help räknar länkarna och animeringarna (22): uppdatera siffrorna.)
 3. Animering: `<div class="helpAnim"><img loading="lazy" src="help/NAMN.webp" alt="…"></div>`
    och en scen i `tools/help_anim.py` (se nedan). Verktyget skriver in `width`/`height`.
 4. Uppdatera tabellen i avsnitt 2 här, och antalet animeringar i test_help.
@@ -91,6 +93,10 @@ py -3 tools/build.py                  (efteråt – storleken skrivs i src/html/
 ```
 Titta alltid på resultatet innan det publiceras (t.ex. några bilder ur varje fil) –
 särskilt att inget hamnat på land och att inget ligger i vägen.
+
+**Bygg alltid efter en inspelning:** telefonerna sparar bilder för gott (service workern, cache först), så en animering som
+spelats in igen under samma namn nådde aldrig den som redan sett den gamla. Bygget lägger därför filens kontrollsumma i
+adressen (`help/kartan.webp?1a2b3c4d`, `anim_v` i `tools/build.py`, 2026-11-13) – ny bild = ny adress. test_help kontrollerar det.
 
 ---
 
@@ -108,6 +114,9 @@ särskilt att inget hamnat på land och att inget ligger i vägen.
 - **Båtfart:** `sail()` skickar GPS-positioner i båtfart (4,5–8 m/s ≈ 9–15 knop),
   en var 0,5 s. För fort ser konstigt ut på fartmätaren.
 - **Fingret:** en vit prick visas där "fingret" trycker (`FINGER_JS`).
+- **Två fingrar** (3D-kartan: vrid, luta, nyp): `fingers2(pg, rec, path)` skickar riktiga pekhändelser (CDP
+  `Input.dispatchTouchEvent` – musen kan bara vara ett finger) och visar en prick per finger; enfingerpricken göms så
+  länge (`html.f2`). Scenen öppnas med `open_app(p, init=F2_JS)`. `path(f)` = de två fingrarnas lägen för f = 0 … 1.
 - **Inspelning:** webbläsarens egen skärminspelning (CDP `Page.startScreencast`) –
   mjukt och i verklig takt. Bildkvittot skickas från vänteloopen, inte från
   händelsen (annars stannar inspelningen efter några bilder).
